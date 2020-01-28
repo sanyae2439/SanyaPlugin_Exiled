@@ -19,7 +19,6 @@ namespace SanyaPlugin
 
         /** Infosender **/
         private UdpClient udpClient = new UdpClient();
-
         private IEnumerator<float> Sender()
         {
             while(true)
@@ -54,7 +53,7 @@ namespace SanyaPlugin
                             Playerinfo ply = new Playerinfo();
 
                             ply.name = ReferenceHub.GetHub(player).nicknameSync.MyNick;
-                            ply.userid = ReferenceHub.GetHub(player).characterClassManager.SyncedUserId;
+                            ply.userid = ReferenceHub.GetHub(player).characterClassManager.UserId;
                             ply.ip = ReferenceHub.GetHub(player).characterClassManager.RequestIp;
                             ply.role = ReferenceHub.GetHub(player).characterClassManager.CurClass.ToString();
                             ply.rank = ReferenceHub.GetHub(player).serverRoles.MyText;

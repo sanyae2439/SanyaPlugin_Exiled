@@ -60,14 +60,4 @@ namespace SanyaPlugin
             return false;
         }
     }
-
-    //[HarmonyPatch(typeof(Generator079),nameof(Generator079.EjectTablet))]
-    //public class Generator079EjectTablet
-    //{
-    //    public static bool Prefix(Generator079 __instance)
-    //    {
-    //        Plugin.Debug($"[OnGeneratorEject] {ReferenceHub.GetHub(person).GetName()}:{ReferenceHub.GetHub(person).GetRoleType()}");
-
-    //    }
-    //}
 }
