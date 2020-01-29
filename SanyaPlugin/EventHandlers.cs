@@ -334,11 +334,6 @@ namespace SanyaPlugin
                     switch(args[1].ToLower())
                     {
                         case "test":
-                            var scp049 = sender.GetComponent<Scp049PlayerScript>();
-                            foreach(var player in Plugin.GetHubs())
-                            {
-                                scp049.RpcSetDeathTime(player.gameObject);
-                            }
                             ReturnStr = "test ok.";
                             break;
                         case "config":
