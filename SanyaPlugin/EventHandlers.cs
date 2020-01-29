@@ -8,12 +8,7 @@ using EXILED;
 using UnityEngine;
 using MEC;
 using Utf8Json;
-using Harmony;
-using Scp914;
-using Mirror;
-using CustomPlayerEffects;
 using Dissonance.Integrations.MirrorIgnorance;
-using RemoteAdmin;
 
 namespace SanyaPlugin
 {
@@ -338,6 +333,10 @@ namespace SanyaPlugin
                             break;
                         case "config":
                             ReturnStr = SanyaPluginConfig.GetConfigs();
+                            break;
+                        case "reload":
+                            SanyaPluginConfig.Reload();
+                            ReturnStr = "reload ok";
                             break;
                         case "nukelock":
                             CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;

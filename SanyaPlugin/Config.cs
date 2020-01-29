@@ -80,10 +80,12 @@ namespace SanyaPlugin
                 recovery_amount_scp106 = Plugin.Config.GetInt("sanya_recovery_amount_scp106", -1);
                 recovery_amount_scp173 = Plugin.Config.GetInt("sanya_recovery_amount_scp173", -1);
                 recovery_amount_scp939 = Plugin.Config.GetInt("sanya_recovery_amount_scp939", -1);
+
+                Plugin.Info("[SanyaPluginConfig] Reloaded!");
             }
             catch(Exception e)
             {
-                Plugin.Error("[SanyaPluginConfig.Reload] Error:");
+                Plugin.Error("[SanyaPluginConfig] Error:");
                 Plugin.Error(e.ToString());
             }
         }
