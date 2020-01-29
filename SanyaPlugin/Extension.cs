@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using EXILED;
 
 namespace SanyaPlugin
 {
@@ -13,5 +8,6 @@ namespace SanyaPlugin
         public static string GetIpAddress(this ReferenceHub player) => player.characterClassManager.RequestIp;
         public static string GetUserId(this ReferenceHub player) => player.characterClassManager.UserId;
         public static RoleType GetRoleType(this ReferenceHub player) => player.characterClassManager.CurClass;
+        public static Team GetTeam(this ReferenceHub player) => Plugin.GetTeam(player.GetRoleType());
     }
 }

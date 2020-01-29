@@ -9,6 +9,11 @@ using UnityEngine;
 using MEC;
 using Utf8Json;
 using Harmony;
+using Scp914;
+using Mirror;
+using CustomPlayerEffects;
+using Dissonance.Integrations.MirrorIgnorance;
+using RemoteAdmin;
 
 namespace SanyaPlugin
 {
@@ -19,7 +24,8 @@ namespace SanyaPlugin
 
         /** Infosender **/
         private UdpClient udpClient = new UdpClient();
-        private IEnumerator<float> Sender()
+        internal CoroutineHandle infosenderhandle;
+        internal IEnumerator<float> _Sender()
         {
             while(true)
             {
@@ -78,24 +84,99 @@ namespace SanyaPlugin
             yield break;
         }
 
+        /** Update **/
+        internal CoroutineHandle everySecondhandle;
+        internal IEnumerator<float> _EverySecond()
+        {
+            while(true)
+            {
+                //自動核 & 自動核ロック -> CancelWarheadPatch
+                if(SanyaPluginConfig.auto_warhead_start > 0 && !autowarheadstarted)
+                {
+                    if(RoundSummary.roundTime >= SanyaPluginConfig.auto_warhead_start)
+                    {
+                        autowarheadstarted = true;
+                        if(SanyaPluginConfig.auto_warhead_start_lock) CancelWarheadPatch.Locked = true;
+                        AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
+                        AlphaWarheadController.Host.NetworkinProgress = true;
+                    }
+                }
+
+                yield return Timing.WaitForSeconds(1f);
+            }
+        }
+        internal CoroutineHandle fixedUpdatehandle;
+        internal IEnumerator<float> _FixedUpdate()
+        {
+            while(true)
+            {
+                //foreach(var player in Plugin.GetHubs())
+                //{
+                //    Scp106PlayerScript p106 = player.GetComponent<Scp106PlayerScript>();
+
+                //    if(p106.portalPrefab != null && Plugin.GetTeam(player.GetRoleType()) != Team.SCP)
+                //    {
+                //        bool isrange = Vector3.Distance(player.transform.position, p106.portalPrefab.transform.position) < 2.5f;
+                //        bool isenable = player.effectsController.GetEffect<SinkHole>("SinkHole").Enabled;
+
+                //        if(isrange && !isenable)
+                //        {
+                //            player.effectsController.EnableEffect("SinkHole");
+                //        }
+                //        else if(!isrange && isenable)
+                //        {
+                //            player.effectsController.DisableEffect("SinkHole");
+                //        }
+                //    }
+                //}
+                yield return Timing.WaitForOneFrame;
+            }
+        }
+
+        /** Flag Params **/
+        internal static bool autowarheadstarted = false;
+
         public void OnWaintingForPlayers()
         {
-            Timing.KillCoroutines("SanyaPlugin_Sender");
-            Timing.RunCoroutine(Sender(), Segment.FixedUpdate,"SanyaPlugin_Sender");
+            infosenderhandle = Timing.RunCoroutine(_Sender(), Segment.FixedUpdate);
+            everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
+            fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
 
             Plugin.Info($"[OnWaintingForPlayers] Waiting for Players...");
         }
 
+        public void OnRoundStart()
+        {
+            Plugin.Info($"[OnRoundStart] Round Start!");
+        }
+
+        public void OnRoundEnd()
+        {
+            Plugin.Info($"[OnRoundEnd] Round Ended.");
+        }
+
+        public void OnRoundRestart()
+        {
+            Plugin.Info($"[OnRoundRestart] Restarting...");
+
+            Timing.KillCoroutines(infosenderhandle);
+            Timing.KillCoroutines(everySecondhandle);
+            Timing.KillCoroutines(fixedUpdatehandle);
+
+            autowarheadstarted = false;
+            CancelWarheadPatch.Locked = false;
+        }
+
         public void OnPlayerJoin(PlayerJoinEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.characterClassManager.RequestIp)) return;
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Plugin.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnPlayerLeave(PlayerLeaveEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerLeave] {ev.Player.GetName()}");
+            Plugin.Info($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnPlayerSetClass(SetClassEvent ev)
@@ -114,14 +195,67 @@ namespace SanyaPlugin
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerHurt] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+            Plugin.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
 
+            DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
+            if(damageTypes != DamageTypes.Nuke && damageTypes != DamageTypes.Decont && damageTypes != DamageTypes.Wall && damageTypes != DamageTypes.Tesla)
+            {
+                PlayerStats.HitInfo clinfo = ev.Info;
+                switch(ev.Player.GetRoleType())
+                {
+                    case RoleType.Scp173:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp173;
+                        break;
+                    case RoleType.Scp106:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp106;
+                        break;
+                    case RoleType.Scp049:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp049;
+                        break;
+                    case RoleType.Scp096:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp096;
+                        break;
+                    case RoleType.Scp0492:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp0492;
+                        break;
+                    case RoleType.Scp93953:
+                    case RoleType.Scp93989:
+                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp939;
+                        break;
+                }
+                ev.Info = clinfo;
+            }
+
+            Plugin.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+        }
+
+        public void OnPlayerDeath(ref PlayerDeathEvent ev)
+        {
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            Plugin.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
+
+            if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && SanyaPluginConfig.recovery_amount_scp173 > 0)
+            {
+                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp173);
+            }
+            if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRoleType() == RoleType.Scp096 && SanyaPluginConfig.recovery_amount_scp096 > 0)
+            {
+                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp096);
+            }
+            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRoleType() == RoleType.Scp93953 || ev.Killer.GetRoleType() == RoleType.Scp93989) && SanyaPluginConfig.recovery_amount_scp939 > 0)
+            {
+                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp939);
+            }
+            if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && SanyaPluginConfig.recovery_amount_scp0492 > 0)
+            {
+                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp0492);
+            }
         }
 
         public void OnPlayerTriggerTesla(ref TriggerTeslaEvent ev)
         {
-            if(SanyaPluginConfig.tesla_triggerable_teams.Count == 0 
-                || SanyaPluginConfig.tesla_triggerable_teams.Contains((int)Plugin.GetTeam(ev.Player.GetRoleType())))
+            if(SanyaPluginConfig.tesla_triggerable_teams.Count == 0
+                || SanyaPluginConfig.tesla_triggerable_teams.Contains((int)ev.Player.GetTeam()))
             {
                 if(SanyaPluginConfig.tesla_triggerable_disarmed || ev.Player.handcuffs.CufferId == -1)
                 {
@@ -135,6 +269,97 @@ namespace SanyaPlugin
             else
             {
                 ev.Triggerable = false;
+            }
+        }
+
+        public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
+        {
+            Plugin.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            if(ev.Allow && SanyaPluginConfig.generator_unlock_to_open) ev.Generator.NetworkisDoorOpen = true;
+        }
+
+        public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
+        {
+            Plugin.Debug($"[OnGeneratorOpen] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            if(ev.Generator.prevFinish && SanyaPluginConfig.generator_finish_to_lock) ev.Allow = false;
+        }
+
+        public void OnGeneratorClose(ref GeneratorCloseEvent ev)
+        {
+            Plugin.Debug($"[OnGeneratorClose] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            if(ev.Allow && ev.Generator.isTabletConnected && SanyaPluginConfig.generator_activating_opened) ev.Allow = false;
+        }
+
+        public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
+        {
+            Plugin.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
+            if(SanyaPluginConfig.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
+        }
+
+        public void On914Upgrade(ref SCP914UpgradeEvent ev)
+        {
+            Plugin.Debug($"[On914Upgrade] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
+
+            if(SanyaPluginConfig.scp914_intake_death)
+            {
+                foreach(var player in ev.Players)
+                {
+                    var info = new PlayerStats.HitInfo(999999, "WORLD", DamageTypes.RagdollLess, 0);
+                    UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
+                                                                       player.transform.rotation,
+                                                                       (int)player.GetRoleType(),
+                                                                       info,
+                                                                       false,
+                                                                       player.GetComponent<MirrorIgnorancePlayer>().PlayerId,
+                                                                       player.GetName(),
+                                                                       player.queryProcessor.PlayerId
+                                                                       );
+                    player.playerStats.HurtPlayer(info, player.gameObject);
+                }
+            }
+        }
+
+        public void OnCommand(ref RACommandEvent ev)
+        {
+            if(ev.Command.Contains("REQUEST_DATA PLAYER_LIST SILENT")) return;
+
+            string[] args = ev.Command.Split(' ');
+            ReferenceHub sender = Plugin.GetPlayer(ev.Sender.SenderId);
+            string ReturnStr = "";
+
+            if(args[0].ToLower() == "sanya")
+            {
+                if(args.Length > 1)
+                {
+                    switch(args[1].ToLower())
+                    {
+                        case "test":
+                            var scp049 = sender.GetComponent<Scp049PlayerScript>();
+                            foreach(var player in Plugin.GetHubs())
+                            {
+                                scp049.RpcSetDeathTime(player.gameObject);
+                            }
+                            ReturnStr = "test ok.";
+                            break;
+                        case "config":
+                            ReturnStr = SanyaPluginConfig.GetConfigs();
+                            break;
+                        case "nukelock":
+                            CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;
+                            ReturnStr = $"nukelock:{CancelWarheadPatch.Locked}";
+                            break;
+                        default:
+                            ReturnStr = "Wrong Parameters.";
+                            break;
+                    }
+                    ev.Allow = false;
+                    ev.Sender.RaReply("SanyaPlugin#" + ReturnStr, true, true, string.Empty);
+                }
+                else
+                {
+                    ev.Allow = false;
+                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < TEST >)", true, true, string.Empty);
+                }
             }
         }
     }
