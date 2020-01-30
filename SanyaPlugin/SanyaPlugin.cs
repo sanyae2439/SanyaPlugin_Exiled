@@ -32,6 +32,7 @@ namespace SanyaPlugin
                 Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
                 Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
                 Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
+                Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
                 Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
                 Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
                 Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;

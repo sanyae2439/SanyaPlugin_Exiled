@@ -49,12 +49,12 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(DissonanceUserSetup),nameof(DissonanceUserSetup.CallCmdAltIsActive))]
-    public class VCPatch
-    {
-        public static void Prefix(DissonanceUserSetup __instance, bool value)
-        {
+    //[HarmonyPatch(typeof(DissonanceUserSetup),nameof(DissonanceUserSetup.CallCmdAltIsActive))]
+    //public class VCPatch
+    //{
+    //    public static void Prefix(DissonanceUserSetup __instance, bool value)
+    //    {
             
-        }
-    }
+    //    }
+    //}
 }

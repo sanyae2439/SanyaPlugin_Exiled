@@ -171,7 +171,7 @@ namespace SanyaPlugin
         public void OnPlayerLeave(PlayerLeaveEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Info($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+            Plugin.Debug($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnPlayerSetClass(SetClassEvent ev)
@@ -244,6 +244,23 @@ namespace SanyaPlugin
             if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && SanyaPluginConfig.recovery_amount_scp0492 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp0492);
+            }
+        }
+
+        public void OnPocketDimDeath(PocketDimDeathEvent ev)
+        {
+            Plugin.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
+
+            if(SanyaPluginConfig.recovery_amount_scp106 > 0)
+            {
+                foreach(ReferenceHub player in Plugin.GetHubs())
+                {
+                    if(player.GetRoleType() == RoleType.Scp106)
+                    {
+                        player.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp106);
+                        player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
+                    }
+                }
             }
         }
 
@@ -352,7 +369,7 @@ namespace SanyaPlugin
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < TEST >)", true, true, string.Empty);
+                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < CONFIG / RELOAD / NUKELOCK / TEST >", true, true, string.Empty);
                 }
             }
         }
