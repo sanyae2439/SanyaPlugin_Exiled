@@ -37,10 +37,10 @@ namespace SanyaPlugin
                     DateTime dt = DateTime.Now;
                     cinfo.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
                     cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
-                    cinfo.modversion = Regex.Replace(Regex.Match(ServerConsole.singleton.RefreshServerName(), @"SM\d\d\d.\d.\d.\d").Value, "SM", "");
+                    cinfo.modversion = $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}";
                     cinfo.sanyaversion = SanyaPlugin.Version;
                     cinfo.gamemode = "NONE";
-                    cinfo.name = ConfigFile.ServerConfig.GetString("server_name", "My Server Name");
+                    cinfo.name = ServerConsole.singleton.RefreshServerName();
                     cinfo.ip = ServerConsole.Ip;
                     cinfo.port = ServerConsole.Port;
                     cinfo.playing = PlayerManager.players.Count;
@@ -333,8 +333,6 @@ namespace SanyaPlugin
 
         public void OnCommand(ref RACommandEvent ev)
         {
-            if(ev.Command.Contains("REQUEST_DATA PLAYER_LIST SILENT")) return;
-
             string[] args = ev.Command.Split(' ');
             ReferenceHub sender = Plugin.GetPlayer(ev.Sender.SenderId);
             string ReturnStr = "";
