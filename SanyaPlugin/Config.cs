@@ -21,6 +21,7 @@ namespace SanyaPlugin
         internal static bool generator_unlock_to_open;
         internal static bool generator_finish_to_lock;
         internal static bool generator_activating_opened;
+        internal static bool intercom_information;
 
         //Human:Balanced
         internal static int traitor_limitter;
@@ -54,6 +55,8 @@ namespace SanyaPlugin
                 tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
                 auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start",-1);
                 auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
+
+                intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
 
                 defaultitems = new Dictionary<RoleType, List<ItemType>>();
                 defaultitems.Add(RoleType.ClassD, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_classd").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
