@@ -1,9 +1,14 @@
-﻿using EXILED;
+﻿using System.Threading.Tasks;
+using EXILED;
 
 namespace SanyaPlugin
 {
     public static class Extensions
     {
+        public static Task StartSender(this Task task)
+        {
+            return task.ContinueWith((x) => { Plugin.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
+        }
         public static string GetName(this ReferenceHub player) => player.nicknameSync.MyNick;
         public static string GetIpAddress(this ReferenceHub player) => player.characterClassManager.RequestIp;
         public static string GetUserId(this ReferenceHub player) => player.characterClassManager.UserId;

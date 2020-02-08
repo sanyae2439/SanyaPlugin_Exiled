@@ -1,5 +1,4 @@
 ﻿using System;
-using Assets._Scripts.Dissonance;
 using EXILED;
 using Harmony;
 using UnityEngine;

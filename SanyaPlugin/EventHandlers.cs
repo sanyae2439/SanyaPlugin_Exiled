@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using GameCore;
 using EXILED;
 using UnityEngine;
 using MEC;
 using Utf8Json;
 using Dissonance.Integrations.MirrorIgnorance;
-using EXILED.Extensions;
+
 
 namespace SanyaPlugin
 {
@@ -17,19 +16,26 @@ namespace SanyaPlugin
     {
         internal readonly SanyaPlugin plugin;
         public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
+        internal bool loaded = false;
 
         /** Infosender **/
         private UdpClient udpClient = new UdpClient();
-        internal CoroutineHandle infosenderhandle;
-        internal IEnumerator<float> _Sender()
+        internal Task sendertask;
+        internal async Task _SenderAsync()
         {
             while(true)
             {
                 try
                 {
+                    if(!this.loaded)
+                    {
+                        Plugin.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
+                        await Task.Delay(TimeSpan.FromSeconds(15));
+                    }
+
                     if(SanyaPluginConfig.infosender_ip == "none")
                     {
-                        Plugin.Info($"[Infosender] Disabled(config:({SanyaPluginConfig.infosender_ip}). breaked coroutine.");
+                        Plugin.Info($"[Infosender_Task] Disabled(config:({SanyaPluginConfig.infosender_ip}). breaked.");
                         break;
                     }
 
@@ -68,16 +74,14 @@ namespace SanyaPlugin
 
                     byte[] sendBytes = Encoding.UTF8.GetBytes(json);
                     udpClient.Send(sendBytes, sendBytes.Length, SanyaPluginConfig.infosender_ip, SanyaPluginConfig.infosender_port);
-                    Plugin.Debug($"[Infosender] {SanyaPluginConfig.infosender_ip}:{SanyaPluginConfig.infosender_port}");
+                    Plugin.Debug($"[Infosender_Task] {SanyaPluginConfig.infosender_ip}:{SanyaPluginConfig.infosender_port}");
                 }
                 catch(Exception e)
                 {
-                    Plugin.Error($"[Infosender] {e.ToString()}");
-                    yield break;
+                    throw e;
                 }
-                yield return Timing.WaitForSeconds(15f);
+                await Task.Delay(TimeSpan.FromSeconds(15));
             }
-            yield break;
         }
 
         /** Update **/
@@ -158,7 +162,10 @@ namespace SanyaPlugin
 
         public void OnWaintingForPlayers()
         {
-            infosenderhandle = Timing.RunCoroutine(_Sender(), Segment.FixedUpdate);
+            loaded = true;
+
+            if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation) 
+                sendertask = this._SenderAsync().StartSender();
             everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
             fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
 
@@ -179,7 +186,6 @@ namespace SanyaPlugin
         {
             Plugin.Info($"[OnRoundRestart] Restarting...");
 
-            Timing.KillCoroutines(infosenderhandle);
             Timing.KillCoroutines(everySecondhandle);
             Timing.KillCoroutines(fixedUpdatehandle);
 

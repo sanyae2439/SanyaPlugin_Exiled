@@ -12,7 +12,7 @@ namespace SanyaPlugin
         public Assembly assembly;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.2a";
+        public static readonly string Version = "1.0.3a";
 
         public override void OnEnable()
         {
@@ -49,13 +49,15 @@ namespace SanyaPlugin
             harmony = HarmonyInstance.Create(harmonyId);
             harmony.PatchAll();
 
+            EventHandlers.sendertask = EventHandlers._SenderAsync().StartSender();
+
             Plugin.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
         }
 
         public override void OnDisable()
         {
             harmony.UnpatchAll();
-            Timing.KillCoroutines(EventHandlers.infosenderhandle);
+            //Timing.KillCoroutines(EventHandlers.infosenderhandle);
             Timing.KillCoroutines(EventHandlers.everySecondhandle);
             Timing.KillCoroutines(EventHandlers.fixedUpdatehandle);
 
