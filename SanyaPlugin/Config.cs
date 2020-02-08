@@ -22,6 +22,10 @@ namespace SanyaPlugin
         internal static bool generator_finish_to_lock;
         internal static bool generator_activating_opened;
 
+        //Human:Balanced
+        internal static int traitor_limitter;
+        internal static int traitor_chance_percent;
+
         //SCP:Balanced
         internal static bool scp049_reset_ragdoll_after_recall;
         internal static bool scp914_intake_death;
@@ -64,6 +68,9 @@ namespace SanyaPlugin
                 generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
                 generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
                 generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
+
+                traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
+                traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 
                 scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
                 scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);

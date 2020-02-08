@@ -9,6 +9,7 @@ using UnityEngine;
 using MEC;
 using Utf8Json;
 using Dissonance.Integrations.MirrorIgnorance;
+using EXILED.Extensions;
 
 namespace SanyaPlugin
 {
@@ -97,6 +98,48 @@ namespace SanyaPlugin
                     }
                 }
 
+                //寝返り
+                if(SanyaPluginConfig.traitor_limitter > 0)
+                {
+                    foreach(var player in Plugin.GetHubs()
+                        .FindAll(x => x.GetTeam() == Team.MTF || x.GetTeam() == Team.CHI))
+                    {
+                        if(player.isHandCuffed()
+                            && Vector3.Distance(espaceArea, player.transform.position) <= Escape.radius
+                            && RoundSummary.singleton.CountTeam(player.GetTeam()) <= SanyaPluginConfig.traitor_limitter)
+                        {
+                            switch(player.GetTeam())
+                            {
+                                case Team.MTF:
+                                    if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
+                                    {
+                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : MTF->CHI");
+                                        player.characterClassManager.SetPlayersClass(RoleType.ChaosInsurgency, player.gameObject);
+                                    }
+                                    else
+                                    {
+                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
+                                    }
+                                    break;
+                                case Team.CHI:
+                                    if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
+                                    {
+                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : CHI->MTF");
+                                        player.characterClassManager.SetPlayersClass(RoleType.NtfCadet, player.gameObject);
+                                    }
+                                    else
+                                    {
+                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                //毎秒
                 yield return Timing.WaitForSeconds(1f);
             }
         }
@@ -105,31 +148,13 @@ namespace SanyaPlugin
         {
             while(true)
             {
-                //foreach(var player in Plugin.GetHubs())
-                //{
-                //    Scp106PlayerScript p106 = player.GetComponent<Scp106PlayerScript>();
-
-                //    if(p106.portalPrefab != null && Plugin.GetTeam(player.GetRoleType()) != Team.SCP)
-                //    {
-                //        bool isrange = Vector3.Distance(player.transform.position, p106.portalPrefab.transform.position) < 2.5f;
-                //        bool isenable = player.effectsController.GetEffect<SinkHole>("SinkHole").Enabled;
-
-                //        if(isrange && !isenable)
-                //        {
-                //            player.effectsController.EnableEffect("SinkHole");
-                //        }
-                //        else if(!isrange && isenable)
-                //        {
-                //            player.effectsController.DisableEffect("SinkHole");
-                //        }
-                //    }
-                //}
                 yield return Timing.WaitForOneFrame;
             }
         }
 
         /** Flag Params **/
         internal static bool autowarheadstarted = false;
+        private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
         public void OnWaintingForPlayers()
         {
