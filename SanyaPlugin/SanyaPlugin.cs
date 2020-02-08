@@ -12,7 +12,7 @@ namespace SanyaPlugin
         public Assembly assembly;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.1b";
+        public static readonly string Version = "1.0.1c";
 
         public override void OnEnable()
         {
