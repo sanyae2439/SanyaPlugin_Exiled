@@ -57,7 +57,6 @@ namespace SanyaPlugin
         public override void OnDisable()
         {
             harmony.UnpatchAll();
-            //Timing.KillCoroutines(EventHandlers.infosenderhandle);
             Timing.KillCoroutines(EventHandlers.everySecondhandle);
             Timing.KillCoroutines(EventHandlers.fixedUpdatehandle);
 
