@@ -222,16 +222,23 @@ namespace SanyaPlugin
             {
                 PlayerStats.HitInfo clinfo = ev.Info;
 
+                //USPMultiplier
                 if(damageTypes == DamageTypes.Usp)
                 {
                     if(ev.Player.characterClassManager.IsAnyScp())
                     {
-                        clinfo.Amount *= SanyaPluginConfig.usp_damage_multiplier_scp;
+                        clinfo.Amount *= SanyaPluginConfig.damage_usp_multiplier_scp;
                     }
                     else
                     {
-                        clinfo.Amount *= SanyaPluginConfig.usp_damage_multiplier_human;
+                        clinfo.Amount *= SanyaPluginConfig.damage_usp_multiplier_human;
                     }
+                }
+
+                //CuffedDivisor
+                if(ev.Player.isHandCuffed())
+                {
+                    clinfo.Amount /= SanyaPluginConfig.damage_divisor_cuffed;
                 }
 
                 switch(ev.Player.GetRoleType())
@@ -256,6 +263,8 @@ namespace SanyaPlugin
                         clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp939;
                         break;
                 }
+
+                //Final
                 ev.Info = clinfo;
             }
 

@@ -26,14 +26,15 @@ namespace SanyaPlugin
         //Human:Balanced
         internal static int traitor_limitter;
         internal static int traitor_chance_percent;
-        internal static float usp_damage_multiplier_human;
-        internal static float usp_damage_multiplier_scp;
 
         //SCP:Balanced
         internal static bool scp049_reset_ragdoll_after_recall;
         internal static bool scp914_intake_death;
 
         //Damage/Recovery
+        internal static float damage_usp_multiplier_human;
+        internal static float damage_usp_multiplier_scp;
+        internal static float damage_divisor_cuffed;
         internal static float damage_divisor_scp049;
         internal static float damage_divisor_scp0492;
         internal static float damage_divisor_scp096;
@@ -76,13 +77,13 @@ namespace SanyaPlugin
 
                 traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
                 traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
-                usp_damage_multiplier_human = Plugin.Config.GetFloat("sanya_usp_damage_multiplier_human", 1.0f);
-                usp_damage_multiplier_scp = Plugin.Config.GetFloat("sanya_usp_damage_multiplier_scp", 1.0f);
-
 
                 scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
                 scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
 
+                damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);
+                damage_usp_multiplier_scp = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_scp", 1.0f);
+                damage_divisor_cuffed = Plugin.Config.GetFloat("sanya_damage_divisor_cuffed", 1.0f);
                 damage_divisor_scp049 = Plugin.Config.GetFloat("sanya_damage_divisor_scp049", 1.0f);
                 damage_divisor_scp0492 = Plugin.Config.GetFloat("sanya_damage_divisor_scp0492", 1.0f);
                 damage_divisor_scp096 = Plugin.Config.GetFloat("sanya_damage_divisor_scp096", 1.0f);
