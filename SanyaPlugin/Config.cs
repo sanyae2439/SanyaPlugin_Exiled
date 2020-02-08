@@ -26,6 +26,8 @@ namespace SanyaPlugin
         //Human:Balanced
         internal static int traitor_limitter;
         internal static int traitor_chance_percent;
+        internal static float usp_damage_multiplier_human;
+        internal static float usp_damage_multiplier_scp;
 
         //SCP:Balanced
         internal static bool scp049_reset_ragdoll_after_recall;
@@ -53,7 +55,7 @@ namespace SanyaPlugin
                 infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
                 tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
                 tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
-                auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start",-1);
+                auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
                 auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
 
                 intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
@@ -74,6 +76,9 @@ namespace SanyaPlugin
 
                 traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
                 traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
+                usp_damage_multiplier_human = Plugin.Config.GetFloat("sanya_usp_damage_multiplier_human", 1.0f);
+                usp_damage_multiplier_scp = Plugin.Config.GetFloat("sanya_usp_damage_multiplier_scp", 1.0f);
+
 
                 scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
                 scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);

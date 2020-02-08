@@ -221,6 +221,19 @@ namespace SanyaPlugin
             if(damageTypes != DamageTypes.Nuke && damageTypes != DamageTypes.Decont && damageTypes != DamageTypes.Wall && damageTypes != DamageTypes.Tesla)
             {
                 PlayerStats.HitInfo clinfo = ev.Info;
+
+                if(damageTypes == DamageTypes.Usp)
+                {
+                    if(ev.Player.characterClassManager.IsAnyScp())
+                    {
+                        clinfo.Amount *= SanyaPluginConfig.usp_damage_multiplier_scp;
+                    }
+                    else
+                    {
+                        clinfo.Amount *= SanyaPluginConfig.usp_damage_multiplier_human;
+                    }
+                }
+
                 switch(ev.Player.GetRoleType())
                 {
                     case RoleType.Scp173:
