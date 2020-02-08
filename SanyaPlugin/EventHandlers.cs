@@ -241,6 +241,7 @@ namespace SanyaPlugin
                     clinfo.Amount /= SanyaPluginConfig.damage_divisor_cuffed;
                 }
 
+                //SCPsDivisor
                 switch(ev.Player.GetRoleType())
                 {
                     case RoleType.Scp173:
@@ -264,7 +265,7 @@ namespace SanyaPlugin
                         break;
                 }
 
-                //Final
+                //*****Final*****
                 ev.Info = clinfo;
             }
 
@@ -378,6 +379,34 @@ namespace SanyaPlugin
             }
         }
 
+        public void OnConsoleCommand(ConsoleCommandEvent ev)
+        {
+            Plugin.Debug($"[OnConsoleCommand] [Before] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+
+            //if(ev.ReturnMessage == "Command not found.")
+            //{
+            //    //switch(ev.Command)
+            //    {
+            //        case "attack":
+            //            var scp049 = ev.Player.GetComponent<Scp049PlayerScript>();
+            //            var wm = ev.Player.weaponManager;
+            //            Vector3 forward = scp049.plyCam.transform.forward;
+            //            Vector3 position = scp049.plyCam.transform.position;
+            //            RaycastHit raycastHit;
+            //            if(Physics.Raycast(new Ray(position, forward), out raycastHit, scp049.attackDistance, wm.raycastMask))
+            //            {
+            //                Plugin.Debug($"{Plugin.GetPlayer(raycastHit.transform.gameObject).GetName()}");
+            //            }
+            //            ev.ReturnMessage = "attacked.";
+            //            break;
+            //        default:
+            //            break;
+            //    }
+            //}
+
+            Plugin.Debug($"[OnConsoleCommand] [After] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+        }
+
         public void OnCommand(ref RACommandEvent ev)
         {
             string[] args = ev.Command.Split(' ');
@@ -404,6 +433,18 @@ namespace SanyaPlugin
                             CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;
                             ReturnStr = $"nukelock:{CancelWarheadPatch.Locked}";
                             break;
+                        case "spawn":
+                            var mtfrespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
+                            if(mtfrespawn.nextWaveIsCI)
+                            {
+                                mtfrespawn.timeToNextRespawn = 14f;
+                            }
+                            else
+                            {
+                                mtfrespawn.timeToNextRespawn = 18.5f;
+                            }
+                            ReturnStr = $"spawn soon.";
+                            break;
                         default:
                             ReturnStr = "Wrong Parameters.";
                             break;
@@ -414,9 +455,10 @@ namespace SanyaPlugin
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < CONFIG / RELOAD / NUKELOCK / TEST >", true, true, string.Empty);
+                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >", true, true, string.Empty);
                 }
             }
         }
+
     }
 }

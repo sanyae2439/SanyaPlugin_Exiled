@@ -23,6 +23,7 @@ namespace SanyaPlugin
             {
                 EventHandlers = new EventHandlers(this);
                 Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
+                Events.ConsoleCommandEvent += EventHandlers.OnConsoleCommand;
                 Events.WaitingForPlayersEvent += EventHandlers.OnWaintingForPlayers;
                 Events.RoundStartEvent += EventHandlers.OnRoundStart;
                 Events.RoundEndEvent += EventHandlers.OnRoundEnd;
@@ -59,6 +60,7 @@ namespace SanyaPlugin
             Timing.KillCoroutines(EventHandlers.fixedUpdatehandle);
 
             Events.RemoteAdminCommandEvent -= EventHandlers.OnCommand;
+            Events.ConsoleCommandEvent -= EventHandlers.OnConsoleCommand;
             Events.WaitingForPlayersEvent -= EventHandlers.OnWaintingForPlayers;
             Events.RoundStartEvent -= EventHandlers.OnRoundStart;
             Events.RoundEndEvent -= EventHandlers.OnRoundEnd;
