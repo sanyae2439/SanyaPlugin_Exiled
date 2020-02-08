@@ -12,7 +12,7 @@ namespace SanyaPlugin
         public Assembly assembly;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.3a";
+        public static readonly string Version = "1.0.3b";
 
         public override void OnEnable()
         {
@@ -43,7 +43,7 @@ namespace SanyaPlugin
             }
             catch(System.Exception e)
             {
-                Error($"[OnEnable] Add Event Error:{e}");
+                Log.Error($"[OnEnable] Add Event Error:{e}");
             }
 
             harmony = HarmonyInstance.Create(harmonyId);
@@ -51,7 +51,7 @@ namespace SanyaPlugin
 
             EventHandlers.sendertask = EventHandlers._SenderAsync().StartSender();
 
-            Plugin.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
+            Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
         }
 
         public override void OnDisable()
@@ -79,12 +79,12 @@ namespace SanyaPlugin
             Events.Scp914UpgradeEvent -= EventHandlers.On914Upgrade;
             EventHandlers = null;
 
-            Plugin.Info($"[OnDisable] SanyaPlugin({Version}) Disabled.");
+            Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled.");
         }
 
         public override void OnReload()
         {
-            Plugin.Info($"[OnReload] SanyaPlugin({Version}) Reloaded.");
+            Log.Info($"[OnReload] SanyaPlugin({Version}) Reloaded.");
         }
     }
 }

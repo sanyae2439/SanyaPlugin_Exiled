@@ -1,5 +1,6 @@
 ﻿using System;
 using EXILED;
+using EXILED.Extensions;
 using Harmony;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace SanyaPlugin
 
         public static bool Prefix()
         {
-            Plugin.Debug($"[Patch.CancelDetonation] Locked:{Locked}");
+            Log.Debug($"[Patch.CancelDetonation] Locked:{Locked}");
             if(Locked) return false;
             return true;
         }
@@ -23,7 +24,7 @@ namespace SanyaPlugin
     {
         public static bool Prefix()
         {
-            Plugin.Debug($"[Patch.ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
+            Log.Debug($"[Patch.ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
             if(CancelWarheadPatch.Locked) return false;
             return true;
         }
@@ -34,14 +35,14 @@ namespace SanyaPlugin
     {
         public static void Postfix(Scp049PlayerScript __instance, ref GameObject target)
         {
-            Plugin.Debug($"[Patch.Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetName()} Target:{ReferenceHub.GetHub(target).GetName()}");
+            Log.Debug($"[Patch.Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetName()} Target:{ReferenceHub.GetHub(target).GetName()}");
             if(SanyaPluginConfig.recovery_amount_scp049 > 0)
             {
                 ReferenceHub.GetHub(__instance.gameObject).playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp049);
             }
             if(SanyaPluginConfig.scp049_reset_ragdoll_after_recall)
             {
-                foreach(var player in Plugin.GetHubs())
+                foreach(var player in Player.GetHubs())
                 {
                     __instance.RpcSetDeathTime(player.gameObject);
                 }
@@ -113,7 +114,7 @@ namespace SanyaPlugin
             }
             catch(Exception e)
             {
-                Plugin.Error($"[IntercomTextPatch] {e}");
+                Log.Error($"[IntercomTextPatch] {e}");
             }
 
             return false;

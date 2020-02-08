@@ -99,7 +99,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\SyncWhitelist\SyncWhitelist\References\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>References\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

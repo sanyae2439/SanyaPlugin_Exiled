@@ -8,7 +8,7 @@ using UnityEngine;
 using MEC;
 using Utf8Json;
 using Dissonance.Integrations.MirrorIgnorance;
-
+using EXILED.Extensions;
 
 namespace SanyaPlugin
 {
@@ -29,13 +29,13 @@ namespace SanyaPlugin
                 {
                     if(!this.loaded)
                     {
-                        Plugin.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
+                        Log.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
                         await Task.Delay(TimeSpan.FromSeconds(15));
                     }
 
                     if(SanyaPluginConfig.infosender_ip == "none")
                     {
-                        Plugin.Info($"[Infosender_Task] Disabled(config:({SanyaPluginConfig.infosender_ip}). breaked.");
+                        Log.Info($"[Infosender_Task] Disabled(config:({SanyaPluginConfig.infosender_ip}). breaked.");
                         break;
                     }
 
@@ -74,7 +74,7 @@ namespace SanyaPlugin
 
                     byte[] sendBytes = Encoding.UTF8.GetBytes(json);
                     udpClient.Send(sendBytes, sendBytes.Length, SanyaPluginConfig.infosender_ip, SanyaPluginConfig.infosender_port);
-                    Plugin.Debug($"[Infosender_Task] {SanyaPluginConfig.infosender_ip}:{SanyaPluginConfig.infosender_port}");
+                    Log.Debug($"[Infosender_Task] {SanyaPluginConfig.infosender_ip}:{SanyaPluginConfig.infosender_port}");
                 }
                 catch(Exception e)
                 {
@@ -105,10 +105,10 @@ namespace SanyaPlugin
                 //寝返り
                 if(SanyaPluginConfig.traitor_limitter > 0)
                 {
-                    foreach(var player in Plugin.GetHubs()
-                        .FindAll(x => x.GetTeam() == Team.MTF || x.GetTeam() == Team.CHI))
+                    foreach(var player in Player.GetHubs())
                     {
-                        if(player.isHandCuffed()
+                        if((player.GetTeam() == Team.MTF || player.GetTeam() == Team.CHI)
+                            && player.isHandCuffed()
                             && Vector3.Distance(espaceArea, player.transform.position) <= Escape.radius
                             && RoundSummary.singleton.CountTeam(player.GetTeam()) <= SanyaPluginConfig.traitor_limitter)
                         {
@@ -117,24 +117,24 @@ namespace SanyaPlugin
                                 case Team.MTF:
                                     if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
                                     {
-                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : MTF->CHI");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : MTF->CHI");
                                         player.characterClassManager.SetPlayersClass(RoleType.ChaosInsurgency, player.gameObject);
                                     }
                                     else
                                     {
-                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
                                         player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
                                     }
                                     break;
                                 case Team.CHI:
                                     if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
                                     {
-                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : CHI->MTF");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : CHI->MTF");
                                         player.characterClassManager.SetPlayersClass(RoleType.NtfCadet, player.gameObject);
                                     }
                                     else
                                     {
-                                        Plugin.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
                                         player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
                                     }
                                     break;
@@ -169,22 +169,22 @@ namespace SanyaPlugin
             everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
             fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
 
-            Plugin.Info($"[OnWaintingForPlayers] Waiting for Players...");
+            Log.Info($"[OnWaintingForPlayers] Waiting for Players...");
         }
 
         public void OnRoundStart()
         {
-            Plugin.Info($"[OnRoundStart] Round Start!");
+            Log.Info($"[OnRoundStart] Round Start!");
         }
 
         public void OnRoundEnd()
         {
-            Plugin.Info($"[OnRoundEnd] Round Ended.");
+            Log.Info($"[OnRoundEnd] Round Ended.");
         }
 
         public void OnRoundRestart()
         {
-            Plugin.Info($"[OnRoundRestart] Restarting...");
+            Log.Info($"[OnRoundRestart] Restarting...");
 
             Timing.KillCoroutines(everySecondhandle);
             Timing.KillCoroutines(fixedUpdatehandle);
@@ -196,19 +196,19 @@ namespace SanyaPlugin
         public void OnPlayerJoin(PlayerJoinEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+            Log.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnPlayerLeave(PlayerLeaveEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+            Log.Debug($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnPlayerSetClass(SetClassEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerSetClass] {ev.Player.nicknameSync.MyNick} -> {ev.Role}");
+            Log.Debug($"[OnPlayerSetClass] {ev.Player.nicknameSync.MyNick} -> {ev.Role}");
 
             List<ItemType> itemconfig;
             if(SanyaPluginConfig.defaultitems.TryGetValue(ev.Role, out itemconfig) && itemconfig.Count > 0)
@@ -221,7 +221,7 @@ namespace SanyaPlugin
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
 
             DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
             if(damageTypes != DamageTypes.Nuke && damageTypes != DamageTypes.Decont && damageTypes != DamageTypes.Wall && damageTypes != DamageTypes.Tesla)
@@ -275,13 +275,13 @@ namespace SanyaPlugin
                 ev.Info = clinfo;
             }
 
-            Plugin.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
         }
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Plugin.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
 
             if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && SanyaPluginConfig.recovery_amount_scp173 > 0)
             {
@@ -303,11 +303,11 @@ namespace SanyaPlugin
 
         public void OnPocketDimDeath(PocketDimDeathEvent ev)
         {
-            Plugin.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
+            Log.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
 
             if(SanyaPluginConfig.recovery_amount_scp106 > 0)
             {
-                foreach(ReferenceHub player in Plugin.GetHubs())
+                foreach(ReferenceHub player in Player.GetHubs())
                 {
                     if(player.GetRoleType() == RoleType.Scp106)
                     {
@@ -340,31 +340,31 @@ namespace SanyaPlugin
 
         public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
         {
-            Plugin.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
             if(ev.Allow && SanyaPluginConfig.generator_unlock_to_open) ev.Generator.NetworkisDoorOpen = true;
         }
 
         public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
         {
-            Plugin.Debug($"[OnGeneratorOpen] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorOpen] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
             if(ev.Generator.prevFinish && SanyaPluginConfig.generator_finish_to_lock) ev.Allow = false;
         }
 
         public void OnGeneratorClose(ref GeneratorCloseEvent ev)
         {
-            Plugin.Debug($"[OnGeneratorClose] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorClose] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
             if(ev.Allow && ev.Generator.isTabletConnected && SanyaPluginConfig.generator_activating_opened) ev.Allow = false;
         }
 
         public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
         {
-            Plugin.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
             if(SanyaPluginConfig.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
         }
 
         public void On914Upgrade(ref SCP914UpgradeEvent ev)
         {
-            Plugin.Debug($"[On914Upgrade] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
+            Log.Debug($"[On914Upgrade] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
 
             if(SanyaPluginConfig.scp914_intake_death)
             {
@@ -387,7 +387,7 @@ namespace SanyaPlugin
 
         public void OnConsoleCommand(ConsoleCommandEvent ev)
         {
-            Plugin.Debug($"[OnConsoleCommand] [Before] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+            Log.Debug($"[OnConsoleCommand] [Before] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
 
             //if(ev.ReturnMessage == "Command not found.")
             //{
@@ -401,7 +401,7 @@ namespace SanyaPlugin
             //            RaycastHit raycastHit;
             //            if(Physics.Raycast(new Ray(position, forward), out raycastHit, scp049.attackDistance, wm.raycastMask))
             //            {
-            //                Plugin.Debug($"{Plugin.GetPlayer(raycastHit.transform.gameObject).GetName()}");
+            //                Log.Debug($"{Plugin.GetPlayer(raycastHit.transform.gameObject).GetName()}");
             //            }
             //            ev.ReturnMessage = "attacked.";
             //            break;
@@ -410,13 +410,13 @@ namespace SanyaPlugin
             //    }
             //}
 
-            Plugin.Debug($"[OnConsoleCommand] [After] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+            Log.Debug($"[OnConsoleCommand] [After] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
         }
 
         public void OnCommand(ref RACommandEvent ev)
         {
             string[] args = ev.Command.Split(' ');
-            ReferenceHub sender = Plugin.GetPlayer(ev.Sender.SenderId);
+            ReferenceHub sender = Player.GetPlayer(ev.Sender.SenderId);
             string ReturnStr = "";
 
             if(args[0].ToLower() == "sanya")
