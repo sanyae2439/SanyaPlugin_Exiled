@@ -456,12 +456,12 @@ namespace SanyaPlugin
                             break;
                     }
                     ev.Allow = false;
-                    ev.Sender.RaReply("SanyaPlugin#" + ReturnStr, true, true, string.Empty);
+                    ev.Sender.RAMessage(ReturnStr);
                 }
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RaReply("SanyaPlugin#Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >", true, true, string.Empty);
+                    ev.Sender.RAMessage("Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >");
                 }
             }
         }

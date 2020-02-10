@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using EXILED;
+﻿using EXILED;
 using Harmony;
 using MEC;
 
@@ -9,15 +8,23 @@ namespace SanyaPlugin
     {
         public EventHandlers EventHandlers;
         public HarmonyInstance harmony;
-        public Assembly assembly;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.3b";
+        public static readonly string Version = "1.0.3c";
+        public static readonly string TargetVersion = "1.7.8";
 
         public override void OnEnable()
         {
+            if(TargetVersion == $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}")
+            {
+                Log.Info($"[OnEnabled] Version Match. Loading Start...");
+            }
+            else
+            {
+                Log.Warn($"[OnEnabled] Version Mismatched({TargetVersion} != {EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). May not work correctly.");
+            }
+
             SanyaPluginConfig.Reload();
-            assembly = Assembly.GetAssembly(typeof(ServerConsole));
 
             try
             {
