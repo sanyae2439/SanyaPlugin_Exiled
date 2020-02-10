@@ -26,32 +26,25 @@ namespace SanyaPlugin
 
             SanyaPluginConfig.Reload();
 
-            try
-            {
-                EventHandlers = new EventHandlers(this);
-                Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
-                Events.ConsoleCommandEvent += EventHandlers.OnConsoleCommand;
-                Events.WaitingForPlayersEvent += EventHandlers.OnWaintingForPlayers;
-                Events.RoundStartEvent += EventHandlers.OnRoundStart;
-                Events.RoundEndEvent += EventHandlers.OnRoundEnd;
-                Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
-                Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
-                Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
-                Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
-                Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
-                Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
-                Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
-                Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
-                Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
-                Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
-                Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
-                Events.GeneratorFinishedEvent += EventHandlers.OnGeneratorFinish;
-                Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
-            }
-            catch(System.Exception e)
-            {
-                Log.Error($"[OnEnable] Add Event Error:{e}");
-            }
+            EventHandlers = new EventHandlers(this);
+            Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
+            Events.ConsoleCommandEvent += EventHandlers.OnConsoleCommand;
+            Events.WaitingForPlayersEvent += EventHandlers.OnWaintingForPlayers;
+            Events.RoundStartEvent += EventHandlers.OnRoundStart;
+            Events.RoundEndEvent += EventHandlers.OnRoundEnd;
+            Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
+            Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
+            Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
+            Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
+            Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
+            Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
+            Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
+            Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
+            Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
+            Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
+            Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
+            Events.GeneratorFinishedEvent += EventHandlers.OnGeneratorFinish;
+            Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
 
             harmony = HarmonyInstance.Create(harmonyId);
             harmony.PatchAll();
