@@ -10,18 +10,18 @@ namespace SanyaPlugin
         public HarmonyInstance harmony;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.3c";
-        public static readonly string TargetVersion = "1.7.8";
+        public static readonly string Version = "1.0.3d";
+        public static readonly string TargetVersion = "1.7.9";
 
         public override void OnEnable()
         {
             if(TargetVersion == $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}")
             {
-                Log.Info($"[OnEnabled] Version Match. Loading Start...");
+                Log.Info($"[OnEnabled] Version Match({Version}). Loading Start...");
             }
             else
             {
-                Log.Warn($"[OnEnabled] Version Mismatched({TargetVersion} != {EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). May not work correctly.");
+                Log.Warn($"[OnEnabled] Version Mismatched(SanyaPlugin:{TargetVersion} EXILED:{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). May not work correctly.");
             }
 
             SanyaPluginConfig.Reload();
