@@ -24,6 +24,7 @@ namespace SanyaPlugin
         internal static bool intercom_information;
 
         //Human:Balanced
+        internal static bool inventory_keycard_act;
         internal static int traitor_limitter;
         internal static int traitor_chance_percent;
 
@@ -55,12 +56,8 @@ namespace SanyaPlugin
                 infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
                 infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
                 tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
-                tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
                 auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
                 auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
-
-                intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
-
                 defaultitems = new Dictionary<RoleType, List<ItemType>>();
                 defaultitems.Add(RoleType.ClassD, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_classd").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
                 defaultitems.Add(RoleType.Scientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_scientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
@@ -71,10 +68,13 @@ namespace SanyaPlugin
                 defaultitems.Add(RoleType.NtfScientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ntfscientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
                 defaultitems.Add(RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
 
+                tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
                 generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
                 generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
                 generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
+                intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
 
+                inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
                 traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
                 traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 

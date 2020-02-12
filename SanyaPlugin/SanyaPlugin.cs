@@ -10,14 +10,14 @@ namespace SanyaPlugin
         public HarmonyInstance harmony;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.3d";
-        public static readonly string TargetVersion = "1.7.9";
+        public static readonly string Version = "1.0.4a";
+        public static readonly string TargetVersion = "1.7.12";
 
         public override void OnEnable()
         {
             if(TargetVersion == $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}")
             {
-                Log.Info($"[OnEnabled] Version Match({Version}). Loading Start...");
+                Log.Info($"[OnEnabled] Version Match(SanyaPlugin:{TargetVersion} EXILED:{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). Loading Start...");
             }
             else
             {
@@ -40,6 +40,7 @@ namespace SanyaPlugin
             Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
             Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
             Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
+            Events.DoorInteractEvent += EventHandlers.OnPlayerDoorInteract;
             Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
             Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
@@ -72,6 +73,7 @@ namespace SanyaPlugin
             Events.PlayerHurtEvent -= EventHandlers.OnPlayerHurt;
             Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
             Events.TriggerTeslaEvent -= EventHandlers.OnPlayerTriggerTesla;
+            Events.DoorInteractEvent -= EventHandlers.OnPlayerDoorInteract;
             Events.GeneratorUnlockEvent -= EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent -= EventHandlers.OnGeneratorOpen;
             Events.GeneratorClosedEvent -= EventHandlers.OnGeneratorClose;

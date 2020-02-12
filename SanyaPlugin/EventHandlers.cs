@@ -338,10 +338,45 @@ namespace SanyaPlugin
             }
         }
 
+        public void OnPlayerDoorInteract(ref DoorInteractionEvent ev)
+        {
+            Log.Debug($"[OnPlayerDoorInteract] {ev.Player.GetName()}:{ev.Door.DoorName}:{ev.Door.permissionLevel}");
+
+            if(SanyaPluginConfig.inventory_keycard_act && ev.Player.GetTeam() != Team.SCP && !ev.Player.serverRoles.BypassMode && !ev.Door.locked)
+            {
+                foreach(var item in ev.Player.inventory.items)
+                {
+                    Log.Debug($"[OnPlayerDoorInteract] inv:{item.id} parm:{string.Join(",",ev.Player.inventory.GetItemByID(item.id).permissions)}");
+
+                    if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains(ev.Door.permissionLevel))
+                    {
+                        ev.Allow = true;
+                    }
+                }
+            }
+        }
+
         public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
         {
             Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
-            if(ev.Allow && SanyaPluginConfig.generator_unlock_to_open) ev.Generator.NetworkisDoorOpen = true;
+            if(SanyaPluginConfig.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
+            {
+                foreach(var item in ev.Player.inventory.items)
+                {
+                    Log.Debug($"[OnGeneratorUnlock] inv:{item.id} parm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
+
+                    if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
+                    {
+                        ev.Allow = true;
+                    }
+                }
+            }
+
+            if(ev.Allow && SanyaPluginConfig.generator_unlock_to_open)
+            {
+                ev.Generator.NetworkisDoorOpen = true;
+                ev.Generator.RpcDoSound(true);
+            }
         }
 
         public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
