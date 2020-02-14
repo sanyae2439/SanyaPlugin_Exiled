@@ -62,10 +62,7 @@ namespace SanyaPlugin
             string rolecolor = player.serverRoles.MyColor;
             string badge;
 
-            rolestr.Replace("[", string.Empty);
-            rolestr.Replace("]", string.Empty);
-            rolestr.Replace("<", string.Empty);
-            rolestr.Replace(">", string.Empty);
+            rolestr = rolestr.Replace("[", string.Empty).Replace("]", string.Empty).Replace("<", string.Empty).Replace(">", string.Empty);
 
             if(rolecolor == "light_red")
             {
