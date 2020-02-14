@@ -232,7 +232,11 @@ namespace SanyaPlugin
             {
                 PlayerData data = PlayerDataManager.LoadPlayerData(ev.Player.GetUserId());
 
-                PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
+                if(!PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
+                {
+                    PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
+
+                }
 
                 if(SanyaPluginConfig.level_enabled)
                 {
