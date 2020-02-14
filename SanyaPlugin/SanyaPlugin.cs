@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
 using EXILED;
 using Harmony;
 using MEC;
-using Scp914;
-using Utf8Json;
 
 namespace SanyaPlugin
 {
@@ -19,7 +16,6 @@ namespace SanyaPlugin
 
         public EventHandlers EventHandlers;
         public HarmonyInstance harmony;
-        
 
         public override void OnEnable()
         {

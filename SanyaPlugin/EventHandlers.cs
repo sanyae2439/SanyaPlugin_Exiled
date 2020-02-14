@@ -19,7 +19,7 @@ namespace SanyaPlugin
         internal bool loaded = false;
 
         /** Infosender **/
-        private UdpClient udpClient = new UdpClient();
+        private readonly UdpClient udpClient = new UdpClient();
         internal Task sendertask;
         internal async Task _SenderAsync()
         {
@@ -58,13 +58,14 @@ namespace SanyaPlugin
                     {
                         foreach(GameObject player in PlayerManager.players)
                         {
-                            Playerinfo ply = new Playerinfo();
-
-                            ply.name = ReferenceHub.GetHub(player).nicknameSync.MyNick;
-                            ply.userid = ReferenceHub.GetHub(player).characterClassManager.UserId;
-                            ply.ip = ReferenceHub.GetHub(player).characterClassManager.RequestIp;
-                            ply.role = ReferenceHub.GetHub(player).characterClassManager.CurClass.ToString();
-                            ply.rank = ReferenceHub.GetHub(player).serverRoles.MyText;
+                            Playerinfo ply = new Playerinfo
+                            {
+                                name = ReferenceHub.GetHub(player).nicknameSync.MyNick,
+                                userid = ReferenceHub.GetHub(player).characterClassManager.UserId,
+                                ip = ReferenceHub.GetHub(player).characterClassManager.RequestIp,
+                                role = ReferenceHub.GetHub(player).characterClassManager.CurClass.ToString(),
+                                rank = ReferenceHub.GetHub(player).serverRoles.MyText
+                            };
 
                             cinfo.players.Add(ply);
                         }
@@ -108,7 +109,7 @@ namespace SanyaPlugin
                     foreach(var player in Player.GetHubs())
                     {
                         if((player.GetTeam() == Team.MTF || player.GetTeam() == Team.CHI)
-                            && player.isHandCuffed()
+                            && player.IsHandCuffed()
                             && Vector3.Distance(espaceArea, player.transform.position) <= Escape.radius
                             && RoundSummary.singleton.CountTeam(player.GetTeam()) <= SanyaPluginConfig.traitor_limitter)
                         {
@@ -164,7 +165,7 @@ namespace SanyaPlugin
         {
             loaded = true;
 
-            if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation) 
+            if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation)
                 sendertask = this._SenderAsync().StartSender();
             everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
             fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
@@ -250,8 +251,7 @@ namespace SanyaPlugin
         {
             Log.Debug($"[OnStartItems] {ev.Role}");
 
-            List<ItemType> itemconfig;
-            if(SanyaPluginConfig.defaultitems.TryGetValue(ev.Role, out itemconfig) && itemconfig.Count > 0)
+            if(SanyaPluginConfig.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
             {
                 ev.StartItems = itemconfig;
             }
@@ -287,7 +287,7 @@ namespace SanyaPlugin
                 }
 
                 //CuffedDivisor
-                if(ev.Player.isHandCuffed())
+                if(ev.Player.IsHandCuffed())
                 {
                     clinfo.Amount /= SanyaPluginConfig.damage_divisor_cuffed;
                 }
@@ -330,13 +330,14 @@ namespace SanyaPlugin
 
             if(SanyaPluginConfig.data_enabled)
             {
-                if(ev.Player.GetUserId() != ev.Killer.GetUserId() 
+                if(ev.Player.GetUserId() != ev.Killer.GetUserId()
                     && PlayerDataManager.playersData.ContainsKey(ev.Killer.GetUserId()))
                 {
                     PlayerDataManager.playersData[ev.Killer.GetUserId()].AddExp(SanyaPluginConfig.level_exp_kill);
                 }
 
-                if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId())){
+                if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
+                {
                     PlayerDataManager.playersData[ev.Player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_death);
                 }
             }
@@ -418,7 +419,7 @@ namespace SanyaPlugin
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
-                    Log.Debug($"[OnPlayerDoorInteract] inv:{item.id} parm:{string.Join(",",ev.Player.inventory.GetItemByID(item.id).permissions)}");
+                    Log.Debug($"[OnPlayerDoorInteract] inv:{item.id} parm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
 
                     if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains(ev.Door.permissionLevel))
                     {
@@ -523,13 +524,11 @@ namespace SanyaPlugin
         public void OnCommand(ref RACommandEvent ev)
         {
             string[] args = ev.Command.Split(' ');
-            ReferenceHub sender = Player.GetPlayer(ev.Sender.SenderId);
-            string ReturnStr = "";
-
             if(args[0].ToLower() == "sanya")
             {
                 if(args.Length > 1)
                 {
+                    string ReturnStr;
                     switch(args[1].ToLower())
                     {
                         case "test":

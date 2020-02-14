@@ -121,7 +121,7 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(PlayerInteract),nameof(PlayerInteract.CallCmdUseLocker))]
+    [HarmonyPatch(typeof(PlayerInteract), nameof(PlayerInteract.CallCmdUseLocker))]
     public class ContainLockerPatch
     {
         public static bool Prefix(PlayerInteract __instance, ref int lockerId, ref int chamberNumber)

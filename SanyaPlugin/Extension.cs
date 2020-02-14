@@ -15,6 +15,6 @@ namespace SanyaPlugin
         public static string GetUserId(this ReferenceHub player) => player.characterClassManager.UserId;
         public static RoleType GetRoleType(this ReferenceHub player) => player.characterClassManager.CurClass;
         public static Team GetTeam(this ReferenceHub player) => Player.GetTeam(player.GetRoleType());
-        public static bool isHandCuffed(this ReferenceHub player) => player.handcuffs.CufferId != -1;
+        public static bool IsHandCuffed(this ReferenceHub player) => player.handcuffs.CufferId != -1;
     }
 }
