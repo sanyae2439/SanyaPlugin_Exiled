@@ -64,7 +64,7 @@ namespace SanyaPlugin
 
             if(rolestr.Contains("Patreon"))
             {
-                rolestr = "SCPSLPatreon";
+                rolestr = "SCPSL-Patreon";
             }
             if(rolecolor == "light_red")
             {
