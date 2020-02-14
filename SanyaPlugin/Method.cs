@@ -102,7 +102,7 @@ namespace SanyaPlugin
             else
             {
                 group.BadgeText = badge;
-                group.BadgeColor = "default";
+                group.BadgeColor = rolecolor;
                 group.HiddenByDefault = false;
                 group.Cover = true;
             }
