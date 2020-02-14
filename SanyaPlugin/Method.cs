@@ -62,10 +62,11 @@ namespace SanyaPlugin
             string rolecolor = player.serverRoles.MyColor;
             string badge;
 
-            if(rolestr.Contains("Patreon"))
-            {
-                rolestr = "SCPSL-Patreon";
-            }
+            rolestr.Replace("[", string.Empty);
+            rolestr.Replace("]", string.Empty);
+            rolestr.Replace("<", string.Empty);
+            rolestr.Replace(">", string.Empty);
+
             if(rolecolor == "light_red")
             {
                 rolecolor = "pink";
