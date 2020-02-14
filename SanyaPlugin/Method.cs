@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using EXILED;
 using MEC;
 
 namespace SanyaPlugin
@@ -55,9 +56,12 @@ namespace SanyaPlugin
         {
             yield return Timing.WaitForSeconds(1f);
 
+            var group = player.serverRoles.Group?.Clone();
             string level = data.level.ToString();
             string rolestr = player.serverRoles.GetUncoloredRoleString();
             string rolecolor = player.serverRoles.MyColor;
+            string badge;
+
             if(rolestr.Contains("Patreon"))
             {
                 rolestr = "SCPSLPatreon";
@@ -74,17 +78,38 @@ namespace SanyaPlugin
 
             if(string.IsNullOrEmpty(rolestr))
             {
-                player.serverRoles.SetText($"Level{level}");
+                badge = $"Level{level}";
             }
             else
             {
-                player.serverRoles.SetText($"Level{level} : {rolestr}");
+                badge = $"Level{level} : {rolestr}";
             }
 
-            if(!string.IsNullOrEmpty(rolecolor))
+            if(group == null)
             {
-                player.serverRoles.SetColor(rolecolor);
+                group = new UserGroup()
+                {
+                    BadgeText = badge,
+                    BadgeColor = "default",
+                    HiddenByDefault = false,
+                    Cover = true,
+                    KickPower = 0,
+                    Permissions = 0,
+                    RequiredKickPower = 0,
+                    Shared = false
+                };
             }
+            else
+            {
+                group.BadgeText = badge;
+                group.BadgeColor = "default";
+                group.HiddenByDefault = false;
+                group.Cover = true;
+            }
+
+            player.serverRoles.SetGroup(group, false, false, true);
+
+            Log.Debug($"[GrantedLevel] {player.GetUserId()} : Level{level}");
 
             yield break;
         }
