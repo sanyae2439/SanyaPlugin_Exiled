@@ -169,6 +169,8 @@ namespace SanyaPlugin
             everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
             fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
 
+            PlayerDataManager.playersData.Clear();
+
             Log.Info($"[OnWaintingForPlayers] Waiting for Players...");
         }
 
@@ -180,6 +182,33 @@ namespace SanyaPlugin
         public void OnRoundEnd()
         {
             Log.Info($"[OnRoundEnd] Round Ended.");
+
+            if(SanyaPluginConfig.data_enabled)
+            {
+                foreach(ReferenceHub player in Player.GetHubs())
+                {
+                    if(string.IsNullOrEmpty(player.GetUserId())) continue;
+
+                    if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
+                    {
+                        if(player.GetRoleType() == RoleType.Spectator)
+                        {
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_other);
+                        }
+                        else
+                        {
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_win);
+                        }
+                    }
+                }
+
+                foreach(var data in PlayerDataManager.playersData.Values)
+                {
+                    data.lastUpdate = DateTime.Now;
+                    data.playingcount++;
+                    PlayerDataManager.SavePlayerData(data);
+                }
+            }
         }
 
         public void OnRoundRestart()
@@ -197,6 +226,18 @@ namespace SanyaPlugin
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Log.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+
+            if(SanyaPluginConfig.data_enabled)
+            {
+                PlayerData data = PlayerDataManager.LoadPlayerData(ev.Player.GetUserId());
+
+                PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
+
+                if(SanyaPluginConfig.level_enabled)
+                {
+                    Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
+                }
+            }
         }
 
         public void OnPlayerLeave(PlayerLeaveEvent ev)
@@ -205,22 +246,26 @@ namespace SanyaPlugin
             Log.Debug($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
-        public void OnPlayerSetClass(SetClassEvent ev)
+        public void OnStartItems(StartItemsEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Log.Debug($"[OnPlayerSetClass] {ev.Player.nicknameSync.MyNick} -> {ev.Role}");
+            Log.Debug($"[OnStartItems] {ev.Role}");
 
             List<ItemType> itemconfig;
             if(SanyaPluginConfig.defaultitems.TryGetValue(ev.Role, out itemconfig) && itemconfig.Count > 0)
             {
-                ev.Player.characterClassManager.Classes.SafeGet(ev.Role).startItems = itemconfig.ToArray();
+                ev.StartItems = itemconfig;
             }
+        }
 
+        public void OnPlayerSetClass(SetClassEvent ev)
+        {
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            Log.Debug($"[OnPlayerSetClass] {ev.Player.GetName()} -> {ev.Role}");
         }
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
 
             DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
@@ -280,8 +325,21 @@ namespace SanyaPlugin
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
+
+            if(SanyaPluginConfig.data_enabled)
+            {
+                if(ev.Player.GetUserId() != ev.Killer.GetUserId() 
+                    && PlayerDataManager.playersData.ContainsKey(ev.Killer.GetUserId()))
+                {
+                    PlayerDataManager.playersData[ev.Killer.GetUserId()].AddExp(SanyaPluginConfig.level_exp_kill);
+                }
+
+                if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId())){
+                    PlayerDataManager.playersData[ev.Player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_death);
+                }
+            }
 
             if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && SanyaPluginConfig.recovery_amount_scp173 > 0)
             {
@@ -304,6 +362,20 @@ namespace SanyaPlugin
         public void OnPocketDimDeath(PocketDimDeathEvent ev)
         {
             Log.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
+
+            if(SanyaPluginConfig.data_enabled)
+            {
+                foreach(ReferenceHub player in Player.GetHubs())
+                {
+                    if(player.GetRoleType() == RoleType.Scp106)
+                    {
+                        if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
+                        {
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_kill);
+                        }
+                    }
+                }
+            }
 
             if(SanyaPluginConfig.recovery_amount_scp106 > 0)
             {

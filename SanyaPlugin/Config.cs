@@ -23,6 +23,15 @@ namespace SanyaPlugin
         internal static bool generator_activating_opened;
         internal static bool intercom_information;
 
+        //SanyaPlugin:Data
+        internal static bool data_enabled;
+        internal static bool level_enabled;
+        internal static int level_exp_kill;
+        internal static int level_exp_death;
+        internal static int level_exp_win;
+        internal static int level_exp_other;
+
+
         //Human:Balanced
         internal static bool inventory_keycard_act;
         internal static int traitor_limitter;
@@ -51,59 +60,58 @@ namespace SanyaPlugin
 
         internal static void Reload()
         {
-            try
-            {
-                infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
-                infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
-                tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
-                auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
-                auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
-                defaultitems = new Dictionary<RoleType, List<ItemType>>();
-                defaultitems.Add(RoleType.ClassD, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_classd").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.Scientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_scientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.FacilityGuard, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_guard").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.NtfCadet, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_cadet").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.NtfLieutenant, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_lieutenant").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.NtfCommander, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_commander").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.NtfScientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ntfscientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
-                defaultitems.Add(RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
+            infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
+            tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
+            auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
+            auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
+            defaultitems = new Dictionary<RoleType, List<ItemType>>();
+            defaultitems.Add(RoleType.ClassD, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_classd").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.Scientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_scientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.FacilityGuard, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_guard").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.NtfCadet, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_cadet").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.NtfLieutenant, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_lieutenant").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.NtfCommander, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_commander").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.NtfScientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ntfscientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
+            defaultitems.Add(RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })));
 
-                tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
-                generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
-                generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
-                generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
-                intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
+            tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
+            generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
+            generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
+            generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
+            intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
 
-                inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
-                traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
-                traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
+            data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
+            level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
+            level_exp_kill = Plugin.Config.GetInt("sanya_level_exp_kill", 3);
+            level_exp_death = Plugin.Config.GetInt("sanya_level_exp_death", 1);
+            level_exp_win = Plugin.Config.GetInt("sanya_level_exp_win", 10);
+            level_exp_other = Plugin.Config.GetInt("sanya_level_exp_other", 1);
 
-                scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
-                scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
+            inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
+            traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
+            traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 
-                damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);
-                damage_usp_multiplier_scp = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_scp", 1.0f);
-                damage_divisor_cuffed = Plugin.Config.GetFloat("sanya_damage_divisor_cuffed", 1.0f);
-                damage_divisor_scp049 = Plugin.Config.GetFloat("sanya_damage_divisor_scp049", 1.0f);
-                damage_divisor_scp0492 = Plugin.Config.GetFloat("sanya_damage_divisor_scp0492", 1.0f);
-                damage_divisor_scp096 = Plugin.Config.GetFloat("sanya_damage_divisor_scp096", 1.0f);
-                damage_divisor_scp106 = Plugin.Config.GetFloat("sanya_damage_divisor_scp106", 1.0f);
-                damage_divisor_scp173 = Plugin.Config.GetFloat("sanya_damage_divisor_scp173", 1.0f);
-                damage_divisor_scp939 = Plugin.Config.GetFloat("sanya_damage_divisor_scp939", 1.0f);
-                recovery_amount_scp049 = Plugin.Config.GetInt("sanya_recovery_amount_scp049", -1);
-                recovery_amount_scp0492 = Plugin.Config.GetInt("sanya_recovery_amount_scp0492", -1);
-                recovery_amount_scp096 = Plugin.Config.GetInt("sanya_recovery_amount_scp096", -1);
-                recovery_amount_scp106 = Plugin.Config.GetInt("sanya_recovery_amount_scp106", -1);
-                recovery_amount_scp173 = Plugin.Config.GetInt("sanya_recovery_amount_scp173", -1);
-                recovery_amount_scp939 = Plugin.Config.GetInt("sanya_recovery_amount_scp939", -1);
+            scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
+            scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
 
-                Log.Info("[SanyaPluginConfig] Reloaded!");
-            }
-            catch(Exception e)
-            {
-                Log.Error("[SanyaPluginConfig] Error:");
-                Log.Error(e.ToString());
-            }
+            damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);
+            damage_usp_multiplier_scp = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_scp", 1.0f);
+            damage_divisor_cuffed = Plugin.Config.GetFloat("sanya_damage_divisor_cuffed", 1.0f);
+            damage_divisor_scp049 = Plugin.Config.GetFloat("sanya_damage_divisor_scp049", 1.0f);
+            damage_divisor_scp0492 = Plugin.Config.GetFloat("sanya_damage_divisor_scp0492", 1.0f);
+            damage_divisor_scp096 = Plugin.Config.GetFloat("sanya_damage_divisor_scp096", 1.0f);
+            damage_divisor_scp106 = Plugin.Config.GetFloat("sanya_damage_divisor_scp106", 1.0f);
+            damage_divisor_scp173 = Plugin.Config.GetFloat("sanya_damage_divisor_scp173", 1.0f);
+            damage_divisor_scp939 = Plugin.Config.GetFloat("sanya_damage_divisor_scp939", 1.0f);
+            recovery_amount_scp049 = Plugin.Config.GetInt("sanya_recovery_amount_scp049", -1);
+            recovery_amount_scp0492 = Plugin.Config.GetInt("sanya_recovery_amount_scp0492", -1);
+            recovery_amount_scp096 = Plugin.Config.GetInt("sanya_recovery_amount_scp096", -1);
+            recovery_amount_scp106 = Plugin.Config.GetInt("sanya_recovery_amount_scp106", -1);
+            recovery_amount_scp173 = Plugin.Config.GetInt("sanya_recovery_amount_scp173", -1);
+            recovery_amount_scp939 = Plugin.Config.GetInt("sanya_recovery_amount_scp939", -1);
+
+            Log.Info("[SanyaPluginConfig] Reloaded!");
         }
 
         internal static string GetConfigs()

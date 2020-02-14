@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using EXILED;
+using UnityEngine;
+using Utf8Json;
 
 namespace SanyaPlugin
 {
@@ -44,6 +48,56 @@ namespace SanyaPlugin
         public string role { get; set; }
 
         public string rank { get; set; }
+    }
+
+    public class PlayerData
+    {
+        public PlayerData(DateTime lastupdate, string userid, bool isSteamLimited, int level, int exp, int count) 
+        {
+            this.lastUpdate = lastupdate;
+            this.userid = userid; 
+            this.limited = isSteamLimited; 
+            this.level = level; 
+            this.exp = exp;
+            this.playingcount = count;
+        }
+
+        public void AddExp(int amount)
+        {
+            if(string.IsNullOrEmpty(amount.ToString()) || exp == -1 || level == -1) return;
+
+            Log.Debug($"[AddExp] Player:{userid} EXP:{exp} + {amount} = {exp+amount} ");
+
+            int sum = exp + amount;
+
+            //1*3 <= 10
+            //2*3 <= 7
+            //3*3 <= 1
+            if(level * 3 <= sum)
+            {
+                while(level * 3 <= sum)
+                {
+                    exp = sum - level * 3;
+                    sum -= level * 3;
+                    level++;
+                }
+            }
+            else
+            {
+                exp = sum;
+            }
+        }
+        public override string ToString()
+        {
+            return $"userid:{userid} limited:{limited} level:{level} exp:{exp}";
+        }
+
+        public DateTime lastUpdate;
+        public string userid;
+        public bool limited;
+        public int level;
+        public int exp;
+        public int playingcount;
     }
 
     //public class SCPPlayerData

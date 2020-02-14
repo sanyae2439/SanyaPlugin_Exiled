@@ -1,17 +1,25 @@
-﻿using EXILED;
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using EXILED;
 using Harmony;
 using MEC;
+using Scp914;
+using Utf8Json;
 
 namespace SanyaPlugin
 {
     public class SanyaPlugin : Plugin
     {
-        public EventHandlers EventHandlers;
-        public HarmonyInstance harmony;
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.4a";
+        public static readonly string Version = "1.0.5a";
         public static readonly string TargetVersion = "1.7.12";
+        public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
+
+        public EventHandlers EventHandlers;
+        public HarmonyInstance harmony;
+        
 
         public override void OnEnable()
         {
@@ -35,6 +43,7 @@ namespace SanyaPlugin
             Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
             Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
             Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
+            Events.StartItemsEvent += EventHandlers.OnStartItems;
             Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
             Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
             Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
@@ -69,6 +78,7 @@ namespace SanyaPlugin
             Events.RoundRestartEvent -= EventHandlers.OnRoundRestart;
             Events.PlayerJoinEvent -= EventHandlers.OnPlayerJoin;
             Events.PlayerLeaveEvent -= EventHandlers.OnPlayerLeave;
+            Events.StartItemsEvent -= EventHandlers.OnStartItems;
             Events.SetClassEvent -= EventHandlers.OnPlayerSetClass;
             Events.PlayerHurtEvent -= EventHandlers.OnPlayerHurt;
             Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
