@@ -439,18 +439,19 @@ namespace SanyaPlugin
                 && ev.Player.GetRoleType() != RoleType.Scp0492)
             {
                 string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRoleType()).fullName;
+                string str = string.Empty;
 
                 if(ev.Info.GetDamageType() == DamageTypes.Tesla)
                 {
-                    Methods.SendSubtitle(Subtitles.SCPDeathTesla.Replace("{0}", fullname), 15);
+                    str = Subtitles.SCPDeathTesla.Replace("{0}", fullname);
                 }
                 else if(ev.Info.GetDamageType() == DamageTypes.Nuke)
                 {
-                    Methods.SendSubtitle(Subtitles.SCPDeathWarhead.Replace("{0}", fullname), 15);
+                    str = Subtitles.SCPDeathWarhead.Replace("{0}", fullname);
                 }
                 else if(ev.Info.GetDamageType() == DamageTypes.Decont)
                 {
-                    Methods.SendSubtitle(Subtitles.SCPDeathDecont.Replace("{0}", fullname), 15);
+                    str = Subtitles.SCPDeathDecont.Replace("{0}", fullname);
                 }
                 else
                 {
@@ -466,17 +467,6 @@ namespace SanyaPlugin
                         }
                     }
                     Log.Debug($"[CheckTeam] ply:{ev.Player.queryProcessor.PlayerId} kil:{ev.Killer.queryProcessor.PlayerId} plyid:{ev.Info.PlyId} killteam:{killerTeam}");
-
-                    int count = 0;
-                    bool isFound079 = false;
-                    foreach(var i in Player.GetHubs())
-                    {
-                        if(ev.Player.GetUserId() == i.GetUserId()) continue;
-                        if(i.GetTeam() == Team.SCP) count++;
-                        if(i.GetRoleType() == RoleType.Scp079) isFound079 = true;
-                    }
-
-                    string str = string.Empty;
                     if(killerTeam == Team.CDP)
                     {
                         str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
@@ -498,21 +488,34 @@ namespace SanyaPlugin
                     {
                         str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
                     }
-
-                    bool isForced = false;
-                    Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
-                    if(count == 1 && isFound079 && Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge)
-                    {
-                        isForced = true;
-                        str = str.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。").Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
-                    }
-                    else
-                    {
-                        str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
-                    }
-
-                    Methods.SendSubtitle(str, isForced ? 30u : 10u);
                 }
+
+                int count = 0;
+                bool isFound079 = false;
+                bool isForced = false;
+                foreach(var i in Player.GetHubs())
+                {
+                    if(ev.Player.GetUserId() == i.GetUserId()) continue;
+                    if(i.GetTeam() == Team.SCP) count++;
+                    if(i.GetRoleType() == RoleType.Scp079) isFound079 = true;
+                }
+
+                Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
+                if(count == 1 
+                    && isFound079 
+                    && Generator079.mainGenerator.totalVoltage < 4 
+                    && !Generator079.mainGenerator.forcedOvercharge
+                    && ev.Info.GetDamageType() != DamageTypes.Nuke)
+                {
+                    isForced = true;
+                    str = str.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。").Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
+                }
+                else
+                {
+                    str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
+                }
+
+                Methods.SendSubtitle(str, isForced ? 30u : 10u);
             }
         }
 
