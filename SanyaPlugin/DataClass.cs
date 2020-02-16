@@ -6,6 +6,13 @@ using Utf8Json;
 
 namespace SanyaPlugin
 {
+    public enum SANYA_GAME_MODE
+    {
+        NULL = -1,
+        NORMAL = 0,
+        NIGHT,
+    }
+
     public class Serverinfo
     {
         public Serverinfo() { players = new List<Playerinfo>(); }
@@ -52,12 +59,12 @@ namespace SanyaPlugin
 
     public class PlayerData
     {
-        public PlayerData(DateTime lastupdate, string userid, bool isSteamLimited, int level, int exp, int count) 
+        public PlayerData(DateTime lastupdate, string userid, bool isSteamLimited, int level, int exp, int count)
         {
             this.lastUpdate = lastupdate;
-            this.userid = userid; 
-            this.limited = isSteamLimited; 
-            this.level = level; 
+            this.userid = userid;
+            this.limited = isSteamLimited;
+            this.level = level;
             this.exp = exp;
             this.playingcount = count;
         }
@@ -66,7 +73,7 @@ namespace SanyaPlugin
         {
             if(string.IsNullOrEmpty(amount.ToString()) || exp == -1 || level == -1) return;
 
-            Log.Debug($"[AddExp] Player:{userid} EXP:{exp} + {amount} = {exp+amount} ");
+            Log.Debug($"[AddExp] Player:{userid} EXP:{exp} + {amount} = {exp + amount} ");
 
             int sum = exp + amount;
 

@@ -97,6 +97,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Subtitles.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="DataClass.cs" />
     <Compile Include="EventHandlers.cs" />

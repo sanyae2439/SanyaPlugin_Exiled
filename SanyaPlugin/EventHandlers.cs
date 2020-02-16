@@ -7,15 +7,16 @@ using EXILED;
 using UnityEngine;
 using MEC;
 using Utf8Json;
-using Dissonance.Integrations.MirrorIgnorance;
 using EXILED.Extensions;
 
 namespace SanyaPlugin
 {
     public class EventHandlers
     {
-        internal readonly SanyaPlugin plugin;
         public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
+        internal readonly SanyaPlugin plugin;
+        private readonly System.Random random = new System.Random();
+        internal List<CoroutineHandle> coroutines = new List<CoroutineHandle>();
         internal bool loaded = false;
 
         /** Infosender **/
@@ -23,6 +24,8 @@ namespace SanyaPlugin
         internal Task sendertask;
         internal async Task _SenderAsync()
         {
+            Log.Debug($"[Infosender_Task] Started.");
+
             while(true)
             {
                 try
@@ -30,12 +33,12 @@ namespace SanyaPlugin
                     if(!this.loaded)
                     {
                         Log.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
-                        await Task.Delay(TimeSpan.FromSeconds(15));
+                        await Task.Delay(TimeSpan.FromSeconds(30));
                     }
 
-                    if(SanyaPluginConfig.infosender_ip == "none")
+                    if(Configs.infosender_ip == "none")
                     {
-                        Log.Info($"[Infosender_Task] Disabled(config:({SanyaPluginConfig.infosender_ip}). breaked.");
+                        Log.Info($"[Infosender_Task] Disabled(config:({Configs.infosender_ip}). breaked.");
                         break;
                     }
 
@@ -46,7 +49,7 @@ namespace SanyaPlugin
                     cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
                     cinfo.modversion = $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}";
                     cinfo.sanyaversion = SanyaPlugin.Version;
-                    cinfo.gamemode = "NONE";
+                    cinfo.gamemode = eventmode.ToString();
                     cinfo.name = ServerConsole.singleton.RefreshServerName();
                     cinfo.ip = ServerConsole.Ip;
                     cinfo.port = ServerConsole.Port;
@@ -74,49 +77,65 @@ namespace SanyaPlugin
                     string json = JsonSerializer.ToJsonString(cinfo);
 
                     byte[] sendBytes = Encoding.UTF8.GetBytes(json);
-                    udpClient.Send(sendBytes, sendBytes.Length, SanyaPluginConfig.infosender_ip, SanyaPluginConfig.infosender_port);
-                    Log.Debug($"[Infosender_Task] {SanyaPluginConfig.infosender_ip}:{SanyaPluginConfig.infosender_port}");
+                    udpClient.Send(sendBytes, sendBytes.Length, Configs.infosender_ip, Configs.infosender_port);
+                    Log.Debug($"[Infosender_Task] {Configs.infosender_ip}:{Configs.infosender_port}");
                 }
                 catch(Exception e)
                 {
                     throw e;
                 }
-                await Task.Delay(TimeSpan.FromSeconds(15));
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
 
         /** Update **/
-        internal CoroutineHandle everySecondhandle;
         internal IEnumerator<float> _EverySecond()
         {
             while(true)
             {
                 //自動核 & 自動核ロック -> CancelWarheadPatch
-                if(SanyaPluginConfig.auto_warhead_start > 0 && !autowarheadstarted)
+                if(Configs.auto_warhead_start > 0 && !autowarheadstarted)
                 {
-                    if(RoundSummary.roundTime >= SanyaPluginConfig.auto_warhead_start)
+                    if(RoundSummary.roundTime >= Configs.auto_warhead_start)
                     {
                         autowarheadstarted = true;
-                        if(SanyaPluginConfig.auto_warhead_start_lock) CancelWarheadPatch.Locked = true;
+                        if(Configs.auto_warhead_start_lock) CancelWarheadPatch.Locked = true;
                         AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
+                        if(Configs.cassie_subtitle && !AlphaWarheadController.Host.NetworkinProgress)
+                        {
+                            bool isresumed = AlphaWarheadController._resumeScenario != -1;
+                            double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
+                            double count = Math.Truncate(left / 10.0) * 10.0;
+
+                            if(!isresumed)
+                            {
+                                Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
+                            }
+                            else
+                            {
+                                Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
+                            }
+
+
+                        }
                         AlphaWarheadController.Host.NetworkinProgress = true;
                     }
                 }
 
                 //寝返り
-                if(SanyaPluginConfig.traitor_limitter > 0)
+                if(Configs.traitor_limitter > 0)
                 {
                     foreach(var player in Player.GetHubs())
                     {
                         if((player.GetTeam() == Team.MTF || player.GetTeam() == Team.CHI)
                             && player.IsHandCuffed()
                             && Vector3.Distance(espaceArea, player.transform.position) <= Escape.radius
-                            && RoundSummary.singleton.CountTeam(player.GetTeam()) <= SanyaPluginConfig.traitor_limitter)
+                            && RoundSummary.singleton.CountTeam(player.GetTeam()) <= Configs.traitor_limitter)
                         {
                             switch(player.GetTeam())
                             {
                                 case Team.MTF:
-                                    if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
+                                    if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
                                     {
                                         Log.Info($"[_EverySecond:Traitor] {player.GetName()} : MTF->CHI");
                                         player.characterClassManager.SetPlayersClass(RoleType.ChaosInsurgency, player.gameObject);
@@ -128,7 +147,7 @@ namespace SanyaPlugin
                                     }
                                     break;
                                 case Team.CHI:
-                                    if(UnityEngine.Random.Range(0, 100) <= SanyaPluginConfig.traitor_chance_percent)
+                                    if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
                                     {
                                         Log.Info($"[_EverySecond:Traitor] {player.GetName()} : CHI->MTF");
                                         player.characterClassManager.SetPlayersClass(RoleType.NtfCadet, player.gameObject);
@@ -148,11 +167,18 @@ namespace SanyaPlugin
                 yield return Timing.WaitForSeconds(1f);
             }
         }
-        internal CoroutineHandle fixedUpdatehandle;
         internal IEnumerator<float> _FixedUpdate()
         {
             while(true)
             {
+                //Blackouter
+                if(flickerableLight != null && IsEnableBlackout && flickerableLight.remainingFlicker < 0f && !flickerableLight.IsDisabled())
+                {
+                    //Log.Debug($"{UnityEngine.Object.FindObjectOfType<FlickerableLight>().remainingFlicker}");
+                    Log.Debug($"[Blackouter] Fired.");
+                    Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
+                }
+
                 yield return Timing.WaitForOneFrame;
             }
         }
@@ -161,30 +187,64 @@ namespace SanyaPlugin
         internal static bool autowarheadstarted = false;
         private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
+        /** RoundVar **/
+        private FlickerableLight flickerableLight = null;
+        private bool IsEnableBlackout = false;
+
+        /** EventModeVar **/
+        private SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
+
         public void OnWaintingForPlayers()
         {
             loaded = true;
 
             if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation)
                 sendertask = this._SenderAsync().StartSender();
-            everySecondhandle = Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate);
-            fixedUpdatehandle = Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate);
+
+            coroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
+            coroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
+
+            flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
             PlayerDataManager.playersData.Clear();
 
-            Log.Info($"[OnWaintingForPlayers] Waiting for Players...");
+            eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
+            switch(eventmode)
+            {
+                case SANYA_GAME_MODE.NIGHT:
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        eventmode = SANYA_GAME_MODE.NORMAL;
+                        break;
+                    }
+            }
+
+            Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
         }
 
         public void OnRoundStart()
         {
             Log.Info($"[OnRoundStart] Round Start!");
+
+            switch(eventmode)
+            {
+                case SANYA_GAME_MODE.NIGHT:
+                    {
+                        IsEnableBlackout = true;
+                        coroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
+                        break;
+                    }
+            }
         }
 
         public void OnRoundEnd()
         {
             Log.Info($"[OnRoundEnd] Round Ended.");
 
-            if(SanyaPluginConfig.data_enabled)
+            if(Configs.data_enabled)
             {
                 foreach(ReferenceHub player in Player.GetHubs())
                 {
@@ -194,11 +254,11 @@ namespace SanyaPlugin
                     {
                         if(player.GetRoleType() == RoleType.Spectator)
                         {
-                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_other);
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_other);
                         }
                         else
                         {
-                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_win);
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_win);
                         }
                     }
                 }
@@ -216,8 +276,12 @@ namespace SanyaPlugin
         {
             Log.Info($"[OnRoundRestart] Restarting...");
 
-            Timing.KillCoroutines(everySecondhandle);
-            Timing.KillCoroutines(fixedUpdatehandle);
+            foreach(var cor in coroutines)
+                Timing.KillCoroutines(cor);
+            coroutines.Clear();
+
+            flickerableLight = null;
+            IsEnableBlackout = false;
 
             autowarheadstarted = false;
             CancelWarheadPatch.Locked = false;
@@ -228,7 +292,7 @@ namespace SanyaPlugin
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Log.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
-            if(SanyaPluginConfig.data_enabled)
+            if(Configs.data_enabled)
             {
                 PlayerData data = PlayerDataManager.LoadPlayerData(ev.Player.GetUserId());
 
@@ -238,7 +302,7 @@ namespace SanyaPlugin
 
                 }
 
-                if(SanyaPluginConfig.level_enabled)
+                if(Configs.level_enabled)
                 {
                     Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
                 }
@@ -255,7 +319,7 @@ namespace SanyaPlugin
         {
             Log.Debug($"[OnStartItems] {ev.Role}");
 
-            if(SanyaPluginConfig.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
+            if(Configs.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
             {
                 ev.StartItems = itemconfig;
             }
@@ -282,41 +346,41 @@ namespace SanyaPlugin
                 {
                     if(ev.Player.characterClassManager.IsAnyScp())
                     {
-                        clinfo.Amount *= SanyaPluginConfig.damage_usp_multiplier_scp;
+                        clinfo.Amount *= Configs.damage_usp_multiplier_scp;
                     }
                     else
                     {
-                        clinfo.Amount *= SanyaPluginConfig.damage_usp_multiplier_human;
+                        clinfo.Amount *= Configs.damage_usp_multiplier_human;
                     }
                 }
 
                 //CuffedDivisor
                 if(ev.Player.IsHandCuffed())
                 {
-                    clinfo.Amount /= SanyaPluginConfig.damage_divisor_cuffed;
+                    clinfo.Amount /= Configs.damage_divisor_cuffed;
                 }
 
                 //SCPsDivisor
                 switch(ev.Player.GetRoleType())
                 {
                     case RoleType.Scp173:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp173;
+                        clinfo.Amount /= Configs.damage_divisor_scp173;
                         break;
                     case RoleType.Scp106:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp106;
+                        clinfo.Amount /= Configs.damage_divisor_scp106;
                         break;
                     case RoleType.Scp049:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp049;
+                        clinfo.Amount /= Configs.damage_divisor_scp049;
                         break;
                     case RoleType.Scp096:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp096;
+                        clinfo.Amount /= Configs.damage_divisor_scp096;
                         break;
                     case RoleType.Scp0492:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp0492;
+                        clinfo.Amount /= Configs.damage_divisor_scp0492;
                         break;
                     case RoleType.Scp93953:
                     case RoleType.Scp93989:
-                        clinfo.Amount /= SanyaPluginConfig.damage_divisor_scp939;
+                        clinfo.Amount /= Configs.damage_divisor_scp939;
                         break;
                 }
 
@@ -332,35 +396,36 @@ namespace SanyaPlugin
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
 
-            if(SanyaPluginConfig.data_enabled)
+            if(Configs.data_enabled)
             {
-                if(ev.Player.GetUserId() != ev.Killer.GetUserId()
+                if(!string.IsNullOrEmpty(ev.Killer.GetUserId())
+                    && ev.Player.GetUserId() != ev.Killer.GetUserId()
                     && PlayerDataManager.playersData.ContainsKey(ev.Killer.GetUserId()))
                 {
-                    PlayerDataManager.playersData[ev.Killer.GetUserId()].AddExp(SanyaPluginConfig.level_exp_kill);
+                    PlayerDataManager.playersData[ev.Killer.GetUserId()].AddExp(Configs.level_exp_kill);
                 }
 
                 if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
                 {
-                    PlayerDataManager.playersData[ev.Player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_death);
+                    PlayerDataManager.playersData[ev.Player.GetUserId()].AddExp(Configs.level_exp_death);
                 }
             }
 
-            if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && SanyaPluginConfig.recovery_amount_scp173 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && Configs.recovery_amount_scp173 > 0)
             {
-                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp173);
+                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp173);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRoleType() == RoleType.Scp096 && SanyaPluginConfig.recovery_amount_scp096 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRoleType() == RoleType.Scp096 && Configs.recovery_amount_scp096 > 0)
             {
-                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp096);
+                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp096);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRoleType() == RoleType.Scp93953 || ev.Killer.GetRoleType() == RoleType.Scp93989) && SanyaPluginConfig.recovery_amount_scp939 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRoleType() == RoleType.Scp93953 || ev.Killer.GetRoleType() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
             {
-                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp939);
+                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && SanyaPluginConfig.recovery_amount_scp0492 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
             {
-                ev.Killer.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp0492);
+                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
             }
         }
 
@@ -368,7 +433,7 @@ namespace SanyaPlugin
         {
             Log.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
 
-            if(SanyaPluginConfig.data_enabled)
+            if(Configs.data_enabled)
             {
                 foreach(ReferenceHub player in Player.GetHubs())
                 {
@@ -376,19 +441,19 @@ namespace SanyaPlugin
                     {
                         if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
                         {
-                            PlayerDataManager.playersData[player.GetUserId()].AddExp(SanyaPluginConfig.level_exp_kill);
+                            PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_kill);
                         }
                     }
                 }
             }
 
-            if(SanyaPluginConfig.recovery_amount_scp106 > 0)
+            if(Configs.recovery_amount_scp106 > 0)
             {
                 foreach(ReferenceHub player in Player.GetHubs())
                 {
                     if(player.GetRoleType() == RoleType.Scp106)
                     {
-                        player.playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp106);
+                        player.playerStats.HealHPAmount(Configs.recovery_amount_scp106);
                         player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
                     }
                 }
@@ -397,10 +462,10 @@ namespace SanyaPlugin
 
         public void OnPlayerTriggerTesla(ref TriggerTeslaEvent ev)
         {
-            if(SanyaPluginConfig.tesla_triggerable_teams.Count == 0
-                || SanyaPluginConfig.tesla_triggerable_teams.Contains((int)ev.Player.GetTeam()))
+            if(Configs.tesla_triggerable_teams.Count == 0
+                || Configs.tesla_triggerable_teams.Contains((int)ev.Player.GetTeam()))
             {
-                if(SanyaPluginConfig.tesla_triggerable_disarmed || ev.Player.handcuffs.CufferId == -1)
+                if(Configs.tesla_triggerable_disarmed || ev.Player.handcuffs.CufferId == -1)
                 {
                     ev.Triggerable = true;
                 }
@@ -419,7 +484,7 @@ namespace SanyaPlugin
         {
             Log.Debug($"[OnPlayerDoorInteract] {ev.Player.GetName()}:{ev.Door.DoorName}:{ev.Door.permissionLevel}");
 
-            if(SanyaPluginConfig.inventory_keycard_act && ev.Player.GetTeam() != Team.SCP && !ev.Player.serverRoles.BypassMode && !ev.Door.locked)
+            if(Configs.inventory_keycard_act && ev.Player.GetTeam() != Team.SCP && !ev.Player.serverRoles.BypassMode && !ev.Door.locked)
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
@@ -433,10 +498,15 @@ namespace SanyaPlugin
             }
         }
 
+        public void OnTeamRespawn(ref TeamRespawnEvent ev)
+        {
+            Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
+        }
+
         public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
         {
             Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
-            if(SanyaPluginConfig.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
+            if(Configs.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
@@ -449,8 +519,9 @@ namespace SanyaPlugin
                 }
             }
 
-            if(ev.Allow && SanyaPluginConfig.generator_unlock_to_open)
+            if(ev.Allow && Configs.generator_unlock_to_open)
             {
+                ev.Generator.doorAnimationCooldown = 1.5f;
                 ev.Generator.NetworkisDoorOpen = true;
                 ev.Generator.RpcDoSound(true);
             }
@@ -459,39 +530,48 @@ namespace SanyaPlugin
         public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
         {
             Log.Debug($"[OnGeneratorOpen] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
-            if(ev.Generator.prevFinish && SanyaPluginConfig.generator_finish_to_lock) ev.Allow = false;
+            if(ev.Generator.prevFinish && Configs.generator_finish_to_lock) ev.Allow = false;
         }
 
         public void OnGeneratorClose(ref GeneratorCloseEvent ev)
         {
             Log.Debug($"[OnGeneratorClose] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
-            if(ev.Allow && ev.Generator.isTabletConnected && SanyaPluginConfig.generator_activating_opened) ev.Allow = false;
+            if(ev.Allow && ev.Generator.isTabletConnected && Configs.generator_activating_opened) ev.Allow = false;
         }
 
         public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
         {
             Log.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
-            if(SanyaPluginConfig.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
+            if(Configs.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
+
+            int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
+            if(Configs.cassie_subtitle)
+            {
+                if(curgen < 5)
+                {
+                    Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", curgen.ToString()), 10);
+                }
+                else
+                {
+                    Methods.SendSubtitle(Subtitles.GeneratorComplete, 20);
+                }
+            }
+
+            if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout)
+            {
+                IsEnableBlackout = false;
+            }
         }
 
         public void On914Upgrade(ref SCP914UpgradeEvent ev)
         {
             Log.Debug($"[On914Upgrade] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
 
-            if(SanyaPluginConfig.scp914_intake_death)
+            if(Configs.scp914_intake_death)
             {
                 foreach(var player in ev.Players)
                 {
-                    var info = new PlayerStats.HitInfo(999999, "WORLD", DamageTypes.RagdollLess, 0);
-                    UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
-                                                                       player.transform.rotation,
-                                                                       (int)player.GetRoleType(),
-                                                                       info,
-                                                                       false,
-                                                                       player.GetComponent<MirrorIgnorancePlayer>().PlayerId,
-                                                                       player.GetName(),
-                                                                       player.queryProcessor.PlayerId
-                                                                       );
+                    var info = new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0);
                     player.playerStats.HurtPlayer(info, player.gameObject);
                 }
             }
@@ -527,51 +607,174 @@ namespace SanyaPlugin
 
         public void OnCommand(ref RACommandEvent ev)
         {
+            Log.Debug($"[OnCommand] sender:{ev.Sender.SenderId} command:{ev.Command}");
+
             string[] args = ev.Command.Split(' ');
+            string ReturnStr = string.Empty;
+            bool isSuccess = true;
             if(args[0].ToLower() == "sanya")
             {
                 if(args.Length > 1)
                 {
-                    string ReturnStr;
                     switch(args[1].ToLower())
                     {
                         case "test":
-                            ReturnStr = "test ok.";
-                            break;
+                            {
+                                ReturnStr = "test ok.";
+                                break;
+                            }
                         case "config":
-                            ReturnStr = SanyaPluginConfig.GetConfigs();
-                            break;
+                            {
+                                ReturnStr = Configs.GetConfigs();
+                                break;
+                            }
                         case "reload":
-                            SanyaPluginConfig.Reload();
-                            ReturnStr = "reload ok";
-                            break;
+                            {
+                                Configs.Reload();
+                                ReturnStr = "reload ok";
+                                break;
+                            }
                         case "nukelock":
-                            CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;
-                            ReturnStr = $"nukelock:{CancelWarheadPatch.Locked}";
-                            break;
+                            {
+                                CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;
+                                ReturnStr = $"nukelock:{CancelWarheadPatch.Locked}";
+                                break;
+                            }
+                        case "blackout":
+                            {
+                                if(args.Length > 2 && args[2] == "hcz")
+                                {
+                                    Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, true);
+                                    ReturnStr = "HCZ blackout!";
+                                }
+                                else
+                                {
+                                    Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
+                                    ReturnStr = "ALL blackout!";
+                                }
+                                break;
+                            }
+                        case "ev":
+                            {
+                                foreach(Lift lift in UnityEngine.Object.FindObjectsOfType<Lift>())
+                                {
+                                    lift.UseLift();
+                                }
+                                ReturnStr = "EV Used.";
+                                break;
+                            }
+                        case "gen":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    if(args[2] == "unlock")
+                                    {
+                                        foreach(var generator in Generator079.generators)
+                                        {
+                                            generator.NetworkisDoorUnlocked = true;
+                                            generator.doorAnimationCooldown = 0.5f;
+                                        }
+                                        ReturnStr = "gen unlocked.";
+                                    }
+                                    else if(args[2] == "door")
+                                    {
+                                        foreach(var generator in Generator079.generators)
+                                        {
+                                            if(!generator.prevFinish)
+                                            {
+                                                bool now = !generator.NetworkisDoorOpen;
+                                                generator.NetworkisDoorOpen = now;
+                                                generator.CallRpcDoSound(now);
+                                            }
+                                        }
+                                        ReturnStr = $"gen doors interacted.";
+                                    }
+                                    else if(args[2] == "set")
+                                    {
+                                        foreach(var generator in Generator079.generators)
+                                        {
+                                            if(!generator.prevFinish)
+                                            {
+                                                generator.NetworkisTabletConnected = true;
+                                            }
+                                        }
+                                        ReturnStr = "gen set.";
+                                    }
+                                    else if(args[2] == "eject")
+                                    {
+                                        foreach(var generator in Generator079.generators)
+                                        {
+                                            if(generator.isTabletConnected)
+                                            {
+                                                generator.EjectTablet();
+                                            }
+                                        }
+                                        ReturnStr = "gen ejected.";
+                                    }
+                                }
+                                else
+                                {
+                                    isSuccess = false;
+                                    ReturnStr = "[gen] Wrong Parameters.";
+                                }
+                                break;
+                            }
                         case "spawn":
-                            var mtfrespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-                            if(mtfrespawn.nextWaveIsCI)
                             {
-                                mtfrespawn.timeToNextRespawn = 14f;
+                                var mtfrespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
+                                if(mtfrespawn.nextWaveIsCI)
+                                {
+                                    mtfrespawn.timeToNextRespawn = 14f;
+                                }
+                                else
+                                {
+                                    mtfrespawn.timeToNextRespawn = 18.5f;
+                                }
+                                ReturnStr = $"spawn soon. nextIsCI:{mtfrespawn.nextWaveIsCI}";
+                                break;
                             }
-                            else
+                        case "next":
                             {
-                                mtfrespawn.timeToNextRespawn = 18.5f;
+                                if(args.Length > 2)
+                                {
+                                    MTFRespawn mtfRespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
+                                    if(args[2] == "ci")
+                                    {
+                                        mtfRespawn.nextWaveIsCI = true;
+                                        ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
+                                    }
+                                    else if(args[2] == "mtf" || args[2] == "ntf")
+                                    {
+                                        mtfRespawn.nextWaveIsCI = false;
+                                        ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[next] Wrong Parameters.";
+                                    }
+                                }
+                                else
+                                {
+                                    isSuccess = false;
+                                    ReturnStr = "[next] Wrong Parameters.";
+                                }
+                                break;
                             }
-                            ReturnStr = $"spawn soon.";
-                            break;
                         default:
-                            ReturnStr = "Wrong Parameters.";
-                            break;
+                            {
+                                ReturnStr = "Wrong Parameters.";
+                                isSuccess = false;
+                                break;
+                            }
                     }
                     ev.Allow = false;
-                    ev.Sender.RAMessage(ReturnStr);
+                    ev.Sender.RAMessage(ReturnStr, isSuccess);
                 }
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RAMessage("Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >");
+                    ev.Sender.RAMessage("Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >", false);
                 }
             }
         }

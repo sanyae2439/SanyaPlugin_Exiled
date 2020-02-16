@@ -5,7 +5,7 @@ using EXILED;
 
 namespace SanyaPlugin
 {
-    internal static class SanyaPluginConfig
+    internal static class Configs
     {
         internal static string infosender_ip;
         internal static int infosender_port;
@@ -17,6 +17,8 @@ namespace SanyaPlugin
         internal static List<int> tesla_triggerable_teams;
 
         //SanyaPlugin
+        internal static List<int> event_mode_weight;
+        internal static bool cassie_subtitle;
         internal static bool tesla_triggerable_disarmed;
         internal static bool generator_unlock_to_open;
         internal static bool generator_finish_to_lock;
@@ -77,6 +79,8 @@ namespace SanyaPlugin
                 { RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) }
             };
 
+            event_mode_weight = new List<int>(Plugin.Config.GetIntList("sanya_event_mode_weight"));
+            cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);
             tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
             generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
             generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
@@ -120,7 +124,7 @@ namespace SanyaPlugin
         {
             string returned = "\n";
 
-            FieldInfo[] infoArray = typeof(SanyaPluginConfig).GetFields(BindingFlags.Static | BindingFlags.NonPublic);
+            FieldInfo[] infoArray = typeof(Configs).GetFields(BindingFlags.Static | BindingFlags.NonPublic);
 
             foreach(FieldInfo info in infoArray)
             {

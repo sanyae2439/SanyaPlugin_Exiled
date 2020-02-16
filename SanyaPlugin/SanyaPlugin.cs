@@ -10,7 +10,7 @@ namespace SanyaPlugin
     {
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.0.5c";
+        public static readonly string Version = "1.1.0a";
         public static readonly string TargetVersion = "1.7.12";
         public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
@@ -28,7 +28,7 @@ namespace SanyaPlugin
                 Log.Warn($"[OnEnabled] Version Mismatched(SanyaPlugin:{TargetVersion} EXILED:{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). May not work correctly.");
             }
 
-            SanyaPluginConfig.Reload();
+            Configs.Reload();
 
             EventHandlers = new EventHandlers(this);
             Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
@@ -46,6 +46,7 @@ namespace SanyaPlugin
             Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
             Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
             Events.DoorInteractEvent += EventHandlers.OnPlayerDoorInteract;
+            Events.TeamRespawnEvent += EventHandlers.OnTeamRespawn;
             Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
             Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
@@ -63,8 +64,10 @@ namespace SanyaPlugin
         public override void OnDisable()
         {
             harmony.UnpatchAll();
-            Timing.KillCoroutines(EventHandlers.everySecondhandle);
-            Timing.KillCoroutines(EventHandlers.fixedUpdatehandle);
+
+            foreach(var cor in EventHandlers.coroutines)
+                Timing.KillCoroutines(cor);
+            EventHandlers.coroutines.Clear();
 
             Events.RemoteAdminCommandEvent -= EventHandlers.OnCommand;
             Events.ConsoleCommandEvent -= EventHandlers.OnConsoleCommand;
@@ -80,6 +83,7 @@ namespace SanyaPlugin
             Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
             Events.TriggerTeslaEvent -= EventHandlers.OnPlayerTriggerTesla;
             Events.DoorInteractEvent -= EventHandlers.OnPlayerDoorInteract;
+            Events.TeamRespawnEvent -= EventHandlers.OnTeamRespawn;
             Events.GeneratorUnlockEvent -= EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent -= EventHandlers.OnGeneratorOpen;
             Events.GeneratorClosedEvent -= EventHandlers.OnGeneratorClose;

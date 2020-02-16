@@ -6,15 +6,45 @@ using UnityEngine;
 
 namespace SanyaPlugin
 {
+    [HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
+    public class StartWarheadPatch
+    {
+        public static void Postfix(AlphaWarheadController __instance)
+        {
+            Log.Debug($"[StartWarheadPatch] inprogess:{__instance.NetworkinProgress}");
+            if(Configs.cassie_subtitle && __instance.NetworkinProgress)
+            {
+                bool isresumed = AlphaWarheadController._resumeScenario != -1;
+                double left = isresumed ? __instance.timeToDetonation : __instance.timeToDetonation - 4;
+                double count = Math.Truncate(left / 10.0) * 10.0;
+
+                if(!isresumed)
+                {
+                    Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
+                }
+                else
+                {
+                    Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
+                }
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.CancelDetonation), new System.Type[] { typeof(UnityEngine.GameObject) })]
     public class CancelWarheadPatch
     {
         public static bool Locked = false;
 
-        public static bool Prefix()
+        public static bool Prefix(AlphaWarheadController __instance)
         {
-            Log.Debug($"[Patch.CancelDetonation] Locked:{Locked}");
+            Log.Debug($"[CancelWarheadPatch] Locked:{Locked}");
             if(Locked) return false;
+
+            if(Configs.cassie_subtitle && __instance.NetworkinProgress && __instance.timeToDetonation > 10f)
+            {
+                Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
+            }
+
             return true;
         }
     }
@@ -24,7 +54,7 @@ namespace SanyaPlugin
     {
         public static bool Prefix()
         {
-            Log.Debug($"[Patch.ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
+            Log.Debug($"[ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
             if(CancelWarheadPatch.Locked) return false;
             return true;
         }
@@ -35,12 +65,12 @@ namespace SanyaPlugin
     {
         public static void Postfix(Scp049PlayerScript __instance, ref GameObject target)
         {
-            Log.Debug($"[Patch.Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetName()} Target:{ReferenceHub.GetHub(target).GetName()}");
-            if(SanyaPluginConfig.recovery_amount_scp049 > 0)
+            Log.Debug($"[Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetName()} Target:{ReferenceHub.GetHub(target).GetName()}");
+            if(Configs.recovery_amount_scp049 > 0)
             {
-                ReferenceHub.GetHub(__instance.gameObject).playerStats.HealHPAmount(SanyaPluginConfig.recovery_amount_scp049);
+                ReferenceHub.GetHub(__instance.gameObject).playerStats.HealHPAmount(Configs.recovery_amount_scp049);
             }
-            if(SanyaPluginConfig.scp049_reset_ragdoll_after_recall)
+            if(Configs.scp049_reset_ragdoll_after_recall)
             {
                 foreach(var player in Player.GetHubs())
                 {
@@ -57,10 +87,10 @@ namespace SanyaPlugin
         {
             try
             {
-                if(!SanyaPluginConfig.intercom_information) return true;
+                if(!Configs.intercom_information) return true;
 
                 int leftdecont = (int)((Math.Truncate(((11.74f * 60) * 100f)) / 100f) - (Math.Truncate(PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>().time * 100f) / 100f));
-                int leftautowarhead = SanyaPluginConfig.auto_warhead_start - RoundSummary.roundTime;
+                int leftautowarhead = Configs.auto_warhead_start - RoundSummary.roundTime;
                 int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
                 string contentfix = string.Concat(
                     $"作戦経過時間 : {(RoundSummary.roundTime / 60).ToString("00")}:{(RoundSummary.roundTime % 60).ToString("00")}\n",
@@ -141,7 +171,7 @@ namespace SanyaPlugin
 
             //-------------------------------
             bool CanAccess = false;
-            if(SanyaPluginConfig.inventory_keycard_act)
+            if(Configs.inventory_keycard_act)
             {
                 Log.Debug($"[ContainLockerPatch] token:{accessToken}");
                 foreach(var item in __instance._inv.items)
@@ -155,7 +185,7 @@ namespace SanyaPlugin
             }
             //-------------------------------
 
-            if(__instance._sr.BypassMode || string.IsNullOrEmpty(accessToken) || (itemByID != null && itemByID.permissions.Contains<string>(accessToken)) || (SanyaPluginConfig.inventory_keycard_act && CanAccess))
+            if(__instance._sr.BypassMode || string.IsNullOrEmpty(accessToken) || (itemByID != null && itemByID.permissions.Contains<string>(accessToken)) || (Configs.inventory_keycard_act && CanAccess))
             {
                 bool flag = (singleton.openLockers[lockerId] & (1 << chamberNumber)) != 1 << chamberNumber;
                 singleton.ModifyOpen(lockerId, chamberNumber, flag);
@@ -184,6 +214,84 @@ namespace SanyaPlugin
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.RpcPlayAnnouncement))]
+    public class DecontAnnouncePatch
+    {
+        public static bool Prefix(DecontaminationLCZ __instance, ref int id, ref bool global)
+        {
+            Log.Debug($"[DecontAnnouncePatch] id:{id} global:{global}");
+            if(Configs.cassie_subtitle)
+            {
+                global = true;
+                switch(id)
+                {
+                    case 0:
+                        {
+                            Methods.SendSubtitle(Subtitles.DecontaminationInit, 20);
+                            break;
+                        }
+                    case 1:
+                        {
+                            Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
+                            break;
+                        }
+                    case 2:
+                        {
+                            Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
+                            break;
+                        }
+                    case 3:
+                        {
+                            Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
+                            break;
+                        }
+                    case 4:
+                        {
+                            Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
+                            break;
+                        }
+                    case 5:
+                        {
+                            Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
+                            break;
+                        }
+                }
+            }
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(NineTailedFoxUnits),nameof(NineTailedFoxUnits.AddUnit))]
+    public class NTFUnitPatch
+    {
+        public static void Postfix(NineTailedFoxUnits __instance, ref string unit)
+        {
+            Log.Debug($"[NTFUnitPatch] unit:{unit}");
+
+            if(Configs.cassie_subtitle && RoundSummary.roundTime > 2)
+            {
+                int SCPCount = 0;
+                foreach(var i in Player.GetHubs())
+                {
+                    if(i.GetTeam() == Team.SCP && i.GetRoleType() != RoleType.Scp0492)
+                    {
+                        SCPCount++;
+                    }
+                }
+
+                if(SCPCount > 0)
+                {
+                    Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}",unit).Replace("{1}",SCPCount.ToString()), 30);
+                }
+                else
+                {
+                    Methods.SendSubtitle(Subtitles.MTFRespawnNOSCPs.Replace("{0}", unit), 30);
+                }
+            }
+        }
+    }
+
 
     //[HarmonyPatch(typeof(DissonanceUserSetup),nameof(DissonanceUserSetup.CallCmdAltIsActive))]
     //public class VCPatch

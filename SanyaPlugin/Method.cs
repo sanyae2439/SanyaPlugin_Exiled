@@ -111,5 +111,65 @@ namespace SanyaPlugin
 
             yield break;
         }
+
+        static public IEnumerator<float> StartNightMode()
+        {
+            Log.Debug($"[StartNightMode] Started. Wait for {60}s...");
+            yield return Timing.WaitForSeconds(60f);
+            if(Configs.cassie_subtitle)
+            {
+                Methods.SendSubtitle(Subtitles.StartNightMode, 20);
+            }
+            PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
+            Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
+            yield break;
+        }
+    }
+
+    internal static class Methods
+    {
+        static public int GetRandomIndexFromWeight(int[] list)
+        {
+            int sum = 0;
+
+            foreach(int i in list)
+            {
+                if(i <= 0) continue;
+                sum += i;
+            }
+
+            int random = UnityEngine.Random.Range(0, sum);
+            for(int i = 0; i < list.Length; i++)
+            {
+                if(list[i] <= 0) continue;
+
+                if(random < list[i])
+                {
+                    return i;
+                }
+                random -= list[i];
+            }
+            return -1;
+        }
+
+        static public void SendSubtitle(string text, uint time, bool monospaced = false)
+        {
+            Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
+            brd.RpcClearElements();
+            brd.RpcAddElement(text, time, monospaced);
+        }
+
+        static public void SpawnRagdoll()
+        {
+            //UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
+            //                                                   player.transform.rotation,
+            //                                                   (int)player.GetRoleType(),
+            //                                                   info,
+            //                                                   false,
+            //                                                   player.GetComponent<MirrorIgnorancePlayer>().PlayerId,
+            //                                                   player.GetName(),
+            //                                                   player.queryProcessor.PlayerId
+            //                                                   );
+        }
     }
 }
