@@ -456,17 +456,15 @@ namespace SanyaPlugin
                 else
                 {
                     Team killerTeam = ev.Killer.GetTeam();
-                    if(ev.Info.GetDamageType() == DamageTypes.Grenade)
+                    foreach(var i in Player.GetHubs())
                     {
-                        foreach(var i in Player.GetHubs())
+                        if(i.queryProcessor.PlayerId == ev.Info.PlyId)
                         {
-                            if(i.queryProcessor.PlayerId == ev.Info.PlyId)
-                            {
-                                killerTeam = i.GetTeam();
-                            }
+                            killerTeam = i.GetTeam();
                         }
                     }
                     Log.Debug($"[CheckTeam] ply:{ev.Player.queryProcessor.PlayerId} kil:{ev.Killer.queryProcessor.PlayerId} plyid:{ev.Info.PlyId} killteam:{killerTeam}");
+ 
                     if(killerTeam == Team.CDP)
                     {
                         str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");

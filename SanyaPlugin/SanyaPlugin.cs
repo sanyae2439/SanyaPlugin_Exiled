@@ -10,7 +10,7 @@ namespace SanyaPlugin
     {
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.1.0c";
+        public static readonly string Version = "1.1.0d";
         public static readonly string TargetVersion = "1.7.12";
         public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
