@@ -18,6 +18,54 @@
             "</size></color>"
         );
 
+        internal static readonly string SCPDeathTesla = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}は自動セキュリティシステムによって無力化されました。{-1}》\n",
+            "</size><size=20>",
+            "《{0} successfully terminated by automatic security system.{-2}》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string SCPDeathDecont = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}は「再収容プロトコル」によって無力化されました。{-1}》\n",
+            "</size><size=20>",
+            "《{0} lost in decontamination sequence.{-2}》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string SCPDeathWarhead = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}はAlphaWarheadによって無力化されました。{-1}》\n",
+            "</size><size=20>",
+            "《{0} terminated by alpha warhead.{-2}》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string SCPDeathTerminated = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}は{1}によって無力化されました。{-1}》\n",
+            "</size><size=20>",
+            "《{0} terminated by {2}.{-2}》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string SCPDeathContainedMTF = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}の収容に成功しました。収容した部隊は{1}です。{-1}》\n",
+            "</size><size=20>",
+            "《{0} contained successfully. Containment unit:{1}.{-2}》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string SCPDeathUnknown = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《{0}の無力化に成功しました。無力化された原因は不明です。{-1}》\n",
+            "</size><size=20>",
+            "《{0} successfully terminated. Termination cause unspecified.{-2}》\n",
+            "</size></color>"
+        );
+
         internal static readonly string StartNightMode = string.Concat(
             "<color=#ff0000><size=25>",
             "《警告。施設の電源供給システムが攻撃を受けました。\nほぼ全ての部屋の照明は、発電機が作動するまで利用できません。》\n",

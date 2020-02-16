@@ -361,27 +361,33 @@ namespace SanyaPlugin
                 }
 
                 //SCPsDivisor
-                switch(ev.Player.GetRoleType())
+                if(damageTypes != DamageTypes.MicroHid 
+                    && damageTypes != DamageTypes.Decont 
+                    && damageTypes != DamageTypes.Nuke
+                    && damageTypes != DamageTypes.Tesla)
                 {
-                    case RoleType.Scp173:
-                        clinfo.Amount /= Configs.damage_divisor_scp173;
-                        break;
-                    case RoleType.Scp106:
-                        clinfo.Amount /= Configs.damage_divisor_scp106;
-                        break;
-                    case RoleType.Scp049:
-                        clinfo.Amount /= Configs.damage_divisor_scp049;
-                        break;
-                    case RoleType.Scp096:
-                        clinfo.Amount /= Configs.damage_divisor_scp096;
-                        break;
-                    case RoleType.Scp0492:
-                        clinfo.Amount /= Configs.damage_divisor_scp0492;
-                        break;
-                    case RoleType.Scp93953:
-                    case RoleType.Scp93989:
-                        clinfo.Amount /= Configs.damage_divisor_scp939;
-                        break;
+                    switch(ev.Player.GetRoleType())
+                    {
+                        case RoleType.Scp173:
+                            clinfo.Amount /= Configs.damage_divisor_scp173;
+                            break;
+                        case RoleType.Scp106:
+                            clinfo.Amount /= Configs.damage_divisor_scp106;
+                            break;
+                        case RoleType.Scp049:
+                            clinfo.Amount /= Configs.damage_divisor_scp049;
+                            break;
+                        case RoleType.Scp096:
+                            clinfo.Amount /= Configs.damage_divisor_scp096;
+                            break;
+                        case RoleType.Scp0492:
+                            clinfo.Amount /= Configs.damage_divisor_scp0492;
+                            break;
+                        case RoleType.Scp93953:
+                        case RoleType.Scp93989:
+                            clinfo.Amount /= Configs.damage_divisor_scp939;
+                            break;
+                    }
                 }
 
                 //*****Final*****
@@ -426,6 +432,87 @@ namespace SanyaPlugin
             if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
+            }
+
+            if(Configs.cassie_subtitle
+                && ev.Player.GetTeam() == Team.SCP
+                && ev.Player.GetRoleType() != RoleType.Scp0492)
+            {
+                string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRoleType()).fullName;
+
+                if(ev.Info.GetDamageType() == DamageTypes.Tesla)
+                {
+                    Methods.SendSubtitle(Subtitles.SCPDeathTesla.Replace("{0}", fullname), 15);
+                }
+                else if(ev.Info.GetDamageType() == DamageTypes.Nuke)
+                {
+                    Methods.SendSubtitle(Subtitles.SCPDeathWarhead.Replace("{0}", fullname), 15);
+                }
+                else if(ev.Info.GetDamageType() == DamageTypes.Decont)
+                {
+                    Methods.SendSubtitle(Subtitles.SCPDeathDecont.Replace("{0}", fullname), 15);
+                }
+                else
+                {
+                    Team killerTeam = ev.Killer.GetTeam();
+                    if(ev.Info.GetDamageType() == DamageTypes.Grenade)
+                    {
+                        foreach(var i in Player.GetHubs())
+                        {
+                            if(i.queryProcessor.PlayerId == ev.Info.PlyId)
+                            {
+                                killerTeam = i.GetTeam();
+                            }
+                        }
+                    }
+                    Log.Debug($"[CheckTeam] ply:{ev.Player.queryProcessor.PlayerId} kil:{ev.Killer.queryProcessor.PlayerId} plyid:{ev.Info.PlyId} killteam:{killerTeam}");
+
+                    int count = 0;
+                    bool isFound079 = false;
+                    foreach(var i in Player.GetHubs())
+                    {
+                        if(ev.Player.GetUserId() == i.GetUserId()) continue;
+                        if(i.GetTeam() == Team.SCP) count++;
+                        if(i.GetRoleType() == RoleType.Scp079) isFound079 = true;
+                    }
+
+                    string str = string.Empty;
+                    if(killerTeam == Team.CDP)
+                    {
+                        str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
+                    }
+                    else if(killerTeam == Team.CHI)
+                    {
+                        str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
+                    }
+                    else if(killerTeam == Team.RSC)
+                    {
+                        str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "科学者").Replace("{2}", "Science Personnel");
+                    }
+                    else if(killerTeam == Team.MTF)
+                    {
+                        string unit = NineTailedFoxUnits.host.list[ev.Killer.characterClassManager.NtfUnit];
+                        str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", unit);
+                    }
+                    else
+                    {
+                        str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
+                    }
+
+                    bool isForced = false;
+                    Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
+                    if(count == 1 && isFound079 && Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge)
+                    {
+                        isForced = true;
+                        str = str.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。").Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
+                    }
+                    else
+                    {
+                        str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
+                    }
+
+                    Methods.SendSubtitle(str, isForced ? 30u : 10u);
+                }
             }
         }
 
@@ -545,7 +632,7 @@ namespace SanyaPlugin
             if(Configs.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
 
             int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
-            if(Configs.cassie_subtitle)
+            if(Configs.cassie_subtitle && !Generator079.mainGenerator.forcedOvercharge)
             {
                 if(curgen < 5)
                 {
@@ -623,7 +710,7 @@ namespace SanyaPlugin
                                 ReturnStr = "test ok.";
                                 break;
                             }
-                        case "config":
+                        case "showconfig":
                             {
                                 ReturnStr = Configs.GetConfigs();
                                 break;
@@ -774,7 +861,7 @@ namespace SanyaPlugin
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RAMessage("Usage : SANYA < CONFIG / RELOAD / NUKELOCK / SPAWN / TEST >", false);
+                    ev.Sender.RAMessage("Usage : SANYA < RELOAD / SHOWCONFIG / NUKELOCK / BLACKOUT / EV / GEN / SPAWN / NEXT >", false);
                 }
             }
         }
