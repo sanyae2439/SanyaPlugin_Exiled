@@ -65,7 +65,7 @@ namespace SanyaPlugin
     {
         public static void Postfix(Scp049PlayerScript __instance, ref GameObject target)
         {
-            Log.Debug($"[Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetName()} Target:{ReferenceHub.GetHub(target).GetName()}");
+            Log.Debug($"[Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetNickname()} Target:{ReferenceHub.GetHub(target).GetNickname()}");
             if(Configs.recovery_amount_scp049 > 0)
             {
                 ReferenceHub.GetHub(__instance.gameObject).playerStats.HealHPAmount(Configs.recovery_amount_scp049);
@@ -274,7 +274,7 @@ namespace SanyaPlugin
                 int SCPCount = 0;
                 foreach(var i in Player.GetHubs())
                 {
-                    if(i.GetTeam() == Team.SCP && i.GetRoleType() != RoleType.Scp0492)
+                    if(i.GetTeam() == Team.SCP && i.GetRole() != RoleType.Scp0492)
                     {
                         SCPCount++;
                     }

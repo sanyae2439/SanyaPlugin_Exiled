@@ -137,24 +137,24 @@ namespace SanyaPlugin
                                 case Team.MTF:
                                     if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
                                     {
-                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : MTF->CHI");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : MTF->CHI");
                                         player.characterClassManager.SetPlayersClass(RoleType.ChaosInsurgency, player.gameObject);
                                     }
                                     else
                                     {
-                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : Traitor Failed(by percent)");
                                         player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
                                     }
                                     break;
                                 case Team.CHI:
                                     if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
                                     {
-                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : CHI->MTF");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : CHI->MTF");
                                         player.characterClassManager.SetPlayersClass(RoleType.NtfCadet, player.gameObject);
                                     }
                                     else
                                     {
-                                        Log.Info($"[_EverySecond:Traitor] {player.GetName()} : Traitor Failed(by percent)");
+                                        Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : Traitor Failed(by percent)");
                                         player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
                                     }
                                     break;
@@ -252,7 +252,7 @@ namespace SanyaPlugin
 
                     if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
                     {
-                        if(player.GetRoleType() == RoleType.Spectator)
+                        if(player.GetRole() == RoleType.Spectator)
                         {
                             PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_other);
                         }
@@ -290,7 +290,7 @@ namespace SanyaPlugin
         public void OnPlayerJoin(PlayerJoinEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Log.Info($"[OnPlayerJoin] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+            Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
             if(Configs.data_enabled)
             {
@@ -312,7 +312,7 @@ namespace SanyaPlugin
         public void OnPlayerLeave(PlayerLeaveEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Log.Debug($"[OnPlayerLeave] {ev.Player.GetName()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+            Log.Debug($"[OnPlayerLeave] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
         }
 
         public void OnStartItems(StartItemsEvent ev)
@@ -328,18 +328,29 @@ namespace SanyaPlugin
         public void OnPlayerSetClass(SetClassEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
-            Log.Debug($"[OnPlayerSetClass] {ev.Player.GetName()} -> {ev.Role}");
+            Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
         }
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
-            Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
 
             DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
-            if(damageTypes != DamageTypes.Nuke && damageTypes != DamageTypes.Decont && damageTypes != DamageTypes.Wall && damageTypes != DamageTypes.Tesla)
+            if(damageTypes != DamageTypes.Nuke 
+                && damageTypes != DamageTypes.Decont 
+                && damageTypes != DamageTypes.Wall 
+                && damageTypes != DamageTypes.Tesla)
             {
                 PlayerStats.HitInfo clinfo = ev.Info;
+
+                //GrenadeHitmark
+                if(Configs.grenade_hitmark 
+                    && damageTypes == DamageTypes.Grenade
+                    && ev.Player.GetUserId() != ev.Attacker.GetUserId())
+                {
+                    ev.Attacker.GetComponent<Scp173PlayerScript>()?.TargetHitMarker(ev.Attacker.characterClassManager.connectionToClient);
+                }
 
                 //USPMultiplier
                 if(damageTypes == DamageTypes.Usp)
@@ -361,12 +372,9 @@ namespace SanyaPlugin
                 }
 
                 //SCPsDivisor
-                if(damageTypes != DamageTypes.MicroHid 
-                    && damageTypes != DamageTypes.Decont 
-                    && damageTypes != DamageTypes.Nuke
-                    && damageTypes != DamageTypes.Tesla)
+                if(damageTypes != DamageTypes.MicroHid)
                 {
-                    switch(ev.Player.GetRoleType())
+                    switch(ev.Player.GetRole())
                     {
                         case RoleType.Scp173:
                             clinfo.Amount /= Configs.damage_divisor_scp173;
@@ -394,13 +402,13 @@ namespace SanyaPlugin
                 ev.Info = clinfo;
             }
 
-            Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetName()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
         }
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
-            Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetName()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetName()}");
+            Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}");
 
             if(Configs.data_enabled)
             {
@@ -417,28 +425,28 @@ namespace SanyaPlugin
                 }
             }
 
-            if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRoleType() == RoleType.Scp173 && Configs.recovery_amount_scp173 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRole() == RoleType.Scp173 && Configs.recovery_amount_scp173 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp173);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRoleType() == RoleType.Scp096 && Configs.recovery_amount_scp096 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRole() == RoleType.Scp096 && Configs.recovery_amount_scp096 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp096);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRoleType() == RoleType.Scp93953 || ev.Killer.GetRoleType() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRole() == RoleType.Scp93953 || ev.Killer.GetRole() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
             }
-            if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRoleType() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
+            if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRole() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
             }
 
             if(Configs.cassie_subtitle
                 && ev.Player.GetTeam() == Team.SCP
-                && ev.Player.GetRoleType() != RoleType.Scp0492)
+                && ev.Player.GetRole() != RoleType.Scp0492)
             {
-                string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRoleType()).fullName;
+                string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRole()).fullName;
                 string str = string.Empty;
 
                 if(ev.Info.GetDamageType() == DamageTypes.Tesla)
@@ -495,7 +503,7 @@ namespace SanyaPlugin
                 {
                     if(ev.Player.GetUserId() == i.GetUserId()) continue;
                     if(i.GetTeam() == Team.SCP) count++;
-                    if(i.GetRoleType() == RoleType.Scp079) isFound079 = true;
+                    if(i.GetRole() == RoleType.Scp079) isFound079 = true;
                 }
 
                 Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
@@ -519,13 +527,13 @@ namespace SanyaPlugin
 
         public void OnPocketDimDeath(PocketDimDeathEvent ev)
         {
-            Log.Debug($"[OnPocketDimDeath] {ev.Player.GetName()}");
+            Log.Debug($"[OnPocketDimDeath] {ev.Player.GetNickname()}");
 
             if(Configs.data_enabled)
             {
                 foreach(ReferenceHub player in Player.GetHubs())
                 {
-                    if(player.GetRoleType() == RoleType.Scp106)
+                    if(player.GetRole() == RoleType.Scp106)
                     {
                         if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
                         {
@@ -539,7 +547,7 @@ namespace SanyaPlugin
             {
                 foreach(ReferenceHub player in Player.GetHubs())
                 {
-                    if(player.GetRoleType() == RoleType.Scp106)
+                    if(player.GetRole() == RoleType.Scp106)
                     {
                         player.playerStats.HealHPAmount(Configs.recovery_amount_scp106);
                         player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
@@ -570,7 +578,7 @@ namespace SanyaPlugin
 
         public void OnPlayerDoorInteract(ref DoorInteractionEvent ev)
         {
-            Log.Debug($"[OnPlayerDoorInteract] {ev.Player.GetName()}:{ev.Door.DoorName}:{ev.Door.permissionLevel}");
+            Log.Debug($"[OnPlayerDoorInteract] {ev.Player.GetNickname()}:{ev.Door.DoorName}:{ev.Door.permissionLevel}");
 
             if(Configs.inventory_keycard_act && ev.Player.GetTeam() != Team.SCP && !ev.Player.serverRoles.BypassMode && !ev.Door.locked)
             {
@@ -593,7 +601,7 @@ namespace SanyaPlugin
 
         public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
         {
-            Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
             if(Configs.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
             {
                 foreach(var item in ev.Player.inventory.items)
@@ -617,13 +625,13 @@ namespace SanyaPlugin
 
         public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
         {
-            Log.Debug($"[OnGeneratorOpen] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorOpen] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
             if(ev.Generator.prevFinish && Configs.generator_finish_to_lock) ev.Allow = false;
         }
 
         public void OnGeneratorClose(ref GeneratorCloseEvent ev)
         {
-            Log.Debug($"[OnGeneratorClose] {ev.Player.GetName()} -> {ev.Generator.curRoom}");
+            Log.Debug($"[OnGeneratorClose] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
             if(ev.Allow && ev.Generator.isTabletConnected && Configs.generator_activating_opened) ev.Allow = false;
         }
 
@@ -667,7 +675,7 @@ namespace SanyaPlugin
 
         public void OnConsoleCommand(ConsoleCommandEvent ev)
         {
-            Log.Debug($"[OnConsoleCommand] [Before] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+            Log.Debug($"[OnConsoleCommand] [Before] Called:{ev.Player.GetNickname()} Command:{ev.Command} Return:{ev.ReturnMessage}");
 
             //if(ev.ReturnMessage == "Command not found.")
             //{
@@ -690,7 +698,7 @@ namespace SanyaPlugin
             //    }
             //}
 
-            Log.Debug($"[OnConsoleCommand] [After] Called:{ev.Player.GetName()} Command:{ev.Command} Return:{ev.ReturnMessage}");
+            Log.Debug($"[OnConsoleCommand] [After] Called:{ev.Player.GetNickname()} Command:{ev.Command} Return:{ev.ReturnMessage}");
         }
 
         public void OnCommand(ref RACommandEvent ev)

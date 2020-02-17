@@ -10,11 +10,7 @@ namespace SanyaPlugin
         {
             return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
         }
-        public static string GetName(this ReferenceHub player) => player.nicknameSync.MyNick;
-        public static string GetIpAddress(this ReferenceHub player) => player.characterClassManager.RequestIp;
-        public static string GetUserId(this ReferenceHub player) => player.characterClassManager.UserId;
-        public static RoleType GetRoleType(this ReferenceHub player) => player.characterClassManager.CurClass;
-        public static Team GetTeam(this ReferenceHub player) => Player.GetTeam(player.GetRoleType());
         public static bool IsHandCuffed(this ReferenceHub player) => player.handcuffs.CufferId != -1;
+        public static string GetIpAddress(this ReferenceHub player) => player.characterClassManager.RequestIp;
     }
 }
