@@ -10,8 +10,8 @@ namespace SanyaPlugin
     {
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.1.1b";
-        public static readonly string TargetVersion = "1.7.15";
+        public static readonly string Version = "1.1.1c";
+        public static readonly string TargetVersion = "1.8.0";
         public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
         public EventHandlers EventHandlers;
@@ -46,6 +46,7 @@ namespace SanyaPlugin
             Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
             Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
             Events.DoorInteractEvent += EventHandlers.OnPlayerDoorInteract;
+            Events.LockerInteractEvent += EventHandlers.OnPlayerLockerInteract;
             Events.TeamRespawnEvent += EventHandlers.OnTeamRespawn;
             Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
@@ -83,6 +84,7 @@ namespace SanyaPlugin
             Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
             Events.TriggerTeslaEvent -= EventHandlers.OnPlayerTriggerTesla;
             Events.DoorInteractEvent -= EventHandlers.OnPlayerDoorInteract;
+            Events.LockerInteractEvent -= EventHandlers.OnPlayerLockerInteract;
             Events.TeamRespawnEvent -= EventHandlers.OnTeamRespawn;
             Events.GeneratorUnlockEvent -= EventHandlers.OnGeneratorUnlock;
             Events.GeneratorOpenedEvent -= EventHandlers.OnGeneratorOpen;

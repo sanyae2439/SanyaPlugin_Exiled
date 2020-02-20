@@ -594,6 +594,22 @@ namespace SanyaPlugin
             }
         }
 
+        public void OnPlayerLockerInteract(LockerInteractionEvent ev)
+        {
+            Log.Debug($"[OnPlayerLockerInteract] {ev.Player.GetNickname()}:{ev.LockerId}");
+            if(Configs.inventory_keycard_act)
+            {
+                foreach(var item in ev.Player.inventory.items)
+                {
+                    Log.Debug($"[OnPlayerLockerInteract] inv:{item.id} perm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
+                    if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("PEDESTAL_ACC"))
+                    {
+                        ev.Allow = true;
+                    }
+                }
+            }
+        }
+
         public void OnTeamRespawn(ref TeamRespawnEvent ev)
         {
             Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
