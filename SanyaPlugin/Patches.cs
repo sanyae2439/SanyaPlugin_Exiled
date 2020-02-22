@@ -228,6 +228,52 @@ namespace SanyaPlugin
         }
     }
 
+    [HarmonyPatch(typeof(Scp096PlayerScript),nameof(Scp096PlayerScript.ProcessLooking))]
+    public class Scp096LookingPatch
+    {
+        public static bool Prefix(Scp096PlayerScript __instance)
+        {
+            foreach(var player in PlayerManager.players)
+            {
+                ReferenceHub hubs = ReferenceHub.GetHub(player);
+                if(!hubs.characterClassManager.Scp173.SameClass && hubs.characterClassManager.Scp173.LookFor173(__instance.gameObject, true))
+                {
+                    __instance.IncreaseRage(Time.fixedDeltaTime);
+                }
+            }
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AnimationController),nameof(AnimationController.CallCmdSneakHasChanged))]
+    public class SneakFixPatch
+    {
+        public static bool Prefix(AnimationController __instance, ref bool b)
+        {
+            if(b && __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team == Team.SCP)
+            {
+                b = false;
+            }
+            if(b != __instance.sneaking)
+            {
+                __instance.Networksneaking = b;
+            }
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AnimationController), nameof(AnimationController.CallCmdSprintHasChanged))]
+    public class SprintFixPatch
+    {
+        public static bool Prefix(AnimationController __instance, ref bool b)
+        {
+            if(__instance._sneakRateLimit.CanExecute() && b != __instance.sprinting)
+            {
+                __instance.Networksprinting = b;
+            }
+            return false;
+        }
+    }
 
     //[HarmonyPatch(typeof(DissonanceUserSetup),nameof(DissonanceUserSetup.CallCmdAltIsActive))]
     //public class VCPatch
