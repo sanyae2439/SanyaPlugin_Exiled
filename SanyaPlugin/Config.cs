@@ -37,6 +37,7 @@ namespace SanyaPlugin
         //Human:Balanced
         internal static bool inventory_keycard_act;
         internal static bool grenade_hitmark;
+        internal static bool kill_hitmark;
         internal static int traitor_limitter;
         internal static int traitor_chance_percent;
 
@@ -97,6 +98,7 @@ namespace SanyaPlugin
 
             inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
             grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
+            kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
             traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
             traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 

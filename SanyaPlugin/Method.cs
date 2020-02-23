@@ -125,6 +125,13 @@ namespace SanyaPlugin
             Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
             yield break;
         }
+
+        static public IEnumerator<float> BigHitmark(MicroHID microHID)
+        {
+            yield return Timing.WaitForSeconds(0.1f);
+            microHID.TargetSendHitmarker(false);
+            yield break;
+        }
     }
 
     internal static class Methods

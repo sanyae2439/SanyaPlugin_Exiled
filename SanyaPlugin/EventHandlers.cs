@@ -442,6 +442,14 @@ namespace SanyaPlugin
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
             }
 
+            if(Configs.kill_hitmark
+                && ev.Killer.GetTeam() != Team.SCP
+                && !string.IsNullOrEmpty(ev.Killer.GetUserId())
+                && ev.Killer.GetUserId() != ev.Player.GetUserId())
+            {
+                Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GetComponent<MicroHID>()));
+            }
+
             if(Configs.cassie_subtitle
                 && ev.Player.GetTeam() == Team.SCP
                 && ev.Player.GetRole() != RoleType.Scp0492)
