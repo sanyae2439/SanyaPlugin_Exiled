@@ -236,7 +236,9 @@ namespace SanyaPlugin
             foreach(var player in PlayerManager.players)
             {
                 ReferenceHub hubs = ReferenceHub.GetHub(player);
-                if(!hubs.characterClassManager.Scp173.SameClass && hubs.characterClassManager.Scp173.LookFor173(__instance.gameObject, true))
+                if(!hubs.characterClassManager.Scp173.SameClass 
+                    && hubs.characterClassManager.Scp173.LookFor173(__instance.gameObject, true)
+                    && __instance._ccm.Scp173.LookFor173(player, false))
                 {
                     __instance.IncreaseRage(Time.fixedDeltaTime);
                 }
