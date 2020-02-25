@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using EXILED;
 using EXILED.Extensions;
 using Harmony;
+using Security;
 using UnityEngine;
 
 namespace SanyaPlugin
@@ -247,33 +249,17 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(AnimationController),nameof(AnimationController.CallCmdSneakHasChanged))]
-    public class SneakFixPatch
+    [HarmonyPatch(typeof(RateLimit),nameof(RateLimit.CanExecute))]
+    public class RateLimitPatch
     {
-        public static bool Prefix(AnimationController __instance, ref bool b)
+        public static void Postfix(RateLimit __instance, ref bool __result)
         {
-            if(b && __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team == Team.SCP)
+            if(__result == false)
             {
-                b = false;
+                __result = true;
+                Log.Debug($"[RateLimitPatch] {__instance._usagesAllowed}:{__instance._timeWindow}");
             }
-            if(b != __instance.sneaking)
-            {
-                __instance.Networksneaking = b;
-            }
-            return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(AnimationController), nameof(AnimationController.CallCmdSprintHasChanged))]
-    public class SprintFixPatch
-    {
-        public static bool Prefix(AnimationController __instance, ref bool b)
-        {
-            if(__instance._sneakRateLimit.CanExecute() && b != __instance.sprinting)
-            {
-                __instance.Networksprinting = b;
-            }
-            return false;
+            return;
         }
     }
 

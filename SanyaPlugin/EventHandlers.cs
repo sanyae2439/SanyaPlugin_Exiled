@@ -732,6 +732,8 @@ namespace SanyaPlugin
             string[] args = ev.Command.Split(' ');
             string ReturnStr = string.Empty;
             bool isSuccess = true;
+            ReferenceHub player = Player.GetPlayer(ev.Sender.SenderId);
+
             if(args[0].ToLower() == "sanya")
             {
                 if(args.Length > 1)
@@ -752,6 +754,17 @@ namespace SanyaPlugin
                             {
                                 Configs.Reload();
                                 ReturnStr = "reload ok";
+                                break;
+                            }
+                        case "096":
+                            {
+                                foreach(var i in Player.GetHubs())
+                                {
+                                    if(i.GetRole() == RoleType.Scp096)
+                                    {
+                                        i.characterClassManager.Scp096.IncreaseRage(20f);
+                                    }
+                                }
                                 break;
                             }
                         case "nukelock":
