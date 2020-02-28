@@ -313,11 +313,20 @@ namespace SanyaPlugin
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Log.Debug($"[OnPlayerLeave] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+
+            if(Configs.data_enabled)
+            {
+                if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
+                {
+                    PlayerDataManager.playersData.Remove(ev.Player.GetUserId());
+
+                }
+            }
         }
 
         public void OnStartItems(StartItemsEvent ev)
         {
-            Log.Debug($"[OnStartItems] {ev.Role}");
+            Log.Debug($"[OnStartItems] {ev.Role} {ev.Player.GetNickname()}");
 
             if(Configs.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
             {
