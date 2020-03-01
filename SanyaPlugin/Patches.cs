@@ -67,7 +67,10 @@ namespace SanyaPlugin
     {
         public static void Postfix(Scp049PlayerScript __instance, ref GameObject target)
         {
-            Log.Debug($"[Recall049Patch] SCP049:{ReferenceHub.GetHub(__instance.gameObject).GetNickname()} Target:{ReferenceHub.GetHub(target).GetNickname()}");
+            Log.Debug($"[Recall049Patch] SCP049:{Player.GetPlayer(__instance.gameObject).GetNickname()} Target:{Player.GetPlayer(target).GetNickname()} TargetRole:{Player.GetPlayer(target).GetRole()}");
+
+            if(Player.GetPlayer(target)?.GetRole() != RoleType.Spectator) return;
+
             if(Configs.recovery_amount_scp049 > 0)
             {
                 ReferenceHub.GetHub(__instance.gameObject).playerStats.HealHPAmount(Configs.recovery_amount_scp049);
@@ -256,10 +259,8 @@ namespace SanyaPlugin
         {
             if(__result == false)
             {
-                __result = true;
                 Log.Debug($"[RateLimitPatch] {__instance._usagesAllowed}:{__instance._timeWindow}");
             }
-            return;
         }
     }
 
