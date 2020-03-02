@@ -406,7 +406,8 @@ namespace SanyaPlugin
 
                 if(Configs.scp939_dot_damage > 0
                     && damageTypes == DamageTypes.Scp939
-                    && ev.Player.GetUserId() != ev.Attacker.GetUserId())
+                    && ev.Player.GetUserId() != ev.Attacker.GetUserId()
+                    && Coroutines.DOTDamages.ContainsKey(ev.Player))
                 {
                     Log.Debug($"[939DOT] fired {ev.Attacker?.GetNickname()}");
                     var cor = Timing.RunCoroutine(Coroutines.DOTDamage(ev.Player, Configs.scp939_dot_damage, Configs.scp939_dot_damage_total, Configs.scp939_dot_damage_interval, DamageTypes.Scp939));
