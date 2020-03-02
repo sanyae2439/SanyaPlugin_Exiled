@@ -270,8 +270,8 @@ namespace SanyaPlugin
             }
         }
     }
-    
-    [HarmonyPatch(typeof(MTFRespawn),nameof(MTFRespawn.SummonChopper))]
+
+    [HarmonyPatch(typeof(MTFRespawn), nameof(MTFRespawn.SummonChopper))]
     public class StopChopperAfterDetonatedPatch
     {
         public static bool Prefix(MTFRespawn __instance)
@@ -300,7 +300,7 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(ConsumableAndWearableItems),nameof(ConsumableAndWearableItems.RpcSetCooldown))]
+    [HarmonyPatch(typeof(ConsumableAndWearableItems), nameof(ConsumableAndWearableItems.RpcSetCooldown))]
     public class MedicalUsedPatch
     {
         public static void Postfix(ConsumableAndWearableItems __instance, int mid)
@@ -311,7 +311,7 @@ namespace SanyaPlugin
 
             if(itemtype == ItemType.Medkit || itemtype == ItemType.SCP500)
             {
-                if(Coroutines.DOTDamages.TryGetValue(player,out CoroutineHandle handle))
+                if(Coroutines.DOTDamages.TryGetValue(player, out CoroutineHandle handle))
                 {
                     Timing.KillCoroutines(handle);
                     Coroutines.DOTDamages.Remove(player);

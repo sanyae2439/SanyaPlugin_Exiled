@@ -299,6 +299,7 @@ namespace SanyaPlugin
 
             autowarheadstarted = false;
             detonatedDuration = -1;
+            Coroutines.isAirBombGoing = false;
             CancelWarheadPatch.Locked = false;
         }
 
