@@ -339,7 +339,6 @@ namespace SanyaPlugin
 
         public static void Postfix(Grenades.Grenade __instance)
         {
-            Log.Debug($"[GrenadePatch] thrower:{__instance.NetworkthrowerGameObject.name}");
             if(__instance.NetworkthrowerGameObject.name == "Host" || instantFusePlayers.Contains(__instance.NetworkthrowerGameObject))
                 __instance.NetworkfuseTime = 0f;
         }

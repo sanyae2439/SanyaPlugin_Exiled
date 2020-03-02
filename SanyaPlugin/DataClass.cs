@@ -22,7 +22,9 @@ namespace SanyaPlugin
 
     public static class OutsideRandomAirbombPos
     {
-        public static readonly List<Vector3> pos = new List<Vector3>{
+        public static List<Vector3> Load()
+        {
+            return new List<Vector3>{
                 new Vector3(UnityEngine.Random.Range(175, 182),  984, UnityEngine.Random.Range( 25,  29)),
                 new Vector3(UnityEngine.Random.Range(174, 182),  984, UnityEngine.Random.Range( 36,  39)),
                 new Vector3(UnityEngine.Random.Range(174, 182),  984, UnityEngine.Random.Range( 36,  39)),
@@ -59,6 +61,7 @@ namespace SanyaPlugin
                 new Vector3(UnityEngine.Random.Range(  2,  14), 1001, UnityEngine.Random.Range(  3,  -3)),
                 new Vector3(UnityEngine.Random.Range( -1, -13), 1001, UnityEngine.Random.Range(  4,  -3))
             };
+    }
     }
 
     public class Serverinfo

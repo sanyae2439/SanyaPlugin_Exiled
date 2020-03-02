@@ -814,6 +814,12 @@ namespace SanyaPlugin
                                 ReturnStr = "reload ok";
                                 break;
                             }
+                        case "startair":
+                            {
+                                roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb()));
+                                ReturnStr = "Started!";
+                                break;
+                            }
                         case "stopair":
                             {
                                 ReturnStr = $"Stop ok. now:{Coroutines.isAirBombGoing}";

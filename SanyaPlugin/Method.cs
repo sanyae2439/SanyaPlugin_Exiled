@@ -168,16 +168,17 @@ namespace SanyaPlugin
             }
 
             Log.Info($"[AirSupportBomb] throwing...");
+            int throwcount = 0;
             while(isAirBombGoing)
             {
-                List<Vector3> randampos = OutsideRandomAirbombPos.pos;
-                randampos.OrderBy(x => Guid.NewGuid()).ToList();
+                List<Vector3> randampos = OutsideRandomAirbombPos.Load().OrderBy(x => Guid.NewGuid()).ToList();
                 foreach(var pos in randampos)
                 {
                     Methods.Explode(pos, (int)GRENADE_ID.FRAG_NADE);
-                    yield return Timing.WaitForSeconds(0.1f);
+                    yield return Timing.WaitForSeconds(0.25f);
                 }
-                yield return Timing.WaitForSeconds(0.25f);
+                throwcount++;
+                Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
             }
 
             if(Configs.cassie_subtitle)
