@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using EXILED;
 using EXILED.Extensions;
 using Harmony;
+using Mirror;
 using Security;
 using UnityEngine;
+using Assets._Scripts.Dissonance;
+using MEC;
 
 namespace SanyaPlugin
 {
@@ -95,16 +98,28 @@ namespace SanyaPlugin
                 if(!Configs.intercom_information) return true;
 
                 int leftdecont = (int)((Math.Truncate(((11.74f * 60) * 100f)) / 100f) - (Math.Truncate(PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>().time * 100f) / 100f));
-                int leftautowarhead = Configs.auto_warhead_start - RoundSummary.roundTime;
+                int leftautowarhead = Mathf.Clamp(Configs.auto_warhead_start - RoundSummary.roundTime, 0, Configs.auto_warhead_start);
                 int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
+                bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.NetworkallowContain;
+                bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().Networkused;
+
+                float totalvoltagefloat = 0f;
+                foreach(var i in Generator079.generators)
+                {
+                    totalvoltagefloat += i.localVoltage;
+                }
+                totalvoltagefloat *= 1000f;
+
                 string contentfix = string.Concat(
                     $"作戦経過時間 : {(RoundSummary.roundTime / 60).ToString("00")}:{(RoundSummary.roundTime % 60).ToString("00")}\n",
-                    $"残存SCP : {(RoundSummary.singleton.CountTeam(Team.SCP)).ToString("00")}/{RoundSummary.singleton.classlistStart.scps_except_zombies.ToString("00")}\n",
+                    $"残存SCPオブジェクト : {(RoundSummary.singleton.CountTeam(Team.SCP)).ToString("00")}/{RoundSummary.singleton.classlistStart.scps_except_zombies.ToString("00")}\n",
                     $"残存Dクラス職員 : {(RoundSummary.singleton.CountTeam(Team.CDP)).ToString("00")}/{RoundSummary.singleton.classlistStart.class_ds.ToString("00")}\n",
                     $"残存科学者 : {(RoundSummary.singleton.CountTeam(Team.RSC)).ToString("00")}/{RoundSummary.singleton.classlistStart.scientists.ToString("00")}\n",
-                    $"起動済み発電機 : {Generator079.mainGenerator.totalVoltage.ToString("00")}/05\n",
-                    $"最下層閉鎖まで : {(leftdecont / 60).ToString("00")}:{(leftdecont % 60).ToString("00")}\n",
-                    $"自動施設爆破まで : {(leftautowarhead / 60).ToString("00")}:{(leftautowarhead % 60).ToString("00")}\n",
+                    $"施設内余剰電力 : {totalvoltagefloat.ToString("0000")}kVA\n",
+                    $"AlphaWarheadのステータス : {(AlphaWarheadOutsitePanel.nukeside.Networkenabled ? "READY" : "DISABLED")}\n",
+                    $"SCP-106再収用設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
+                    $"軽度収用区画閉鎖まで : {(leftdecont / 60).ToString("00")}:{(leftdecont % 60).ToString("00")}\n",
+                    $"自動施設爆破開始まで : {(leftautowarhead / 60).ToString("00")}:{(leftautowarhead % 60).ToString("00")}\n",
                     $"接近中の部隊突入まで : {(nextRespawn / 60).ToString("00")}:{(nextRespawn % 60).ToString("00")}\n"
                     );
 
@@ -129,7 +144,7 @@ namespace SanyaPlugin
                     }
                     else
                     {
-                        __instance._content = contentfix + "放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
+                        __instance._content = contentfix + $"{ReferenceHub.GetHub(__instance.Networkspeaker).GetNickname()}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
                     }
                 }
                 else
@@ -203,7 +218,30 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(NineTailedFoxUnits),nameof(NineTailedFoxUnits.AddUnit))]
+    [HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.DoServersideStuff))]
+    public class DecontStopDelayPatch
+    {
+        public static bool Prefix(DecontaminationLCZ __instance)
+        {
+            if(!NetworkServer.active || __instance._curAnm >= __instance.announcements.Count || !__instance._ccm.RoundStarted)
+            {
+                return false;
+            }
+            __instance.time += Time.deltaTime;
+            if(__instance.time / 60f > __instance.announcements[__instance._curAnm].startTime)
+            {
+                __instance.RpcPlayAnnouncement(__instance._curAnm, __instance.GetOption("global", __instance._curAnm));
+                if(__instance.GetOption("checkpoints", __instance._curAnm))
+                {
+                    __instance.Invoke("CallOpenDoors", 10f);
+                }
+                __instance._curAnm++;
+            }
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(NineTailedFoxUnits), nameof(NineTailedFoxUnits.AddUnit))]
     public class NTFUnitPatch
     {
         public static void Postfix(NineTailedFoxUnits __instance, ref string unit)
@@ -223,7 +261,7 @@ namespace SanyaPlugin
 
                 if(SCPCount > 0)
                 {
-                    Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}",unit).Replace("{1}",SCPCount.ToString()), 30);
+                    Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}", unit).Replace("{1}", SCPCount.ToString()), 30);
                 }
                 else
                 {
@@ -232,8 +270,18 @@ namespace SanyaPlugin
             }
         }
     }
+    
+    [HarmonyPatch(typeof(MTFRespawn),nameof(MTFRespawn.SummonChopper))]
+    public class StopChopperAfterDetonatedPatch
+    {
+        public static bool Prefix(MTFRespawn __instance)
+        {
+            if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated) return false;
+            else return true;
+        }
+    }
 
-    [HarmonyPatch(typeof(Scp096PlayerScript),nameof(Scp096PlayerScript.ProcessLooking))]
+    [HarmonyPatch(typeof(Scp096PlayerScript), nameof(Scp096PlayerScript.ProcessLooking))]
     public class Scp096LookingPatch
     {
         public static bool Prefix(Scp096PlayerScript __instance)
@@ -241,7 +289,7 @@ namespace SanyaPlugin
             foreach(var player in PlayerManager.players)
             {
                 ReferenceHub hubs = ReferenceHub.GetHub(player);
-                if(!hubs.characterClassManager.Scp173.SameClass 
+                if(!hubs.characterClassManager.Scp173.SameClass
                     && hubs.characterClassManager.Scp173.LookFor173(__instance.gameObject, true)
                     && __instance._ccm.Scp173.LookFor173(player, false))
                 {
@@ -252,7 +300,27 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(RateLimit),nameof(RateLimit.CanExecute))]
+    [HarmonyPatch(typeof(ConsumableAndWearableItems),nameof(ConsumableAndWearableItems.RpcSetCooldown))]
+    public class MedicalUsedPatch
+    {
+        public static void Postfix(ConsumableAndWearableItems __instance, int mid)
+        {
+            ReferenceHub player = ReferenceHub.GetHub(__instance.gameObject);
+            ItemType itemtype = __instance.usableItems[mid].inventoryID;
+            Log.Debug($"[MedicalUsedPatch] {player?.GetNickname()} mid:{mid}/{itemtype}");
+
+            if(itemtype == ItemType.Medkit || itemtype == ItemType.SCP500)
+            {
+                if(Coroutines.DOTDamages.TryGetValue(player,out CoroutineHandle handle))
+                {
+                    Timing.KillCoroutines(handle);
+                    Coroutines.DOTDamages.Remove(player);
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
     public class RateLimitPatch
     {
         public static void Postfix(RateLimit __instance, ref bool __result)
@@ -264,12 +332,49 @@ namespace SanyaPlugin
         }
     }
 
-    //[HarmonyPatch(typeof(DissonanceUserSetup),nameof(DissonanceUserSetup.CallCmdAltIsActive))]
-    //public class VCPatch
-    //{
-    //    public static void Prefix(DissonanceUserSetup __instance, bool value)
-    //    {
+    [HarmonyPatch(typeof(Grenades.Grenade), nameof(Grenades.Grenade.FullInitData))]
+    public class GrenadePatch
+    {
+        public static List<GameObject> instantFusePlayers = new List<GameObject>();
 
-    //    }
-    //}
+        public static void Postfix(Grenades.Grenade __instance)
+        {
+            Log.Debug($"[GrenadePatch] thrower:{__instance.NetworkthrowerGameObject.name}");
+            if(__instance.NetworkthrowerGameObject.name == "Host" || instantFusePlayers.Contains(__instance.NetworkthrowerGameObject))
+                __instance.NetworkfuseTime = 0f;
+        }
+    }
+
+    [HarmonyPatch(typeof(Grenades.Grenade), nameof(Grenades.Grenade.ServersideExplosion))]
+    public class GrenadeLogPatch
+    {
+        public static bool Prefix(Grenades.Grenade __instance, ref bool __result)
+        {
+            if(__instance.thrower.name != "Host")
+            {
+                string text = (__instance.thrower != null) ? (__instance.thrower.ccm.UserId + " (" + __instance.thrower.nick.MyNick + ")") : "(UNKNOWN)";
+                ServerLogs.AddLog(ServerLogs.Modules.Logger, "Player " + text + "'s " + __instance.logName + " grenade exploded.", ServerLogs.ServerLogType.GameEvent);
+
+            }
+            __result = true;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.CallCmdAltIsActive))]
+    public class VCPatch
+    {
+        public static void Prefix(DissonanceUserSetup __instance, bool value)
+        {
+            if(!Configs.scp_can_talk_to_humans) return;
+
+            CharacterClassManager ccm = __instance.gameObject.GetComponent<CharacterClassManager>();
+            if(ccm.IsAnyScp() && ccm.CurClass != RoleType.Scp079)
+            {
+                __instance.MimicAs939 = value;
+            }
+
+            return;
+        }
+    }
 }

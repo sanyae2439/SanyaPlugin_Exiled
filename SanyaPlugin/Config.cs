@@ -24,6 +24,7 @@ namespace SanyaPlugin
         internal static bool generator_finish_to_lock;
         internal static bool generator_activating_opened;
         internal static bool intercom_information;
+        internal static int outsidezone_termination_time_after_nuke;
 
         //SanyaPlugin:Data
         internal static bool data_enabled;
@@ -35,6 +36,7 @@ namespace SanyaPlugin
 
 
         //Human:Balanced
+        internal static bool stop_respawn_after_detonated;
         internal static bool inventory_keycard_act;
         internal static bool grenade_hitmark;
         internal static bool kill_hitmark;
@@ -42,7 +44,11 @@ namespace SanyaPlugin
         internal static int traitor_chance_percent;
 
         //SCP:Balanced
+        internal static bool scp_can_talk_to_humans;
         internal static bool scp049_reset_ragdoll_after_recall;
+        internal static int scp939_dot_damage;
+        internal static int scp939_dot_damage_total;
+        internal static int scp939_dot_damage_interval;
         internal static bool scp914_intake_death;
 
         //Damage/Recovery
@@ -88,6 +94,7 @@ namespace SanyaPlugin
             generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
             generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
             intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
+            outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
 
             data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
             level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
@@ -96,13 +103,18 @@ namespace SanyaPlugin
             level_exp_win = Plugin.Config.GetInt("sanya_level_exp_win", 10);
             level_exp_other = Plugin.Config.GetInt("sanya_level_exp_other", 1);
 
+            stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
             inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
             grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
             kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
             traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
             traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 
+            scp_can_talk_to_humans = Plugin.Config.GetBool("sanya_scp_can_talk_to_humans", false);
             scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
+            scp939_dot_damage = Plugin.Config.GetInt("sanya_scp939_dot_damage", -1);
+            scp939_dot_damage_total = Plugin.Config.GetInt("sanya_scp939_dot_damage_total", 80);
+            scp939_dot_damage_interval = Plugin.Config.GetInt("sanya_scp939_dot_damage_interval", 1);
             scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
 
             damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);

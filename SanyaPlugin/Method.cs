@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using EXILED;
 using EXILED.Extensions;
 using MEC;
+using Mirror;
+using UnityEngine;
 
 namespace SanyaPlugin
 {
@@ -53,7 +56,10 @@ namespace SanyaPlugin
 
     internal static class Coroutines
     {
-        static public IEnumerator<float> GrantedLevel(ReferenceHub player, PlayerData data)
+        public static bool isAirBombGoing = false;
+        public static readonly Dictionary<ReferenceHub, CoroutineHandle> DOTDamages = new Dictionary<ReferenceHub, CoroutineHandle>();
+
+        public static IEnumerator<float> GrantedLevel(ReferenceHub player, PlayerData data)
         {
             yield return Timing.WaitForSeconds(1f);
 
@@ -113,7 +119,7 @@ namespace SanyaPlugin
             yield break;
         }
 
-        static public IEnumerator<float> StartNightMode()
+        public static IEnumerator<float> StartNightMode()
         {
             Log.Debug($"[StartNightMode] Started. Wait for {60}s...");
             yield return Timing.WaitForSeconds(60f);
@@ -126,16 +132,91 @@ namespace SanyaPlugin
             yield break;
         }
 
-        static public IEnumerator<float> BigHitmark(MicroHID microHID)
+        public static IEnumerator<float> BigHitmark(MicroHID microHID)
         {
             yield return Timing.WaitForSeconds(0.1f);
             microHID.TargetSendHitmarker(false);
+            yield break;
+        }
+
+        public static IEnumerator<float> AirSupportBomb(int waitforready = 5)
+        {
+            Log.Info($"[AirSupportBomb] booting...");
+            if(isAirBombGoing)
+            {
+                Log.Info($"[Airbomb] already booted, cancel.");
+                yield break;
+            }
+            else
+            {
+                isAirBombGoing = true;
+            }
+
+            if(Configs.cassie_subtitle)
+            {
+                Methods.SendSubtitle(Subtitles.AirbombStarting, 10);
+                PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
+                yield return Timing.WaitForSeconds(5f);
+            }
+
+            Log.Info($"[AirSupportBomb] charging...");
+            while(waitforready > 0)
+            {
+                Methods.PlayAmbientSound(7);
+                waitforready--;
+                yield return Timing.WaitForSeconds(1f);
+            }
+
+            Log.Info($"[AirSupportBomb] throwing...");
+            while(isAirBombGoing)
+            {
+                List<Vector3> randampos = OutsideRandomAirbombPos.pos;
+                randampos.OrderBy(x => Guid.NewGuid()).ToList();
+                foreach(var pos in randampos)
+                {
+                    Methods.Explode(pos, (int)GRENADE_ID.FRAG_NADE);
+                    yield return Timing.WaitForSeconds(0.1f);
+                }
+                yield return Timing.WaitForSeconds(0.25f);
+            }
+
+            if(Configs.cassie_subtitle)
+            {
+                Methods.SendSubtitle(Subtitles.AirbombEnded, 10);
+                PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("outside zone termination completed .", false, true);
+            }
+
+            Log.Info($"[AirSupportBomb] Ended.");
+            yield break;
+        }
+
+        public static IEnumerator<float> DOTDamage(ReferenceHub target, int perDamage, int maxLimitDamage, float interval, DamageTypes.DamageType type)
+        {
+            int curDamageAmount = 0;
+            Vector3 curDeathPos = target.characterClassManager.NetworkDeathPosition;
+            RoleType curRole = target.GetRole();
+            while(curDamageAmount < maxLimitDamage)
+            {
+                if(target.characterClassManager.NetworkDeathPosition != curDeathPos || target.GetRole() != curRole) break;
+                target.playerStats.HurtPlayer(new PlayerStats.HitInfo(perDamage, "WORLD", type, 0), target.gameObject);
+                maxLimitDamage += perDamage;
+                yield return Timing.WaitForSeconds(interval);
+            }
             yield break;
         }
     }
 
     internal static class Methods
     {
+        static public void Explode(Vector3 position, int type, ReferenceHub player = null)
+        {
+            if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
+            var gm = player.GetComponent<Grenades.GrenadeManager>();
+            Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[type].grenadeInstance).GetComponent<Grenades.Grenade>();
+            component.FullInitData(gm, position, Quaternion.Euler(component.throwStartAngle), Vector3.zero, component.throwAngularVelocity);
+            NetworkServer.Spawn(component.gameObject);
+        }
+
         static public int GetRandomIndexFromWeight(int[] list)
         {
             int sum = 0;
@@ -165,6 +246,11 @@ namespace SanyaPlugin
             Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
             brd.RpcClearElements();
             brd.RpcAddElement(text, time, monospaced);
+        }
+
+        static public void PlayAmbientSound(int id)
+        {
+            PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
         }
 
         static public void SpawnRagdoll()

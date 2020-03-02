@@ -16,7 +16,7 @@ namespace SanyaPlugin
         public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
         internal readonly SanyaPlugin plugin;
         private readonly System.Random random = new System.Random();
-        internal List<CoroutineHandle> coroutines = new List<CoroutineHandle>();
+        internal List<CoroutineHandle> roundCoroutines = new List<CoroutineHandle>();
         internal bool loaded = false;
 
         /** Infosender **/
@@ -122,6 +122,15 @@ namespace SanyaPlugin
                     }
                 }
 
+                //自動空爆
+                if(Configs.outsidezone_termination_time_after_nuke > 0
+                    && detonatedDuration != -1
+                    && RoundSummary.roundTime > (Configs.outsidezone_termination_time_after_nuke + detonatedDuration))
+                {
+                    roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb()));
+                    detonatedDuration = -1;
+                }
+
                 //寝返り
                 if(Configs.traitor_limitter > 0)
                 {
@@ -185,6 +194,7 @@ namespace SanyaPlugin
 
         /** Flag Params **/
         internal static bool autowarheadstarted = false;
+        private int detonatedDuration = -1;
         private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
         /** RoundVar **/
@@ -201,8 +211,8 @@ namespace SanyaPlugin
             if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation)
                 sendertask = this._SenderAsync().StartSender();
 
-            coroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
-            coroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
+            roundCoroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
+            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
 
             flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
@@ -222,6 +232,8 @@ namespace SanyaPlugin
                     }
             }
 
+            detonatedDuration = -1;
+
             Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
         }
 
@@ -234,7 +246,7 @@ namespace SanyaPlugin
                 case SANYA_GAME_MODE.NIGHT:
                     {
                         IsEnableBlackout = true;
-                        coroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
+                        roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
                         break;
                     }
             }
@@ -270,21 +282,36 @@ namespace SanyaPlugin
                     PlayerDataManager.SavePlayerData(data);
                 }
             }
+
+            Coroutines.isAirBombGoing = false;
         }
 
         public void OnRoundRestart()
         {
             Log.Info($"[OnRoundRestart] Restarting...");
 
-            foreach(var cor in coroutines)
+            foreach(var cor in roundCoroutines)
                 Timing.KillCoroutines(cor);
-            coroutines.Clear();
+            roundCoroutines.Clear();
 
             flickerableLight = null;
             IsEnableBlackout = false;
 
             autowarheadstarted = false;
+            detonatedDuration = -1;
             CancelWarheadPatch.Locked = false;
+        }
+
+        public void OnDetonated()
+        {
+            Log.Debug($"[OnDetonated] Detonated:{(RoundSummary.roundTime / 60).ToString("00")}:{(RoundSummary.roundTime % 60).ToString("00")}");
+
+            detonatedDuration = RoundSummary.roundTime;
+
+            if(Configs.stop_respawn_after_detonated)
+            {
+                PlayerManager.localPlayer.GetComponent<MTFRespawn>().SummonChopper(false);
+            }
         }
 
         public void OnPlayerJoin(PlayerJoinEvent ev)
@@ -345,16 +372,18 @@ namespace SanyaPlugin
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
 
+            if(ev.Attacker == null) return;
+
             DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
-            if(damageTypes != DamageTypes.Nuke 
-                && damageTypes != DamageTypes.Decont 
-                && damageTypes != DamageTypes.Wall 
+            if(damageTypes != DamageTypes.Nuke
+                && damageTypes != DamageTypes.Decont
+                && damageTypes != DamageTypes.Wall
                 && damageTypes != DamageTypes.Tesla)
             {
                 PlayerStats.HitInfo clinfo = ev.Info;
 
                 //GrenadeHitmark
-                if(Configs.grenade_hitmark 
+                if(Configs.grenade_hitmark
                     && damageTypes == DamageTypes.Grenade
                     && ev.Player.GetUserId() != ev.Attacker.GetUserId())
                 {
@@ -372,6 +401,16 @@ namespace SanyaPlugin
                     {
                         clinfo.Amount *= Configs.damage_usp_multiplier_human;
                     }
+                }
+
+                if(Configs.scp939_dot_damage > 0
+                    && damageTypes == DamageTypes.Scp939
+                    && ev.Player.GetUserId() != ev.Attacker.GetUserId())
+                {
+                    Log.Debug($"[939DOT] fired {ev.Attacker?.GetNickname()}");
+                    var cor = Timing.RunCoroutine(Coroutines.DOTDamage(ev.Player, Configs.scp939_dot_damage, Configs.scp939_dot_damage_total, Configs.scp939_dot_damage_interval, DamageTypes.Scp939));
+                    roundCoroutines.Add(cor);
+                    Coroutines.DOTDamages.Add(ev.Player, cor);
                 }
 
                 //CuffedDivisor
@@ -419,6 +458,8 @@ namespace SanyaPlugin
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}");
 
+            if(ev.Killer == null) return;
+
             if(Configs.data_enabled)
             {
                 if(!string.IsNullOrEmpty(ev.Killer.GetUserId())
@@ -461,7 +502,8 @@ namespace SanyaPlugin
 
             if(Configs.cassie_subtitle
                 && ev.Player.GetTeam() == Team.SCP
-                && ev.Player.GetRole() != RoleType.Scp0492)
+                && ev.Player.GetRole() != RoleType.Scp0492
+                && ev.Player.GetRole() != RoleType.Scp079)
             {
                 string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRole()).fullName;
                 string str = string.Empty;
@@ -489,7 +531,7 @@ namespace SanyaPlugin
                         }
                     }
                     Log.Debug($"[CheckTeam] ply:{ev.Player.queryProcessor.PlayerId} kil:{ev.Killer.queryProcessor.PlayerId} plyid:{ev.Info.PlyId} killteam:{killerTeam}");
- 
+
                     if(killerTeam == Team.CDP)
                     {
                         str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
@@ -524,9 +566,9 @@ namespace SanyaPlugin
                 }
 
                 Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
-                if(count == 1 
-                    && isFound079 
-                    && Generator079.mainGenerator.totalVoltage < 4 
+                if(count == 1
+                    && isFound079
+                    && Generator079.mainGenerator.totalVoltage < 4
                     && !Generator079.mainGenerator.forcedOvercharge
                     && ev.Info.GetDamageType() != DamageTypes.Nuke)
                 {
@@ -630,6 +672,11 @@ namespace SanyaPlugin
         public void OnTeamRespawn(ref TeamRespawnEvent ev)
         {
             Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
+
+            if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated)
+            {
+                ev.ToRespawn.Clear();
+            }
         }
 
         public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
@@ -765,6 +812,12 @@ namespace SanyaPlugin
                                 ReturnStr = "reload ok";
                                 break;
                             }
+                        case "stopair":
+                            {
+                                ReturnStr = $"Stop ok. now:{Coroutines.isAirBombGoing}";
+                                Coroutines.isAirBombGoing = false;
+                                break;
+                            }
                         case "096":
                             {
                                 foreach(var i in Player.GetHubs())
@@ -774,6 +827,7 @@ namespace SanyaPlugin
                                         i.characterClassManager.Scp096.IncreaseRage(20f);
                                     }
                                 }
+                                ReturnStr = "096 enraged!";
                                 break;
                             }
                         case "nukelock":
@@ -853,6 +907,11 @@ namespace SanyaPlugin
                                         }
                                         ReturnStr = "gen ejected.";
                                     }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[gen] Wrong Parameters.";
+                                    }
                                 }
                                 else
                                 {
@@ -901,6 +960,24 @@ namespace SanyaPlugin
                                     isSuccess = false;
                                     ReturnStr = "[next] Wrong Parameters.";
                                 }
+                                break;
+                            }
+                        case "van":
+                            {
+                                PlayerManager.localPlayer.GetComponent<MTFRespawn>()?.RpcVan();
+                                ReturnStr = "Van Called!";
+                                break;
+                            }
+                        case "heli":
+                            {
+                                MTFRespawn mtf_r = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
+                                mtf_r.SummonChopper(!mtf_r.mtf_a.NetworkisLanded);
+                                ReturnStr = "Heli Called!";
+                                break;
+                            }
+                        case "now":
+                            {
+                                ReturnStr = TimeBehaviour.CurrentTimestamp().ToString();
                                 break;
                             }
                         default:

@@ -10,8 +10,8 @@ namespace SanyaPlugin
     {
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.1.2f";
-        public static readonly string TargetVersion = "1.8.0";
+        public static readonly string Version = "1.2.0a";
+        public static readonly string TargetVersion = "1.8.1";
         public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
         public EventHandlers EventHandlers;
@@ -37,6 +37,7 @@ namespace SanyaPlugin
             Events.RoundStartEvent += EventHandlers.OnRoundStart;
             Events.RoundEndEvent += EventHandlers.OnRoundEnd;
             Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
+            Events.WarheadDetonationEvent += EventHandlers.OnDetonated;
             Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
             Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
             Events.StartItemsEvent += EventHandlers.OnStartItems;
@@ -66,9 +67,9 @@ namespace SanyaPlugin
         {
             harmony.UnpatchAll();
 
-            foreach(var cor in EventHandlers.coroutines)
+            foreach(var cor in EventHandlers.roundCoroutines)
                 Timing.KillCoroutines(cor);
-            EventHandlers.coroutines.Clear();
+            EventHandlers.roundCoroutines.Clear();
 
             Events.RemoteAdminCommandEvent -= EventHandlers.OnCommand;
             Events.ConsoleCommandEvent -= EventHandlers.OnConsoleCommand;
@@ -76,6 +77,7 @@ namespace SanyaPlugin
             Events.RoundStartEvent -= EventHandlers.OnRoundStart;
             Events.RoundEndEvent -= EventHandlers.OnRoundEnd;
             Events.RoundRestartEvent -= EventHandlers.OnRoundRestart;
+            Events.WarheadDetonationEvent -= EventHandlers.OnDetonated;
             Events.PlayerJoinEvent -= EventHandlers.OnPlayerJoin;
             Events.PlayerLeaveEvent -= EventHandlers.OnPlayerLeave;
             Events.StartItemsEvent -= EventHandlers.OnStartItems;

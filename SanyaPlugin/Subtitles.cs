@@ -143,5 +143,21 @@
             "《Detonation cancelled. Restarting systems.》\n",
             "</size></color>"
         );
+
+        internal static readonly string AirbombStarting = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《警告。地上エリアの緊急終了シーケンスが開始されます。》\n",
+            "</size><size=20>",
+            "《Danger, Outside Zone emergency termination sequence activated.》\n",
+            "</size></color>"
+        );
+
+        internal static readonly string AirbombEnded = string.Concat(
+            "<color=#ff0000><size=25>",
+            "《地上エリアの緊急終了シーケンスが完了しました。》\n",
+            "</size><size=20>",
+            "《Outside Zone emergency termination completed.》\n",
+            "</size></color>"
+        );
     }
 }
