@@ -74,7 +74,7 @@ namespace SanyaPlugin
         {
             Log.Debug($"[Recall049Patch] SCP049:{Player.GetPlayer(__instance.gameObject).GetNickname()} Target:{Player.GetPlayer(target).GetNickname()} TargetRole:{Player.GetPlayer(target).GetRole()}");
 
-            if(Player.GetPlayer(target)?.GetRole() != RoleType.Spectator) return;
+            if(Player.GetPlayer(target)?.GetRole() != RoleType.Scp0492) return;
 
             if(Configs.recovery_amount_scp049 > 0)
             {

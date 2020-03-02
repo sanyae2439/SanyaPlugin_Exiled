@@ -871,6 +871,12 @@ namespace SanyaPlugin
                                 }
                                 break;
                             }
+                        case "ammo":
+                            {
+                                player.ammoBox.Networkamount = "200:200:200";
+                                ReturnStr = "Ammo set 200:200:200.";
+                                break;
+                            }
                         case "ev":
                             {
                                 foreach(Lift lift in UnityEngine.Object.FindObjectsOfType<Lift>())
