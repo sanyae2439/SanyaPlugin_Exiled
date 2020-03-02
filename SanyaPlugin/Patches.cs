@@ -60,7 +60,9 @@ namespace SanyaPlugin
         public static bool Prefix()
         {
             Log.Debug($"[ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
-            if(CancelWarheadPatch.Locked) return false;
+            if(CancelWarheadPatch.Locked)
+                return false;
+
             return true;
         }
     }

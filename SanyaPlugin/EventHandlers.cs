@@ -283,6 +283,14 @@ namespace SanyaPlugin
                 }
             }
 
+            if(Configs.godmode_after_endround)
+            {
+                foreach(var player in Player.GetHubs())
+                {
+                    player.characterClassManager.GodMode = true;
+                }
+            }
+
             Coroutines.isAirBombGoing = false;
         }
 
@@ -407,7 +415,7 @@ namespace SanyaPlugin
                 if(Configs.scp939_dot_damage > 0
                     && damageTypes == DamageTypes.Scp939
                     && ev.Player.GetUserId() != ev.Attacker.GetUserId()
-                    && Coroutines.DOTDamages.ContainsKey(ev.Player))
+                    && !Coroutines.DOTDamages.ContainsKey(ev.Player))
                 {
                     Log.Debug($"[939DOT] fired {ev.Attacker?.GetNickname()}");
                     var cor = Timing.RunCoroutine(Coroutines.DOTDamage(ev.Player, Configs.scp939_dot_damage, Configs.scp939_dot_damage_total, Configs.scp939_dot_damage_interval, DamageTypes.Scp939));
@@ -676,6 +684,11 @@ namespace SanyaPlugin
             Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
 
             if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated)
+            {
+                ev.ToRespawn.Clear();
+            }
+
+            if(Configs.godmode_after_endround && !RoundSummary.RoundInProgress())
             {
                 ev.ToRespawn.Clear();
             }

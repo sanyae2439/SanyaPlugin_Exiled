@@ -25,6 +25,7 @@ namespace SanyaPlugin
         internal static bool generator_activating_opened;
         internal static bool intercom_information;
         internal static int outsidezone_termination_time_after_nuke;
+        internal static bool godmode_after_endround;
 
         //SanyaPlugin:Data
         internal static bool data_enabled;
@@ -95,6 +96,7 @@ namespace SanyaPlugin
             generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
             intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
             outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
+            godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
 
             data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
             level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
