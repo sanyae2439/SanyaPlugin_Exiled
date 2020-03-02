@@ -839,6 +839,15 @@ namespace SanyaPlugin
                                 Coroutines.isAirBombGoing = false;
                                 break;
                             }
+                        case "106":
+                            {
+                                foreach(PocketDimensionTeleport pdt in UnityEngine.Object.FindObjectsOfType<PocketDimensionTeleport>())
+                                {
+                                    pdt.SetType(PocketDimensionTeleport.PDTeleportType.Exit);
+                                }
+                                ReturnStr = "All set to [Exit].";
+                                break;
+                            }
                         case "096":
                             {
                                 foreach(var i in Player.GetHubs())
@@ -884,6 +893,48 @@ namespace SanyaPlugin
                                     lift.UseLift();
                                 }
                                 ReturnStr = "EV Used.";
+                                break;
+                            }
+                        case "roompos":
+                            {
+                                string output = "\n";
+                                foreach(var rid in UnityEngine.Object.FindObjectsOfType<Rid>())
+                                {
+                                    output += $"{rid.id} : {rid.transform.position}\n";
+                                }
+                                ReturnStr = output;
+                                break;
+                            }
+                        case "tppos":
+                            {
+                                if(args.Length > 4)
+                                {
+                                    if(float.TryParse(args[2], out float x) 
+                                        && float.TryParse(args[3], out float y) 
+                                        && float.TryParse(args[4], out float z))
+                                    {
+                                        Vector3 pos = new Vector3(x, y, z);
+                                        player.plyMovementSync.OverridePosition(pos, 0f, true);
+                                        ReturnStr = $"TP to {pos}.";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[tppos] Wrong Parameters.";
+                                    }
+                                }
+                                else
+                                {
+                                    isSuccess = false;
+                                    ReturnStr = "[tppos] parameters : tppos <x> <y> <z>";
+                                }
+
+                                break;
+                            }
+                        case "pocket":
+                            {
+                                player.plyMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, forceGround: true);
+                                ReturnStr = "move to PocketDimension.";
                                 break;
                             }
                         case "gen":
@@ -943,7 +994,7 @@ namespace SanyaPlugin
                                 else
                                 {
                                     isSuccess = false;
-                                    ReturnStr = "[gen] Wrong Parameters.";
+                                    ReturnStr = "[gen] Parameters : get <unlock/door/set/eject>";
                                 }
                                 break;
                             }
