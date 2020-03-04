@@ -175,10 +175,11 @@ namespace SanyaPlugin
                 foreach(var pos in randampos)
                 {
                     Methods.Explode(pos, (int)GRENADE_ID.FRAG_NADE);
-                    yield return Timing.WaitForSeconds(0.25f);
+                    yield return Timing.WaitForSeconds(0.1f);
                 }
                 throwcount++;
                 Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
+                yield return Timing.WaitForSeconds(0.25f);
             }
 
             if(Configs.cassie_subtitle)
@@ -209,7 +210,8 @@ namespace SanyaPlugin
 
     internal static class Methods
     {
-        static public void Explode(Vector3 position, int type, ReferenceHub player = null)
+
+        public static void Explode(Vector3 position, int type, ReferenceHub player = null)
         {
             if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
             var gm = player.GetComponent<Grenades.GrenadeManager>();
@@ -218,7 +220,7 @@ namespace SanyaPlugin
             NetworkServer.Spawn(component.gameObject);
         }
 
-        static public int GetRandomIndexFromWeight(int[] list)
+        public static int GetRandomIndexFromWeight(int[] list)
         {
             int sum = 0;
 
@@ -242,19 +244,19 @@ namespace SanyaPlugin
             return -1;
         }
 
-        static public void SendSubtitle(string text, uint time, bool monospaced = false)
+        public static void SendSubtitle(string text, uint time, bool monospaced = false)
         {
             Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
             brd.RpcClearElements();
             brd.RpcAddElement(text, time, monospaced);
         }
 
-        static public void PlayAmbientSound(int id)
+        public static void PlayAmbientSound(int id)
         {
             PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
         }
 
-        static public void SpawnRagdoll()
+        public static void SpawnRagdoll()
         {
             //UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
             //                                                   player.transform.rotation,

@@ -339,10 +339,11 @@ namespace SanyaPlugin
     {
         public static List<GameObject> instantFusePlayers = new List<GameObject>();
 
-        public static void Postfix(Grenades.Grenade __instance)
+        public static void Prefix(Grenades.Grenade __instance, Grenades.GrenadeManager player)
         {
-            if(__instance.NetworkthrowerGameObject.name == "Host" || instantFusePlayers.Contains(__instance.NetworkthrowerGameObject))
-                __instance.NetworkfuseTime = 0f;
+            Log.Debug($"[GrenadePatch] {player.gameObject.name} fuseDuration:{__instance.fuseDuration}");
+            if(player.gameObject.name == "Host" || instantFusePlayers.Contains(player.gameObject))
+                __instance.fuseDuration = 0.1f;
         }
     }
 
