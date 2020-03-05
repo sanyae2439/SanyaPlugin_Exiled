@@ -9,6 +9,7 @@ namespace SanyaPlugin
     {
         internal static string infosender_ip;
         internal static int infosender_port;
+        internal static string report_webhook;
 
         //Smod Emulation
         internal static int auto_warhead_start;
@@ -73,6 +74,7 @@ namespace SanyaPlugin
         {
             infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
             infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
+            report_webhook = Plugin.Config.GetString("sanya_report_webhook", string.Empty);
             tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
             auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
             auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);

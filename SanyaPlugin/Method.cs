@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Text.RegularExpressions;
 using EXILED;
 using EXILED.Extensions;
 using MEC;
@@ -210,6 +213,7 @@ namespace SanyaPlugin
 
     internal static class Methods
     {
+        public static HttpClient httpClient = new HttpClient();
 
         public static void Explode(Vector3 position, int type, ReferenceHub player = null)
         {
@@ -254,6 +258,45 @@ namespace SanyaPlugin
         public static void PlayAmbientSound(int id)
         {
             PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
+        }
+
+        public static void SendReport(ReferenceHub reported, string reason, ReferenceHub reporter)
+        {
+            var hookdata = new WebhookData();
+            var embed = new Embed();
+
+            embed.title = "ゲームサーバーからの報告";
+            embed.timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ");
+            embed.footer.text = $"報告者:{reporter.GetNickname()} [{reporter.GetUserId()}]";
+            embed.fields.Add(new EmbedField() { name = "発見サーバー", value = $"{FormatServerName()}" });
+            embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.GetNickname()}", inline = true});
+            embed.fields.Add(new EmbedField() { name = "対象プレイヤーID", value = $"{reported.GetUserId()}", inline = true });
+            embed.fields.Add(new EmbedField() { name = "内容", value = $"{reason}"});
+            hookdata.embeds.Add(embed);
+
+            var json = Utf8Json.JsonSerializer.ToJsonString<WebhookData>(hookdata);
+            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            var result = httpClient.PostAsync(Configs.report_webhook, data).Result;
+
+            Log.Debug($"{json}");
+
+            if(result.IsSuccessStatusCode)
+            {
+                Log.Info($"[SendReport] Send Report.");
+            }
+            else
+            {
+                Log.Error($"[SendReport] Error. {result.StatusCode}");
+            }
+        }
+
+        public static string FormatServerName()
+        {
+            string result = ServerConsole.singleton.RefreshServerName();
+            result = Regex.Replace(result, @"SM119.\d+.\d+.\d+ \(EXILED\)", string.Empty);
+            result = Regex.Replace(result, @"\[.+?\]", string.Empty);
+            result = Regex.Replace(result, @"\<.+?\>", string.Empty);
+            return result.Trim();
         }
 
         public static void SpawnRagdoll()

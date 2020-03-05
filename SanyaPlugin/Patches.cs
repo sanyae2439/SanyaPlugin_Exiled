@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using EXILED;
 using EXILED.Extensions;
@@ -360,6 +361,25 @@ namespace SanyaPlugin
             }
             __result = true;
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(CheaterReport), nameof(CheaterReport.CallCmdReport))]
+    public class ReportPatch
+    {
+        public static bool Prefix(CheaterReport __instance, int playerId, string reason)
+        {
+            ReferenceHub reported = Player.GetPlayer(playerId);
+            ReferenceHub reporter = Player.GetPlayer(__instance.gameObject);
+            Log.Debug($"[ReportPatch] Reported:{reported.GetNickname()} Reason:{reason} Reporter:{reporter.GetNickname()}");
+
+            if(!string.IsNullOrEmpty(Configs.report_webhook)){
+                Methods.SendReport(reported, reason, reporter);
+                __instance.GetComponent<GameConsoleTransmission>().SendToClient(__instance.connectionToClient, "Player report successfully sent.", "green");
+                return false;
+            }
+            
+            return true;
         }
     }
 

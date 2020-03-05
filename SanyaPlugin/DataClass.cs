@@ -158,6 +158,39 @@ namespace SanyaPlugin
         public int playingcount;
     }
 
+    public class WebhookData
+    {
+        public List<Embed> embeds { get; set; } = new List<Embed>();
+    }
+
+    public class Embed
+    {
+        public string title { get; set; }
+
+        public string timestamp { get; set; }
+ 
+        public EmbedFooter footer { get; set; } = new EmbedFooter();
+
+        public List<EmbedField> fields { get; set; } = new List<EmbedField>();
+    }
+
+    public class EmbedAuthor
+    {
+        public string name { get; set; }
+    }
+
+    public class EmbedFooter
+    {
+        public string text { get; set; }
+    }
+
+    public class EmbedField
+    {
+        public string name { get; set; }
+        public string value { get; set; }
+        public bool inline { get; set; } = false;
+    }
+
     //public class SCPPlayerData
     //{
     //    public SCPPlayerData(int i, string n, Role r, Vector p, int h, int l079 = -1, int a079 = -1, Vector c079 = null) { id = i; name = n; role = r; pos = p; health = h; level079 = l079; ap079 = a079; camera079 = c079; }
