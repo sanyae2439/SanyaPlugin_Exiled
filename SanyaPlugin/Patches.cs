@@ -373,7 +373,7 @@ namespace SanyaPlugin
             ReferenceHub reporter = Player.GetPlayer(__instance.gameObject);
             Log.Debug($"[ReportPatch] Reported:{reported.GetNickname()} Reason:{reason} Reporter:{reporter.GetNickname()}");
 
-            if(!string.IsNullOrEmpty(Configs.report_webhook)){
+            if(!string.IsNullOrEmpty(Configs.report_webhook) && reported.GetPlayerId() != reporter.GetPlayerId()){
                 Methods.SendReport(reported, reason, reporter);
                 __instance.GetComponent<GameConsoleTransmission>().SendToClient(__instance.connectionToClient, "Player report successfully sent.", "green");
                 return false;
