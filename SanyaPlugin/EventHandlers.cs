@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using EXILED;
 using UnityEngine;
+using Mirror;
 using MEC;
 using Utf8Json;
 using EXILED.Extensions;
@@ -30,16 +31,16 @@ namespace SanyaPlugin
             {
                 try
                 {
-                    if(!this.loaded)
-                    {
-                        Log.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
-                        await Task.Delay(TimeSpan.FromSeconds(30));
-                    }
-
                     if(Configs.infosender_ip == "none")
                     {
                         Log.Info($"[Infosender_Task] Disabled(config:({Configs.infosender_ip}). breaked.");
                         break;
+                    }
+
+                    if(!this.loaded)
+                    {
+                        Log.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
+                        await Task.Delay(TimeSpan.FromSeconds(30));
                     }
 
                     Serverinfo cinfo = new Serverinfo();
@@ -172,6 +173,56 @@ namespace SanyaPlugin
                     }
                 }
 
+                //RagdollCleanup
+                if(Configs.ragdoll_cleanup > 0)
+                {
+                    List<GameObject> nowragdolls = null;
+
+                    foreach(var i in RagdollCleanupPatch.ragdolls)
+                    {
+                        if(Time.time - i.Value > Configs.ragdoll_cleanup && i.Key != null)
+                        {
+                            if(nowragdolls == null) nowragdolls = new List<GameObject>();
+                            Log.Debug($"[RagdollCleanupPatch] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {Configs.ragdoll_cleanup}");
+                            nowragdolls.Add(i.Key);
+                        }
+                    }
+
+                    if(nowragdolls != null)
+                    {
+                        foreach(var x in nowragdolls)
+                        {
+                            RagdollCleanupPatch.ragdolls.Remove(x);
+                            NetworkServer.Destroy(x);
+                        }
+                    }
+                }
+
+                //ItemCleanup
+                if(Configs.item_cleanup > 0)
+                {
+                    List<GameObject> nowitems = null;
+
+                    foreach(var i in ItemCleanupPatch.items)
+                    {
+                        if(Time.time - i.Value > Configs.item_cleanup && i.Key != null)
+                        {
+                            if(nowitems == null) nowitems = new List<GameObject>();
+                            Log.Debug($"[ItemCleanupPatch] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {Configs.item_cleanup}");
+                            nowitems.Add(i.Key);
+                        }
+                    }
+
+                    if(nowitems != null)
+                    {
+                        foreach(var x in nowitems)
+                        {
+                            ItemCleanupPatch.items.Remove(x);
+                            NetworkServer.Destroy(x);
+                        }
+                    }
+                }
+
                 //毎秒
                 yield return Timing.WaitForSeconds(1f);
             }
@@ -219,6 +270,8 @@ namespace SanyaPlugin
             flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
             PlayerDataManager.playersData.Clear();
+            RagdollCleanupPatch.ragdolls.Clear();
+            ItemCleanupPatch.items.Clear();
 
             eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
             switch(eventmode)
@@ -703,8 +756,6 @@ namespace SanyaPlugin
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
-                    Log.Debug($"[OnPlayerDoorInteract] inv:{item.id} parm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
-
                     if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains(ev.Door.permissionLevel))
                     {
                         ev.Allow = true;
@@ -720,7 +771,6 @@ namespace SanyaPlugin
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
-                    Log.Debug($"[OnPlayerLockerInteract] inv:{item.id} perm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
                     if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("PEDESTAL_ACC"))
                     {
                         ev.Allow = true;
@@ -751,8 +801,6 @@ namespace SanyaPlugin
             {
                 foreach(var item in ev.Player.inventory.items)
                 {
-                    Log.Debug($"[OnGeneratorUnlock] inv:{item.id} parm:{string.Join(",", ev.Player.inventory.GetItemByID(item.id).permissions)}");
-
                     if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
                     {
                         ev.Allow = true;
@@ -876,6 +924,11 @@ namespace SanyaPlugin
                                 Plugin.Config.Reload();
                                 Configs.Reload();
                                 ReturnStr = "reload ok";
+                                break;
+                            }
+                        case "cleanupdic":
+                            {
+                                ReturnStr = $"Ragdolls:{RagdollCleanupPatch.ragdolls.Count} Items:{ItemCleanupPatch.items.Count}";
                                 break;
                             }
                         case "startair":

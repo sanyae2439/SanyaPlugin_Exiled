@@ -16,6 +16,8 @@ namespace SanyaPlugin
         internal static bool auto_warhead_start_lock;
         internal static Dictionary<RoleType, List<ItemType>> defaultitems;
         internal static List<int> tesla_triggerable_teams;
+        internal static int ragdoll_cleanup;
+        internal static int item_cleanup;
 
         //SanyaPlugin
         internal static List<int> event_mode_weight;
@@ -93,6 +95,8 @@ namespace SanyaPlugin
                 { RoleType.NtfScientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ntfscientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
                 { RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) }
             };
+            ragdoll_cleanup = Plugin.Config.GetInt("sanya_ragdoll_cleanup", -1);
+            item_cleanup = Plugin.Config.GetInt("sanya_item_cleanup", -1);
 
             event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
             cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);

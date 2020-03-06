@@ -284,6 +284,91 @@ namespace SanyaPlugin
         }
     }
 
+    [HarmonyPatch(typeof(RagdollManager), nameof(RagdollManager.SpawnRagdoll))]
+    public class RagdollCleanupPatch
+    {
+        public static Dictionary<GameObject, float> ragdolls = new Dictionary<GameObject, float>();
+
+        public static bool Prefix(RagdollManager __instance, Vector3 pos, Quaternion rot, int classId, PlayerStats.HitInfo ragdollInfo, bool allowRecall, string ownerID, string ownerNick, int playerId)
+        {
+            if(Configs.ragdoll_cleanup < 0) return true;
+
+            Log.Debug($"[RagdollCleanupPatch] {Enum.Parse(typeof(RoleType),classId.ToString())}{pos} Time:{Time.time} Cleanuptimes:{Configs.ragdoll_cleanup}");
+            try
+            {
+                Role role = __instance.ccm.Classes.SafeGet(classId);
+                if(role.model_ragdoll != null)
+                {
+                    GameObject gameObject = UnityEngine.Object.Instantiate(role.model_ragdoll, pos + role.ragdoll_offset.position, Quaternion.Euler(rot.eulerAngles + role.ragdoll_offset.rotation));
+                    NetworkServer.Spawn(gameObject);
+                    gameObject.GetComponent<Ragdoll>().Networkowner = new Ragdoll.Info(ownerID, ownerNick, ragdollInfo, role, playerId);
+                    gameObject.GetComponent<Ragdoll>().NetworkallowRecall = allowRecall;
+                    ragdolls.Add(gameObject, Time.time);
+                }
+                if(ragdollInfo.GetDamageType().isScp || ragdollInfo.GetDamageType() == DamageTypes.Pocket)
+                {
+                    __instance.RegisterScpFrag();
+                }
+                else if(ragdollInfo.GetDamageType() == DamageTypes.Grenade)
+                {
+                    RoundSummary.kills_by_frag++;
+                }
+            }
+            catch(Exception e)
+            {
+                Log.Error($"{e}");
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Inventory),nameof(Inventory.SetPickup))]
+    public class ItemCleanupPatch
+    {
+        public static Dictionary<GameObject, float> items = new Dictionary<GameObject, float>();
+
+        public static bool Prefix(Inventory __instance, ref Pickup __result, ItemType droppedItemId, float dur, Vector3 pos, Quaternion rot, int s, int b, int o)
+        {
+            if(Configs.item_cleanup < 0 || __instance.name == "Host") return true;
+
+            Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
+            try
+            {
+                if(droppedItemId < ItemType.KeycardJanitor)
+                {
+                    __result = null;
+                    return false;
+                }
+                GameObject gameObject = UnityEngine.Object.Instantiate(__instance.pickupPrefab);
+                NetworkServer.Spawn(gameObject);
+                items.Add(gameObject, Time.time);
+                gameObject.GetComponent<Pickup>().SetupPickup(new Pickup.PickupInfo
+                {
+                    position = pos,
+                    rotation = rot,
+                    itemId = droppedItemId,
+                    durability = dur,
+                    weaponMods = new int[3]
+                    {
+                        s,
+                        b,
+                        o
+                    },
+                    ownerPlayer = __instance.gameObject
+                });
+                __result = gameObject.GetComponent<Pickup>();
+            }
+            catch(Exception e)
+            {
+                Log.Error($"{e}");
+                return true;
+            }
+            return false;
+        }
+    }
+
     [HarmonyPatch(typeof(Scp096PlayerScript), nameof(Scp096PlayerScript.ProcessLooking))]
     public class Scp096LookingPatch
     {

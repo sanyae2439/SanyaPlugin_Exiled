@@ -260,6 +260,11 @@ namespace SanyaPlugin
             PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
         }
 
+        public static void PlayRandomAmbient()
+        {
+            PlayAmbientSound(UnityEngine.Random.Range(0, 32));
+        }
+
         public static void SendReport(ReferenceHub reported, string reason, ReferenceHub reporter)
         {
             var hookdata = new WebhookData();
