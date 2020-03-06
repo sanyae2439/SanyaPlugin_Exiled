@@ -202,7 +202,9 @@ namespace SanyaPlugin
         private bool IsEnableBlackout = false;
 
         /** EventModeVar **/
-        private SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
+        internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
+        private Vector3 LCZArmoryPos;
+        private Vector3 EZUpstairsPos;
 
         public void OnWaintingForPlayers()
         {
@@ -223,6 +225,21 @@ namespace SanyaPlugin
             {
                 case SANYA_GAME_MODE.NIGHT:
                     {
+                        break;
+                    }
+                case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+                    {
+                        foreach(var room in Map.GetRooms())
+                        {
+                            if(room.Name == "LCZ_Armory")
+                            {
+                                LCZArmoryPos = room.Position + new Vector3(0, 2, 0);
+                            }
+                            else if(room.Name == "EZ_upstairs")
+                            {
+                                EZUpstairsPos = room.Position + new Vector3(0, 2, 0);
+                            }
+                        }
                         break;
                     }
                 default:
@@ -362,11 +379,23 @@ namespace SanyaPlugin
 
         public void OnStartItems(StartItemsEvent ev)
         {
-            Log.Debug($"[OnStartItems] {ev.Role} {ev.Player.GetNickname()}");
+            Log.Debug($"[OnStartItems] {ev.Player.GetNickname()} -> {ev.Role}");
 
             if(Configs.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
             {
                 ev.StartItems = itemconfig;
+            }
+
+            switch(eventmode)
+            {
+                case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+                    {
+                        if(ev.Role == RoleType.ClassD && Configs.classd_insurgency_inventory.Count > 0)
+                        {
+                            ev.StartItems = Configs.classd_insurgency_inventory;
+                        }
+                        break;
+                    }
             }
         }
 
@@ -374,6 +403,27 @@ namespace SanyaPlugin
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
+        }
+
+        public void OnPlayerSpawn(PlayerSpawnEvent ev)
+        {
+            Log.Debug($"[OnPlayerSpawn] {ev.Player.GetNickname()} -{ev.Role}-> {ev.Spawnpoint}");
+
+            switch(eventmode)
+            {
+                case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+                    {
+                        if(ev.Role == RoleType.ClassD)
+                        {
+                            ev.Spawnpoint = LCZArmoryPos;
+                        }
+                        else if(ev.Role == RoleType.Scientist)
+                        {
+                            ev.Spawnpoint = EZUpstairsPos;
+                        }
+                        break;
+                    }
+            }
         }
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
@@ -823,6 +873,7 @@ namespace SanyaPlugin
                             }
                         case "reload":
                             {
+                                Plugin.Config.Reload();
                                 Configs.Reload();
                                 ReturnStr = "reload ok";
                                 break;
@@ -909,8 +960,8 @@ namespace SanyaPlugin
                             {
                                 if(args.Length > 4)
                                 {
-                                    if(float.TryParse(args[2], out float x) 
-                                        && float.TryParse(args[3], out float y) 
+                                    if(float.TryParse(args[2], out float x)
+                                        && float.TryParse(args[3], out float y)
                                         && float.TryParse(args[4], out float z))
                                     {
                                         Vector3 pos = new Vector3(x, y, z);

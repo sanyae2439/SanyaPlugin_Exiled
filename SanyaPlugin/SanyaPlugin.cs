@@ -10,8 +10,8 @@ namespace SanyaPlugin
     {
         public override string getName { get; } = "SanyaPlugin";
         public static readonly string harmonyId = "com.sanyae2439.SanyaPlugin";
-        public static readonly string Version = "1.2.2a";
-        public static readonly string TargetVersion = "1.8.1";
+        public static readonly string Version = "1.2.3a";
+        public static readonly string TargetVersion = "1.8.4";
         public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
         public EventHandlers EventHandlers;
@@ -42,6 +42,7 @@ namespace SanyaPlugin
             Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
             Events.StartItemsEvent += EventHandlers.OnStartItems;
             Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
+            Events.PlayerSpawnEvent += EventHandlers.OnPlayerSpawn;
             Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
             Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
             Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
@@ -82,6 +83,7 @@ namespace SanyaPlugin
             Events.PlayerLeaveEvent -= EventHandlers.OnPlayerLeave;
             Events.StartItemsEvent -= EventHandlers.OnStartItems;
             Events.SetClassEvent -= EventHandlers.OnPlayerSetClass;
+            Events.PlayerSpawnEvent -= EventHandlers.OnPlayerSpawn;
             Events.PlayerHurtEvent -= EventHandlers.OnPlayerHurt;
             Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
             Events.TriggerTeslaEvent -= EventHandlers.OnPlayerTriggerTesla;

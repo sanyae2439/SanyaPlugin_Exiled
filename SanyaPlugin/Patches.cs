@@ -323,6 +323,38 @@ namespace SanyaPlugin
         }
     }
 
+    [HarmonyPatch(typeof(AmmoBox), nameof(AmmoBox.SetAmmoAmount))]
+    public class AmmoPatch
+    {
+        public static bool Prefix(AmmoBox __instance)
+        {
+            int[] ammoTypes = __instance._ccm.Classes.SafeGet(__instance._ccm.CurClass).ammoTypes;
+
+            switch(EventHandlers.eventmode)
+            {
+                case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+                    {
+                        if(Configs.classd_insurgency_ammo.Count > 0)
+                        {
+                            ammoTypes = Configs.classd_insurgency_ammo.ToArray();
+                        }
+                        break;
+                    }
+            }
+
+            __instance.Networkamount = string.Concat(new object[]
+            {
+            ammoTypes[0],
+            ":",
+            ammoTypes[1],
+            ":",
+            ammoTypes[2]
+            });
+
+            return false;
+        }
+    }
+
     [HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
     public class RateLimitPatch
     {
@@ -373,12 +405,16 @@ namespace SanyaPlugin
             ReferenceHub reporter = Player.GetPlayer(__instance.gameObject);
             Log.Debug($"[ReportPatch] Reported:{reported.GetNickname()} Reason:{reason} Reporter:{reporter.GetNickname()}");
 
-            if(!string.IsNullOrEmpty(Configs.report_webhook) && reported.GetPlayerId() != reporter.GetPlayerId()){
+            if(!string.IsNullOrEmpty(Configs.report_webhook)
+                && !string.IsNullOrEmpty(reporter.GetUserId())
+                && !string.IsNullOrEmpty(reported.GetUserId())
+                && reported.GetPlayerId() != reporter.GetPlayerId())
+            {
                 Methods.SendReport(reported, reason, reporter);
                 __instance.GetComponent<GameConsoleTransmission>().SendToClient(__instance.connectionToClient, "Player report successfully sent.", "green");
                 return false;
             }
-            
+
             return true;
         }
     }

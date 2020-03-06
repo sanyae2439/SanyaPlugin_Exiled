@@ -28,6 +28,10 @@ namespace SanyaPlugin
         internal static int outsidezone_termination_time_after_nuke;
         internal static bool godmode_after_endround;
 
+        //SanyaPlugin:Event
+        internal static List<ItemType> classd_insurgency_inventory;
+        internal static List<int> classd_insurgency_ammo;
+
         //SanyaPlugin:Data
         internal static bool data_enabled;
         internal static bool level_enabled;
@@ -75,7 +79,7 @@ namespace SanyaPlugin
             infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
             infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
             report_webhook = Plugin.Config.GetString("sanya_report_webhook", string.Empty);
-            tesla_triggerable_teams = new List<int>(Plugin.Config.GetIntList("sanya_tesla_triggerable_teams"));
+            tesla_triggerable_teams = Plugin.Config.GetIntList("sanya_tesla_triggerable_teams");
             auto_warhead_start = Plugin.Config.GetInt("sanya_auto_warhead_start", -1);
             auto_warhead_start_lock = Plugin.Config.GetBool("sanya_auto_warhead_start_lock", false);
             defaultitems = new Dictionary<RoleType, List<ItemType>>
@@ -90,7 +94,7 @@ namespace SanyaPlugin
                 { RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) }
             };
 
-            event_mode_weight = new List<int>(Plugin.Config.GetIntList("sanya_event_mode_weight"));
+            event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
             cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);
             tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
             generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
@@ -99,6 +103,9 @@ namespace SanyaPlugin
             intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
             outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
             godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
+            
+            classd_insurgency_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
+            classd_insurgency_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_ammo");
 
             data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
             level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
