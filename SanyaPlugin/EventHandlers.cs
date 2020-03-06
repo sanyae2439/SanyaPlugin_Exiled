@@ -428,7 +428,7 @@ namespace SanyaPlugin
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
 
             if(ev.Attacker == null) return;
@@ -515,7 +515,7 @@ namespace SanyaPlugin
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.SpawnProtected) return;
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}");
 
             if(ev.Killer == null) return;
