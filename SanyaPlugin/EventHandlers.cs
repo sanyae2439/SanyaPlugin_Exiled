@@ -823,6 +823,11 @@ namespace SanyaPlugin
             if(ev.Allow && ev.Generator.isTabletConnected && Configs.generator_activating_opened) ev.Allow = false;
         }
 
+        public void OnGeneratorInsert(ref GeneratorInsertTabletEvent ev)
+        {
+            Log.Debug($"[OnGeneratorInsert] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
+        }
+
         public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
         {
             Log.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
@@ -855,6 +860,7 @@ namespace SanyaPlugin
             {
                 foreach(var player in ev.Players)
                 {
+                    player.inventory.Clear();
                     var info = new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0);
                     player.playerStats.HurtPlayer(info, player.gameObject);
                 }
@@ -957,6 +963,42 @@ namespace SanyaPlugin
                                     }
                                 }
                                 ReturnStr = "096 enraged!";
+                                break;
+                            }
+                        case "914":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    if(!Scp914.Scp914Machine.singleton.working)
+                                    {
+
+                                        if(args[2] == "use")
+                                        {
+                                            Scp914.Scp914Machine.singleton.RpcActivate(NetworkTime.time);
+                                            ReturnStr = $"Used : {Scp914.Scp914Machine.singleton.NetworkknobState}";
+                                        }
+                                        else if(args[2] == "knob")
+                                        {
+                                            Scp914.Scp914Machine.singleton.ChangeKnobStatus();
+                                            ReturnStr = $"Knob Changed to:{Scp914.Scp914Machine.singleton.NetworkknobState}";
+                                        }
+                                        else
+                                        {
+                                            isSuccess = false;
+                                            ReturnStr = "[914] Wrong Parameters.";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[914] SCP-914 is working now.";
+                                    }
+                                }
+                                else
+                                {
+                                    isSuccess = false;
+                                    ReturnStr = "[914] Parameters : 914 <use/knob>";
+                                }
                                 break;
                             }
                         case "nukelock":
@@ -1093,7 +1135,7 @@ namespace SanyaPlugin
                                 else
                                 {
                                     isSuccess = false;
-                                    ReturnStr = "[gen] Parameters : get <unlock/door/set/eject>";
+                                    ReturnStr = "[gen] Parameters : gen <unlock/door/set/eject>";
                                 }
                                 break;
                             }
