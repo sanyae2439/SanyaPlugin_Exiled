@@ -440,7 +440,7 @@ namespace SanyaPlugin
                     {
                         if(ev.Role == RoleType.ClassD && Configs.classd_insurgency_classd_inventory.Count > 0)
                         {
-                            ev.StartItems = Configs.classd_insurgency_scientist_inventory;
+                            ev.StartItems = Configs.classd_insurgency_classd_inventory;
                         }
                         if(ev.Role == RoleType.Scientist && Configs.classd_insurgency_scientist_inventory.Count > 0)
                         {
