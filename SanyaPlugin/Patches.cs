@@ -419,9 +419,9 @@ namespace SanyaPlugin
             {
                 case SANYA_GAME_MODE.CLASSD_INSURGENCY:
                     {
-                        if(__instance._ccm.CurClass == RoleType.ClassD && Configs.classd_insurgency_ammo.Count > 0)
+                        if(__instance._ccm.CurClass == RoleType.ClassD && Configs.classd_insurgency_classd_ammo.Count > 0)
                         {
-                            ammoTypes = Configs.classd_insurgency_ammo.ToArray();
+                            ammoTypes = Configs.classd_insurgency_classd_ammo.ToArray();
                         }
                         break;
                     }

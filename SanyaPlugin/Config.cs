@@ -31,8 +31,9 @@ namespace SanyaPlugin
         internal static bool godmode_after_endround;
 
         //SanyaPlugin:Event
-        internal static List<ItemType> classd_insurgency_inventory;
-        internal static List<int> classd_insurgency_ammo;
+        internal static List<ItemType> classd_insurgency_classd_inventory;
+        internal static List<int> classd_insurgency_classd_ammo;
+        internal static List<ItemType> classd_insurgency_scientist_inventory;
 
         //SanyaPlugin:Data
         internal static bool data_enabled;
@@ -108,8 +109,10 @@ namespace SanyaPlugin
             outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
             godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
             
-            classd_insurgency_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-            classd_insurgency_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_ammo");
+            classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
+            classd_insurgency_classd_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_classd_ammo");
+            classd_insurgency_scientist_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_scientist_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
+
 
             data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
             level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);

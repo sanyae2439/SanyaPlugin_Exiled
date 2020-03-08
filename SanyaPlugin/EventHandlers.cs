@@ -255,7 +255,6 @@ namespace SanyaPlugin
         /** EventModeVar **/
         internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
         private Vector3 LCZArmoryPos;
-        private Vector3 EZUpstairsPos;
 
         public void OnWaintingForPlayers()
         {
@@ -287,10 +286,6 @@ namespace SanyaPlugin
                             if(room.Name == "LCZ_Armory")
                             {
                                 LCZArmoryPos = room.Position + new Vector3(0, 2, 0);
-                            }
-                            else if(room.Name == "EZ_upstairs")
-                            {
-                                EZUpstairsPos = room.Position + new Vector3(0, 2, 0);
                             }
                         }
                         break;
@@ -443,9 +438,13 @@ namespace SanyaPlugin
             {
                 case SANYA_GAME_MODE.CLASSD_INSURGENCY:
                     {
-                        if(ev.Role == RoleType.ClassD && Configs.classd_insurgency_inventory.Count > 0)
+                        if(ev.Role == RoleType.ClassD && Configs.classd_insurgency_classd_inventory.Count > 0)
                         {
-                            ev.StartItems = Configs.classd_insurgency_inventory;
+                            ev.StartItems = Configs.classd_insurgency_scientist_inventory;
+                        }
+                        if(ev.Role == RoleType.Scientist && Configs.classd_insurgency_scientist_inventory.Count > 0)
+                        {
+                            ev.StartItems = Configs.classd_insurgency_scientist_inventory;
                         }
                         break;
                     }
@@ -469,10 +468,6 @@ namespace SanyaPlugin
                         if(ev.Role == RoleType.ClassD)
                         {
                             ev.Spawnpoint = LCZArmoryPos;
-                        }
-                        else if(ev.Role == RoleType.Scientist)
-                        {
-                            ev.Spawnpoint = EZUpstairsPos;
                         }
                         break;
                     }
