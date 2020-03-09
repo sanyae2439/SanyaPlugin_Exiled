@@ -225,6 +225,12 @@ namespace SanyaPlugin
                     }
                 }
 
+                //停電時強制再収用の際復電
+                if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
+                {
+                    IsEnableBlackout = false;
+                }
+
                 //毎秒
                 yield return Timing.WaitForSeconds(1f);
             }
@@ -267,9 +273,7 @@ namespace SanyaPlugin
                 sendertask = _SenderAsync().StartSender();
 
             roundCoroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
-            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
-
-            flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
+            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));   
 
             PlayerDataManager.playersData.Clear();
             RagdollCleanupPatch.ragdolls.Clear();
@@ -281,7 +285,8 @@ namespace SanyaPlugin
             detonatedDuration = -1;
             IsPrevSpawnChaos = false;
             IsEnableBlackout = false;
-            flickerableLight = null;
+
+            flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
             eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
             switch(eventmode)
