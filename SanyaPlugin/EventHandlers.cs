@@ -225,12 +225,6 @@ namespace SanyaPlugin
                     }
                 }
 
-                //停電時強制再収用の際復電
-                if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
-                {
-                    IsEnableBlackout = false;
-                }
-
                 //毎秒
                 yield return Timing.WaitForSeconds(1f);
             }
