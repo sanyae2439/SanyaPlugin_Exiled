@@ -260,6 +260,12 @@ namespace SanyaPlugin
             brd.RpcAddElement(text, time, monospaced);
         }
 
+        public static void TargetSendSubtitle(ReferenceHub player, string text, uint time, bool monospaced = false)
+        {
+            player.ClearBroadcasts();
+            player.Broadcast(time, text, monospaced);
+        }
+
         public static void PlayAmbientSound(int id)
         {
             PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));

@@ -402,7 +402,7 @@ namespace SanyaPlugin
 
             if(!string.IsNullOrEmpty(Configs.motd_message))
             {
-                Methods.SendSubtitle(Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
+                Methods.TargetSendSubtitle(ev.Player, Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
             }
 
             if(Configs.data_enabled)
