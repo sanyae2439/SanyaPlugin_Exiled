@@ -23,6 +23,7 @@ namespace SanyaPlugin
         /** Infosender **/
         private readonly UdpClient udpClient = new UdpClient();
         internal Task sendertask;
+        private bool senderdisabled = false;
         internal async Task _SenderAsync()
         {
             Log.Debug($"[Infosender_Task] Started.");
@@ -34,6 +35,7 @@ namespace SanyaPlugin
                     if(Configs.infosender_ip == "none")
                     {
                         Log.Info($"[Infosender_Task] Disabled(config:({Configs.infosender_ip}). breaked.");
+                        senderdisabled = true;
                         break;
                     }
 
@@ -257,6 +259,7 @@ namespace SanyaPlugin
         /** RoundVar **/
         private FlickerableLight flickerableLight = null;
         private bool IsEnableBlackout = false;
+        private bool IsPrevSpawnChaos = false;
 
         /** EventModeVar **/
         internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -266,8 +269,8 @@ namespace SanyaPlugin
         {
             loaded = true;
 
-            if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation)
-                sendertask = this._SenderAsync().StartSender();
+            if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation && !senderdisabled)
+                sendertask = _SenderAsync().StartSender();
 
             roundCoroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
             roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
@@ -277,6 +280,14 @@ namespace SanyaPlugin
             PlayerDataManager.playersData.Clear();
             RagdollCleanupPatch.ragdolls.Clear();
             ItemCleanupPatch.items.Clear();
+            CancelWarheadPatch.Locked = false;
+            Coroutines.isAirBombGoing = false;
+
+            autowarheadstarted = false;
+            detonatedDuration = -1;
+            IsPrevSpawnChaos = false;
+            IsEnableBlackout = false;
+            flickerableLight = null;
 
             eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
             switch(eventmode)
@@ -302,8 +313,6 @@ namespace SanyaPlugin
                         break;
                     }
             }
-
-            detonatedDuration = -1;
 
             Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
         }
@@ -372,14 +381,6 @@ namespace SanyaPlugin
             foreach(var cor in roundCoroutines)
                 Timing.KillCoroutines(cor);
             roundCoroutines.Clear();
-
-            flickerableLight = null;
-            IsEnableBlackout = false;
-
-            autowarheadstarted = false;
-            detonatedDuration = -1;
-            Coroutines.isAirBombGoing = false;
-            CancelWarheadPatch.Locked = false;
         }
 
         public void OnDetonated()
@@ -398,6 +399,11 @@ namespace SanyaPlugin
         {
             if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
             Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+
+            if(!string.IsNullOrEmpty(Configs.motd_message))
+            {
+                Methods.SendSubtitle(Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
+            }
 
             if(Configs.data_enabled)
             {
@@ -521,7 +527,7 @@ namespace SanyaPlugin
                     && ev.Player.GetUserId() != ev.Attacker.GetUserId()
                     && !Coroutines.DOTDamages.ContainsKey(ev.Player))
                 {
-                    Log.Debug($"[939DOT] fired {ev.Attacker?.GetNickname()}");
+                    Log.Debug($"[939DOT] fired {ev.Player.GetNickname()}");
                     var cor = Timing.RunCoroutine(Coroutines.DOTDamage(ev.Player, Configs.scp939_dot_damage, Configs.scp939_dot_damage_total, Configs.scp939_dot_damage_interval, DamageTypes.Scp939));
                     roundCoroutines.Add(cor);
                     Coroutines.DOTDamages.Add(ev.Player, cor);
@@ -589,6 +595,13 @@ namespace SanyaPlugin
                 }
             }
 
+            if(Coroutines.DOTDamages.TryGetValue(ev.Player, out CoroutineHandle handle))
+            {
+                Log.Debug($"[939DOT] Removed {ev.Player.GetNickname()}");
+                Timing.KillCoroutines(handle);
+                Coroutines.DOTDamages.Remove(ev.Player);
+            }
+
             if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRole() == RoleType.Scp173 && Configs.recovery_amount_scp173 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp173);
@@ -599,11 +612,22 @@ namespace SanyaPlugin
             }
             if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRole() == RoleType.Scp93953 || ev.Killer.GetRole() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
             {
-                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
+                ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939 * 1.5f);
+                ev.Info = new PlayerStats.HitInfo(ev.Info.Amount, ev.Info.Attacker, DamageTypes.RagdollLess, ev.Info.PlyId);
             }
             if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRole() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
             {
                 ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
+            }
+            if(ev.Info.GetDamageType() == DamageTypes.Scp939 && Configs.scp939_dot_damage > 0 && ev.Killer.GetUserId() == ev.Player.GetUserId() && Configs.recovery_amount_scp939 > 0)
+            {
+                foreach(var player in Player.GetHubs())
+                {
+                    if(player.GetRole() == RoleType.Scp93953 || player.GetRole() == RoleType.Scp93989)
+                    {
+                        player.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
+                    }
+                }
             }
 
             if(Configs.kill_hitmark
@@ -783,6 +807,21 @@ namespace SanyaPlugin
         public void OnTeamRespawn(ref TeamRespawnEvent ev)
         {
             Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
+
+            if(Configs.check_prev_spawn_team)
+            {
+                IsPrevSpawnChaos = ev.IsChaos;
+                roundCoroutines.Add(Timing.CallDelayed(0.5f, () =>
+                {
+                    var mtfr = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
+                    Log.Debug($"[NextSpawnFixer] Original:{mtfr.nextWaveIsCI}");
+                    if(mtfr.nextWaveIsCI == IsPrevSpawnChaos)
+                    {
+                        mtfr.nextWaveIsCI = !IsPrevSpawnChaos;
+                        Log.Debug($"[NextSpawnFixer] Fixed to:{mtfr.nextWaveIsCI}");
+                    }
+                }));
+            }
 
             if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated)
             {
@@ -1218,7 +1257,10 @@ namespace SanyaPlugin
                 else
                 {
                     ev.Allow = false;
-                    ev.Sender.RAMessage("Usage : SANYA < RELOAD / SHOWCONFIG / NUKELOCK / BLACKOUT / EV / GEN / SPAWN / NEXT >", false);
+                    ev.Sender.RAMessage(string.Concat(
+                        "Usage : sanya < reload / startair / stopair / nukelock / blackout ",
+                        "/ roompos / tppos / pocket / gen / spawn / next / van / heli / 106 / 096 / 914 / now / ammo / cleanupdic / test >"
+                        ), false);
                 }
             }
         }

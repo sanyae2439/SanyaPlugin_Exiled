@@ -207,6 +207,11 @@ namespace SanyaPlugin
                 maxLimitDamage += perDamage;
                 yield return Timing.WaitForSeconds(interval);
             }
+            if(DOTDamages.ContainsKey(target))
+            {
+                Log.Debug($"[939DOT] Removed {target.GetNickname()}");
+                DOTDamages.Remove(target);
+            }
             yield break;
         }
     }
@@ -274,9 +279,9 @@ namespace SanyaPlugin
             embed.timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ");
             embed.footer.text = $"報告者:{reporter.GetNickname()} [{reporter.GetUserId()}]";
             embed.fields.Add(new EmbedField() { name = "発見サーバー", value = $"{FormatServerName()}" });
-            embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.GetNickname()}", inline = true});
+            embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.GetNickname()}", inline = true });
             embed.fields.Add(new EmbedField() { name = "対象プレイヤーID", value = $"{reported.GetUserId()}", inline = true });
-            embed.fields.Add(new EmbedField() { name = "内容", value = $"{reason}"});
+            embed.fields.Add(new EmbedField() { name = "内容", value = $"{reason}" });
             hookdata.embeds.Add(embed);
 
             var json = Utf8Json.JsonSerializer.ToJsonString<WebhookData>(hookdata);

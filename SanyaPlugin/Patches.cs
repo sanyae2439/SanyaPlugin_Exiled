@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using EXILED;
 using EXILED.Extensions;
@@ -293,7 +292,7 @@ namespace SanyaPlugin
         {
             if(Configs.ragdoll_cleanup < 0) return true;
 
-            Log.Debug($"[RagdollCleanupPatch] {Enum.Parse(typeof(RoleType),classId.ToString())}{pos} Time:{Time.time} Cleanuptimes:{Configs.ragdoll_cleanup}");
+            Log.Debug($"[RagdollCleanupPatch] {Enum.Parse(typeof(RoleType), classId.ToString())}{pos} Time:{Time.time} Cleanuptimes:{Configs.ragdoll_cleanup}");
             try
             {
                 Role role = __instance.ccm.Classes.SafeGet(classId);
@@ -324,7 +323,7 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Inventory),nameof(Inventory.SetPickup))]
+    [HarmonyPatch(typeof(Inventory), nameof(Inventory.SetPickup))]
     public class ItemCleanupPatch
     {
         public static Dictionary<GameObject, float> items = new Dictionary<GameObject, float>();
@@ -401,6 +400,7 @@ namespace SanyaPlugin
             {
                 if(Coroutines.DOTDamages.TryGetValue(player, out CoroutineHandle handle))
                 {
+                    Log.Debug($"[939DOT] Removed {player.GetNickname()}");
                     Timing.KillCoroutines(handle);
                     Coroutines.DOTDamages.Remove(player);
                 }

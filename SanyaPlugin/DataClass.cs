@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using EXILED;
 using UnityEngine;
-using Utf8Json;
 
 namespace SanyaPlugin
 {
@@ -62,7 +61,7 @@ namespace SanyaPlugin
                 new Vector3(UnityEngine.Random.Range(  2,  14), 1001, UnityEngine.Random.Range(  3,  -3)),
                 new Vector3(UnityEngine.Random.Range( -1, -13), 1001, UnityEngine.Random.Range(  4,  -3))
             };
-    }
+        }
     }
 
     public class Serverinfo
@@ -169,7 +168,7 @@ namespace SanyaPlugin
         public string title { get; set; }
 
         public string timestamp { get; set; }
- 
+
         public EmbedFooter footer { get; set; } = new EmbedFooter();
 
         public List<EmbedField> fields { get; set; } = new List<EmbedField>();

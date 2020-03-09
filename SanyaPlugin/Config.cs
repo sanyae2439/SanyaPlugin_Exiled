@@ -20,6 +20,7 @@ namespace SanyaPlugin
         internal static int item_cleanup;
 
         //SanyaPlugin
+        internal static string motd_message = "";
         internal static List<int> event_mode_weight;
         internal static bool cassie_subtitle;
         internal static bool tesla_triggerable_disarmed;
@@ -46,6 +47,7 @@ namespace SanyaPlugin
 
         //Human:Balanced
         internal static bool stop_respawn_after_detonated;
+        internal static bool check_prev_spawn_team;
         internal static bool inventory_keycard_act;
         internal static bool grenade_hitmark;
         internal static bool kill_hitmark;
@@ -99,6 +101,7 @@ namespace SanyaPlugin
             ragdoll_cleanup = Plugin.Config.GetInt("sanya_ragdoll_cleanup", -1);
             item_cleanup = Plugin.Config.GetInt("sanya_item_cleanup", -1);
 
+            motd_message = Plugin.Config.GetString("sanya_motd_message", string.Empty);
             event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
             cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);
             tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
@@ -108,11 +111,10 @@ namespace SanyaPlugin
             intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
             outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
             godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
-            
+
             classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
             classd_insurgency_classd_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_classd_ammo");
             classd_insurgency_scientist_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_scientist_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-
 
             data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
             level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
@@ -122,6 +124,7 @@ namespace SanyaPlugin
             level_exp_other = Plugin.Config.GetInt("sanya_level_exp_other", 1);
 
             stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
+            check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
             inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
             grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
             kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
