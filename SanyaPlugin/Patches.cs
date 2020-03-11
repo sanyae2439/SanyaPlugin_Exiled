@@ -35,35 +35,46 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.CancelDetonation), new System.Type[] { typeof(UnityEngine.GameObject) })]
-    public class CancelWarheadPatch
-    {
-        public static bool Locked = false;
-
-        public static bool Prefix(AlphaWarheadController __instance)
-        {
-            Log.Debug($"[CancelWarheadPatch] Locked:{Locked}");
-            if(Locked) return false;
-
-            if(Configs.cassie_subtitle && __instance.NetworkinProgress && __instance.timeToDetonation > 10f)
-            {
-                Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
-            }
-
-            return true;
-        }
-    }
-
     [HarmonyPatch(typeof(AlphaWarheadNukesitePanel), nameof(AlphaWarheadNukesitePanel.AllowChangeLevelState))]
     public class ChangeLeverPatch
     {
         public static bool Prefix()
         {
-            Log.Debug($"[ChangeLeverPatch] Locked:{CancelWarheadPatch.Locked}");
-            if(CancelWarheadPatch.Locked)
+            Log.Debug($"[ChangeLeverPatch] Locked:{EventHandlers.IsNukeLocked}");
+            if(EventHandlers.IsNukeLocked)
                 return false;
 
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(Door), nameof(Door.OpenWarhead))]
+    public class DoorWarheadPatch
+    {
+        public static bool Prefix(Door __instance, bool force, bool lockDoor)
+        {
+            if(!Configs.fix_doors_on_countdown) return true;
+
+            if(__instance.permissionLevel == "UNACCESSIBLE" || (__instance.dontOpenOnWarhead && !force))
+            {
+                return false;
+            }
+            if(lockDoor)
+            {
+                __instance.warheadlock = true;
+            }
+            if(!__instance.locked || force)
+            {
+                if(!__instance.isOpen)
+                {
+                    __instance.RpcDoSound();
+                }
+                __instance.moving.moving = true;
+                __instance.SetState(open: true);
+                __instance.UpdateLock();
+            }
+
+            return false;
         }
     }
 
@@ -373,6 +384,8 @@ namespace SanyaPlugin
     {
         public static bool Prefix(Scp096PlayerScript __instance)
         {
+            if(!Configs.scp096_high_sensitive) return true;
+
             foreach(var player in PlayerManager.players)
             {
                 ReferenceHub hubs = ReferenceHub.GetHub(player);

@@ -102,7 +102,7 @@ namespace SanyaPlugin
                     if(RoundSummary.roundTime >= Configs.auto_warhead_start)
                     {
                         autowarheadstarted = true;
-                        if(Configs.auto_warhead_start_lock) CancelWarheadPatch.Locked = true;
+                        if(Configs.auto_warhead_start_lock) IsNukeLocked = true;
                         AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
                         if(Configs.cassie_subtitle && !AlphaWarheadController.Host.NetworkinProgress)
                         {
@@ -253,6 +253,7 @@ namespace SanyaPlugin
 
         /** Flag Params **/
         internal static bool autowarheadstarted = false;
+        internal static bool IsNukeLocked = false;
         private int detonatedDuration = -1;
         private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
@@ -273,20 +274,35 @@ namespace SanyaPlugin
                 sendertask = _SenderAsync().StartSender();
 
             roundCoroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
-            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));   
+            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
 
             PlayerDataManager.playersData.Clear();
             RagdollCleanupPatch.ragdolls.Clear();
             ItemCleanupPatch.items.Clear();
-            CancelWarheadPatch.Locked = false;
             Coroutines.isAirBombGoing = false;
 
             autowarheadstarted = false;
             detonatedDuration = -1;
+            IsNukeLocked = false;
             IsPrevSpawnChaos = false;
             IsEnableBlackout = false;
 
             flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
+
+            if(Configs.fix_doors_on_countdown)
+            {
+                foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
+                {
+                    if(door.DoorName == "NUKE_SURFACE")
+                    {
+                        door.dontOpenOnWarhead = false;
+                    }
+                    else if(door.DoorName.Contains("GATE"))
+                    {
+                        door.dontOpenOnWarhead = true;
+                    }
+                }
+            }
 
             eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
             switch(eventmode)
@@ -380,6 +396,38 @@ namespace SanyaPlugin
             foreach(var cor in roundCoroutines)
                 Timing.KillCoroutines(cor);
             roundCoroutines.Clear();
+        }
+
+        public void OnWarheadCancel(WarheadCancelEvent ev)
+        {
+            Log.Debug($"[OnWarheadCancel] {ev.Player?.GetNickname()} Locked:{IsNukeLocked}");
+
+            if(IsNukeLocked)
+            {
+                ev.Allow = false;
+                return;
+            }
+
+            if(Configs.cassie_subtitle && AlphaWarheadController.Host.NetworkinProgress && AlphaWarheadController.Host.timeToDetonation > 10f)
+            {
+                Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
+            }
+
+            if(Configs.fix_doors_on_countdown)
+            {
+                foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
+                {
+                    if(door.warheadlock)
+                    {
+                        if(door.isOpen)
+                        {
+                            door.RpcDoSound();
+                        }
+                        door.moving.moving = true;
+                        door.SetState(false);
+                    }
+                }
+            }
         }
 
         public void OnDetonated()
@@ -487,8 +535,8 @@ namespace SanyaPlugin
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
-            Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
+            Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Attacker == null) return;
 
@@ -574,8 +622,8 @@ namespace SanyaPlugin
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
-            Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()} -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}");
+            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
+            Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()}[{ev.Killer?.GetRole()}] -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Killer == null) return;
 
@@ -1047,8 +1095,8 @@ namespace SanyaPlugin
                             }
                         case "nukelock":
                             {
-                                CancelWarheadPatch.Locked = !CancelWarheadPatch.Locked;
-                                ReturnStr = $"nukelock:{CancelWarheadPatch.Locked}";
+                                IsNukeLocked = !IsNukeLocked;
+                                ReturnStr = $"nukelock:{IsNukeLocked}";
                                 break;
                             }
                         case "blackout":
@@ -1150,14 +1198,29 @@ namespace SanyaPlugin
                                     }
                                     else if(args[2] == "set")
                                     {
+                                        float cur = 10f;
                                         foreach(var generator in Generator079.generators)
                                         {
                                             if(!generator.prevFinish)
                                             {
                                                 generator.NetworkisTabletConnected = true;
+                                                generator.NetworkremainingPowerup = cur;
+                                                cur += 10f;
                                             }
                                         }
                                         ReturnStr = "gen set.";
+                                    }
+                                    else if(args[2] == "once")
+                                    {
+                                        foreach(var generator in Generator079.generators)
+                                        {
+                                            if(!generator.prevFinish)
+                                            {
+                                                generator.NetworkisTabletConnected = true;
+                                                break;
+                                            }
+                                        }
+                                        ReturnStr = "set once.";
                                     }
                                     else if(args[2] == "eject")
                                     {
@@ -1179,7 +1242,7 @@ namespace SanyaPlugin
                                 else
                                 {
                                     isSuccess = false;
-                                    ReturnStr = "[gen] Parameters : gen <unlock/door/set/eject>";
+                                    ReturnStr = "[gen] Parameters : gen <unlock/door/set/once/eject>";
                                 }
                                 break;
                             }

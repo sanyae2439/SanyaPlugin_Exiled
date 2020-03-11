@@ -30,6 +30,7 @@ namespace SanyaPlugin
         internal static bool intercom_information;
         internal static int outsidezone_termination_time_after_nuke;
         internal static bool godmode_after_endround;
+        internal static bool fix_doors_on_countdown;
 
         //SanyaPlugin:Event
         internal static List<ItemType> classd_insurgency_classd_inventory;
@@ -57,6 +58,7 @@ namespace SanyaPlugin
         //SCP:Balanced
         internal static bool scp_can_talk_to_humans;
         internal static bool scp049_reset_ragdoll_after_recall;
+        internal static bool scp096_high_sensitive;
         internal static int scp939_dot_damage;
         internal static int scp939_dot_damage_total;
         internal static int scp939_dot_damage_interval;
@@ -81,7 +83,7 @@ namespace SanyaPlugin
 
         internal static void Reload()
         {
-            infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "hatsunemiku24.ddo.jp");
+            infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "none");
             infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
             report_webhook = Plugin.Config.GetString("sanya_report_webhook", string.Empty);
             tesla_triggerable_teams = Plugin.Config.GetIntList("sanya_tesla_triggerable_teams");
@@ -111,6 +113,7 @@ namespace SanyaPlugin
             intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
             outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
             godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
+            fix_doors_on_countdown = Plugin.Config.GetBool("sanya_fix_doors_on_countdown", false);
 
             classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
             classd_insurgency_classd_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_classd_ammo");
@@ -133,6 +136,7 @@ namespace SanyaPlugin
 
             scp_can_talk_to_humans = Plugin.Config.GetBool("sanya_scp_can_talk_to_humans", false);
             scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
+            scp096_high_sensitive = Plugin.Config.GetBool("sanya_scp096_high_sensitive", false);
             scp939_dot_damage = Plugin.Config.GetInt("sanya_scp939_dot_damage", -1);
             scp939_dot_damage_total = Plugin.Config.GetInt("sanya_scp939_dot_damage_total", 80);
             scp939_dot_damage_interval = Plugin.Config.GetInt("sanya_scp939_dot_damage_interval", 1);
