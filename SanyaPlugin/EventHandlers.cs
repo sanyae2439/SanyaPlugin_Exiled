@@ -639,7 +639,7 @@ namespace SanyaPlugin
                 ev.Info = clinfo;
             }
 
-            Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetNickname()} -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}");
+            Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
         }
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
