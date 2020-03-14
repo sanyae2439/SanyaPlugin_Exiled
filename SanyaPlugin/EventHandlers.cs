@@ -68,7 +68,7 @@ namespace SanyaPlugin
                             {
                                 name = ReferenceHub.GetHub(player).nicknameSync.MyNick,
                                 userid = ReferenceHub.GetHub(player).characterClassManager.UserId,
-                                ip = ReferenceHub.GetHub(player).characterClassManager.RequestIp,
+                                ip = ReferenceHub.GetHub(player).queryProcessor._ipAddress,
                                 role = ReferenceHub.GetHub(player).characterClassManager.CurClass.ToString(),
                                 rank = ReferenceHub.GetHub(player).serverRoles.MyText
                             };
@@ -101,6 +101,7 @@ namespace SanyaPlugin
                 {
                     if(RoundSummary.roundTime >= Configs.auto_warhead_start)
                     {
+                        Log.Debug("[AutoWarhead] Fired!");
                         autowarheadstarted = true;
                         if(Configs.auto_warhead_start_lock) IsNukeLocked = true;
                         AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
@@ -121,6 +122,25 @@ namespace SanyaPlugin
 
 
                         }
+
+                        if(Configs.fix_doors_on_countdown && AlphaWarheadController.Host.NetworkinProgress)
+                        {
+                            foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
+                            {
+                                if(!door.warheadlock)
+                                {
+                                    if(!door.isOpen)
+                                    {
+                                        door.RpcDoSound();
+                                    }
+                                    door.warheadlock = true;
+                                    door.moving.moving = true;
+                                    door.SetState(open: true);
+                                    door.UpdateLock();
+                                }
+                            }
+                        }
+
                         AlphaWarheadController.Host.NetworkinProgress = true;
                     }
                 }
@@ -444,7 +464,7 @@ namespace SanyaPlugin
 
         public void OnPlayerJoin(PlayerJoinEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            if(ev.Player.IsHost()) return;
             Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
             if(!string.IsNullOrEmpty(Configs.motd_message))
@@ -471,7 +491,7 @@ namespace SanyaPlugin
 
         public void OnPlayerLeave(PlayerLeaveEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            if(ev.Player.IsHost()) return;
             Log.Debug($"[OnPlayerLeave] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
             if(Configs.data_enabled)
@@ -486,6 +506,7 @@ namespace SanyaPlugin
 
         public void OnStartItems(StartItemsEvent ev)
         {
+            if(ev.Player.IsHost()) return;
             Log.Debug($"[OnStartItems] {ev.Player.GetNickname()} -> {ev.Role}");
 
             if(Configs.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
@@ -512,12 +533,13 @@ namespace SanyaPlugin
 
         public void OnPlayerSetClass(SetClassEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress())) return;
+            if(ev.Player.IsHost()) return;
             Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
         }
 
         public void OnPlayerSpawn(PlayerSpawnEvent ev)
         {
+            if(ev.Player.IsHost()) return;
             Log.Debug($"[OnPlayerSpawn] {ev.Player.GetNickname()} -{ev.Role}-> {ev.Spawnpoint}");
 
             switch(eventmode)
@@ -535,7 +557,7 @@ namespace SanyaPlugin
 
         public void OnPlayerHurt(ref PlayerHurtEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
+            if(ev.Player.IsHost() || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Attacker == null) return;
@@ -622,7 +644,7 @@ namespace SanyaPlugin
 
         public void OnPlayerDeath(ref PlayerDeathEvent ev)
         {
-            if(string.IsNullOrEmpty(ev.Player.GetIpAddress()) || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
+            if(ev.Player.IsHost() || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
             Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()}[{ev.Killer?.GetRole()}] -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Killer == null) return;

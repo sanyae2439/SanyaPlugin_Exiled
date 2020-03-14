@@ -336,5 +336,10 @@ namespace SanyaPlugin
         {
             return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
         }
+
+        public static bool IsHost(this ReferenceHub player)
+        {
+            return player.name == "Host";
+        }
     }
 }

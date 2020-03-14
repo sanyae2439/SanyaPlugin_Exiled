@@ -55,6 +55,12 @@ namespace SanyaPlugin
         {
             if(!Configs.fix_doors_on_countdown) return true;
 
+            if(EventHandlers.autowarheadstarted)
+            {
+                force = true; 
+                lockDoor = true;
+            }
+
             if(__instance.permissionLevel == "UNACCESSIBLE" || (__instance.dontOpenOnWarhead && !force))
             {
                 return false;
