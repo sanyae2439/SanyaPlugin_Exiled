@@ -205,7 +205,7 @@ namespace SanyaPlugin
             {
                 if(target.characterClassManager.NetworkDeathPosition != curDeathPos || target.GetRole() != curRole) break;
                 target.playerStats.HurtPlayer(new PlayerStats.HitInfo(perDamage, "WORLD", type, 0), target.gameObject);
-                maxLimitDamage += perDamage;
+                curDamageAmount += perDamage;
                 yield return Timing.WaitForSeconds(interval);
             }
             if(DOTDamages.ContainsKey(target))

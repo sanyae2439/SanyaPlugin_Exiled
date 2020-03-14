@@ -494,12 +494,11 @@ namespace SanyaPlugin
             if(ev.Player.IsHost()) return;
             Log.Debug($"[OnPlayerLeave] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
-            if(Configs.data_enabled)
+            if(Configs.data_enabled && !string.IsNullOrEmpty(ev.Player.GetUserId()))
             {
                 if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
                 {
                     PlayerDataManager.playersData.Remove(ev.Player.GetUserId());
-
                 }
             }
         }
