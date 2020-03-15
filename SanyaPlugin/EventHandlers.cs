@@ -16,7 +16,6 @@ namespace SanyaPlugin
     {
         public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
         internal readonly SanyaPlugin plugin;
-        private readonly System.Random random = new System.Random();
         internal List<CoroutineHandle> roundCoroutines = new List<CoroutineHandle>();
         internal bool loaded = false;
 
