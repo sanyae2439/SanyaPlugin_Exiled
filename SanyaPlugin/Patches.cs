@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Assets._Scripts.Dissonance;
 using Security;
 using Mirror;
 using Harmony;
@@ -628,10 +627,10 @@ namespace SanyaPlugin.Patches
         }
     }
 
-    [HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.CallCmdAltIsActive))]
+    [HarmonyPatch(typeof(Assets._Scripts.Dissonance.DissonanceUserSetup), nameof(Assets._Scripts.Dissonance.DissonanceUserSetup.CallCmdAltIsActive))]
     public static class VCPatch
     {
-        public static void Prefix(DissonanceUserSetup __instance, bool value)
+        public static void Prefix(Assets._Scripts.Dissonance.DissonanceUserSetup __instance, bool value)
         {
             if(!Configs.scp_can_talk_to_humans) return;
 
