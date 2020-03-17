@@ -668,8 +668,8 @@ namespace SanyaPlugin
     {
         public static bool Prefix(Radio __instance, ref bool b)
         {
-            if(!Configs.disable_spectator_chat) return true;
             if(Configs.disable_all_chat) return false;
+            if(!Configs.disable_spectator_chat) return true;
             var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
             Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting}");
             if(Configs.disable_spectator_chat && team == Team.RIP) b = false;
