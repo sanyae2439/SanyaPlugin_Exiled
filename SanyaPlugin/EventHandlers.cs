@@ -479,13 +479,17 @@ namespace SanyaPlugin
                 if(!PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
                 {
                     PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
-
                 }
 
                 if(Configs.level_enabled)
                 {
                     Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
                 }
+            }
+
+            if(Configs.disable_all_chat)
+            {
+                ev.Player.characterClassManager.NetworkMuted = true;
             }
         }
 
