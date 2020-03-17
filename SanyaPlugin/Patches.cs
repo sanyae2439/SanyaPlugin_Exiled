@@ -668,12 +668,24 @@ namespace SanyaPlugin
     {
         public static bool Prefix(Radio __instance, ref bool b)
         {
-            if(!Configs.disable_spectator_chat && !Configs.disable_all_chat) return true;
+            if(!Configs.disable_spectator_chat) return true;
+            if(Configs.disable_all_chat) return false;
             var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
             Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting}");
             if(Configs.disable_spectator_chat && team == Team.RIP) b = false;
-            if(Configs.disable_all_chat) b = false;
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(Radio), nameof(Radio.CallCmdUpdateClass))]
+    public class VCTeamPatch
+    {
+        public static bool Prefix(Radio __instance)
+        {
+            if(!Configs.disable_all_chat) return true;
+            Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
+            __instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
+            return false;
         }
     }
 }
