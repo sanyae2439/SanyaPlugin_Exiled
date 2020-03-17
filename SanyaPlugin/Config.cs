@@ -57,6 +57,8 @@ namespace SanyaPlugin
 
         //SCP:Balanced
         internal static bool scp_can_talk_to_humans;
+        internal static bool scp018_friendly_fire;
+        internal static float scp018_damage_multiplier;
         internal static bool scp049_reset_ragdoll_after_recall;
         internal static bool scp096_high_sensitive;
         internal static int scp939_dot_damage;
@@ -129,12 +131,14 @@ namespace SanyaPlugin
             stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
             check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
             inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
-            grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
+            grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);   
             kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
             traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
             traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
 
             scp_can_talk_to_humans = Plugin.Config.GetBool("sanya_scp_can_talk_to_humans", false);
+            scp018_friendly_fire = Plugin.Config.GetBool("sanya_grenade_friendly_fire", false);
+            scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
             scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
             scp096_high_sensitive = Plugin.Config.GetBool("sanya_scp096_high_sensitive", false);
             scp939_dot_damage = Plugin.Config.GetInt("sanya_scp939_dot_damage", -1);

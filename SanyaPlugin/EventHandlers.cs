@@ -9,6 +9,7 @@ using Mirror;
 using MEC;
 using Utf8Json;
 using EXILED.Extensions;
+using CustomPlayerEffects;
 
 namespace SanyaPlugin
 {
@@ -559,25 +560,24 @@ namespace SanyaPlugin
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Attacker == null) return;
-
-            DamageTypes.DamageType damageTypes = ev.Info.GetDamageType();
-            if(damageTypes != DamageTypes.Nuke
-                && damageTypes != DamageTypes.Decont
-                && damageTypes != DamageTypes.Wall
-                && damageTypes != DamageTypes.Tesla)
+            
+            if(ev.DamageType != DamageTypes.Nuke
+                && ev.DamageType != DamageTypes.Decont
+                && ev.DamageType != DamageTypes.Wall
+                && ev.DamageType != DamageTypes.Tesla)
             {
                 PlayerStats.HitInfo clinfo = ev.Info;
 
                 //GrenadeHitmark
                 if(Configs.grenade_hitmark
-                    && damageTypes == DamageTypes.Grenade
+                    && ev.DamageType == DamageTypes.Grenade
                     && ev.Player.GetUserId() != ev.Attacker.GetUserId())
                 {
                     ev.Attacker.GetComponent<Scp173PlayerScript>()?.TargetHitMarker(ev.Attacker.characterClassManager.connectionToClient);
                 }
 
                 //USPMultiplier
-                if(damageTypes == DamageTypes.Usp)
+                if(ev.DamageType == DamageTypes.Usp)
                 {
                     if(ev.Player.characterClassManager.IsAnyScp())
                     {
@@ -590,7 +590,7 @@ namespace SanyaPlugin
                 }
 
                 if(Configs.scp939_dot_damage > 0
-                    && damageTypes == DamageTypes.Scp939
+                    && ev.DamageType == DamageTypes.Scp939
                     && ev.Player.GetUserId() != ev.Attacker.GetUserId()
                     && !Coroutines.DOTDamages.ContainsKey(ev.Player))
                 {
@@ -607,7 +607,7 @@ namespace SanyaPlugin
                 }
 
                 //SCPsDivisor
-                if(damageTypes != DamageTypes.MicroHid)
+                if(ev.DamageType != DamageTypes.MicroHid)
                 {
                     switch(ev.Player.GetRole())
                     {
@@ -1119,6 +1119,20 @@ namespace SanyaPlugin
                                 ReturnStr = $"nukelock:{IsNukeLocked}";
                                 break;
                             }
+                        case "sonar":
+                            {
+                                int counter = 0;
+                                foreach(var target in Player.GetHubs())
+                                {
+                                    if(target.GetTeam() != player.GetTeam() && target.GetRole() != RoleType.Spectator && target.GetRole() != RoleType.None)
+                                    {
+                                        Methods.Target096AttackSound(target, player);
+                                        counter++;
+                                    }
+                                }
+                                ReturnStr = $"Sonar Activated : {counter}";
+                                break;
+                            }
                         case "blackout":
                             {
                                 if(args.Length > 2 && args[2] == "hcz")
@@ -1130,6 +1144,130 @@ namespace SanyaPlugin
                                 {
                                     Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
                                     ReturnStr = "ALL blackout!";
+                                }
+                                break;
+                            }
+                        case "explode":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
+                                    {
+                                        Methods.SpawnGrenade(target.transform.position, (int)GRENADE_ID.FRAG_NADE, 0.1f, target);
+                                        ReturnStr = $"success. target:{target.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[explode] missing target.";
+                                    }
+                                }
+                                else
+                                {
+                                    if(player != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FRAG_NADE, 0.1f, player);
+                                        ReturnStr = $"success. target:{player.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[explode] missing target.";
+                                    }
+                                }
+                                break;
+                            }
+                        case "grenade":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FRAG_NADE, -1, target);
+                                        ReturnStr = $"success. target:{target.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[grenade] missing target.";
+                                    }
+                                }
+                                else
+                                {
+                                    if(player != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FRAG_NADE, -1, player);
+                                        ReturnStr = $"success. target:{player.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[grenade] missing target.";
+                                    }
+                                }
+                                break;
+                            }
+                        case "flash":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FLASH_NADE, -1, target);
+                                        ReturnStr = $"success. target:{target.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[flash] missing target.";
+                                    }
+                                }
+                                else
+                                {
+                                    if(player != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FLASH_NADE, -1, player);
+                                        ReturnStr = $"success. target:{player.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[flash] missing target.";
+                                    }
+                                }
+                                break;
+                            }
+                        case "ball":
+                            {
+                                if(args.Length > 2)
+                                {
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.SCP018_NADE, -1, target);
+                                        ReturnStr = $"success. target:{target.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[ball] missing target.";
+                                    }
+                                }
+                                else
+                                {
+                                    if(player != null)
+                                    {
+                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.SCP018_NADE, -1, player);
+                                        ReturnStr = $"success. target:{player.GetNickname()}";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[ball] missing target.";
+                                    }
                                 }
                                 break;
                             }
@@ -1160,34 +1298,72 @@ namespace SanyaPlugin
                             }
                         case "tppos":
                             {
-                                if(args.Length > 4)
+                                if(args.Length > 5)
                                 {
-                                    if(float.TryParse(args[2], out float x)
-                                        && float.TryParse(args[3], out float y)
-                                        && float.TryParse(args[4], out float z))
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
                                     {
-                                        Vector3 pos = new Vector3(x, y, z);
-                                        player.plyMovementSync.OverridePosition(pos, 0f, true);
-                                        ReturnStr = $"TP to {pos}.";
+                                        if(float.TryParse(args[3], out float x)
+                                            && float.TryParse(args[4], out float y)
+                                            && float.TryParse(args[5], out float z))
+                                        {
+                                            Vector3 pos = new Vector3(x, y, z);
+                                            target.plyMovementSync.OverridePosition(pos, 0f, true);
+                                            ReturnStr = $"TP to {pos}.";
+                                        }
+                                        else
+                                        {
+                                            isSuccess = false;
+                                            ReturnStr = "[tppos] Wrong parameters.";
+                                        }
                                     }
                                     else
                                     {
                                         isSuccess = false;
-                                        ReturnStr = "[tppos] Wrong Parameters.";
+                                        ReturnStr = "[tppos] missing target.";
                                     }
                                 }
                                 else
                                 {
                                     isSuccess = false;
-                                    ReturnStr = "[tppos] parameters : tppos <x> <y> <z>";
+                                    ReturnStr = "[tppos] parameters : tppos <player> <x> <y> <z>";
                                 }
 
                                 break;
                             }
                         case "pocket":
                             {
-                                player.plyMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, forceGround: true);
-                                ReturnStr = "move to PocketDimension.";
+                                if(args.Length > 2)
+                                {
+                                    ReferenceHub target = Player.GetPlayer(args[2]);
+                                    if(target != null)
+                                    {
+                                        target.plyMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, forceGround: true);
+                                        target.effectsController.GetEffect<Corroding>("Corroding").isInPd = true;
+                                        target.effectsController.EnableEffect("Corroding");
+                                        ReturnStr = $"target[{target.GetNickname()}] move to PocketDimension.";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[pocket] missing target.";
+                                    }
+                                }
+                                else
+                                {
+                                    if(player != null)
+                                    {
+                                        player.plyMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, forceGround: true);
+                                        player.effectsController.GetEffect<Corroding>("Corroding").isInPd = true;
+                                        player.effectsController.EnableEffect("Corroding");
+                                        ReturnStr = $"target[{player.GetNickname()}] move to PocketDimension.";
+                                    }
+                                    else
+                                    {
+                                        isSuccess = false;
+                                        ReturnStr = "[pocket] missing target.";
+                                    }
+                                }
                                 break;
                             }
                         case "gen":
@@ -1199,6 +1375,7 @@ namespace SanyaPlugin
                                         foreach(var generator in Generator079.generators)
                                         {
                                             generator.NetworkisDoorUnlocked = true;
+                                            generator.NetworkisDoorOpen = true;
                                             generator.doorAnimationCooldown = 0.5f;
                                         }
                                         ReturnStr = "gen unlocked.";
@@ -1223,6 +1400,7 @@ namespace SanyaPlugin
                                         {
                                             if(!generator.prevFinish)
                                             {
+                                                generator.NetworkisDoorOpen = true;
                                                 generator.NetworkisTabletConnected = true;
                                                 generator.NetworkremainingPowerup = cur;
                                                 cur += 10f;
@@ -1237,6 +1415,7 @@ namespace SanyaPlugin
                                             if(!generator.prevFinish)
                                             {
                                                 generator.NetworkisTabletConnected = true;
+                                                generator.NetworkisDoorOpen = true;
                                                 break;
                                             }
                                         }

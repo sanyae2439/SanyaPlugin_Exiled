@@ -471,16 +471,15 @@ namespace SanyaPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Grenades.Grenade), nameof(Grenades.Grenade.FullInitData))]
-    public class GrenadePatch
+    [HarmonyPatch(typeof(Grenades.Grenade), "set_NetworkthrowerTeam")]
+    public class GrenadeThrowerPatch
     {
         public static List<GameObject> instantFusePlayers = new List<GameObject>();
 
-        public static void Prefix(Grenades.Grenade __instance, Grenades.GrenadeManager player)
+        public static void Prefix(Grenades.Grenade __instance, ref Team value)
         {
-            Log.Debug($"[GrenadePatch] {player.gameObject.name} fuseDuration:{__instance.fuseDuration}");
-            if(player.gameObject.name == "Host" || instantFusePlayers.Contains(player.gameObject))
-                __instance.fuseDuration = 0.1f;
+            Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Grenades.Scp018Grenade}");
+            if(Configs.scp018_friendly_fire && __instance is Grenades.Scp018Grenade) value = Team.TUT;
         }
     }
 
@@ -489,13 +488,95 @@ namespace SanyaPlugin
     {
         public static bool Prefix(Grenades.Grenade __instance, ref bool __result)
         {
-            if(__instance.thrower.name != "Host")
+            if(__instance?.thrower?.name != "Host")
             {
                 string text = (__instance.thrower != null) ? (__instance.thrower.ccm.UserId + " (" + __instance.thrower.nick.MyNick + ")") : "(UNKNOWN)";
                 ServerLogs.AddLog(ServerLogs.Modules.Logger, "Player " + text + "'s " + __instance.logName + " grenade exploded.", ServerLogs.ServerLogType.GameEvent);
 
             }
             __result = true;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Grenades.Scp018Grenade), nameof(Grenades.Scp018Grenade.OnSpeedCollisionEnter))]
+    public class Scp018Patch
+    {
+        public static bool Prefix(Grenades.Scp018Grenade __instance, Collision collision, float relativeSpeed)
+        {
+            //__instance.damageHurt = 0.95f
+            //__instance.damageScpMultiplier = 4.85f
+
+            Vector3 velocity = __instance.rb.velocity * __instance.bounceSpeedMultiplier;
+            float num = __instance.topSpeedPerBounce[__instance.bounce];
+            if(relativeSpeed > num)
+            {
+                __instance.rb.velocity = velocity.normalized * num;
+                if(__instance.actionAllowed)
+                {
+                    __instance.bounce = Mathf.Min(__instance.bounce + 1, __instance.topSpeedPerBounce.Length - 1);
+                }
+            }
+            else
+            {
+                if(relativeSpeed > __instance.source.maxDistance)
+                {
+                    __instance.source.maxDistance = relativeSpeed;
+                }
+                __instance.rb.velocity = velocity;
+            }
+            if(NetworkServer.active)
+            {
+                Collider collider = collision.collider;
+                int num2 = 1 << collider.gameObject.layer;
+                if(num2 == __instance.layerGlass)
+                {
+                    if(__instance.actionAllowed && relativeSpeed >= __instance.breakpointGlass)
+                    {
+                        __instance.cooldown = __instance.cooldownGlass;
+                        BreakableWindow component = collider.GetComponent<BreakableWindow>();
+                        if(component != null)
+                        {
+                            component.ServerDamageWindow(relativeSpeed * __instance.damageGlass);
+                        }
+                    }
+                }
+                else if(num2 == __instance.layerDoor)
+                {
+                    if(relativeSpeed >= __instance.breakpointDoor)
+                    {
+                        __instance.cooldown = __instance.cooldownDoor;
+                        Door componentInParent = collider.GetComponentInParent<Door>();
+                        if(componentInParent != null && !componentInParent.GrenadesResistant)
+                        {
+                            componentInParent.DestroyDoor(b: true);
+                        }
+                    }
+                }
+                else if((num2 == __instance.layerHitbox || num2 == __instance.layerIgnoreRaycast) && __instance.actionAllowed && relativeSpeed >= __instance.breakpointHurt)
+                {
+                    __instance.cooldown = __instance.cooldownHurt;
+                    ReferenceHub componentInParent2 = collider.GetComponentInParent<ReferenceHub>();
+                    if(componentInParent2 != null && (ServerConsole.FriendlyFire || componentInParent2.gameObject == __instance.thrower.gameObject || componentInParent2.weaponManager.GetShootPermission(__instance.throwerTeam)))
+                    {
+                        float num3 = relativeSpeed * __instance.damageHurt * Configs.scp018_damage_multiplier;
+
+                        //componentInParent2.playerStats.ccm.CurClass != RoleType.Scp106 && 
+                        if(componentInParent2.playerStats.ccm.Classes.SafeGet(componentInParent2.playerStats.ccm.CurClass).team == Team.SCP)
+                        {
+                            num3 *= __instance.damageScpMultiplier;
+                        }
+
+                        componentInParent2.playerStats.HurtPlayer(new PlayerStats.HitInfo(num3, __instance.logName, DamageTypes.Grenade, __instance.throwerGameObject.GetPlayer().GetPlayerId()), componentInParent2.playerStats.gameObject);
+                    }
+                }
+                if(__instance.bounce >= __instance.topSpeedPerBounce.Length - 1 && relativeSpeed >= num && !__instance.hasHitMaxSpeed)
+                {
+                    __instance.NetworkfuseTime = NetworkTime.time + 10.0;
+                    __instance.hasHitMaxSpeed = true;
+                }
+            }
+            //base.OnSpeedCollisionEnter(collision, relativeSpeed);
             return false;
         }
     }

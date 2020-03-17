@@ -178,7 +178,7 @@ namespace SanyaPlugin
                 List<Vector3> randampos = OutsideRandomAirbombPos.Load().OrderBy(x => Guid.NewGuid()).ToList();
                 foreach(var pos in randampos)
                 {
-                    Methods.Explode(pos, (int)GRENADE_ID.FRAG_NADE);
+                    Methods.SpawnGrenade(pos, (int)GRENADE_ID.FRAG_NADE, 0.1f);
                     yield return Timing.WaitForSeconds(0.1f);
                 }
                 throwcount++;
@@ -221,11 +221,12 @@ namespace SanyaPlugin
     {
         public static HttpClient httpClient = new HttpClient();
 
-        public static void Explode(Vector3 position, int type, ReferenceHub player = null)
+        public static void SpawnGrenade(Vector3 position, int type, float fusedur = -1, ReferenceHub player = null)
         {
             if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
             var gm = player.GetComponent<Grenades.GrenadeManager>();
             Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[type].grenadeInstance).GetComponent<Grenades.Grenade>();
+            if(fusedur != -1) component.fuseDuration = fusedur;
             component.FullInitData(gm, position, Quaternion.Euler(component.throwStartAngle), Vector3.zero, component.throwAngularVelocity);
             NetworkServer.Spawn(component.gameObject);
         }
@@ -316,6 +317,25 @@ namespace SanyaPlugin
             return result.Trim();
         }
 
+        public static void Target096AttackSound(ReferenceHub target, ReferenceHub player)
+        {
+            NetworkWriter writer = NetworkWriterPool.GetWriter();
+            player.SendRpcWriter(target.GetComponent<Scp096PlayerScript>(), typeof(Scp096PlayerScript), "RpcSyncAudio", writer, 0);
+            NetworkWriterPool.Recycle(writer);
+        }
+
+        public static void SendRpcWriter<T>(this ReferenceHub sendto, T target, Type invokeClass, string rpcName, NetworkWriter writer, int channelId) where T : NetworkBehaviour
+        {
+            var msg = new RpcMessage
+            {
+                netId = target.netId,
+                componentIndex = target.ComponentIndex,
+                functionHash = invokeClass.FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
+                payload = writer.ToArraySegment()
+            };
+            sendto?.characterClassManager.connectionToClient.Send(msg, channelId);
+        }
+
         public static void SpawnRagdoll()
         {
             //UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
@@ -339,7 +359,7 @@ namespace SanyaPlugin
 
         public static bool IsHost(this ReferenceHub player)
         {
-            return player.name == "Host";
+            return player?.name == "Host";
         }
     }
 }
