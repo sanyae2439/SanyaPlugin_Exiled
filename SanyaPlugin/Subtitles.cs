@@ -1,4 +1,4 @@
-﻿namespace SanyaPlugin
+﻿namespace SanyaPlugin.Data
 {
     internal static class Subtitles
     {

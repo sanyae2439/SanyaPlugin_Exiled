@@ -6,13 +6,14 @@ using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UnityEngine;
+using Mirror;
+using MEC;
 using EXILED;
 using EXILED.Extensions;
-using MEC;
-using Mirror;
-using UnityEngine;
+using SanyaPlugin.Data;
 
-namespace SanyaPlugin
+namespace SanyaPlugin.Functions
 {
     internal static class PlayerDataManager
     {
@@ -291,10 +292,11 @@ namespace SanyaPlugin
         public static void SendReport(ReferenceHub reported, string reason, ReferenceHub reporter)
         {
             var hookdata = new WebhookData();
-            var embed = new Embed();
-
-            embed.title = "ゲームサーバーからの報告";
-            embed.timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ");
+            var embed = new Embed
+            {
+                title = "ゲームサーバーからの報告",
+                timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ")
+            };
             embed.footer.text = $"報告者:{reporter.GetNickname()} [{reporter.GetUserId()}]";
             embed.fields.Add(new EmbedField() { name = "発見サーバー", value = $"{FormatServerName()}" });
             embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.GetNickname()}", inline = true });

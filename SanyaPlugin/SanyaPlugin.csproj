@@ -104,10 +104,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Subtitles.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="DataClass.cs" />
+    <Compile Include="Configs.cs" />
+    <Compile Include="Data.cs" />
     <Compile Include="EventHandlers.cs" />
-    <Compile Include="Method.cs" />
+    <Compile Include="Functions.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SanyaPlugin.cs" />

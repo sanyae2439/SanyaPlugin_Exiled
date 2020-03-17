@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using EXILED;
 using UnityEngine;
+using EXILED;
 
-namespace SanyaPlugin
+namespace SanyaPlugin.Data
 {
     public enum SANYA_GAME_MODE
     {

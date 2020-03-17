@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
-using EXILED;
 using Harmony;
 using MEC;
+using EXILED;
+using SanyaPlugin.Functions;
 
 namespace SanyaPlugin
 {
@@ -61,7 +62,7 @@ namespace SanyaPlugin
             harmony = HarmonyInstance.Create(harmonyId);
             harmony.PatchAll();
 
-            EventHandlers.sendertask = EventHandlers._SenderAsync().StartSender();
+            EventHandlers.sendertask = EventHandlers.SenderAsync().StartSender();
 
             Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
         }

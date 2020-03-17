@@ -3,13 +3,16 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using EXILED;
 using UnityEngine;
 using Mirror;
 using MEC;
 using Utf8Json;
+using EXILED;
 using EXILED.Extensions;
 using CustomPlayerEffects;
+using SanyaPlugin.Data;
+using SanyaPlugin.Patches;
+using SanyaPlugin.Functions;
 
 namespace SanyaPlugin
 {
@@ -24,7 +27,7 @@ namespace SanyaPlugin
         private readonly UdpClient udpClient = new UdpClient();
         internal Task sendertask;
         private bool senderdisabled = false;
-        internal async Task _SenderAsync()
+        internal async Task SenderAsync()
         {
             Log.Debug($"[Infosender_Task] Started.");
 
@@ -92,7 +95,7 @@ namespace SanyaPlugin
         }
 
         /** Update **/
-        internal IEnumerator<float> _EverySecond()
+        internal IEnumerator<float> EverySecond()
         {
             while(true)
             {
@@ -255,7 +258,7 @@ namespace SanyaPlugin
                 yield return Timing.WaitForSeconds(1f);
             }
         }
-        internal IEnumerator<float> _FixedUpdate()
+        internal IEnumerator<float> FixedUpdate()
         {
             while(true)
             {
@@ -291,10 +294,10 @@ namespace SanyaPlugin
             loaded = true;
 
             if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation && !senderdisabled)
-                sendertask = _SenderAsync().StartSender();
+                sendertask = SenderAsync().StartSender();
 
-            roundCoroutines.Add(Timing.RunCoroutine(_EverySecond(), Segment.FixedUpdate));
-            roundCoroutines.Add(Timing.RunCoroutine(_FixedUpdate(), Segment.FixedUpdate));
+            roundCoroutines.Add(Timing.RunCoroutine(EverySecond(), Segment.FixedUpdate));
+            roundCoroutines.Add(Timing.RunCoroutine(FixedUpdate(), Segment.FixedUpdate));
 
             PlayerDataManager.playersData.Clear();
             RagdollCleanupPatch.ragdolls.Clear();
@@ -452,7 +455,7 @@ namespace SanyaPlugin
 
         public void OnDetonated()
         {
-            Log.Debug($"[OnDetonated] Detonated:{(RoundSummary.roundTime / 60).ToString("00")}:{(RoundSummary.roundTime % 60).ToString("00")}");
+            Log.Debug($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
 
             detonatedDuration = RoundSummary.roundTime;
 
@@ -715,8 +718,7 @@ namespace SanyaPlugin
                 && ev.Player.GetRole() != RoleType.Scp079)
             {
                 string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRole()).fullName;
-                string str = string.Empty;
-
+                string str;
                 if(ev.Info.GetDamageType() == DamageTypes.Tesla)
                 {
                     str = Subtitles.SCPDeathTesla.Replace("{0}", fullname);
@@ -1016,7 +1018,6 @@ namespace SanyaPlugin
             Log.Debug($"[OnCommand] sender:{ev.Sender.SenderId} command:{ev.Command}");
 
             string[] args = ev.Command.Split(' ');
-            string ReturnStr = string.Empty;
             bool isSuccess = true;
             ReferenceHub player = Player.GetPlayer(ev.Sender.SenderId);
 
@@ -1024,6 +1025,7 @@ namespace SanyaPlugin
             {
                 if(args.Length > 1)
                 {
+                    string ReturnStr;
                     switch(args[1].ToLower())
                     {
                         case "test":

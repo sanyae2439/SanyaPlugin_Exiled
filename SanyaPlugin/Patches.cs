@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using EXILED;
-using EXILED.Extensions;
-using Harmony;
-using Mirror;
-using Security;
 using UnityEngine;
 using Assets._Scripts.Dissonance;
+using Security;
+using Mirror;
+using Harmony;
 using MEC;
+using EXILED;
+using EXILED.Extensions;
+using SanyaPlugin.Data;
+using SanyaPlugin.Functions;
 
-namespace SanyaPlugin
+namespace SanyaPlugin.Patches
 {
     [HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
-    public class StartWarheadPatch
+    public static class StartWarheadPatch
     {
         public static void Postfix(AlphaWarheadController __instance)
         {
@@ -36,7 +38,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(AlphaWarheadNukesitePanel), nameof(AlphaWarheadNukesitePanel.AllowChangeLevelState))]
-    public class ChangeLeverPatch
+    public static class ChangeLeverPatch
     {
         public static bool Prefix()
         {
@@ -49,7 +51,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Door), nameof(Door.OpenWarhead))]
-    public class DoorWarheadPatch
+    public static class DoorWarheadPatch
     {
         public static bool Prefix(Door __instance, bool force, bool lockDoor)
         {
@@ -85,7 +87,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Scp049PlayerScript), nameof(Scp049PlayerScript.CallCmdRecallPlayer))]
-    public class Recall049Patch
+    public static class Recall049Patch
     {
         public static void Postfix(Scp049PlayerScript __instance, ref GameObject target)
         {
@@ -108,82 +110,75 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Intercom), nameof(Intercom.UpdateText))]
-    public class IntercomTextPatch
+    public static class IntercomTextPatch
     {
         public static bool Prefix(Intercom __instance)
         {
-            try
+            if(!Configs.intercom_information) return true;
+
+            int leftdecont = (int)((Math.Truncate(((11.74f * 60) * 100f)) / 100f) - (Math.Truncate(PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>().time * 100f) / 100f));
+            int leftautowarhead = Mathf.Clamp(Configs.auto_warhead_start - RoundSummary.roundTime, 0, Configs.auto_warhead_start);
+            int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
+            bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.NetworkallowContain;
+            bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().Networkused;
+
+            float totalvoltagefloat = 0f;
+            foreach(var i in Generator079.generators)
             {
-                if(!Configs.intercom_information) return true;
+                totalvoltagefloat += i.localVoltage;
+            }
+            totalvoltagefloat *= 1000f;
 
-                int leftdecont = (int)((Math.Truncate(((11.74f * 60) * 100f)) / 100f) - (Math.Truncate(PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>().time * 100f) / 100f));
-                int leftautowarhead = Mathf.Clamp(Configs.auto_warhead_start - RoundSummary.roundTime, 0, Configs.auto_warhead_start);
-                int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
-                bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.NetworkallowContain;
-                bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().Networkused;
-
-                float totalvoltagefloat = 0f;
-                foreach(var i in Generator079.generators)
-                {
-                    totalvoltagefloat += i.localVoltage;
-                }
-                totalvoltagefloat *= 1000f;
-
-                string contentfix = string.Concat(
-                    $"作戦経過時間 : {(RoundSummary.roundTime / 60).ToString("00")}:{(RoundSummary.roundTime % 60).ToString("00")}\n",
-                    $"残存SCPオブジェクト : {(RoundSummary.singleton.CountTeam(Team.SCP)).ToString("00")}/{RoundSummary.singleton.classlistStart.scps_except_zombies.ToString("00")}\n",
-                    $"残存Dクラス職員 : {(RoundSummary.singleton.CountTeam(Team.CDP)).ToString("00")}/{RoundSummary.singleton.classlistStart.class_ds.ToString("00")}\n",
-                    $"残存科学者 : {(RoundSummary.singleton.CountTeam(Team.RSC)).ToString("00")}/{RoundSummary.singleton.classlistStart.scientists.ToString("00")}\n",
-                    $"施設内余剰電力 : {totalvoltagefloat.ToString("0000")}kVA\n",
-                    $"AlphaWarheadのステータス : {(AlphaWarheadOutsitePanel.nukeside.Networkenabled ? "READY" : "DISABLED")}\n",
-                    $"SCP-106再収用設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
-                    $"軽度収用区画閉鎖まで : {(leftdecont / 60).ToString("00")}:{(leftdecont % 60).ToString("00")}\n",
-                    $"自動施設爆破開始まで : {(leftautowarhead / 60).ToString("00")}:{(leftautowarhead % 60).ToString("00")}\n",
-                    $"接近中の部隊突入まで : {(nextRespawn / 60).ToString("00")}:{(nextRespawn % 60).ToString("00")}\n"
-                    );
+            string contentfix = string.Concat(
+                $"作戦経過時間 : {RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}\n",
+                $"残存SCPオブジェクト : {RoundSummary.singleton.CountTeam(Team.SCP):00}/{RoundSummary.singleton.classlistStart.scps_except_zombies:00}\n",
+                $"残存Dクラス職員 : {RoundSummary.singleton.CountTeam(Team.CDP):00}/{RoundSummary.singleton.classlistStart.class_ds:00}\n",
+                $"残存科学者 : {RoundSummary.singleton.CountTeam(Team.RSC):00}/{RoundSummary.singleton.classlistStart.scientists:00}\n",
+                $"施設内余剰電力 : {totalvoltagefloat:0000}kVA\n",
+                $"AlphaWarheadのステータス : {(AlphaWarheadOutsitePanel.nukeside.Networkenabled ? "READY" : "DISABLED")}\n",
+                $"SCP-106再収用設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
+                $"軽度収用区画閉鎖まで : {leftdecont / 60:00}:{leftdecont % 60:00}\n",
+                $"自動施設爆破開始まで : {leftautowarhead / 60:00}:{leftautowarhead % 60:00}\n",
+                $"接近中の部隊突入まで : {nextRespawn / 60:00}:{nextRespawn % 60:00}\n"
+                );
 
 
-                if(__instance.Muted)
+            if(__instance.Muted)
+            {
+                __instance._content = contentfix + "あなたは管理者によってミュートされている";
+            }
+            else if(Intercom.AdminSpeaking)
+            {
+                __instance._content = contentfix + "管理者が放送設備をオーバーライド中";
+            }
+            else if(__instance.remainingCooldown > 0f)
+            {
+                __instance._content = contentfix + "放送設備再起動中 : " + Mathf.CeilToInt(__instance.remainingCooldown) + "秒必要";
+            }
+            else if(__instance.Networkspeaker != null)
+            {
+                if(__instance.speechRemainingTime == -77f)
                 {
-                    __instance._content = contentfix + "あなたは管理者によってミュートされている";
-                }
-                else if(Intercom.AdminSpeaking)
-                {
-                    __instance._content = contentfix + "管理者が放送設備をオーバーライド中";
-                }
-                else if(__instance.remainingCooldown > 0f)
-                {
-                    __instance._content = contentfix + "放送設備再起動中 : " + Mathf.CeilToInt(__instance.remainingCooldown) + "秒必要";
-                }
-                else if(__instance.Networkspeaker != null)
-                {
-                    if(__instance.speechRemainingTime == -77f)
-                    {
-                        __instance._content = contentfix + "放送中... : オーバーライド";
-                    }
-                    else
-                    {
-                        __instance._content = contentfix + $"{ReferenceHub.GetHub(__instance.Networkspeaker).GetNickname()}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
-                    }
+                    __instance._content = contentfix + "放送中... : オーバーライド";
                 }
                 else
                 {
-                    __instance._content = contentfix + "放送設備準備完了";
-                }
-                if(__instance._contentDirty)
-                {
-                    __instance.NetworkintercomText = __instance._content;
-                    __instance._contentDirty = false;
-                }
-                if(Intercom.AdminSpeaking != Intercom.LastState)
-                {
-                    Intercom.LastState = Intercom.AdminSpeaking;
-                    __instance.RpcUpdateAdminStatus(Intercom.AdminSpeaking);
+                    __instance._content = contentfix + $"{ReferenceHub.GetHub(__instance.Networkspeaker).GetNickname()}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
                 }
             }
-            catch(Exception e)
+            else
             {
-                Log.Error($"[IntercomTextPatch] {e}");
+                __instance._content = contentfix + "放送設備準備完了";
+            }
+            if(__instance._contentDirty)
+            {
+                __instance.NetworkintercomText = __instance._content;
+                __instance._contentDirty = false;
+            }
+            if(Intercom.AdminSpeaking != Intercom.LastState)
+            {
+                Intercom.LastState = Intercom.AdminSpeaking;
+                __instance.RpcUpdateAdminStatus(Intercom.AdminSpeaking);
             }
 
             return false;
@@ -191,9 +186,9 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.RpcPlayAnnouncement))]
-    public class DecontAnnouncePatch
+    public static class DecontAnnouncePatch
     {
-        public static bool Prefix(DecontaminationLCZ __instance, ref int id, ref bool global)
+        public static bool Prefix(ref int id, ref bool global)
         {
             Log.Debug($"[DecontAnnouncePatch] id:{id} global:{global}");
             if(Configs.cassie_subtitle)
@@ -238,7 +233,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.DoServersideStuff))]
-    public class DecontStopDelayPatch
+    public static class DecontStopDelayPatch
     {
         public static bool Prefix(DecontaminationLCZ __instance)
         {
@@ -261,9 +256,9 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(DecontaminationSpeaker), nameof(DecontaminationSpeaker.OpenDoors))]
-    public class DecontOpenWhenCountdownPatch
+    public static class DecontOpenWhenCountdownPatch
     {
-        public static bool Prefix(DecontaminationSpeaker __instance)
+        public static bool Prefix()
         {
             if(!Configs.fix_doors_on_countdown_decont) return true;
 
@@ -277,9 +272,9 @@ namespace SanyaPlugin
 
             foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
             {
-                if(!(door.permissionLevel == "UNACCESSIBLE") 
-                    && !door.dontOpenOnWarhead 
-                    && !(door.transform.position.y < -100f) 
+                if(!(door.permissionLevel == "UNACCESSIBLE")
+                    && !door.dontOpenOnWarhead
+                    && !(door.transform.position.y < -100f)
                     && !(door.transform.position.y > 100f))
                 {
                     door.decontlock = true;
@@ -297,9 +292,9 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(NineTailedFoxUnits), nameof(NineTailedFoxUnits.AddUnit))]
-    public class NTFUnitPatch
+    public static class NTFUnitPatch
     {
-        public static void Postfix(NineTailedFoxUnits __instance, ref string unit)
+        public static void Postfix(ref string unit)
         {
             Log.Debug($"[NTFUnitPatch] unit:{unit}");
 
@@ -327,9 +322,9 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(MTFRespawn), nameof(MTFRespawn.SummonChopper))]
-    public class StopChopperAfterDetonatedPatch
+    public static class StopChopperAfterDetonatedPatch
     {
-        public static bool Prefix(MTFRespawn __instance)
+        public static bool Prefix()
         {
             if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated) return false;
             else return true;
@@ -337,7 +332,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(RagdollManager), nameof(RagdollManager.SpawnRagdoll))]
-    public class RagdollCleanupPatch
+    public static class RagdollCleanupPatch
     {
         public static Dictionary<GameObject, float> ragdolls = new Dictionary<GameObject, float>();
 
@@ -346,30 +341,23 @@ namespace SanyaPlugin
             if(Configs.ragdoll_cleanup < 0) return true;
 
             Log.Debug($"[RagdollCleanupPatch] {Enum.Parse(typeof(RoleType), classId.ToString())}{pos} Time:{Time.time} Cleanuptimes:{Configs.ragdoll_cleanup}");
-            try
+
+            Role role = __instance.ccm.Classes.SafeGet(classId);
+            if(role.model_ragdoll != null)
             {
-                Role role = __instance.ccm.Classes.SafeGet(classId);
-                if(role.model_ragdoll != null)
-                {
-                    GameObject gameObject = UnityEngine.Object.Instantiate(role.model_ragdoll, pos + role.ragdoll_offset.position, Quaternion.Euler(rot.eulerAngles + role.ragdoll_offset.rotation));
-                    NetworkServer.Spawn(gameObject);
-                    gameObject.GetComponent<Ragdoll>().Networkowner = new Ragdoll.Info(ownerID, ownerNick, ragdollInfo, role, playerId);
-                    gameObject.GetComponent<Ragdoll>().NetworkallowRecall = allowRecall;
-                    ragdolls.Add(gameObject, Time.time);
-                }
-                if(ragdollInfo.GetDamageType().isScp || ragdollInfo.GetDamageType() == DamageTypes.Pocket)
-                {
-                    __instance.RegisterScpFrag();
-                }
-                else if(ragdollInfo.GetDamageType() == DamageTypes.Grenade)
-                {
-                    RoundSummary.kills_by_frag++;
-                }
+                GameObject gameObject = UnityEngine.Object.Instantiate(role.model_ragdoll, pos + role.ragdoll_offset.position, Quaternion.Euler(rot.eulerAngles + role.ragdoll_offset.rotation));
+                NetworkServer.Spawn(gameObject);
+                gameObject.GetComponent<Ragdoll>().Networkowner = new Ragdoll.Info(ownerID, ownerNick, ragdollInfo, role, playerId);
+                gameObject.GetComponent<Ragdoll>().NetworkallowRecall = allowRecall;
+                ragdolls.Add(gameObject, Time.time);
             }
-            catch(Exception e)
+            if(ragdollInfo.GetDamageType().isScp || ragdollInfo.GetDamageType() == DamageTypes.Pocket)
             {
-                Log.Error($"{e}");
-                return true;
+                __instance.RegisterScpFrag();
+            }
+            else if(ragdollInfo.GetDamageType() == DamageTypes.Grenade)
+            {
+                RoundSummary.kills_by_frag++;
             }
 
             return false;
@@ -377,7 +365,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Inventory), nameof(Inventory.SetPickup))]
-    public class ItemCleanupPatch
+    public static class ItemCleanupPatch
     {
         public static Dictionary<GameObject, float> items = new Dictionary<GameObject, float>();
 
@@ -386,43 +374,37 @@ namespace SanyaPlugin
             if(Configs.item_cleanup < 0 || __instance.name == "Host") return true;
 
             Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
-            try
+
+            if(droppedItemId < ItemType.KeycardJanitor)
             {
-                if(droppedItemId < ItemType.KeycardJanitor)
-                {
-                    __result = null;
-                    return false;
-                }
-                GameObject gameObject = UnityEngine.Object.Instantiate(__instance.pickupPrefab);
-                NetworkServer.Spawn(gameObject);
-                items.Add(gameObject, Time.time);
-                gameObject.GetComponent<Pickup>().SetupPickup(new Pickup.PickupInfo
-                {
-                    position = pos,
-                    rotation = rot,
-                    itemId = droppedItemId,
-                    durability = dur,
-                    weaponMods = new int[3]
-                    {
-                        s,
-                        b,
-                        o
-                    },
-                    ownerPlayer = __instance.gameObject
-                });
-                __result = gameObject.GetComponent<Pickup>();
+                __result = null;
+                return false;
             }
-            catch(Exception e)
+            GameObject gameObject = UnityEngine.Object.Instantiate(__instance.pickupPrefab);
+            NetworkServer.Spawn(gameObject);
+            items.Add(gameObject, Time.time);
+            gameObject.GetComponent<Pickup>().SetupPickup(new Pickup.PickupInfo
             {
-                Log.Error($"{e}");
-                return true;
-            }
+                position = pos,
+                rotation = rot,
+                itemId = droppedItemId,
+                durability = dur,
+                weaponMods = new int[3]
+                {
+                    s,
+                    b,
+                    o
+                },
+                ownerPlayer = __instance.gameObject
+            });
+            __result = gameObject.GetComponent<Pickup>();
+
             return false;
         }
     }
 
     [HarmonyPatch(typeof(Scp096PlayerScript), nameof(Scp096PlayerScript.ProcessLooking))]
-    public class Scp096LookingPatch
+    public static class Scp096LookingPatch
     {
         public static bool Prefix(Scp096PlayerScript __instance)
         {
@@ -443,7 +425,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(ConsumableAndWearableItems), nameof(ConsumableAndWearableItems.RpcSetCooldown))]
-    public class MedicalUsedPatch
+    public static class MedicalUsedPatch
     {
         public static void Postfix(ConsumableAndWearableItems __instance, int mid)
         {
@@ -464,7 +446,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(AmmoBox), nameof(AmmoBox.SetAmmoAmount))]
-    public class AmmoPatch
+    public static class AmmoPatch
     {
         public static bool Prefix(AmmoBox __instance)
         {
@@ -496,7 +478,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
-    public class RateLimitPatch
+    public static class RateLimitPatch
     {
         public static void Postfix(RateLimit __instance, ref bool __result)
         {
@@ -508,7 +490,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Grenades.Grenade), "set_NetworkthrowerTeam")]
-    public class GrenadeThrowerPatch
+    public static class GrenadeThrowerPatch
     {
         public static List<GameObject> instantFusePlayers = new List<GameObject>();
 
@@ -520,7 +502,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Grenades.Grenade), nameof(Grenades.Grenade.ServersideExplosion))]
-    public class GrenadeLogPatch
+    public static class GrenadeLogPatch
     {
         public static bool Prefix(Grenades.Grenade __instance, ref bool __result)
         {
@@ -542,7 +524,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Grenades.Scp018Grenade), nameof(Grenades.Scp018Grenade.OnSpeedCollisionEnter))]
-    public class Scp018Patch
+    public static class Scp018Patch
     {
         public static bool Prefix(Grenades.Scp018Grenade __instance, Collision collision, float relativeSpeed)
         {
@@ -624,7 +606,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(CheaterReport), nameof(CheaterReport.CallCmdReport))]
-    public class ReportPatch
+    public static class ReportPatch
     {
         public static bool Prefix(CheaterReport __instance, int playerId, string reason)
         {
@@ -647,7 +629,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.CallCmdAltIsActive))]
-    public class VCPatch
+    public static class VCPatch
     {
         public static void Prefix(DissonanceUserSetup __instance, bool value)
         {
@@ -664,7 +646,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Radio), nameof(Radio.CallCmdSyncVoiceChatStatus))]
-    public class VCPreventsPatch
+    public static class VCPreventsPatch
     {
         public static bool Prefix(Radio __instance, ref bool b)
         {
@@ -678,7 +660,7 @@ namespace SanyaPlugin
     }
 
     [HarmonyPatch(typeof(Radio), nameof(Radio.CallCmdUpdateClass))]
-    public class VCTeamPatch
+    public static class VCTeamPatch
     {
         public static bool Prefix(Radio __instance)
         {

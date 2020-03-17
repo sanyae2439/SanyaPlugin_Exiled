@@ -7,6 +7,7 @@ namespace SanyaPlugin
 {
     internal static class Configs
     {
+        //info and report
         internal static string infosender_ip;
         internal static int infosender_port;
         internal static string report_webhook;
