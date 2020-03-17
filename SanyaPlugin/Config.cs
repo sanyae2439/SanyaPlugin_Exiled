@@ -131,7 +131,7 @@ namespace SanyaPlugin
             stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
             check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
             inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
-            grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);   
+            grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
             kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
             traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
             traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);

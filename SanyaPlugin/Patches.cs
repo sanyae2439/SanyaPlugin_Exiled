@@ -57,7 +57,7 @@ namespace SanyaPlugin
 
             if(EventHandlers.autowarheadstarted)
             {
-                force = true; 
+                force = true;
                 lockDoor = true;
             }
 

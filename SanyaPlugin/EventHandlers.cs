@@ -560,7 +560,7 @@ namespace SanyaPlugin
             Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 
             if(ev.Attacker == null) return;
-            
+
             if(ev.DamageType != DamageTypes.Nuke
                 && ev.DamageType != DamageTypes.Decont
                 && ev.DamageType != DamageTypes.Wall
