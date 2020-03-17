@@ -672,7 +672,7 @@ namespace SanyaPlugin
             var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
             Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} round:{Radio.roundStarted}");
             if(team == Team.RIP) b = false;
-            return false;
+            return true;
         }
     }
 }
