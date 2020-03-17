@@ -260,6 +260,42 @@ namespace SanyaPlugin
         }
     }
 
+    [HarmonyPatch(typeof(DecontaminationSpeaker), nameof(DecontaminationSpeaker.OpenDoors))]
+    public class DecontOpenWhenCountdownPatch
+    {
+        public static bool Prefix(DecontaminationSpeaker __instance)
+        {
+            if(!Configs.fix_doors_on_countdown_decont) return true;
+
+            foreach(Door door in DecontaminationSpeaker.singleton.doorsToOpen)
+            {
+                if(door.curCooldown <= 0f && !door.isOpen)
+                {
+                    door.OpenDecontamination();
+                }
+            }
+
+            foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
+            {
+                if(!(door.permissionLevel == "UNACCESSIBLE") 
+                    && !door.dontOpenOnWarhead 
+                    && !(door.transform.position.y < -100f) 
+                    && !(door.transform.position.y > 100f))
+                {
+                    door.decontlock = true;
+                    if(!door.isOpen)
+                    {
+                        door.RpcDoSound();
+                    }
+                    door.moving.moving = true;
+                    door.SetState(open: true);
+                    door.UpdateLock();
+                }
+            }
+            return false;
+        }
+    }
+
     [HarmonyPatch(typeof(NineTailedFoxUnits), nameof(NineTailedFoxUnits.AddUnit))]
     public class NTFUnitPatch
     {
@@ -488,14 +524,20 @@ namespace SanyaPlugin
     {
         public static bool Prefix(Grenades.Grenade __instance, ref bool __result)
         {
-            if(__instance?.thrower?.name != "Host")
+            try
             {
-                string text = (__instance.thrower != null) ? (__instance.thrower.ccm.UserId + " (" + __instance.thrower.nick.MyNick + ")") : "(UNKNOWN)";
-                ServerLogs.AddLog(ServerLogs.Modules.Logger, "Player " + text + "'s " + __instance.logName + " grenade exploded.", ServerLogs.ServerLogType.GameEvent);
-
+                if(__instance.thrower?.name != "Host")
+                {
+                    string text = (__instance.thrower != null) ? (__instance.thrower.ccm.UserId + " (" + __instance.thrower.nick.MyNick + ")") : "(UNKNOWN)";
+                    ServerLogs.AddLog(ServerLogs.Modules.Logger, "Player " + text + "'s " + __instance.logName + " grenade exploded.", ServerLogs.ServerLogType.GameEvent);
+                }
+                __result = true;
+                return false;
             }
-            __result = true;
-            return false;
+            catch(Exception)
+            {
+                return true;
+            }
         }
     }
 
@@ -618,6 +660,19 @@ namespace SanyaPlugin
             }
 
             return;
+        }
+    }
+
+    [HarmonyPatch(typeof(Radio), nameof(Radio.CallCmdSyncVoiceChatStatus))]
+    public class VCPreventsPatch
+    {
+        public static bool Prefix(Radio __instance, ref bool b)
+        {
+            if(!Configs.disable_spectator_chat) return true;
+            var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
+            Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} round:{Radio.roundStarted}");
+            if(team == Team.RIP) b = false;
+            return false;
         }
     }
 }
