@@ -1152,9 +1152,9 @@ namespace SanyaPlugin
                                 if(args.Length > 2)
                                 {
                                     ReferenceHub target = Player.GetPlayer(args[2]);
-                                    if(target != null)
+                                    if(target != null && target.GetRole() != RoleType.Spectator)
                                     {
-                                        Methods.SpawnGrenade(target.transform.position, (int)GRENADE_ID.FRAG_NADE, 0.1f, target);
+                                        Methods.SpawnGrenade(target.transform.position, false, 0.1f, target);
                                         ReturnStr = $"success. target:{target.GetNickname()}";
                                     }
                                     else
@@ -1167,7 +1167,7 @@ namespace SanyaPlugin
                                 {
                                     if(player != null)
                                     {
-                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FRAG_NADE, 0.1f, player);
+                                        Methods.SpawnGrenade(player.transform.position, false, 0.1f, player);
                                         ReturnStr = $"success. target:{player.GetNickname()}";
                                     }
                                     else
@@ -1183,9 +1183,9 @@ namespace SanyaPlugin
                                 if(args.Length > 2)
                                 {
                                     ReferenceHub target = Player.GetPlayer(args[2]);
-                                    if(target != null)
+                                    if(target != null && target.GetRole() != RoleType.Spectator)
                                     {
-                                        Methods.SpawnGrenade(target.transform.position, (int)GRENADE_ID.FRAG_NADE, -1, target);
+                                        Methods.SpawnGrenade(target.transform.position, false, -1, target);
                                         ReturnStr = $"success. target:{target.GetNickname()}";
                                     }
                                     else
@@ -1198,7 +1198,7 @@ namespace SanyaPlugin
                                 {
                                     if(player != null)
                                     {
-                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FRAG_NADE, -1, player);
+                                        Methods.SpawnGrenade(player.transform.position, false, -1, player);
                                         ReturnStr = $"success. target:{player.GetNickname()}";
                                     }
                                     else
@@ -1214,9 +1214,9 @@ namespace SanyaPlugin
                                 if(args.Length > 2)
                                 {
                                     ReferenceHub target = Player.GetPlayer(args[2]);
-                                    if(target != null)
+                                    if(target != null && target.GetRole() != RoleType.Spectator)
                                     {
-                                        Methods.SpawnGrenade(target.transform.position, (int)GRENADE_ID.FLASH_NADE, -1, target);
+                                        Methods.SpawnGrenade(target.transform.position, true, -1, target);
                                         ReturnStr = $"success. target:{target.GetNickname()}";
                                     }
                                     else
@@ -1229,7 +1229,7 @@ namespace SanyaPlugin
                                 {
                                     if(player != null)
                                     {
-                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.FLASH_NADE, -1, player);
+                                        Methods.SpawnGrenade(player.transform.position, true, -1, player);
                                         ReturnStr = $"success. target:{player.GetNickname()}";
                                     }
                                     else
@@ -1245,9 +1245,9 @@ namespace SanyaPlugin
                                 if(args.Length > 2)
                                 {
                                     ReferenceHub target = Player.GetPlayer(args[2]);
-                                    if(target != null)
+                                    if(target != null && target.GetRole() != RoleType.Spectator)
                                     {
-                                        Methods.SpawnGrenade(target.transform.position, (int)GRENADE_ID.SCP018_NADE, -1, target);
+                                        Methods.Spawn018(target);
                                         ReturnStr = $"success. target:{target.GetNickname()}";
                                     }
                                     else
@@ -1260,7 +1260,7 @@ namespace SanyaPlugin
                                 {
                                     if(player != null)
                                     {
-                                        Methods.SpawnGrenade(player.transform.position, (int)GRENADE_ID.SCP018_NADE, -1, player);
+                                        Methods.Spawn018(player);
                                         ReturnStr = $"success. target:{player.GetNickname()}";
                                     }
                                     else
