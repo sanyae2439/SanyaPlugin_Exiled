@@ -332,11 +332,19 @@ namespace SanyaPlugin.Functions
 		public static void Target096AttackSound(ReferenceHub target, ReferenceHub player)
 		{
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
-			player.SendRpcWriter(target.GetComponent<Scp096PlayerScript>(), typeof(Scp096PlayerScript), "RpcSyncAudio", writer, 0);
+			player.TargetSendRpc(target.GetComponent<Scp096PlayerScript>(), typeof(Scp096PlayerScript), "RpcSyncAudio", writer);
 			NetworkWriterPool.Recycle(writer);
 		}
 
-		public static void SendRpcWriter<T>(this ReferenceHub sendto, T target, Type invokeClass, string rpcName, NetworkWriter writer, int channelId) where T : NetworkBehaviour
+		public static void TargetShake(this ReferenceHub target, bool achieve)
+		{
+			NetworkWriter writer = NetworkWriterPool.GetWriter();
+			writer.WriteBoolean(achieve);
+			target.TargetSendRpc(AlphaWarheadController.Host, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), writer);
+			NetworkWriterPool.Recycle(writer);
+		}
+
+		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, Type invokeClass, string rpcName, NetworkWriter writer, int channelId = 0) where T : NetworkBehaviour
 		{
 			var msg = new RpcMessage
 			{
