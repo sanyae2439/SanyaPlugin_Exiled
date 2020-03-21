@@ -362,7 +362,7 @@ namespace SanyaPlugin
 					}
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 					{
-						foreach(var room in Map.GetRooms())
+						foreach(var room in Map.Rooms)
 						{
 							if(room.Name == "LCZ_Armory")
 							{

@@ -369,11 +369,6 @@ namespace SanyaPlugin.Functions
 			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
 		}
 
-		public static bool IsHost(this ReferenceHub player)
-		{
-			return player?.name == "Host";
-		}
-
 		public static void ShowHitmarker(this ReferenceHub player)
 		{
 			player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
