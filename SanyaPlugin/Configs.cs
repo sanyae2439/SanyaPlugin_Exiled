@@ -57,6 +57,8 @@ namespace SanyaPlugin
 		internal static bool stop_respawn_after_detonated;
 		internal static bool check_prev_spawn_team;
 		internal static bool inventory_keycard_act;
+		internal static bool grenade_shoot_fuse;
+		internal static bool grenade_chain_sametiming;
 		internal static bool grenade_hitmark;
 		internal static bool kill_hitmark;
 		internal static int traitor_limitter;
@@ -144,6 +146,8 @@ namespace SanyaPlugin
 			stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
 			check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
 			inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
+			grenade_shoot_fuse = Plugin.Config.GetBool("sanya_grenade_shoot_fuse", false);
+			grenade_chain_sametiming = Plugin.Config.GetBool("sanya_grenade_chain_sametiming", false);
 			grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
 			kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
 			traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);

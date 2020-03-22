@@ -10,6 +10,7 @@ using Utf8Json;
 using EXILED;
 using EXILED.Extensions;
 using CustomPlayerEffects;
+using Grenades;
 using SanyaPlugin.Data;
 using SanyaPlugin.Patches;
 using SanyaPlugin.Functions;
@@ -302,6 +303,7 @@ namespace SanyaPlugin
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 		private readonly int playermask = 4;
+		private readonly int grenade_pickup_mask = 1049088;
 
 		/** RoundVar **/
 		private FlickerableLight flickerableLight = null;
@@ -1007,6 +1009,31 @@ namespace SanyaPlugin
 					player.inventory.Clear();
 					var info = new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0);
 					player.playerStats.HurtPlayer(info, player.gameObject);
+				}
+			}
+		}
+
+		public void OnShoot(ref ShootEvent ev)
+		{
+			Log.Debug($"[OnShoot] {ev.Shooter.GetNickname()} -{ev.TargetPos}-> {ev.Target?.name}");
+
+			if(Configs.grenade_shoot_fuse
+				&& Physics.Linecast(ev.Shooter.GetPosition(), ev.TargetPos, out RaycastHit raycastHit, grenade_pickup_mask))
+			{
+				Log.Debug($"{raycastHit.transform.name}/{raycastHit.transform.gameObject.layer}");
+
+				var pickup = raycastHit.transform.GetComponentInParent<Pickup>();
+				if(pickup != null && pickup.ItemId == ItemType.GrenadeFrag)
+				{
+					var pos = pickup.transform.position;
+					pickup.Delete();
+					Methods.SpawnGrenade(pos, false, 0.1f, ev.Shooter);
+				}
+
+				var grenade = raycastHit.transform.GetComponentInParent<FragGrenade>();
+				if(grenade != null)
+				{
+					grenade.NetworkfuseTime = 0.1f;
 				}
 			}
 		}

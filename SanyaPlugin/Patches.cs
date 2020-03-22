@@ -9,6 +9,7 @@ using EXILED;
 using EXILED.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
+using Grenades;
 
 namespace SanyaPlugin.Patches
 {
@@ -295,9 +296,10 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Postfix(ref string unit)
 		{
+			if(PlayerManager.localPlayer.GetComponent<RandomSeedSync>().seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{unit}");
 
-			if(Configs.cassie_subtitle && RoundSummary.roundTime > 2)
+			if(Configs.cassie_subtitle)
 			{
 				int SCPCount = 0;
 				foreach(var i in Player.GetHubs())
@@ -488,22 +490,22 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	[HarmonyPatch(typeof(Grenades.Grenade), "set_NetworkthrowerTeam")]
+	[HarmonyPatch(typeof(Grenade), "set_NetworkthrowerTeam")]
 	public static class GrenadeThrowerPatch
 	{
 		public static List<GameObject> instantFusePlayers = new List<GameObject>();
 
-		public static void Prefix(Grenades.Grenade __instance, ref Team value)
+		public static void Prefix(Grenade __instance, ref Team value)
 		{
 			Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Grenades.Scp018Grenade}");
-			if(Configs.scp018_friendly_fire && __instance is Grenades.Scp018Grenade) value = Team.TUT;
+			if(Configs.scp018_friendly_fire && __instance is Scp018Grenade) value = Team.TUT;
 		}
 	}
 
-	[HarmonyPatch(typeof(Grenades.Grenade), nameof(Grenades.Grenade.ServersideExplosion))]
+	[HarmonyPatch(typeof(Grenade), nameof(Grenade.ServersideExplosion))]
 	public static class GrenadeLogPatch
 	{
-		public static bool Prefix(Grenades.Grenade __instance, ref bool __result)
+		public static bool Prefix(Grenade __instance, ref bool __result)
 		{
 			try
 			{
@@ -522,10 +524,53 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	[HarmonyPatch(typeof(Grenades.Scp018Grenade), nameof(Grenades.Scp018Grenade.OnSpeedCollisionEnter))]
+	[HarmonyPatch(typeof(FragGrenade), nameof(FragGrenade.ChangeIntoGrenade))]
+	public static class FragGrenadeChainPatch
+	{
+		public static bool Prefix(FragGrenade __instance, Pickup item, ref bool __result)
+		{
+			if(!Configs.grenade_chain_sametiming) return true;
+
+			GrenadeSettings grenadeSettings = null;
+			int i = 0;
+			while(i < __instance.thrower.availableGrenades.Length)
+			{
+				GrenadeSettings grenadeSettings2 = __instance.thrower.availableGrenades[i];
+				if(grenadeSettings2.inventoryID == item.ItemId)
+				{
+					if(!__instance.chainSupportedGrenades.Contains(i))
+					{
+						__result = false;
+						return false;
+					}
+					grenadeSettings = grenadeSettings2;
+					break;
+				}
+				else
+				{
+					i++;
+				}
+			}
+			if(grenadeSettings == null)
+			{
+				__result = false;
+				return false;
+			}
+			Transform transform = item.transform;
+			Grenade component = UnityEngine.Object.Instantiate(grenadeSettings.grenadeInstance, transform.position, transform.rotation).GetComponent<Grenade>();
+			component.fuseDuration = 0.1f;
+			component.InitData(__instance, item);
+			NetworkServer.Spawn(component.gameObject);
+			item.Delete();
+			__result = true;
+			return false;
+		}
+	}
+
+	[HarmonyPatch(typeof(Scp018Grenade), nameof(Scp018Grenade.OnSpeedCollisionEnter))]
 	public static class Scp018Patch
 	{
-		public static bool Prefix(Grenades.Scp018Grenade __instance, Collision collision, float relativeSpeed)
+		public static bool Prefix(Scp018Grenade __instance, Collision collision, float relativeSpeed)
 		{
 			//__instance.damageHurt = 0.95f
 			//__instance.damageScpMultiplier = 4.85f
