@@ -493,6 +493,49 @@ namespace SanyaPlugin
 			}
 		}
 
+		public void OnAnnounceDecont(AnnounceDecontaminationEvent ev)
+		{
+			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId}");
+
+			if(Configs.cassie_subtitle)
+			{
+				ev.IsAnnouncementGlobal = true;
+				switch(ev.AnnouncementId)
+				{
+					case 0:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationInit, 20);
+							break;
+						}
+					case 1:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
+							break;
+						}
+					case 2:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
+							break;
+						}
+					case 3:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
+							break;
+						}
+					case 4:
+						{
+							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
+							break;
+						}
+					case 5:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
+							break;
+						}
+				}
+			}
+		}
+
 		public void OnPlayerJoin(PlayerJoinEvent ev)
 		{
 			if(ev.Player.IsHost()) return;

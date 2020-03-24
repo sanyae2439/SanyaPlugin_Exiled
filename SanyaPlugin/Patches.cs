@@ -185,53 +185,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	[HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.RpcPlayAnnouncement))]
-	public static class DecontAnnouncePatch
-	{
-		public static bool Prefix(ref int id, ref bool global)
-		{
-			Log.Debug($"[DecontAnnouncePatch] id:{id} global:{global}");
-			if(Configs.cassie_subtitle)
-			{
-				global = true;
-				switch(id)
-				{
-					case 0:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationInit, 20);
-							break;
-						}
-					case 1:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
-							break;
-						}
-					case 2:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
-							break;
-						}
-					case 3:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
-							break;
-						}
-					case 4:
-						{
-							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
-							break;
-						}
-					case 5:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
-							break;
-						}
-				}
-			}
-			return true;
-		}
-	}
-
 	[HarmonyPatch(typeof(DecontaminationLCZ), nameof(DecontaminationLCZ.DoServersideStuff))]
 	public static class DecontStopDelayPatch
 	{
@@ -296,7 +249,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Postfix(ref string unit)
 		{
-			if(PlayerManager.localPlayer.GetComponent<RandomSeedSync>().seed == 0) return;
+			if(PlayerManager.localPlayer == null || PlayerManager.localPlayer?.GetComponent<RandomSeedSync>().seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{unit}");
 
 			if(Configs.cassie_subtitle)
@@ -337,6 +290,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static Dictionary<GameObject, float> ragdolls = new Dictionary<GameObject, float>();
 
+		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static bool Prefix(RagdollManager __instance, Vector3 pos, Quaternion rot, int classId, PlayerStats.HitInfo ragdollInfo, bool allowRecall, string ownerID, string ownerNick, int playerId)
 		{
 			if(Configs.ragdoll_cleanup < 0) return true;
