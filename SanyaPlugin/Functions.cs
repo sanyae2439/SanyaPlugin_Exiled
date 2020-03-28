@@ -241,7 +241,7 @@ namespace SanyaPlugin.Functions
 
 			if(Configs.data_enabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && data.limited)
 			{
-				Log.Info($"[SteamCheck] Already Checked:{userid}");
+				Log.Debug($"[SteamCheck] Already Checked:{userid}");
 				if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
 				yield break;
 			}
