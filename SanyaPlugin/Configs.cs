@@ -21,6 +21,7 @@ namespace SanyaPlugin
 		internal static int item_cleanup;
 
 		//SanyaPlugin
+		internal static bool kick_steam_limited;
 		internal static string motd_message = "";
 		internal static List<int> event_mode_weight;
 		internal static bool cassie_subtitle;
@@ -114,6 +115,7 @@ namespace SanyaPlugin
 			ragdoll_cleanup = Plugin.Config.GetInt("sanya_ragdoll_cleanup", -1);
 			item_cleanup = Plugin.Config.GetInt("sanya_item_cleanup", -1);
 
+			kick_steam_limited = Plugin.Config.GetBool("sanya_kick_steam_limited", false);
 			motd_message = Plugin.Config.GetString("sanya_motd_message", string.Empty);
 			event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
 			cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);

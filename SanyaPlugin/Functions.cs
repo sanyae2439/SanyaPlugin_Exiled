@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -56,6 +57,17 @@ namespace SanyaPlugin.Functions
 				int.Parse(text[4]),
 				int.Parse(text[5])
 				);
+		}
+
+		public static void ResetLimitedFlag()
+		{
+			foreach(var i in Directory.GetFiles(SanyaPlugin.PlayersDataPath))
+			{
+				var data = LoadPlayerData(i.Replace(".txt", string.Empty));
+				Log.Warn($"{data.userid}:{data.limited}");
+				data.limited = true;
+				SavePlayerData(data);
+			}
 		}
 	}
 
@@ -213,6 +225,80 @@ namespace SanyaPlugin.Functions
 			{
 				Log.Debug($"[939DOT] Removed {target.GetNickname()}");
 				DOTDamages.Remove(target);
+			}
+			yield break;
+		}
+
+		public static IEnumerator<float> CheckIsLimitedSteam(string userid, PlayerJoinEvent ev = null, EventHandlers eventHandlers = null)
+		{
+			PlayerData data = null;
+			if(!userid.Contains("@steam"))
+			{
+				Log.Debug($"[SteamCheck] Target is not SteamUser:{userid}");
+				if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
+				yield break;
+			}
+
+			if(Configs.data_enabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && data.limited)
+			{
+				Log.Info($"[SteamCheck] Already Checked:{userid}");
+				if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
+				yield break;
+			}
+
+			string xmlurl = string.Concat(
+				"https://steamcommunity.com/profiles/",
+				userid.Replace("@steam", string.Empty),
+				"?xml=1"
+			);
+			using(UnityEngine.Networking.UnityWebRequest unityWebRequest = UnityEngine.Networking.UnityWebRequest.Get(xmlurl))
+			{
+				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
+				if(!unityWebRequest.isNetworkError)
+				{
+					XmlReaderSettings xmlReaderSettings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+					XmlReader xmlReader = XmlReader.Create(new MemoryStream(unityWebRequest.downloadHandler.data), xmlReaderSettings);
+					while(xmlReader.Read())
+					{
+						if(xmlReader.ReadToFollowing("isLimitedAccount"))
+						{
+							string isLimited = xmlReader.ReadElementContentAsString();
+							if(isLimited == "0")
+							{
+								Log.Info($"[SteamCheck] OK:{userid}");
+								if(data != null)
+								{
+									data.limited = true;
+									PlayerDataManager.SavePlayerData(data);
+								}
+								if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
+								yield break;
+							}
+							else
+							{
+								Log.Warn($"[SteamCheck] NG:{userid}");
+								foreach(var i in Player.GetHubs())
+									if(i.GetUserId() == userid)
+										ServerConsole.Disconnect(i.gameObject, Subtitles.LimitedKickMessage);
+								yield break;
+							}
+						}
+						else
+						{
+							Log.Warn($"[SteamCheck] Falied(NoProfile):{userid}");
+							foreach(var i in Player.GetHubs())
+								if(i.GetUserId() == userid)
+									ServerConsole.Disconnect(i.gameObject, Subtitles.NoProfileKickMessage);
+							yield break;
+						}
+					}
+				}
+				else
+				{
+					Log.Error($"[SteamCheck] Failed(NetworkError):{userid}:{unityWebRequest.error}");
+					if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
+					yield break;
+				}
 			}
 			yield break;
 		}

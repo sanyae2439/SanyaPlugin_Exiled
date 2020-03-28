@@ -536,15 +536,10 @@ namespace SanyaPlugin
 			}
 		}
 
-		public void OnPlayerJoin(PlayerJoinEvent ev)
+		public void OnPlayerJoinBefore(PlayerJoinEvent ev)
 		{
 			if(ev.Player.IsHost()) return;
-			Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
-
-			if(!string.IsNullOrEmpty(Configs.motd_message))
-			{
-				Methods.TargetSendSubtitle(ev.Player, Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
-			}
+			Log.Debug($"[OnPlayerJoinBefore] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
 
 			if(Configs.data_enabled)
 			{
@@ -554,11 +549,33 @@ namespace SanyaPlugin
 				{
 					PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
 				}
+			}
 
-				if(Configs.level_enabled)
-				{
-					Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
-				}
+			if(Configs.kick_steam_limited && !ev.Player.serverRoles.Staff)
+			{
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckIsLimitedSteam(ev.Player.GetUserId(), ev, this)));
+			}
+			else
+			{
+				OnPlayerJoinAfter(ev);
+			}
+		}
+
+		public void OnPlayerJoinAfter(PlayerJoinEvent ev)
+		{
+			if(ev.Player.IsHost()) return;
+			Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+
+			if(!string.IsNullOrEmpty(Configs.motd_message))
+			{
+				Methods.TargetSendSubtitle(ev.Player, Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
+			}
+
+			if(Configs.data_enabled 
+				&& Configs.level_enabled 
+				&& PlayerDataManager.playersData.TryGetValue(ev.Player.GetUserId(), out PlayerData data))
+			{
+				Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
 			}
 
 			if(Configs.disable_all_chat)
