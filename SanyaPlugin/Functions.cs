@@ -24,7 +24,7 @@ namespace SanyaPlugin.Functions
 		{
 			string targetuseridpath = Path.Combine(SanyaPlugin.PlayersDataPath, $"{userid}.txt");
 			if(!Directory.Exists(SanyaPlugin.PlayersDataPath)) Directory.CreateDirectory(SanyaPlugin.PlayersDataPath);
-			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, false, 0, 0, 0);
+			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
@@ -268,7 +268,7 @@ namespace SanyaPlugin.Functions
 								Log.Info($"[SteamCheck] OK:{userid}");
 								if(data != null)
 								{
-									data.limited = true;
+									data.limited = false;
 									PlayerDataManager.SavePlayerData(data);
 								}
 								if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
