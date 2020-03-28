@@ -61,9 +61,9 @@ namespace SanyaPlugin.Functions
 
 		public static void ResetLimitedFlag()
 		{
-			foreach(var i in Directory.GetFiles(SanyaPlugin.PlayersDataPath))
+			foreach(var file in Directory.GetFiles(SanyaPlugin.PlayersDataPath))
 			{
-				var data = LoadPlayerData(i.Replace(".txt", string.Empty));
+				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
 				Log.Warn($"{data.userid}:{data.limited}");
 				data.limited = true;
 				SavePlayerData(data);

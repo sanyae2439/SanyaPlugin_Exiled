@@ -571,8 +571,8 @@ namespace SanyaPlugin
 				Methods.TargetSendSubtitle(ev.Player, Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, false);
 			}
 
-			if(Configs.data_enabled 
-				&& Configs.level_enabled 
+			if(Configs.data_enabled
+				&& Configs.level_enabled
 				&& PlayerDataManager.playersData.TryGetValue(ev.Player.GetUserId(), out PlayerData data))
 			{
 				Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
