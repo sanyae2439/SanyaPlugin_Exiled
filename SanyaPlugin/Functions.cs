@@ -463,6 +463,17 @@ namespace SanyaPlugin.Functions
 			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
 		}
 
+		public static bool IsEnemy(this ReferenceHub player, Team target)
+		{
+			return 
+				( player.GetTeam() == Team.SCP || player.GetTeam() == target)
+				||
+				( (player.GetTeam() != Team.MTF && player.GetTeam() != Team.RSC) || (target != Team.MTF && target != Team.RSC) ) 
+				&& 
+				( (player.GetTeam() != Team.CDP && player.GetTeam() != Team.CHI) || (target != Team.CDP && target != Team.CHI) )
+			;
+		}
+
 		public static void ShowHitmarker(this ReferenceHub player)
 		{
 			player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
