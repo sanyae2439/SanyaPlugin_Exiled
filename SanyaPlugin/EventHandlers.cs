@@ -1293,9 +1293,7 @@ namespace SanyaPlugin
 								int counter = 0;
 								foreach(var target in Player.GetHubs())
 								{
-									if(target.GetRole() != RoleType.Spectator 
-										&& target.GetRole() != RoleType.None
-										&& player.IsEnemy(target.GetTeam()))
+									if(player.IsEnemy(target.GetTeam()))
 									{
 										Methods.Target096AttackSound(target, player);
 										counter++;
