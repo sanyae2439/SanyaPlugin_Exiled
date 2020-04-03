@@ -19,6 +19,7 @@ namespace SanyaPlugin
 		internal static List<int> tesla_triggerable_teams;
 		internal static int ragdoll_cleanup;
 		internal static int item_cleanup;
+		internal static List<ItemType> item_cleanup_ignore;
 
 		//SanyaPlugin
 		internal static bool kick_steam_limited;
@@ -58,6 +59,7 @@ namespace SanyaPlugin
 		internal static bool stop_respawn_after_detonated;
 		internal static bool check_prev_spawn_team;
 		internal static bool inventory_keycard_act;
+		internal static bool item_shoot_move;
 		internal static bool grenade_shoot_fuse;
 		internal static bool grenade_chain_sametiming;
 		internal static bool grenade_hitmark;
@@ -114,6 +116,7 @@ namespace SanyaPlugin
 			};
 			ragdoll_cleanup = Plugin.Config.GetInt("sanya_ragdoll_cleanup", -1);
 			item_cleanup = Plugin.Config.GetInt("sanya_item_cleanup", -1);
+			item_cleanup_ignore = Plugin.Config.GetStringList("sanya_item_cleanup_ignore").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
 
 			kick_steam_limited = Plugin.Config.GetBool("sanya_kick_steam_limited", false);
 			motd_message = Plugin.Config.GetString("sanya_motd_message", string.Empty);
@@ -148,6 +151,7 @@ namespace SanyaPlugin
 			stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
 			check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
 			inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
+			item_shoot_move = Plugin.Config.GetBool("sanya_item_shoot_move", false);
 			grenade_shoot_fuse = Plugin.Config.GetBool("sanya_grenade_shoot_fuse", false);
 			grenade_chain_sametiming = Plugin.Config.GetBool("sanya_grenade_chain_sametiming", false);
 			grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);

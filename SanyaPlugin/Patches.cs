@@ -329,6 +329,10 @@ namespace SanyaPlugin.Patches
 			if(Configs.item_cleanup < 0 || __instance.name == "Host") return true;
 
 			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
+			if(Configs.item_cleanup_ignore.Contains(droppedItemId))
+			{
+				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}");
+			}
 
 			if(droppedItemId < ItemType.KeycardJanitor)
 			{

@@ -1077,23 +1077,27 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnShoot] {ev.Shooter.GetNickname()} -{ev.TargetPos}-> {ev.Target?.name}");
 
-			if(Configs.grenade_shoot_fuse
+			if((Configs.grenade_shoot_fuse || Configs.item_shoot_move)
 				&& Physics.Linecast(ev.Shooter.GetPosition(), ev.TargetPos, out RaycastHit raycastHit, grenade_pickup_mask))
 			{
 				Log.Debug($"{raycastHit.transform.name}/{raycastHit.transform.gameObject.layer}");
 
-				var pickup = raycastHit.transform.GetComponentInParent<Pickup>();
-				if(pickup != null && pickup.ItemId == ItemType.GrenadeFrag)
+				if(Configs.item_shoot_move)
 				{
-					var pos = pickup.transform.position;
-					pickup.Delete();
-					Methods.SpawnGrenade(pos, false, 0.1f, ev.Shooter);
+					var pickup = raycastHit.transform.GetComponentInParent<Pickup>();
+					if(pickup != null)
+					{
+						pickup.Rb.AddExplosionForce(Vector3.Distance(ev.TargetPos, ev.Shooter.GetPosition()), ev.Shooter.GetPosition(), 500f, 3f, ForceMode.Impulse);
+					}
 				}
 
-				var grenade = raycastHit.transform.GetComponentInParent<FragGrenade>();
-				if(grenade != null)
+				if(Configs.grenade_shoot_fuse)
 				{
-					grenade.NetworkfuseTime = 0.1f;
+					var grenade = raycastHit.transform.GetComponentInParent<FragGrenade>();
+					if(grenade != null)
+					{
+						grenade.NetworkfuseTime = 0.1f;
+					}
 				}
 			}
 		}
