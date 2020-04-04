@@ -418,7 +418,7 @@ namespace SanyaPlugin.Functions
 		public static void Target096AttackSound(ReferenceHub target, ReferenceHub player)
 		{
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
-			player.TargetSendRpc(target.GetComponent<Scp096PlayerScript>(), typeof(Scp096PlayerScript), "RpcSyncAudio", writer);
+			player.TargetSendRpc(target.GetComponent<Scp096PlayerScript>(), "RpcSyncAudio", writer);
 			NetworkWriterPool.Recycle(writer);
 		}
 
@@ -426,20 +426,20 @@ namespace SanyaPlugin.Functions
 		{
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 			writer.WriteBoolean(achieve);
-			target.TargetSendRpc(AlphaWarheadController.Host, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), writer);
+			target.TargetSendRpc(AlphaWarheadController.Host, nameof(AlphaWarheadController.RpcShake), writer);
 			NetworkWriterPool.Recycle(writer);
 		}
 
-		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, Type invokeClass, string rpcName, NetworkWriter writer, int channelId = 0) where T : NetworkBehaviour
+		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, string rpcName, NetworkWriter writer) where T : NetworkBehaviour
 		{
 			var msg = new RpcMessage
 			{
 				netId = target.netId,
 				componentIndex = target.ComponentIndex,
-				functionHash = invokeClass.FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
+				functionHash = target.GetType().FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
 				payload = writer.ToArraySegment()
 			};
-			sendto?.characterClassManager.connectionToClient.Send(msg, channelId);
+			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
 		public static void SpawnRagdoll()
