@@ -632,6 +632,15 @@ namespace SanyaPlugin
 			{
 				ev.Player.characterClassManager.NetworkMuted = true;
 			}
+
+			if(eventmode == SANYA_GAME_MODE.DECONT_SCPONLY && RoundSummary.RoundInProgress())
+			{
+				NetworkWriter writer = NetworkWriterPool.GetWriter();
+				writer.WritePackedInt32(5);
+				writer.WriteBoolean(true);
+				ev.Player.TargetSendRpc(lcza, nameof(DecontaminationLCZ.RpcPlayAnnouncement), writer);
+				NetworkWriterPool.Recycle(writer);
+			}
 		}
 
 		public void OnPlayerLeave(PlayerLeaveEvent ev)
