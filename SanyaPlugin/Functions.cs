@@ -454,6 +454,33 @@ namespace SanyaPlugin.Functions
 			//                                                   player.queryProcessor.PlayerId
 			//                                                   );
 		}
+
+		public static bool CanLookToPlayer(this Camera079 camera, ReferenceHub player)
+		{
+			if(player.GetRole() == RoleType.Spectator || player.GetRole() == RoleType.Scp079 || player.GetRole() == RoleType.None)
+				return false;
+
+			Vector3 vector = player.transform.position - camera.transform.position;
+			float num = Vector3.Dot(camera.head.transform.forward, vector);
+
+			RaycastHit raycastHit;
+			return (num >= 0f && num * num / vector.sqrMagnitude > 0.4225f) 
+				&& Physics.Raycast(camera.transform.position, vector, out raycastHit, 100f, -117407543) 
+				&& raycastHit.transform.name == player.name;
+		}
+
+		public static void StartDecontEffectOnly(DecontaminationLCZ lcza)
+		{
+			lcza._curAnm = 10;
+			foreach(var player in Player.GetHubs())
+			{
+				NetworkWriter writer = NetworkWriterPool.GetWriter();
+				writer.WritePackedInt32(5);
+				writer.WriteBoolean(true);
+				player.TargetSendRpc(lcza, nameof(DecontaminationLCZ.RpcPlayAnnouncement), writer);
+				NetworkWriterPool.Recycle(writer);
+			}
+		}
 	}
 
 	public static class Extensions

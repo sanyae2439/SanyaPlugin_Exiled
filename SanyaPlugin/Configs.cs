@@ -72,6 +72,7 @@ namespace SanyaPlugin
 		internal static bool scp018_friendly_fire;
 		internal static float scp018_damage_multiplier;
 		internal static bool scp049_reset_ragdoll_after_recall;
+		internal static bool scp079_spot;
 		internal static bool scp096_high_sensitive;
 		internal static int scp939_dot_damage;
 		internal static int scp939_dot_damage_total;
@@ -163,6 +164,7 @@ namespace SanyaPlugin
 			scp018_friendly_fire = Plugin.Config.GetBool("sanya_grenade_friendly_fire", false);
 			scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
 			scp049_reset_ragdoll_after_recall = Plugin.Config.GetBool("sanya_scp049_reset_ragdoll_after_recall", false);
+			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
 			scp096_high_sensitive = Plugin.Config.GetBool("sanya_scp096_high_sensitive", false);
 			scp939_dot_damage = Plugin.Config.GetInt("sanya_scp939_dot_damage", -1);
 			scp939_dot_damage_total = Plugin.Config.GetInt("sanya_scp939_dot_damage_total", 80);

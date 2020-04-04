@@ -256,6 +256,40 @@ namespace SanyaPlugin
 					{
 						IsEnableBlackout = false;
 					}
+
+					//SCP-Decont event
+					if(eventmode == SANYA_GAME_MODE.DECONT_SCPONLY && !AlphaWarheadController.Host.detonated)
+					{
+						foreach(var player in Player.GetHubs(Team.SCP))
+						{
+							if(player.transform.position.y < 100f && player.transform.position.y > -100f)
+							{
+								player.playerStats.HurtPlayer(new PlayerStats.HitInfo(2f, "DECONT", DamageTypes.Decont, 0), player.gameObject);
+							}
+						}
+					}
+
+					//SCP-079's Spot Humans
+					if(Configs.scp079_spot)
+					{
+						foreach(var scp079 in Scp079PlayerScript.instances)
+						{
+							if(scp079.iAm079)
+							{
+								foreach(var player in Player.GetHubs())
+								{
+									if(scp079.currentCamera.CanLookToPlayer(player))
+									{
+										player.playerStats.TargetOofEffect(player.playerStats.connectionToClient, Vector3.zero, 0.1f);
+										foreach(var scp in Player.GetHubs(Team.SCP))
+										{
+											Methods.Target096AttackSound(player, scp);
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 				catch(Exception e)
 				{
@@ -313,6 +347,7 @@ namespace SanyaPlugin
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private Vector3 LCZArmoryPos;
+		private DecontaminationLCZ lcza;
 
 		/** CommandVar **/
 		private static readonly Dictionary<ReferenceHub, int> cmdLimit = new Dictionary<ReferenceHub, int>();
@@ -373,6 +408,11 @@ namespace SanyaPlugin
 						}
 						break;
 					}
+				case SANYA_GAME_MODE.DECONT_SCPONLY:
+					{
+						lcza = PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>();
+						break;
+					}
 				default:
 					{
 						eventmode = SANYA_GAME_MODE.NORMAL;
@@ -393,6 +433,16 @@ namespace SanyaPlugin
 					{
 						IsEnableBlackout = true;
 						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
+						break;
+					}
+				case SANYA_GAME_MODE.DECONT_SCPONLY:
+					{
+						if(lcza != null)
+						{
+							GameObject.Find("MeshDoor173").GetComponentInChildren<Door>().SetStateWithSound(true);
+							Methods.StartDecontEffectOnly(lcza);
+							Methods.SendSubtitle(Subtitles.DecontEvent, 10);
+						}
 						break;
 					}
 			}

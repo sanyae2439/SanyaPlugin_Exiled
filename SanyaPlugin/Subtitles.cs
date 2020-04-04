@@ -169,5 +169,13 @@
 			"《Outside Zone emergency termination completed.》\n",
 			"</size></color>"
 		);
+
+		internal static readonly string DecontEvent = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《軽度収用区画の「除染」プロトコルが開始されました。対象区画のSCPオブジェクトは破壊されます。》\n",
+			"</size><size=20>",
+			"《Decontamination process for Light Containment Zone has been started. SCP subject in zone will be destroyed.》\n",
+			"</size></color>"
+		);
 	}
 }
