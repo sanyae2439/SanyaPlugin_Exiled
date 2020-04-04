@@ -278,7 +278,7 @@ namespace SanyaPlugin
 							{
 								foreach(var player in Player.GetHubs())
 								{
-									if(scp079.currentCamera.CanLookToPlayer(player))
+									if(player.characterClassManager.IsHuman() && scp079.currentCamera.CanLookToPlayer(player))
 									{
 										player.playerStats.TargetOofEffect(player.playerStats.connectionToClient, Vector3.zero, 0.1f);
 										foreach(var scp in Player.GetHubs(Team.SCP))
