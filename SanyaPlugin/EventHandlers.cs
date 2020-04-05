@@ -113,6 +113,7 @@ namespace SanyaPlugin
 							AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
 							if(Configs.cassie_subtitle && !AlphaWarheadController.Host.NetworkinProgress)
 							{
+								AlphaWarheadController.Host.InstantPrepare();
 								bool isresumed = AlphaWarheadController._resumeScenario != -1;
 								double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
 								double count = Math.Truncate(left / 10.0) * 10.0;
@@ -124,9 +125,7 @@ namespace SanyaPlugin
 								else
 								{
 									Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
-								}
-
-
+								}	
 							}
 
 							if(Configs.fix_doors_on_countdown && AlphaWarheadController.Host.NetworkinProgress)
