@@ -190,7 +190,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(DecontaminationLCZ __instance)
 		{
-			if(!NetworkServer.active || __instance._curAnm >= __instance.announcements.Count || !__instance._ccm.RoundStarted)
+			if(!NetworkServer.active || __instance._curAnm >= __instance.announcements.Count || !__instance._ccm.RoundStarted || AlphaWarheadController.Host.detonated)
 			{
 				return false;
 			}
