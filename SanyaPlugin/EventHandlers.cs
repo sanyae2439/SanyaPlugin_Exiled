@@ -1006,6 +1006,14 @@ namespace SanyaPlugin
 					}
 				}
 			}
+
+			if(Configs.fix_doors_on_countdown || Configs.fix_doors_on_countdown_decont)
+			{
+				if(ev.Door.DoorName.Contains("CHECKPOINT") && (ev.Door.decontlock || ev.Door.warheadlock) && !ev.Door.isOpen)
+				{
+					ev.Door.SetStateWithSound(true);
+				}
+			}
 		}
 
 		public void OnPlayerLockerInteract(LockerInteractionEvent ev)
