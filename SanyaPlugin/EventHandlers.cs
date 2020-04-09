@@ -725,7 +725,7 @@ namespace SanyaPlugin
 				//GrenadeHitmark
 				if(Configs.grenade_hitmark
 					&& ev.DamageType == DamageTypes.Grenade
-					&& ev.Player.GetPlayerId() != ev.Attacker.GetPlayerId())
+					&& ev.Player.GetUserId() != ev.Attacker.GetUserId())
 				{
 					ev.Attacker.ShowHitmarker();
 				}
@@ -746,7 +746,7 @@ namespace SanyaPlugin
 				//939DotDamage
 				if(Configs.scp939_dot_damage > 0
 					&& ev.DamageType == DamageTypes.Scp939
-					&& ev.Player.GetPlayerId() != ev.Attacker.GetPlayerId()
+					&& ev.Player.GetUserId() != ev.Attacker.GetUserId()
 					&& !Coroutines.DOTDamages.ContainsKey(ev.Player))
 				{
 					Log.Debug($"[939DOT] fired {ev.Player.GetNickname()}");
