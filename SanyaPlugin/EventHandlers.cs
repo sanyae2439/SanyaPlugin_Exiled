@@ -687,6 +687,7 @@ namespace SanyaPlugin
 		{
 			if(ev.Player.IsHost()) return;
 			Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
+			ev.Player.effectsController?.Resync();
 		}
 
 		public void OnPlayerSpawn(PlayerSpawnEvent ev)
@@ -724,7 +725,7 @@ namespace SanyaPlugin
 				//GrenadeHitmark
 				if(Configs.grenade_hitmark
 					&& ev.DamageType == DamageTypes.Grenade
-					&& ev.Player.GetUserId() != ev.Attacker.GetUserId())
+					&& ev.Player.GetPlayerId() != ev.Attacker.GetPlayerId())
 				{
 					ev.Attacker.ShowHitmarker();
 				}
@@ -742,15 +743,29 @@ namespace SanyaPlugin
 					}
 				}
 
+				//939DotDamage
 				if(Configs.scp939_dot_damage > 0
 					&& ev.DamageType == DamageTypes.Scp939
-					&& ev.Player.GetUserId() != ev.Attacker.GetUserId()
+					&& ev.Player.GetPlayerId() != ev.Attacker.GetPlayerId()
 					&& !Coroutines.DOTDamages.ContainsKey(ev.Player))
 				{
 					Log.Debug($"[939DOT] fired {ev.Player.GetNickname()}");
 					var cor = Timing.RunCoroutine(Coroutines.DOTDamage(ev.Player, Configs.scp939_dot_damage, Configs.scp939_dot_damage_total, Configs.scp939_dot_damage_interval, DamageTypes.Scp939));
 					roundCoroutines.Add(cor);
 					Coroutines.DOTDamages.Add(ev.Player, cor);
+				}
+
+				//Faster939
+				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 <= ev.Player.GetHealth())
+				{
+					ev.Player.effectsController.NetworksyncEffects = "1000";
+				}
+
+				//Faster049-2
+				if(Configs.scp0492_faster_ondamage && ev.Player.GetRole() == RoleType.Scp0492 && !ev.Player.effectsController.NetworksyncEffects.StartsWith("1"))
+				{
+					Log.Debug($"fired");
+					ev.Player.effectsController.EnableEffect("SCP-207");
 				}
 
 				//CuffedDivisor
