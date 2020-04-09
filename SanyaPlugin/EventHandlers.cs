@@ -755,6 +755,12 @@ namespace SanyaPlugin
 					Coroutines.DOTDamages.Add(ev.Player, cor);
 				}
 
+				//HurtBlink173
+				if(Configs.scp173_hurt_blink_percent > 0 && ev.Player.GetRole() == RoleType.Scp173 && UnityEngine.Random.Range(0,100) < Configs.scp173_hurt_blink_percent)
+				{
+					Methods.Blink();
+				}
+
 				//Faster939
 				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 <= ev.Player.GetHealth())
 				{

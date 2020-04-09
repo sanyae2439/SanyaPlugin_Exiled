@@ -469,6 +469,14 @@ namespace SanyaPlugin.Functions
 				&& raycastHit.transform.name == player.name;
 		}
 
+		public static void Blink()
+		{
+			foreach(var scp173 in UnityEngine.Object.FindObjectsOfType<Scp173PlayerScript>())
+			{
+				scp173.RpcBlinkTime();
+			}
+		}
+
 		public static void StartDecontEffectOnly(DecontaminationLCZ lcza)
 		{
 			lcza._curAnm = 10;
