@@ -764,7 +764,6 @@ namespace SanyaPlugin
 				//Faster049-2
 				if(Configs.scp0492_faster_ondamage && ev.Player.GetRole() == RoleType.Scp0492 && !ev.Player.effectsController.NetworksyncEffects.StartsWith("1"))
 				{
-					Log.Debug($"fired");
 					ev.Player.effectsController.EnableEffect("SCP-207");
 				}
 
