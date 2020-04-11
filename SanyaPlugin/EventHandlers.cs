@@ -715,10 +715,18 @@ namespace SanyaPlugin
 
 			if(ev.Attacker == null) return;
 
+			//939Ignore
+			if(ev.Player.GetRole().Is939() && ev.DamageType == DamageTypes.Scp207)
+			{
+				ev.Amount = 0f;
+				return;
+			}
+
 			if(ev.DamageType != DamageTypes.Nuke
 				&& ev.DamageType != DamageTypes.Decont
 				&& ev.DamageType != DamageTypes.Wall
-				&& ev.DamageType != DamageTypes.Tesla)
+				&& ev.DamageType != DamageTypes.Tesla
+				&& ev.DamageType != DamageTypes.Scp207)
 			{
 				PlayerStats.HitInfo clinfo = ev.Info;
 
@@ -762,9 +770,9 @@ namespace SanyaPlugin
 				}
 
 				//Faster939
-				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 <= ev.Player.GetHealth())
+				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 <= ev.Player.GetHealth() && !ev.Player.effectsController.NetworksyncEffects.StartsWith("1"))
 				{
-					ev.Player.effectsController.NetworksyncEffects = "1000";
+					ev.Player.effectsController.EnableEffect("SCP-207");
 				}
 
 				//Faster049-2
