@@ -125,7 +125,7 @@ namespace SanyaPlugin
 								else
 								{
 									Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
-								}	
+								}
 							}
 
 							if(Configs.fix_doors_on_countdown && AlphaWarheadController.Host.NetworkinProgress)
@@ -764,7 +764,7 @@ namespace SanyaPlugin
 				}
 
 				//HurtBlink173
-				if(Configs.scp173_hurt_blink_percent > 0 && ev.Player.GetRole() == RoleType.Scp173 && UnityEngine.Random.Range(0,100) < Configs.scp173_hurt_blink_percent)
+				if(Configs.scp173_hurt_blink_percent > 0 && ev.Player.GetRole() == RoleType.Scp173 && UnityEngine.Random.Range(0, 100) < Configs.scp173_hurt_blink_percent)
 				{
 					Methods.Blink();
 				}
@@ -796,6 +796,7 @@ namespace SanyaPlugin
 							clinfo.Amount /= Configs.damage_divisor_scp173;
 							break;
 						case RoleType.Scp106:
+							if(Configs.scp106_reduce_grenade && ev.DamageType == DamageTypes.Grenade) clinfo.Amount /= 10f;
 							clinfo.Amount /= Configs.damage_divisor_scp106;
 							break;
 						case RoleType.Scp049:
@@ -1172,14 +1173,13 @@ namespace SanyaPlugin
 			Log.Debug($"[OnShoot] {ev.Shooter.GetNickname()} -{ev.TargetPos}-> {ev.Target?.name}");
 
 			if((Configs.grenade_shoot_fuse || Configs.item_shoot_move)
+				&& ev.TargetPos != Vector3.zero
 				&& Physics.Linecast(ev.Shooter.GetPosition(), ev.TargetPos, out RaycastHit raycastHit, grenade_pickup_mask))
 			{
-				Log.Debug($"{raycastHit.transform.name}/{raycastHit.transform.gameObject.layer}");
-
 				if(Configs.item_shoot_move)
 				{
 					var pickup = raycastHit.transform.GetComponentInParent<Pickup>();
-					if(pickup != null)
+					if(pickup != null && pickup.Rb != null)
 					{
 						pickup.Rb.AddExplosionForce(Vector3.Distance(ev.TargetPos, ev.Shooter.GetPosition()), ev.Shooter.GetPosition(), 500f, 3f, ForceMode.Impulse);
 					}
@@ -1276,17 +1276,16 @@ namespace SanyaPlugin
 
 		public void OnCommand(ref RACommandEvent ev)
 		{
-			Log.Debug($"[OnCommand] sender:{ev.Sender.SenderId} command:{ev.Command}");
-
 			string[] args = ev.Command.Split(' ');
-			bool isSuccess = true;
-			ReferenceHub player = Player.GetPlayer(ev.Sender.SenderId);
+			Log.Debug($"[OnCommand] sender:{ev.Sender.SenderId} command:{ev.Command} args:{args.Length}");
 
 			if(args[0].ToLower() == "sanya")
 			{
 				if(args.Length > 1)
 				{
+					ReferenceHub player = Player.GetPlayer(ev.Sender.SenderId);
 					string ReturnStr;
+					bool isSuccess = true;
 					switch(args[1].ToLower())
 					{
 						case "test":
@@ -1304,6 +1303,16 @@ namespace SanyaPlugin
 								Plugin.Config.Reload();
 								Configs.Reload();
 								ReturnStr = "reload ok";
+								break;
+							}
+						case "list":
+							{
+								ReturnStr = $"Players List ({PlayerManager.players.Count})";
+								foreach(var i in Player.GetHubs())
+								{
+									ReturnStr += $"[{i.GetPlayerId()}]{i.GetNickname()}({i.GetUserId()})<{i.GetRole()}/{i.GetHealth()}HP> {i.GetPosition()}\n";
+								}
+								ReturnStr.Trim();
 								break;
 							}
 						case "cleanupdic":
@@ -1386,18 +1395,32 @@ namespace SanyaPlugin
 								ReturnStr = $"nukelock:{IsNukeLocked}";
 								break;
 							}
+						case "nukecap":
+							{
+								var outsite = GameObject.Find("OutsitePanelScript")?.GetComponent<AlphaWarheadOutsitePanel>();
+								outsite.NetworkkeycardEntered = !outsite.NetworkkeycardEntered;
+								ReturnStr = $"{outsite?.keycardEntered}";
+								break;
+							}
 						case "sonar":
 							{
-								int counter = 0;
-								foreach(var target in Player.GetHubs())
+								if(player == null)
 								{
-									if(player.IsEnemy(target.GetTeam()))
-									{
-										Methods.Target096AttackSound(target, player);
-										counter++;
-									}
+									ReturnStr = $"Source not found. (Cant use from SERVER)";
 								}
-								ReturnStr = $"Sonar Activated : {counter}";
+								else
+								{
+									int counter = 0;
+									foreach(var target in Player.GetHubs())
+									{
+										if(player.IsEnemy(target.GetTeam()))
+										{
+											Methods.Target096AttackSound(target, player);
+											counter++;
+										}
+									}
+									ReturnStr = $"Sonar Activated : {counter}";
+								}
 								break;
 							}
 						case "blackout":
@@ -1412,6 +1435,12 @@ namespace SanyaPlugin
 									Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
 									ReturnStr = "ALL blackout!";
 								}
+								break;
+							}
+						case "femur":
+							{
+								PlayerManager.localPlayer.GetComponent<PlayerInteract>()?.RpcContain106(PlayerManager.localPlayer);
+								ReturnStr = "FemurScreamer!";
 								break;
 							}
 						case "explode":
@@ -1540,8 +1569,16 @@ namespace SanyaPlugin
 							}
 						case "ammo":
 							{
-								player.ammoBox.Networkamount = "200:200:200";
-								ReturnStr = "Ammo set 200:200:200.";
+								if(player != null)
+								{
+									player.ammoBox.Networkamount = "200:200:200";
+									ReturnStr = "Ammo set 200:200:200.";
+								}
+								else
+								{
+									ReturnStr = "Failed to set. (cant use from SERVER)";
+								}
+
 								break;
 							}
 						case "ev":
@@ -1786,7 +1823,7 @@ namespace SanyaPlugin
 				{
 					ev.Allow = false;
 					ev.Sender.RAMessage(string.Concat(
-						"Usage : sanya < reload / startair / stopair / nukelock / blackout ",
+						"Usage : sanya < reload / startair / stopair / nukelock / list / blackout ",
 						"/ roompos / tppos / pocket / gen / spawn / next / van / heli / 106 / 096 / 914 / now / ammo / cleanupdic / test >"
 						), false);
 				}

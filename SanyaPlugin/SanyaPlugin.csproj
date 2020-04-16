@@ -56,6 +56,10 @@
       <HintPath>References\EXILED_Events.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="EXILED_Permissions">
+      <HintPath>References\EXILED_Permissions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Mirror">
       <HintPath>References\Mirror.dll</HintPath>
       <Private>False</Private>

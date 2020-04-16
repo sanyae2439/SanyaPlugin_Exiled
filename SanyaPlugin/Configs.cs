@@ -75,6 +75,7 @@ namespace SanyaPlugin
 		internal static bool scp0492_faster_ondamage;
 		internal static bool scp079_spot;
 		internal static bool scp096_high_sensitive;
+		internal static bool scp106_reduce_grenade;
 		internal static int scp173_hurt_blink_percent;
 		internal static bool scp939_faster_halfhealth;
 		internal static int scp939_dot_damage;
@@ -170,6 +171,7 @@ namespace SanyaPlugin
 			scp0492_faster_ondamage = Plugin.Config.GetBool("sanya_scp0492_faster_ondamage", false);
 			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
 			scp096_high_sensitive = Plugin.Config.GetBool("sanya_scp096_high_sensitive", false);
+			scp106_reduce_grenade = Plugin.Config.GetBool("sanya_scp106_reduce_grenade", false);
 			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
 			scp939_faster_halfhealth = Plugin.Config.GetBool("sanya_scp939_faster_halfhealth", false);
 			scp939_dot_damage = Plugin.Config.GetInt("sanya_scp939_dot_damage", -1);
