@@ -640,6 +640,10 @@ namespace SanyaPlugin
 				ev.Player.TargetSendRpc(lcza, nameof(DecontaminationLCZ.RpcPlayAnnouncement), writer);
 				NetworkWriterPool.Recycle(writer);
 			}
+
+			foreach(ReferenceHub player in Player.GetHubs())
+				if(player.IsMuted())
+					player.characterClassManager.SetDirtyBit(1uL);
 		}
 
 		public void OnPlayerLeave(PlayerLeaveEvent ev)
