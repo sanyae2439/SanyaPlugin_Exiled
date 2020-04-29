@@ -1311,7 +1311,7 @@ namespace SanyaPlugin
 							}
 						case "list":
 							{
-								ReturnStr = $"Players List ({PlayerManager.players.Count})";
+								ReturnStr = $"Players List ({PlayerManager.players.Count})\n";
 								foreach(var i in Player.GetHubs())
 								{
 									ReturnStr += $"[{i.GetPlayerId()}]{i.GetNickname()}({i.GetUserId()})<{i.GetRole()}/{i.GetHealth()}HP> {i.GetPosition()}\n";
