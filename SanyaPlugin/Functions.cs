@@ -13,6 +13,7 @@ using MEC;
 using EXILED;
 using EXILED.Extensions;
 using SanyaPlugin.Data;
+using RemoteAdmin;
 
 namespace SanyaPlugin.Functions
 {
@@ -488,6 +489,20 @@ namespace SanyaPlugin.Functions
 				player.TargetSendRpc(lcza, nameof(DecontaminationLCZ.RpcPlayAnnouncement), writer);
 				NetworkWriterPool.Recycle(writer);
 			}
+		}
+
+		public static GameObject SpawnDummy(RoleType role, Vector3 pos, Quaternion rot)
+		{
+			GameObject gameObject = UnityEngine.Object.Instantiate(NetworkManager.singleton.spawnPrefabs.FirstOrDefault(p => p.gameObject.name == "Player"));
+			CharacterClassManager ccm = gameObject.GetComponent<CharacterClassManager>();
+			ccm.CurClass = role;
+			ccm.RefreshPlyModel();
+			gameObject.GetComponent<NicknameSync>().Network_myNickSync = "Dummy";
+			gameObject.GetComponent<QueryProcessor>().NetworkPlayerId = 9999;
+			gameObject.transform.position = pos;
+			gameObject.transform.rotation = rot;
+			NetworkServer.Spawn(gameObject);
+			return gameObject;
 		}
 	}
 

@@ -1336,6 +1336,20 @@ namespace SanyaPlugin
 								Coroutines.isAirBombGoing = false;
 								break;
 							}
+						case "dummy":
+							{
+								if(player != null)
+								{
+									var gameObject = Methods.SpawnDummy(player.GetRole(), player.GetPosition(), player.transform.rotation);
+									ReturnStr = $"{player.GetRole()}'s Dummy Created. pos:{gameObject.transform.position} rot:{gameObject.transform.rotation}";
+								}
+								else
+								{
+									isSuccess = false;
+									ReturnStr = "sender should be Player.";
+								}
+								break;
+							}
 						case "106":
 							{
 								foreach(PocketDimensionTeleport pdt in UnityEngine.Object.FindObjectsOfType<PocketDimensionTeleport>())
