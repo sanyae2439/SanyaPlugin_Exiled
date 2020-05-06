@@ -505,6 +505,27 @@ namespace SanyaPlugin
 			roundCoroutines.Clear();
 		}
 
+		public void OnWarheadStart(WarheadStartEvent ev)
+		{
+			Log.Debug($"[OnWarheadStart] {ev.Player?.GetNickname()} Locked:{IsNukeLocked}");
+
+			if(Configs.cassie_subtitle)
+			{
+				bool isresumed = AlphaWarheadController._resumeScenario != -1;
+				double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
+				double count = Math.Truncate(left / 10.0) * 10.0;
+
+				if(!isresumed)
+				{
+					Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
+				}
+				else
+				{
+					Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
+				}
+			}
+		}
+
 		public void OnWarheadCancel(WarheadCancelEvent ev)
 		{
 			Log.Debug($"[OnWarheadCancel] {ev.Player?.GetNickname()} Locked:{IsNukeLocked}");
@@ -813,7 +834,7 @@ namespace SanyaPlugin
 				}
 
 				//Faster939
-				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 <= ev.Player.GetHealth() && !ev.Player.effectsController.NetworksyncEffects.StartsWith("1"))
+				if(Configs.scp939_faster_halfhealth && ev.Player.GetRole().Is939() && ev.Player.playerStats.maxHP / 2 >= ev.Player.GetHealth() && !ev.Player.effectsController.NetworksyncEffects.StartsWith("1"))
 				{
 					ev.Player.effectsController.EnableEffect("SCP-207");
 				}

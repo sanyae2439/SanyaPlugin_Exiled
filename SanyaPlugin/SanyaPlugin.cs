@@ -11,7 +11,7 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "1.6.0a";
+		public static readonly string Version = "1.6.1a";
 		public static readonly string TargetVersion = "1.10.4";
 		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
@@ -39,6 +39,7 @@ namespace SanyaPlugin
 			Events.RoundStartEvent += EventHandlers.OnRoundStart;
 			Events.RoundEndEvent += EventHandlers.OnRoundEnd;
 			Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
+			Events.WarheadStartEvent += EventHandlers.OnWarheadStart;
 			Events.WarheadCancelledEvent += EventHandlers.OnWarheadCancel;
 			Events.WarheadDetonationEvent += EventHandlers.OnDetonated;
 			Events.AnnounceDecontaminationEvent += EventHandlers.OnAnnounceDecont;
@@ -85,6 +86,7 @@ namespace SanyaPlugin
 			Events.RoundStartEvent -= EventHandlers.OnRoundStart;
 			Events.RoundEndEvent -= EventHandlers.OnRoundEnd;
 			Events.RoundRestartEvent -= EventHandlers.OnRoundRestart;
+			Events.WarheadStartEvent -= EventHandlers.OnWarheadStart;
 			Events.WarheadCancelledEvent -= EventHandlers.OnWarheadCancel;
 			Events.WarheadDetonationEvent -= EventHandlers.OnDetonated;
 			Events.AnnounceDecontaminationEvent -= EventHandlers.OnAnnounceDecont;

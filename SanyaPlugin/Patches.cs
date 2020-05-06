@@ -13,30 +13,6 @@ using Grenades;
 
 namespace SanyaPlugin.Patches
 {
-	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
-	public static class StartWarheadPatch
-	{
-		public static void Postfix(AlphaWarheadController __instance)
-		{
-			Log.Debug($"[StartWarheadPatch] inprogess:{__instance.NetworkinProgress}");
-			if(Configs.cassie_subtitle && __instance.NetworkinProgress)
-			{
-				bool isresumed = AlphaWarheadController._resumeScenario != -1;
-				double left = isresumed ? __instance.timeToDetonation : __instance.timeToDetonation - 4;
-				double count = Math.Truncate(left / 10.0) * 10.0;
-
-				if(!isresumed)
-				{
-					Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
-				}
-				else
-				{
-					Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
-				}
-			}
-		}
-	}
-
 	[HarmonyPatch(typeof(AlphaWarheadNukesitePanel), nameof(AlphaWarheadNukesitePanel.AllowChangeLevelState))]
 	public static class ChangeLeverPatch
 	{
