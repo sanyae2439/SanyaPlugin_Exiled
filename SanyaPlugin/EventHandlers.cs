@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using LiteNetLib.Utils;
 using MEC;
 using Utf8Json;
 using EXILED;
@@ -94,6 +95,12 @@ namespace SanyaPlugin
 				await Task.Delay(TimeSpan.FromSeconds(30));
 			}
 		}
+
+		/** AuthChecker **/
+		internal const byte BypassFlags = (1 << 1) | (1 << 3);
+		internal static readonly NetDataReader reader = new NetDataReader();
+		internal static readonly NetDataWriter writer = new NetDataWriter();
+		internal static readonly Dictionary<string, string> kickedbyChecker = new Dictionary<string, string>();
 
 		/** Update **/
 		internal IEnumerator<float> EverySecond()
@@ -585,35 +592,67 @@ namespace SanyaPlugin
 			}
 		}
 
-		public void OnPlayerJoinBefore(PlayerJoinEvent ev)
+		public void OnPreAuth(ref PreauthEvent ev)
 		{
-			if(ev.Player.IsHost()) return;
-			Log.Debug($"[OnPlayerJoinBefore] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+			Log.Debug($"[OnPreAuth] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}");
 
-			if(Configs.data_enabled)
+			if((Configs.kick_steam_limited || Configs.kick_vpn) && !ev.UserId.Contains("@northwood", StringComparison.InvariantCultureIgnoreCase))
 			{
-				PlayerData data = PlayerDataManager.LoadPlayerData(ev.Player.GetUserId());
-
-				if(!PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
+				reader.SetSource(ev.Request.Data.RawData, 15);
+				if(reader.TryGetString(out var s) && reader.TryGetULong(out var e) &&
+					reader.TryGetByte(out var flags))
 				{
-					PlayerDataManager.playersData.Add(ev.Player.GetUserId(), data);
+					if((flags & BypassFlags) > 0)
+					{
+						Log.Warn($"[OnPreAuth] User have bypassflags. {ev.UserId}");
+						return;
+					}
 				}
 			}
 
-			if(Configs.kick_steam_limited && !ev.Player.serverRoles.Staff)
+			if(Configs.data_enabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
 			{
-				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckIsLimitedSteam(ev.Player.GetUserId(), ev, this)));
+				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 			}
-			else
+
+			if(Configs.kick_vpn)
 			{
-				OnPlayerJoinAfter(ev);
+				if(ShitChecker.IsBlacklisted(ev.Request.RemoteEndPoint.Address))
+				{
+					ev.Allow = false;
+					writer.Reset();
+					writer.Put((byte)10);
+					writer.Put(Subtitles.VPNKickMessageShort);
+					ev.Request.Reject(writer);
+					return;
+				}
+
+				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev)));
+			}
+
+			if(Configs.kick_steam_limited && ev.UserId.Contains("@steam", StringComparison.InvariantCultureIgnoreCase))
+			{
+				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
 			}
 		}
 
-		public void OnPlayerJoinAfter(PlayerJoinEvent ev)
+		public void OnPlayerJoin(PlayerJoinEvent ev)
 		{
 			if(ev.Player.IsHost()) return;
 			Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+
+			if(kickedbyChecker.TryGetValue(ev.Player.GetUserId(), out var reason))
+			{
+				string reasonMessage = string.Empty;
+				if(reason == "steam")
+					reasonMessage = Subtitles.LimitedKickMessage;
+				else if(reason == "vpn")
+					reasonMessage = Subtitles.VPNKickMessage;
+
+				ServerConsole.Disconnect(ev.Player.characterClassManager.connectionToClient, reasonMessage);
+				kickedbyChecker.Remove(ev.Player.GetUserId());
+				return;
+			}
 
 			if(!string.IsNullOrEmpty(Configs.motd_message))
 			{
@@ -1306,6 +1345,7 @@ namespace SanyaPlugin
 							{
 								Plugin.Config.Reload();
 								Configs.Reload();
+								if(Configs.kick_vpn) ShitChecker.LoadLists();
 								ReturnStr = "reload ok";
 								break;
 							}

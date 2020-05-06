@@ -65,6 +65,17 @@ namespace SanyaPlugin.Data
 		}
 	}
 
+	public class VPNData
+	{
+		public string ip { get; set; }
+		public string countryCode { get; set; }
+		public string countryName { get; set; }
+		public int asn { get; set; }
+		public string isp { get; set; }
+		public int block { get; set; }
+		public string hostname { get; set; }
+	}
+
 	public class Serverinfo
 	{
 		public Serverinfo() { players = new List<Playerinfo>(); }

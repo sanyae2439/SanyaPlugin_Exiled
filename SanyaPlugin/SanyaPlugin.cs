@@ -11,9 +11,9 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "1.5.4a";
+		public static readonly string Version = "1.6.0a";
 		public static readonly string TargetVersion = "1.10.4";
-		public static readonly string PlayersDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
+		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
 		public EventHandlers EventHandlers;
 		public HarmonyInstance harmony;
@@ -30,6 +30,7 @@ namespace SanyaPlugin
 			}
 
 			Configs.Reload();
+			if(Configs.kick_vpn) ShitChecker.LoadLists();
 
 			EventHandlers = new EventHandlers(this);
 			Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
@@ -41,7 +42,8 @@ namespace SanyaPlugin
 			Events.WarheadCancelledEvent += EventHandlers.OnWarheadCancel;
 			Events.WarheadDetonationEvent += EventHandlers.OnDetonated;
 			Events.AnnounceDecontaminationEvent += EventHandlers.OnAnnounceDecont;
-			Events.PlayerJoinEvent += EventHandlers.OnPlayerJoinBefore;
+			Events.PreAuthEvent += EventHandlers.OnPreAuth;
+			Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
 			Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
 			Events.StartItemsEvent += EventHandlers.OnStartItems;
 			Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
@@ -86,7 +88,8 @@ namespace SanyaPlugin
 			Events.WarheadCancelledEvent -= EventHandlers.OnWarheadCancel;
 			Events.WarheadDetonationEvent -= EventHandlers.OnDetonated;
 			Events.AnnounceDecontaminationEvent -= EventHandlers.OnAnnounceDecont;
-			Events.PlayerJoinEvent -= EventHandlers.OnPlayerJoinBefore;
+			Events.PreAuthEvent -= EventHandlers.OnPreAuth;
+			Events.PlayerJoinEvent -= EventHandlers.OnPlayerJoin;
 			Events.PlayerLeaveEvent -= EventHandlers.OnPlayerLeave;
 			Events.StartItemsEvent -= EventHandlers.OnStartItems;
 			Events.SetClassEvent -= EventHandlers.OnPlayerSetClass;

@@ -23,6 +23,8 @@ namespace SanyaPlugin
 
 		//SanyaPlugin
 		internal static bool kick_steam_limited;
+		internal static bool kick_vpn;
+		internal static string kick_vpn_apikey;
 		internal static string motd_message = "";
 		internal static List<int> event_mode_weight;
 		internal static bool cassie_subtitle;
@@ -124,6 +126,8 @@ namespace SanyaPlugin
 			item_cleanup_ignore = Plugin.Config.GetStringList("sanya_item_cleanup_ignore").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
 
 			kick_steam_limited = Plugin.Config.GetBool("sanya_kick_steam_limited", false);
+			kick_vpn = Plugin.Config.GetBool("sanya_kick_vpn", false);
+			kick_vpn_apikey = Plugin.Config.GetString("sanya_kick_vpn_apikey", string.Empty);
 			motd_message = Plugin.Config.GetString("sanya_motd_message", string.Empty);
 			event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
 			cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);

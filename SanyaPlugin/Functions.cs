@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
+using RemoteAdmin;
 using Mirror;
 using MEC;
+using Utf8Json;
 using EXILED;
 using EXILED.Extensions;
 using SanyaPlugin.Data;
-using RemoteAdmin;
 
 namespace SanyaPlugin.Functions
 {
@@ -23,17 +26,17 @@ namespace SanyaPlugin.Functions
 
 		public static PlayerData LoadPlayerData(string userid)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.PlayersDataPath, $"{userid}.txt");
-			if(!Directory.Exists(SanyaPlugin.PlayersDataPath)) Directory.CreateDirectory(SanyaPlugin.PlayersDataPath);
+			string targetuseridpath = Path.Combine(SanyaPlugin.DataPath, $"{userid}.txt");
+			if(!Directory.Exists(SanyaPlugin.DataPath)) Directory.CreateDirectory(SanyaPlugin.DataPath);
 			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
 		public static void SavePlayerData(PlayerData data)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.PlayersDataPath, $"{data.userid}.txt");
+			string targetuseridpath = Path.Combine(SanyaPlugin.DataPath, $"{data.userid}.txt");
 
-			if(!Directory.Exists(SanyaPlugin.PlayersDataPath)) Directory.CreateDirectory(SanyaPlugin.PlayersDataPath);
+			if(!Directory.Exists(SanyaPlugin.DataPath)) Directory.CreateDirectory(SanyaPlugin.DataPath);
 
 			string[] textdata = new string[] {
 				data.lastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzzz"),
@@ -62,13 +65,203 @@ namespace SanyaPlugin.Functions
 
 		public static void ResetLimitedFlag()
 		{
-			foreach(var file in Directory.GetFiles(SanyaPlugin.PlayersDataPath))
+			foreach(var file in Directory.GetFiles(SanyaPlugin.DataPath))
 			{
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
 				Log.Warn($"{data.userid}:{data.limited}");
 				data.limited = true;
 				SavePlayerData(data);
 			}
+		}
+	}
+
+	internal static class ShitChecker
+	{
+		private static string whitelist_path = Path.Combine(SanyaPlugin.DataPath, "VPN-Whitelist.txt");
+		public static HashSet<IPAddress> whitelist = new HashSet<IPAddress>();
+		private static string blacklist_path = Path.Combine(SanyaPlugin.DataPath, "VPN-Blacklist.txt");
+		public static HashSet<IPAddress> blacklist = new HashSet<IPAddress>();
+
+		public static IEnumerator<float> CheckVPN(PreauthEvent ev)
+		{
+			IPAddress address = ev.Request.RemoteEndPoint.Address;
+
+			if(IsWhiteListed(address) || IsBlacklisted(address))
+			{
+				Log.Debug($"[VPNChecker] Already Checked:{address}");
+				yield break;
+			}
+
+			using(UnityWebRequest unityWebRequest = UnityWebRequest.Get($"https://v2.api.iphub.info/ip/{address}"))
+			{
+				unityWebRequest.SetRequestHeader("X-Key", Configs.kick_vpn_apikey);
+				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
+				if(!unityWebRequest.isNetworkError)
+				{
+					var data = JsonSerializer.Deserialize<VPNData>(unityWebRequest.downloadHandler.text);
+
+					Log.Info($"[VPNChecker] Checking:{address}:{ev.UserId} ({data.countryCode}/{data.isp})");
+
+					if(data.block == 0 || data.block == 2)
+					{
+						Log.Info($"[VPNChecker] Passed:{address} UserId:{ev.UserId}");
+						AddWhitelist(address);
+						yield break;
+					}
+					else if(data.block == 1)
+					{
+						Log.Info($"[VPNChecker] VPN Detected:{address} UserId:{ev.UserId}");
+						AddBlacklist(address);
+
+						ReferenceHub player = Player.GetPlayer(ev.UserId);
+						if(player != null)
+						{
+							ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.VPNKickMessage);
+						}
+						if(!EventHandlers.kickedbyChecker.ContainsKey(ev.UserId))
+							EventHandlers.kickedbyChecker.Add(ev.UserId, "vpn");
+						yield break;
+					}
+					else
+					{
+						Log.Error($"[VPNChecker] Error({unityWebRequest.responseCode}):block == {data.block}");
+					}
+				}
+				else
+				{
+					Log.Error($"[VPNChecker] Error({unityWebRequest.responseCode}):{unityWebRequest.error}");
+					yield break;
+				}
+			}
+		}
+
+		public static IEnumerator<float> CheckIsLimitedSteam(string userid)
+		{
+			PlayerData data = null;
+			if(Configs.data_enabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
+			{
+				Log.Debug($"[SteamCheck] Already Checked:{userid}");
+				yield break;
+			}
+
+			string xmlurl = string.Concat(
+				"https://steamcommunity.com/profiles/",
+				userid.Replace("@steam", string.Empty),
+				"?xml=1"
+			);
+			using(UnityWebRequest unityWebRequest = UnityWebRequest.Get(xmlurl))
+			{
+				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
+				if(!unityWebRequest.isNetworkError)
+				{
+					XmlReaderSettings xmlReaderSettings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
+					XmlReader xmlReader = XmlReader.Create(new MemoryStream(unityWebRequest.downloadHandler.data), xmlReaderSettings);
+					while(xmlReader.Read())
+					{
+						if(xmlReader.ReadToFollowing("isLimitedAccount"))
+						{
+							string isLimited = xmlReader.ReadElementContentAsString();
+							if(isLimited == "0")
+							{
+								Log.Info($"[SteamCheck] OK:{userid}");
+								if(data != null)
+								{
+									data.limited = false;
+									PlayerDataManager.SavePlayerData(data);
+								}
+								yield break;
+							}
+							else
+							{
+								Log.Warn($"[SteamCheck] NG:{userid}");
+								ReferenceHub player = Player.GetPlayer(userid);
+								if(player != null)
+								{
+									ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.LimitedKickMessage);
+								}
+
+								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
+									EventHandlers.kickedbyChecker.Add(userid, "steam");
+
+								yield break;
+							}
+						}
+						else
+						{
+							Log.Warn($"[SteamCheck] Falied(NoProfile):{userid}");
+							ReferenceHub player = Player.GetPlayer(userid);
+							if(player != null)
+							{
+								ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.NoProfileKickMessage);
+							}
+							if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
+								EventHandlers.kickedbyChecker.Add(userid, "steam");
+							yield break;
+						}
+					}
+				}
+				else
+				{
+					Log.Error($"[SteamCheck] Failed(NetworkError):{userid}:{unityWebRequest.error}");
+					yield break;
+				}
+			}
+			yield break;
+		}
+
+		public static void LoadLists()
+		{
+			whitelist.Clear();
+			blacklist.Clear();
+
+			if(!File.Exists(whitelist_path))
+				File.WriteAllText(whitelist_path, null);
+			if(!File.Exists(blacklist_path))
+				File.WriteAllText(blacklist_path, null);
+
+			foreach(var line in File.ReadAllLines(whitelist_path))
+			{
+				if(IPAddress.TryParse(line, out var address))
+				{
+					whitelist.Add(address);
+				}
+			}
+
+			foreach(var line2 in File.ReadAllLines(blacklist_path))
+			{
+				if(IPAddress.TryParse(line2, out var address2))
+				{
+					blacklist.Add(address2);
+				}
+			}
+		}
+
+		public static void AddWhitelist(IPAddress address)
+		{
+			whitelist.Add(address);
+			using(StreamWriter writer = File.AppendText(whitelist_path))
+			{
+				writer.WriteLine(address);
+			}
+		}
+
+		public static bool IsWhiteListed(IPAddress address)
+		{
+			return whitelist.Contains(address);
+		}
+
+		public static void AddBlacklist(IPAddress address)
+		{
+			blacklist.Add(address);
+			using(StreamWriter writer = File.AppendText(blacklist_path))
+			{
+				writer.WriteLine(address);
+			}
+		}
+
+		public static bool IsBlacklisted(IPAddress address)
+		{
+			return blacklist.Contains(address);
 		}
 	}
 
@@ -96,7 +289,7 @@ namespace SanyaPlugin.Functions
 
 			if(data.level == -1)
 			{
-				level = "?????";
+				level = "???";
 			}
 
 			if(string.IsNullOrEmpty(rolestr))
@@ -226,80 +419,6 @@ namespace SanyaPlugin.Functions
 			{
 				Log.Debug($"[939DOT] Removed {target.GetNickname()}");
 				DOTDamages.Remove(target);
-			}
-			yield break;
-		}
-
-		public static IEnumerator<float> CheckIsLimitedSteam(string userid, PlayerJoinEvent ev = null, EventHandlers eventHandlers = null)
-		{
-			PlayerData data = null;
-			if(!userid.Contains("@steam"))
-			{
-				Log.Debug($"[SteamCheck] Target is not SteamUser:{userid}");
-				if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
-				yield break;
-			}
-
-			if(Configs.data_enabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
-			{
-				Log.Debug($"[SteamCheck] Already Checked:{userid}");
-				if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
-				yield break;
-			}
-
-			string xmlurl = string.Concat(
-				"https://steamcommunity.com/profiles/",
-				userid.Replace("@steam", string.Empty),
-				"?xml=1"
-			);
-			using(UnityEngine.Networking.UnityWebRequest unityWebRequest = UnityEngine.Networking.UnityWebRequest.Get(xmlurl))
-			{
-				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
-				if(!unityWebRequest.isNetworkError)
-				{
-					XmlReaderSettings xmlReaderSettings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
-					XmlReader xmlReader = XmlReader.Create(new MemoryStream(unityWebRequest.downloadHandler.data), xmlReaderSettings);
-					while(xmlReader.Read())
-					{
-						if(xmlReader.ReadToFollowing("isLimitedAccount"))
-						{
-							string isLimited = xmlReader.ReadElementContentAsString();
-							if(isLimited == "0")
-							{
-								Log.Info($"[SteamCheck] OK:{userid}");
-								if(data != null)
-								{
-									data.limited = false;
-									PlayerDataManager.SavePlayerData(data);
-								}
-								if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
-								yield break;
-							}
-							else
-							{
-								Log.Warn($"[SteamCheck] NG:{userid}");
-								foreach(var i in Player.GetHubs())
-									if(i.GetUserId() == userid)
-										ServerConsole.Disconnect(i.gameObject, Subtitles.LimitedKickMessage);
-								yield break;
-							}
-						}
-						else
-						{
-							Log.Warn($"[SteamCheck] Falied(NoProfile):{userid}");
-							foreach(var i in Player.GetHubs())
-								if(i.GetUserId() == userid)
-									ServerConsole.Disconnect(i.gameObject, Subtitles.NoProfileKickMessage);
-							yield break;
-						}
-					}
-				}
-				else
-				{
-					Log.Error($"[SteamCheck] Failed(NetworkError):{userid}:{unityWebRequest.error}");
-					if(ev != null && eventHandlers != null) eventHandlers.OnPlayerJoinAfter(ev);
-					yield break;
-				}
 			}
 			yield break;
 		}
@@ -465,8 +584,8 @@ namespace SanyaPlugin.Functions
 			float num = Vector3.Dot(camera.head.transform.forward, vector);
 
 			RaycastHit raycastHit;
-			return (num >= 0f && num * num / vector.sqrMagnitude > 0.4225f) 
-				&& Physics.Raycast(camera.transform.position, vector, out raycastHit, 100f, -117407543) 
+			return (num >= 0f && num * num / vector.sqrMagnitude > 0.4225f)
+				&& Physics.Raycast(camera.transform.position, vector, out raycastHit, 100f, -117407543)
 				&& raycastHit.transform.name == player.name;
 		}
 
@@ -506,7 +625,7 @@ namespace SanyaPlugin.Functions
 		}
 	}
 
-	public static class Extensions
+	internal static class Extensions
 	{
 		public static Task StartSender(this Task task)
 		{
@@ -519,9 +638,9 @@ namespace SanyaPlugin.Functions
 				return false;
 
 			return target == Team.SCP ||
-				( (player.GetTeam() != Team.MTF && player.GetTeam() != Team.RSC) || (target != Team.MTF && target != Team.RSC) ) 
-				&& 
-				( (player.GetTeam() != Team.CDP && player.GetTeam() != Team.CHI) || (target != Team.CDP && target != Team.CHI) )
+				((player.GetTeam() != Team.MTF && player.GetTeam() != Team.RSC) || (target != Team.MTF && target != Team.RSC))
+				&&
+				((player.GetTeam() != Team.CDP && player.GetTeam() != Team.CHI) || (target != Team.CDP && target != Team.CHI))
 			;
 		}
 
