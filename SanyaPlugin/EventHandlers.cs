@@ -689,7 +689,10 @@ namespace SanyaPlugin
 
 			if(Configs.disable_all_chat)
 			{
-				ev.Player.characterClassManager.NetworkMuted = true;
+				if(!(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(ev.Player.GetUserId())))
+				{
+					ev.Player.characterClassManager.NetworkMuted = true;
+				}
 			}
 
 			if(eventmode == SANYA_GAME_MODE.DECONT_SCPONLY && RoundSummary.RoundInProgress())

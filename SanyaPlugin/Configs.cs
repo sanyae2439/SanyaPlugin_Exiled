@@ -37,8 +37,9 @@ namespace SanyaPlugin
 		internal static bool godmode_after_endround;
 		internal static bool fix_doors_on_countdown;
 		internal static bool fix_doors_on_countdown_decont;
-		internal static bool disable_all_chat;
+		internal static bool disable_all_chat;	
 		internal static bool disable_spectator_chat;
+		internal static bool disable_chat_bypass_whitelist;
 
 		//SanyaPlugin:Event
 		internal static List<ItemType> classd_insurgency_classd_inventory;
@@ -142,6 +143,7 @@ namespace SanyaPlugin
 			fix_doors_on_countdown_decont = Plugin.Config.GetBool("sanya_fix_doors_on_countdown_decont", false);
 			disable_spectator_chat = Plugin.Config.GetBool("sanya_disable_spectator_chat", false);
 			disable_all_chat = Plugin.Config.GetBool("sanya_disable_all_chat", false);
+			disable_chat_bypass_whitelist = Plugin.Config.GetBool("sanya_disable_chat_bypass_whitelist", false);
 
 			classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
 			classd_insurgency_classd_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_classd_ammo");

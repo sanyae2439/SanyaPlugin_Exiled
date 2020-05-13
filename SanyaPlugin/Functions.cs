@@ -301,6 +301,11 @@ namespace SanyaPlugin.Functions
 				badge = $"Level{level} : {rolestr}";
 			}
 
+			if(WhiteList.IsWhitelisted(player.GetUserId()))
+			{
+				badge += " : 認証済み";
+			}
+
 			if(group == null)
 			{
 				group = new UserGroup()

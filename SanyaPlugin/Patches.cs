@@ -630,8 +630,9 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance, ref bool b)
 		{
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(Configs.disable_all_chat) return false;
-			if(!Configs.disable_spectator_chat) return true;
+			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsWhitelisted(__instance.ccm.UserId)) ) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
 			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton.roundEnded}");
 			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton.roundEnded) b = false;
@@ -644,6 +645,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance)
 		{
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(!Configs.disable_all_chat) return true;
 			Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
