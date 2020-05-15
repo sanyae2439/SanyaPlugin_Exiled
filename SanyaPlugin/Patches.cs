@@ -632,7 +632,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(Configs.disable_all_chat) return false;
-			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsWhitelisted(__instance.ccm.UserId)) ) return true;
+			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) ) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
 			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton.roundEnded}");
 			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton.roundEnded) b = false;
