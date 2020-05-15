@@ -123,7 +123,7 @@ namespace SanyaPlugin.Patches
 
 			if(__instance.Muted)
 			{
-				__instance._content = contentfix + "あなたは管理者によってミュートされている";
+				__instance._content = contentfix + "アクセスが拒否されました";
 			}
 			else if(Intercom.AdminSpeaking)
 			{
@@ -650,6 +650,174 @@ namespace SanyaPlugin.Patches
 			Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
 			return false;
+		}
+	}
+
+	[HarmonyPatch(typeof(Scp079PlayerScript), nameof(Scp079PlayerScript.CallCmdInteract))]
+	public static class Scp079InteractPatch
+	{
+		public static bool Prefix(Scp079PlayerScript __instance, ref string command, ref GameObject target)
+		{
+			if(!Configs.scp079_ex_enabled) return true;
+
+			var player = __instance.gameObject.GetPlayer();
+			Log.Debug($"[Scp079InteractPatch] {player.animationController.Networksprinting} -> {command}");
+
+			if(!player.animationController.Networksprinting) return true;
+
+			string[] args = command.Split(':');
+
+			if(command.Contains("SPEAKER:"))
+			{
+				string b = string.Empty;
+				if(args.Length > 1)
+				{
+					b = args[1];
+				}
+
+				if(b == "HCZ_Nuke")
+				{
+					if(__instance.curLvl + 1 >= Configs.scp079_ex_level_nuke)
+					{
+						if(Configs.scp079_ex_cost_nuke > __instance.curMana)
+						{
+							__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_nuke, __instance.curMana);
+							return false;
+						}
+
+						if(!AlphaWarheadController.Host.inProgress)
+						{
+							AlphaWarheadController.Host.InstantPrepare();
+							AlphaWarheadController.Host.StartDetonation();
+							__instance.Mana -= Configs.scp079_ex_cost_nuke;
+						}
+						else
+						{
+							AlphaWarheadController.Host.CancelDetonation();
+							__instance.Mana -= Configs.scp079_ex_cost_nuke;
+						}
+					}
+					return false;
+				}			
+			}
+			else if(command.Contains("DOOR:"))
+			{
+				if(__instance.curLvl + 1 >= Configs.scp079_ex_level_doorbeep)
+				{
+					if(Configs.scp079_ex_cost_doorbeep > __instance.curMana)
+					{
+						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_doorbeep, __instance.curMana);
+						return false;
+					}
+
+					var door = target.GetComponent<Door>();
+					if(door != null && door.curCooldown <= 0f)
+					{
+						player.playerInteract.RpcDenied(target);
+						door.curCooldown = 0.5f;
+						__instance.Mana -= Configs.scp079_ex_cost_doorbeep;
+					}			
+				}
+				return false;
+			}
+			return true;
+		}
+	}
+
+	[HarmonyPatch(typeof(AnimationController), nameof(AnimationController.CallCmdSprintHasChanged))]
+	public static class Scp079ExtendDetectPatch
+	{
+		public static void Prefix(AnimationController __instance, bool b)
+		{
+			if(!Configs.scp079_ex_enabled) return;
+			if(__instance.ccm.CurClass != RoleType.Scp079) return;
+
+			Log.Debug($"[Scp079ExtendDetectPatch] {__instance.sprinting} : {b}");
+			if(__instance.sprinting != b)
+			{
+				if(!__instance.sprinting)
+				{
+					Methods.SendSubtitle(Subtitles.Extend079Enabled, 5);
+				}
+				else
+				{
+					Methods.SendSubtitle(Subtitles.Extend079Disabled, 5);
+				}
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(Scp079PlayerScript), nameof(Scp079PlayerScript.Start))]
+	public static class Scp079ManaPatch
+	{
+		public static void Postfix(Scp079PlayerScript __instance)
+		{
+			foreach(Scp079PlayerScript.Ability079 ability in __instance.abilities)
+			{
+				switch(ability.label)
+				{
+					case "Camera Switch":
+						ability.mana = Configs.scp079_cost_camera;
+						break;
+					case "Door Lock":
+						ability.mana = Configs.scp079_cost_lock;
+						break;
+					case "Door Lock Start":
+						ability.mana = Configs.scp079_cost_lock_start;
+						break;
+					case "Door Lock Minimum":
+						ability.mana = Configs.scp079_cost_lock_minimum;
+						break;
+					case "Door Interaction DEFAULT":
+						ability.mana = Configs.scp079_cost_door_default;
+						break;
+					case "Door Interaction CONT_LVL_1":
+						ability.mana = Configs.scp079_cost_door_contlv1;
+						break;
+					case "Door Interaction CONT_LVL_2":
+						ability.mana = Configs.scp079_cost_door_contlv2;
+						break;
+					case "Door Interaction CONT_LVL_3":
+						ability.mana = Configs.scp079_cost_door_contlv3;
+						break;
+					case "Door Interaction ARMORY_LVL_1":
+						ability.mana = Configs.scp079_cost_door_armlv1;
+						break;
+					case "Door Interaction ARMORY_LVL_2":
+						ability.mana = Configs.scp079_cost_door_armlv2;
+						break;
+					case "Door Interaction ARMORY_LVL_3":
+						ability.mana = Configs.scp079_cost_door_armlv3;
+						break;
+					case "Door Interaction EXIT_ACC":
+						ability.mana = Configs.scp079_cost_door_exit;
+						break;
+					case "Door Interaction INCOM_ACC":
+						ability.mana = Configs.scp079_cost_door_intercom;
+						break;
+					case "Door Interaction CHCKPOINT_ACC":
+						ability.mana = Configs.scp079_cost_door_checkpoint;
+						break;
+					case "Room Lockdown":
+						ability.mana = Configs.scp079_cost_lockdown;
+						break;
+					case "Tesla Gate Burst":
+						ability.mana = Configs.scp079_cost_tesla;
+						break;
+					case "Elevator Teleport":
+						ability.mana = Configs.scp079_cost_elevator_teleport;
+						break;
+					case "Elevator Use":
+						ability.mana = Configs.scp079_cost_elevator_use;
+						break;
+					case "Speaker Start":
+						ability.mana = Configs.scp079_cost_speaker_start;
+						break;
+					case "Speaker Update":
+						ability.mana = Configs.scp079_cost_speaker_update;
+						break;
+				}
+			}
 		}
 	}
 }

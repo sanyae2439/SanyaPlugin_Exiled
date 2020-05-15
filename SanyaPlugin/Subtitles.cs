@@ -20,6 +20,46 @@
 			"This server doesn't allow VPN and Proxy."
 			);
 
+		internal static readonly string Extend079Enabled = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《拡張モードが有効になりました。スプリントキーで切り替えられます。》\n",
+			"</size><size=20>",
+			"《Extend mode Enabled. You can toggle by sprint keys.》\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend079Disabled = string.Concat(
+			"<size=25>",
+			"《拡張モードが無効になりました。スプリントキーで切り替えられます。》\n",
+			"</size><size=20>",
+			"《Extend mode Disabled. You can toggle by sprint keys.》\n",
+			"</size>"
+		);
+
+		internal static readonly string Extend079First = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《拡張モードを使用可能です。スプリントキーで切り替えられます。》\n",
+			"</size><size=20>",
+			"《You can use Extend mode. You can toggle by sprint keys.》\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend079Lv2 = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《Tier2になりました。\n拡張モードにてドアを開閉するボタンで音を出すことができるようになります。》\n",
+			"</size><size=20>",
+			"《You got to Tier2. On Extend mode, You can beep-sound from door.》\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend079Lv3 = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《Tier3になりました。\n拡張モードにて格納庫のスピーカーでAlphaWarheadを操作できるようになります。》\n",
+			"</size><size=20>",
+			"《You got to Tier3. On Extend mode, You can control AlphaWarhead by Silo-Speaker.》\n",
+			"</size></color>"
+		);
+
 		internal static readonly string MTFRespawnSCPs = string.Concat(
 			"<color=#6c80ff><size=25>",
 			"《機動部隊イプシロン-11「{0}」が施設に到着しました。\n残りの全職員は、機動部隊が貴方の場所へ到着するまで「標準避難プロトコル」の続行を推奨します。\n「{1}」オブジェクトが再収容されていません。》\n",

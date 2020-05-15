@@ -11,7 +11,7 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "1.6.4b";
+		public static readonly string Version = "1.7.0a";
 		public static readonly string TargetVersion = "1.10.6";
 		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
@@ -61,6 +61,7 @@ namespace SanyaPlugin
 			Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
 			Events.GeneratorInsertedEvent += EventHandlers.OnGeneratorInsert;
 			Events.GeneratorFinishedEvent += EventHandlers.OnGeneratorFinish;
+			Events.Scp079LvlGainEvent += EventHandlers.On079LevelGain;
 			Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
 			Events.ShootEvent += EventHandlers.OnShoot;
 
@@ -107,6 +108,7 @@ namespace SanyaPlugin
 			Events.GeneratorClosedEvent -= EventHandlers.OnGeneratorClose;
 			Events.GeneratorInsertedEvent -= EventHandlers.OnGeneratorInsert;
 			Events.GeneratorFinishedEvent -= EventHandlers.OnGeneratorFinish;
+			Events.Scp079LvlGainEvent -= EventHandlers.On079LevelGain;
 			Events.Scp914UpgradeEvent -= EventHandlers.On914Upgrade;
 			Events.ShootEvent -= EventHandlers.OnShoot;
 			EventHandlers = null;

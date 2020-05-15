@@ -103,6 +103,35 @@ namespace SanyaPlugin
 		internal static int recovery_amount_scp173;
 		internal static int recovery_amount_scp939;
 
+		//SCP-079
+		internal static float scp079_cost_camera;
+		internal static float scp079_cost_lock;
+		internal static float scp079_cost_lock_start;
+		internal static float scp079_cost_lock_minimum;
+		internal static float scp079_cost_door_default;
+		internal static float scp079_cost_door_contlv1;
+		internal static float scp079_cost_door_contlv2;
+		internal static float scp079_cost_door_contlv3;
+		internal static float scp079_cost_door_armlv1;
+		internal static float scp079_cost_door_armlv2;
+		internal static float scp079_cost_door_armlv3;
+		internal static float scp079_cost_door_exit;
+		internal static float scp079_cost_door_intercom;
+		internal static float scp079_cost_door_checkpoint;
+		internal static float scp079_cost_lockdown;
+		internal static float scp079_cost_tesla;
+		internal static float scp079_cost_elevator_use;
+		internal static float scp079_cost_elevator_teleport;
+		internal static float scp079_cost_speaker_start;
+		internal static float scp079_cost_speaker_update;
+
+		//SCP-079-Extend
+		internal static bool scp079_ex_enabled;
+		internal static float scp079_ex_level_nuke;
+		internal static float scp079_ex_cost_nuke;
+		internal static float scp079_ex_level_doorbeep;
+		internal static float scp079_ex_cost_doorbeep;
+
 		internal static void Reload()
 		{
 			infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "none");
@@ -200,6 +229,33 @@ namespace SanyaPlugin
 			recovery_amount_scp106 = Plugin.Config.GetInt("sanya_recovery_amount_scp106", -1);
 			recovery_amount_scp173 = Plugin.Config.GetInt("sanya_recovery_amount_scp173", -1);
 			recovery_amount_scp939 = Plugin.Config.GetInt("sanya_recovery_amount_scp939", -1);
+
+			scp079_cost_camera = Plugin.Config.GetFloat("sanya_scp079_cost_camera", 1);
+			scp079_cost_lock = Plugin.Config.GetFloat("sanya_scp079_cost_lock", 4);
+			scp079_cost_lock_start = Plugin.Config.GetFloat("sanya_scp079_cost_lock_start", 5);
+			scp079_cost_lock_minimum = Plugin.Config.GetFloat("sanya_scp079_cost_lock_minimum", 10);
+			scp079_cost_door_default = Plugin.Config.GetFloat("sanya_scp079_cost_door_default", 5);
+			scp079_cost_door_contlv1 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv1", 50);
+			scp079_cost_door_contlv2 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv2", 40);
+			scp079_cost_door_contlv3 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv3", 110);
+			scp079_cost_door_armlv1 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv1", 50);
+			scp079_cost_door_armlv2 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv2", 60);
+			scp079_cost_door_armlv3 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv3", 70);
+			scp079_cost_door_exit = Plugin.Config.GetFloat("sanya_scp079_cost_door_exit", 60);
+			scp079_cost_door_intercom = Plugin.Config.GetFloat("sanya_scp079_cost_door_intercom", 30);
+			scp079_cost_door_checkpoint = Plugin.Config.GetFloat("sanya_scp079_cost_door_checkpoint", 10);
+			scp079_cost_lockdown = Plugin.Config.GetFloat("sanya_scp079_cost_lockdown", 60);
+			scp079_cost_tesla = Plugin.Config.GetFloat("sanya_scp079_cost_tesla", 50);
+			scp079_cost_elevator_teleport = Plugin.Config.GetFloat("sanya_scp079_cost_elevator_teleport", 30);
+			scp079_cost_elevator_use = Plugin.Config.GetFloat("sanya_scp079_cost_elevator_use", 10);
+			scp079_cost_speaker_start = Plugin.Config.GetFloat("sanya_scp079_cost_speaker_start", 10);
+			scp079_cost_speaker_update = Plugin.Config.GetFloat("sanya_scp079_cost_speaker_update", 0.8f);
+
+			scp079_ex_enabled = Plugin.Config.GetBool("sanya_scp079_ex_enabled", false);
+			scp079_ex_level_nuke = Plugin.Config.GetInt("sanya_scp079_ex_level_nuke", 3);
+			scp079_ex_cost_nuke = Plugin.Config.GetFloat("sanya_scp079_ex_cost_nuke", 50);
+			scp079_ex_level_doorbeep = Plugin.Config.GetInt("sanya_scp079_ex_level_doorbeep", 2);
+			scp079_ex_cost_doorbeep = Plugin.Config.GetFloat("sanya_scp079_ex_cost_doorbeep", 5);
 
 			Log.Info("[SanyaPluginConfig] Reloaded!");
 		}

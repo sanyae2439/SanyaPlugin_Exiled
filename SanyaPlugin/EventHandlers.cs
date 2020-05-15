@@ -755,6 +755,11 @@ namespace SanyaPlugin
 			if(ev.Player.IsHost()) return;
 			Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
 			ev.Player.effectsController?.Resync();
+
+			if(Configs.scp079_ex_enabled && ev.Role == RoleType.Scp079)
+			{
+				roundCoroutines.Add(Timing.CallDelayed(10f, () => Methods.SendSubtitle(Subtitles.Extend079First, 10)));
+			}
 		}
 
 		public void OnPlayerSpawn(PlayerSpawnEvent ev)
@@ -1217,6 +1222,24 @@ namespace SanyaPlugin
 			if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout)
 			{
 				IsEnableBlackout = false;
+			}
+		}
+
+		public void On079LevelGain(Scp079LvlGainEvent ev)
+		{
+			Log.Debug($"[On079LevelGain] {ev.Player.GetNickname()}");
+
+			if(Configs.scp079_ex_enabled)
+			{
+				switch(ev.OldLvl)
+				{
+					case 1:
+						Methods.SendSubtitle(Subtitles.Extend079Lv2, 10);
+						break;
+					case 2:
+						Methods.SendSubtitle(Subtitles.Extend079Lv3, 10);
+						break;
+				}
 			}
 		}
 
