@@ -301,7 +301,7 @@ namespace SanyaPlugin.Functions
 				badge = $"Level{level} : {rolestr}";
 			}
 
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsWhitelisted(player.GetUserId()))
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(player.GetUserId()))
 			{
 				badge += " : 認証済み";
 			}
