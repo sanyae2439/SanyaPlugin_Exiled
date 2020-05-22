@@ -632,7 +632,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(Configs.disable_all_chat) return false;
-			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) ) return true;
+			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
 			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton.roundEnded}");
 			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton.roundEnded) b = false;
@@ -696,12 +696,30 @@ namespace SanyaPlugin.Patches
 							AlphaWarheadController.Host.CancelDetonation();
 							__instance.Mana -= Configs.scp079_ex_cost_nuke;
 						}
+						return false;
 					}
-					return false;
-				}			
+				}
 			}
 			else if(command.Contains("DOOR:"))
 			{
+
+				if(__instance.curLvl +1 >= Configs.scp079_ex_level_airbomb && command.Contains("NukeSurface"))
+				{
+					if(Configs.scp079_ex_cost_airbomb > __instance.curMana)
+					{
+						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_airbomb, __instance.curMana);
+						return false;
+					}
+
+					var door = target.GetComponent<Door>();
+					if(door != null && door.DoorName == "NUKE_SURFACE" && !Coroutines.isAirBombGoing && NineTailedFoxAnnouncer.singleton.Free)
+					{
+						SanyaPlugin.instance.EventHandlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(limit: 5)));
+						__instance.Mana -= Configs.scp079_ex_cost_airbomb;
+						return false;
+					}
+				}
+
 				if(__instance.curLvl + 1 >= Configs.scp079_ex_level_doorbeep)
 				{
 					if(Configs.scp079_ex_cost_doorbeep > __instance.curMana)
@@ -716,9 +734,9 @@ namespace SanyaPlugin.Patches
 						player.playerInteract.RpcDenied(target);
 						door.curCooldown = 0.5f;
 						__instance.Mana -= Configs.scp079_ex_cost_doorbeep;
-					}			
+					}
+					return false;
 				}
-				return false;
 			}
 			return true;
 		}
@@ -744,6 +762,53 @@ namespace SanyaPlugin.Patches
 					Methods.SendSubtitle(Subtitles.Extend079Disabled, 5);
 				}
 			}
+		}
+	}
+
+	[HarmonyPatch(typeof(Scp079PlayerScript), nameof(Scp079PlayerScript.CallCmdSwitchCamera))]
+	public static class Scp079CameraPatch
+	{
+		public static bool Prefix(Scp079PlayerScript __instance, ref ushort cameraId, bool lookatRotation)
+		{
+			if(!Configs.scp079_ex_enabled) return true;
+
+			Log.Debug($"[Scp079CameraPatch] {cameraId}:{lookatRotation}");
+
+			if(!__instance.GetComponent<AnimationController>().Networksprinting) return true;
+
+			if(__instance.curLvl + 1 >= Configs.scp079_ex_level_findscp)
+			{
+				List<Camera079> cams = new List<Camera079>();
+				foreach(var ply in Player.GetHubs())
+				{
+					if(ply.GetTeam() == Team.SCP && ply.GetRole() != RoleType.Scp079)
+					{
+						cams.AddRange(ply.GetNearCams());
+					}
+				}
+
+				Camera079 target;
+				if(cams.Count > 0)
+				{
+					target = cams.GetRandomOne();
+				}
+				else return true;
+
+				if(target != null)
+				{
+					if(Configs.scp079_ex_cost_findscp > __instance.curMana)
+					{
+						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_findscp, __instance.curMana);
+						return false;
+					}
+
+					__instance.RpcSwitchCamera(target.cameraId, lookatRotation);
+					__instance.Mana -= Configs.scp079_ex_cost_findscp;
+					__instance.currentCamera = target;
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 

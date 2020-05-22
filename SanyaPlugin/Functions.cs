@@ -355,7 +355,7 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> AirSupportBomb(int waitforready = 5)
+		public static IEnumerator<float> AirSupportBomb(int waitforready = 5, int limit = -1)
 		{
 			Log.Info($"[AirSupportBomb] booting...");
 			if(isAirBombGoing)
@@ -395,6 +395,11 @@ namespace SanyaPlugin.Functions
 				}
 				throwcount++;
 				Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
+				if(limit != -1 && limit <= throwcount) 
+				{
+					isAirBombGoing = false;
+					break; 
+				}
 				yield return Timing.WaitForSeconds(0.25f);
 			}
 
@@ -652,6 +657,23 @@ namespace SanyaPlugin.Functions
 		public static void ShowHitmarker(this ReferenceHub player)
 		{
 			player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
+		}
+
+		public static IEnumerable<Camera079> GetNearCams(this ReferenceHub player)
+		{
+			foreach(var cam in Scp079PlayerScript.allCameras)
+			{
+				var dis = Vector3.Distance(player.GetPosition(), cam.transform.position);
+				if(dis <= 15f)
+				{
+					yield return cam;
+				}
+			}
+		}
+
+		public static T GetRandomOne<T>(this List<T> list)
+		{
+			return list[UnityEngine.Random.Range(0, list.Count)];
 		}
 	}
 }

@@ -127,10 +127,14 @@ namespace SanyaPlugin
 
 		//SCP-079-Extend
 		internal static bool scp079_ex_enabled;
-		internal static float scp079_ex_level_nuke;
-		internal static float scp079_ex_cost_nuke;
+		internal static float scp079_ex_level_findscp;
+		internal static float scp079_ex_cost_findscp;
 		internal static float scp079_ex_level_doorbeep;
 		internal static float scp079_ex_cost_doorbeep;
+		internal static float scp079_ex_level_nuke;
+		internal static float scp079_ex_cost_nuke;
+		internal static float scp079_ex_level_airbomb;
+		internal static float scp079_ex_cost_airbomb;
 
 		internal static void Reload()
 		{
@@ -252,10 +256,15 @@ namespace SanyaPlugin
 			scp079_cost_speaker_update = Plugin.Config.GetFloat("sanya_scp079_cost_speaker_update", 0.8f);
 
 			scp079_ex_enabled = Plugin.Config.GetBool("sanya_scp079_ex_enabled", false);
-			scp079_ex_level_nuke = Plugin.Config.GetInt("sanya_scp079_ex_level_nuke", 3);
-			scp079_ex_cost_nuke = Plugin.Config.GetFloat("sanya_scp079_ex_cost_nuke", 50);
+			scp079_ex_level_findscp = Plugin.Config.GetInt("sanya_scp079_ex_level_findscp", 1);
+			scp079_ex_cost_findscp = Plugin.Config.GetFloat("sanya_scp079_ex_cost_findscp", 10);
 			scp079_ex_level_doorbeep = Plugin.Config.GetInt("sanya_scp079_ex_level_doorbeep", 2);
 			scp079_ex_cost_doorbeep = Plugin.Config.GetFloat("sanya_scp079_ex_cost_doorbeep", 5);
+			scp079_ex_level_nuke = Plugin.Config.GetInt("sanya_scp079_ex_level_nuke", 3);
+			scp079_ex_cost_nuke = Plugin.Config.GetFloat("sanya_scp079_ex_cost_nuke", 50);
+			scp079_ex_level_airbomb = Plugin.Config.GetInt("sanya_scp079_ex_level_airbomb", 4);
+			scp079_ex_cost_airbomb = Plugin.Config.GetFloat("sanya_scp079_ex_cost_airbomb", 100);
+
 
 			Log.Info("[SanyaPluginConfig] Reloaded!");
 		}

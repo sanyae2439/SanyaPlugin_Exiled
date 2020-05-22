@@ -1819,14 +1819,13 @@ namespace SanyaPlugin
 									}
 									else if(args[2] == "once")
 									{
-										foreach(var generator in Generator079.generators)
+										Generator079 gen = Generator079.generators.FindAll(x => !x.prevFinish).GetRandomOne();
+
+										if(gen != null)
 										{
-											if(!generator.prevFinish)
-											{
-												generator.NetworkisTabletConnected = true;
-												generator.NetworkisDoorOpen = true;
-												break;
-											}
+											gen.NetworkisDoorUnlocked = true;
+											gen.NetworkisTabletConnected = true;
+											gen.NetworkisDoorOpen = true;
 										}
 										ReturnStr = "set once.";
 									}
