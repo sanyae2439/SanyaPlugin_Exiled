@@ -1239,6 +1239,9 @@ namespace SanyaPlugin
 					case 2:
 						Methods.SendSubtitle(Subtitles.Extend079Lv3, 10);
 						break;
+					case 3:
+						Methods.SendSubtitle(Subtitles.Extend079Lv4, 10);
+						break;
 				}
 			}
 		}

@@ -38,9 +38,9 @@
 
 		internal static readonly string Extend079First = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《拡張モードを使用可能です。スプリントキーで切り替えられます。》\n",
+			"《拡張モードを使用可能です。スプリントキーで切り替えられます。\nTier1ではカメラ操作でSCPのもとへカメラ移動ができます。》\n",
 			"</size><size=20>",
-			"《You can use Extend mode. You can toggle by sprint keys.》\n",
+			"《You can use Extend mode. You can toggle by sprint keys.\nYou can move to SCPs by camera interacts.》\n",
 			"</size></color>"
 		);
 
@@ -57,6 +57,14 @@
 			"《Tier3になりました。\n拡張モードにて格納庫のスピーカーでAlphaWarheadを操作できるようになります。》\n",
 			"</size><size=20>",
 			"《You got to Tier3. On Extend mode, You can control AlphaWarhead by Silo-Speaker.》\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend079Lv4 = string.Concat(
+			"<color=#bbee00><size=25>",
+			"《Tier4になりました。\n拡張モードにて地上のドア開閉を操作すると空爆が開始できます。》\n",
+			"</size><size=20>",
+			"《You got to Tier4. On Extend mode, You can start airbomb by ActivateRooms door.》\n",
 			"</size></color>"
 		);
 
