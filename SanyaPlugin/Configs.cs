@@ -59,6 +59,7 @@ namespace SanyaPlugin
 		internal static int command_ratelimit;
 
 		//Human:Balanced
+		internal static bool disable_respawn;
 		internal static bool stop_respawn_after_detonated;
 		internal static bool check_prev_spawn_team;
 		internal static bool inventory_keycard_act;
@@ -191,6 +192,7 @@ namespace SanyaPlugin
 			command_enabled = Plugin.Config.GetBool("sanya_command_enabled", false);
 			command_ratelimit = Plugin.Config.GetInt("sanya_command_ratelimit", 20);
 
+			disable_respawn = Plugin.Config.GetBool("sanya_disable_respawn", false);
 			stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
 			check_prev_spawn_team = Plugin.Config.GetBool("sanya_check_prev_spawn_team", false);
 			inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);

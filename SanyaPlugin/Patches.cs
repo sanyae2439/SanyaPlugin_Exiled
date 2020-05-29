@@ -659,7 +659,7 @@ namespace SanyaPlugin.Patches
 			else if(command.Contains("DOOR:"))
 			{
 
-				if(__instance.curLvl +1 >= Configs.scp079_ex_level_airbomb && command.Contains("NukeSurface"))
+				if(__instance.curLvl + 1 >= Configs.scp079_ex_level_airbomb && command.Contains("NukeSurface"))
 				{
 					if(Configs.scp079_ex_cost_airbomb > __instance.curMana)
 					{
@@ -941,6 +941,24 @@ namespace SanyaPlugin.Patches
 			}
 			Log.Debug("No permissions found.");
 			__result = false;
+			return false;
+		}
+	}
+
+	[HarmonyPatch(typeof(MTFRespawn), nameof(MTFRespawn.Start))]
+	public static class PreventRespawnPatch
+	{
+		public static bool Prefix(MTFRespawn __instance)
+		{
+			if(!Configs.disable_respawn) return true;
+
+			__instance._mtfCustomRateLimit = new RateLimit(4, 2.8f, null);
+			__instance._ciThemeRateLimit = new RateLimit(1, 3.5f, null);
+			__instance.maxMTFRespawnAmount = GameCore.ConfigFile.ServerConfig.GetInt("maximum_MTF_respawn_amount", __instance.maxMTFRespawnAmount);
+			__instance.maxCIRespawnAmount = GameCore.ConfigFile.ServerConfig.GetInt("maximum_CI_respawn_amount", __instance.maxCIRespawnAmount);
+			__instance.minMtfTimeToRespawn = GameCore.ConfigFile.ServerConfig.GetInt("minimum_MTF_time_to_spawn", 200);
+			__instance.maxMtfTimeToRespawn = GameCore.ConfigFile.ServerConfig.GetInt("maximum_MTF_time_to_spawn", 400);
+			__instance.CI_Percent = GameCore.ConfigFile.ServerConfig.GetInt("ci_respawn_percent", 35);
 			return false;
 		}
 	}
