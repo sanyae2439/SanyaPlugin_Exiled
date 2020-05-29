@@ -758,7 +758,7 @@ namespace SanyaPlugin
 
 			if(Configs.scp079_ex_enabled && ev.Role == RoleType.Scp079)
 			{
-				roundCoroutines.Add(Timing.CallDelayed(10f, () => Methods.SendSubtitle(Subtitles.Extend079First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(10f, () => Methods.SendSubtitle(Subtitles.Extend079First, 10, false, ev.Player)));
 			}
 		}
 
@@ -1234,13 +1234,13 @@ namespace SanyaPlugin
 				switch(ev.OldLvl)
 				{
 					case 1:
-						Methods.SendSubtitle(Subtitles.Extend079Lv2, 10);
+						Methods.SendSubtitle(Subtitles.Extend079Lv2, 10, false, ev.Player);
 						break;
 					case 2:
-						Methods.SendSubtitle(Subtitles.Extend079Lv3, 10);
+						Methods.SendSubtitle(Subtitles.Extend079Lv3, 10, false, ev.Player);
 						break;
 					case 3:
-						Methods.SendSubtitle(Subtitles.Extend079Lv4, 10);
+						Methods.SendSubtitle(Subtitles.Extend079Lv4, 10, false, ev.Player);
 						break;
 				}
 			}
@@ -1374,9 +1374,16 @@ namespace SanyaPlugin
 
 			if(args[0].ToLower() == "sanya")
 			{
+				ReferenceHub player = ev.Sender.SenderId == "SERVER CONSOLE" || ev.Sender.SenderId == "GAME CONSOLE" ? PlayerManager.localPlayer.GetPlayer() : Player.GetPlayer(ev.Sender.SenderId);
+				if(!player.CheckPermission("sanya.racommand"))
+				{
+					ev.Allow = false;
+					ev.Sender.RAMessage("Permission denied.", false);
+					return;
+				}
+
 				if(args.Length > 1)
 				{
-					ReferenceHub player = Player.GetPlayer(ev.Sender.SenderId);
 					string ReturnStr;
 					bool isSuccess = true;
 					switch(args[1].ToLower())

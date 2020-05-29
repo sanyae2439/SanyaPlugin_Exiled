@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
+using System.Linq;
 using EXILED;
 using EXILED.Extensions;
 using Grenades;
@@ -460,49 +459,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	[HarmonyPatch(typeof(FragGrenade), nameof(FragGrenade.ChangeIntoGrenade))]
-	public static class FragGrenadeChainPatch
-	{
-		public static bool Prefix(FragGrenade __instance, Pickup item, ref bool __result)
-		{
-			if(!Configs.grenade_chain_sametiming) return true;
-
-			GrenadeSettings grenadeSettings = null;
-			int i = 0;
-			while(i < __instance.thrower.availableGrenades.Length)
-			{
-				GrenadeSettings grenadeSettings2 = __instance.thrower.availableGrenades[i];
-				if(grenadeSettings2.inventoryID == item.ItemId)
-				{
-					if(!__instance.chainSupportedGrenades.Contains(i))
-					{
-						__result = false;
-						return false;
-					}
-					grenadeSettings = grenadeSettings2;
-					break;
-				}
-				else
-				{
-					i++;
-				}
-			}
-			if(grenadeSettings == null)
-			{
-				__result = false;
-				return false;
-			}
-			Transform transform = item.transform;
-			Grenade component = UnityEngine.Object.Instantiate(grenadeSettings.grenadeInstance, transform.position, transform.rotation).GetComponent<Grenade>();
-			component.fuseDuration = 0.1f;
-			component.InitData(__instance, item);
-			NetworkServer.Spawn(component.gameObject);
-			item.Delete();
-			__result = true;
-			return false;
-		}
-	}
-
 	[HarmonyPatch(typeof(Scp018Grenade), nameof(Scp018Grenade.OnSpeedCollisionEnter))]
 	public static class Scp018Patch
 	{
@@ -755,11 +711,11 @@ namespace SanyaPlugin.Patches
 			{
 				if(!__instance.sprinting)
 				{
-					Methods.SendSubtitle(Subtitles.Extend079Enabled, 5);
+					Methods.SendSubtitle(Subtitles.Extend079Enabled, 5, false, __instance.pms._hub);
 				}
 				else
 				{
-					Methods.SendSubtitle(Subtitles.Extend079Disabled, 5);
+					Methods.SendSubtitle(Subtitles.Extend079Disabled, 5, false, __instance.pms._hub);
 				}
 			}
 		}
@@ -883,6 +839,109 @@ namespace SanyaPlugin.Patches
 						break;
 				}
 			}
+		}
+	}
+
+	[HarmonyPatch(typeof(PermissionPlugin), nameof(PermissionPlugin.CheckPermission))]
+	public static class EXILEDPermissionOnLevelPatch
+	{
+		public static bool Prefix(ref bool __result, ReferenceHub player, string permission)
+		{
+			if(!Configs.level_enabled) return true;
+			Log.Debug($"[EXILEDPermissionOnLevelPatch] Overrided.");
+
+			if(player == null)
+			{
+				Log.Error("Reference hub was null, unable to check permissions.");
+				__result = false;
+				return false;
+			}
+
+			Log.Debug($"Player: {player.GetNickname()} UserID: {player.GetUserId()}");
+			if(string.IsNullOrEmpty(permission))
+			{
+				Log.Error("Permission checked was null.");
+				__result = false;
+				return false;
+			}
+
+			Log.Debug($"Permission string: {permission}");
+			UserGroup userGroup = ServerStatic.GetPermissionsHandler().GetUserGroup(player.GetUserId());
+			PermissionPlugin.Group group = null;
+			if(userGroup != null)
+			{
+				Log.Debug($"UserGroup: {userGroup.BadgeText}");
+				string groupName = ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.serverRoles.Group).Key;
+				Log.Debug($"GroupName: {groupName}");
+
+				groupName = ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.GetUserId()).Value;
+				Log.Debug($"BadgeText:{player.serverRoles.Group.BadgeText} -> FixedGroupName:{groupName}");
+
+
+				if(PermissionPlugin.permissionsconfig == null)
+				{
+					Log.Error("Permissions config is null.");
+					__result = false;
+					return false;
+				}
+
+				if(!PermissionPlugin.permissionsconfig.groups.Any())
+				{
+					Log.Error("No permissionconfig groups.");
+					__result = false;
+					return false;
+				}
+
+				if(!PermissionPlugin.permissionsconfig.groups.TryGetValue(groupName, out group))
+				{
+					Log.Error("Could not get permission value.");
+					__result = false;
+					return false;
+				}
+				Log.Debug($"Got group.");
+			}
+			else
+			{
+				Log.Debug("user group is null, getting default..");
+				group = PermissionPlugin.GetDefaultGroup();
+			}
+
+			if(group != null)
+			{
+				Log.Debug("Group is not null!");
+				if(permission.Contains("."))
+				{
+					Log.Debug("Group contains perm seperator");
+					if(group.permissions.Any(s => s == ".*"))
+					{
+						Log.Debug("All perms granted for all nodes.");
+						__result = true;
+						return false;
+					}
+					if(group.permissions.Contains(permission.Split('.')[0] + ".*"))
+					{
+						Log.Debug("Check 1: True, returning.");
+						__result = true;
+						return false;
+					}
+				}
+
+				if(group.permissions.Contains(permission) || group.permissions.Contains("*"))
+				{
+					Log.Debug("Check 2: True, returning.");
+					__result = true;
+					return false;
+				}
+			}
+			else
+			{
+				Log.Debug("Group is null, returning false.");
+				__result = false;
+				return false;
+			}
+			Log.Debug("No permissions found.");
+			__result = false;
+			return false;
 		}
 	}
 }

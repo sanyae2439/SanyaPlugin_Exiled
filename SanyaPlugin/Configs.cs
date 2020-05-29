@@ -64,7 +64,6 @@ namespace SanyaPlugin
 		internal static bool inventory_keycard_act;
 		internal static bool item_shoot_move;
 		internal static bool grenade_shoot_fuse;
-		internal static bool grenade_chain_sametiming;
 		internal static bool grenade_hitmark;
 		internal static bool kill_hitmark;
 		internal static int traitor_limitter;
@@ -197,7 +196,6 @@ namespace SanyaPlugin
 			inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
 			item_shoot_move = Plugin.Config.GetBool("sanya_item_shoot_move", false);
 			grenade_shoot_fuse = Plugin.Config.GetBool("sanya_grenade_shoot_fuse", false);
-			grenade_chain_sametiming = Plugin.Config.GetBool("sanya_grenade_chain_sametiming", false);
 			grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
 			kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
 			traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);

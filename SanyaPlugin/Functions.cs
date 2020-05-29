@@ -482,11 +482,19 @@ namespace SanyaPlugin.Functions
 			return -1;
 		}
 
-		public static void SendSubtitle(string text, uint time, bool monospaced = false)
+		public static void SendSubtitle(string text, uint time, bool monospaced = false, ReferenceHub target = null)
 		{
 			Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
-			brd.RpcClearElements();
-			brd.RpcAddElement(text, time, monospaced);
+			if(target != null)
+			{
+				brd.TargetClearElements(target.characterClassManager.connectionToClient);
+				brd.TargetAddElement(target.characterClassManager.connectionToClient, text,time,monospaced);
+			}
+			else
+			{
+				brd.RpcClearElements();
+				brd.RpcAddElement(text, time, monospaced);
+			}
 		}
 
 		public static void TargetSendSubtitle(ReferenceHub player, string text, uint time, bool monospaced = false)
