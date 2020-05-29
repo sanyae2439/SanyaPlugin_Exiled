@@ -733,6 +733,11 @@ namespace SanyaPlugin
 				ev.StartItems = itemconfig;
 			}
 
+			if(itemconfig.Contains(ItemType.None))
+			{
+				ev.StartItems.Clear();
+			}
+
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
