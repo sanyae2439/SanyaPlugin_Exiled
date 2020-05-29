@@ -733,7 +733,7 @@ namespace SanyaPlugin
 				ev.StartItems = itemconfig;
 			}
 
-			if(itemconfig.Contains(ItemType.None))
+			if(itemconfig != null && itemconfig.Contains(ItemType.None))
 			{
 				ev.StartItems.Clear();
 			}
