@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using EXILED;
 using EXILED.Extensions;
+using Hints;
 using MEC;
 using Mirror;
 using RemoteAdmin;
@@ -268,7 +269,6 @@ namespace SanyaPlugin.Functions
 	internal static class Coroutines
 	{
 		public static bool isAirBombGoing = false;
-		public static readonly Dictionary<ReferenceHub, CoroutineHandle> DOTDamages = new Dictionary<ReferenceHub, CoroutineHandle>();
 
 		public static IEnumerator<float> GrantedLevel(ReferenceHub player, PlayerData data)
 		{
@@ -412,26 +412,6 @@ namespace SanyaPlugin.Functions
 			Log.Info($"[AirSupportBomb] Ended.");
 			yield break;
 		}
-
-		public static IEnumerator<float> DOTDamage(ReferenceHub target, int perDamage, int maxLimitDamage, float interval, DamageTypes.DamageType type)
-		{
-			int curDamageAmount = 0;
-			Vector3 curDeathPos = target.characterClassManager.NetworkDeathPosition;
-			RoleType curRole = target.GetRole();
-			while(curDamageAmount < maxLimitDamage)
-			{
-				if(target.characterClassManager.NetworkDeathPosition != curDeathPos || target.GetRole() != curRole) break;
-				target.playerStats.HurtPlayer(new PlayerStats.HitInfo(perDamage, "WORLD", type, 0), target.gameObject);
-				curDamageAmount += perDamage;
-				yield return Timing.WaitForSeconds(interval);
-			}
-			if(DOTDamages.ContainsKey(target))
-			{
-				Log.Debug($"[939DOT] Removed {target.GetNickname()}");
-				DOTDamages.Remove(target);
-			}
-			yield break;
-		}
 	}
 
 	internal static class Methods
@@ -482,25 +462,19 @@ namespace SanyaPlugin.Functions
 			return -1;
 		}
 
-		public static void SendSubtitle(string text, uint time, bool monospaced = false, ReferenceHub target = null)
+		public static void SendSubtitle(string text, ushort time, ReferenceHub target = null)
 		{
 			Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
 			if(target != null)
 			{
 				brd.TargetClearElements(target.characterClassManager.connectionToClient);
-				brd.TargetAddElement(target.characterClassManager.connectionToClient, text,time,monospaced);
+				brd.TargetAddElement(target.characterClassManager.connectionToClient, text, time, Broadcast.BroadcastFlags.Normal);
 			}
 			else
 			{
 				brd.RpcClearElements();
-				brd.RpcAddElement(text, time, monospaced);
+				brd.RpcAddElement(text, time, Broadcast.BroadcastFlags.Normal);
 			}
-		}
-
-		public static void TargetSendSubtitle(ReferenceHub player, string text, uint time, bool monospaced = false)
-		{
-			player.ClearBroadcasts();
-			player.Broadcast(time, text, monospaced);
 		}
 
 		public static void PlayAmbientSound(int id)
@@ -551,13 +525,6 @@ namespace SanyaPlugin.Functions
 			result = Regex.Replace(result, @"\[.+?\]", string.Empty);
 			result = Regex.Replace(result, @"\<.+?\>", string.Empty);
 			return result.Trim();
-		}
-
-		public static void Target096AttackSound(ReferenceHub target, ReferenceHub player)
-		{
-			NetworkWriter writer = NetworkWriterPool.GetWriter();
-			player.TargetSendRpc(target.GetComponent<Scp096PlayerScript>(), "RpcSyncAudio", writer);
-			NetworkWriterPool.Recycle(writer);
 		}
 
 		public static void TargetShake(this ReferenceHub target, bool achieve)
@@ -615,19 +582,6 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
-		public static void StartDecontEffectOnly(DecontaminationLCZ lcza)
-		{
-			lcza._curAnm = 10;
-			foreach(var player in Player.GetHubs())
-			{
-				NetworkWriter writer = NetworkWriterPool.GetWriter();
-				writer.WritePackedInt32(5);
-				writer.WriteBoolean(true);
-				player.TargetSendRpc(lcza, nameof(DecontaminationLCZ.RpcPlayAnnouncement), writer);
-				NetworkWriterPool.Recycle(writer);
-			}
-		}
-
 		public static GameObject SpawnDummy(RoleType role, Vector3 pos, Quaternion rot)
 		{
 			GameObject gameObject = UnityEngine.Object.Instantiate(NetworkManager.singleton.spawnPrefabs.FirstOrDefault(p => p.gameObject.name == "Player"));
@@ -667,6 +621,11 @@ namespace SanyaPlugin.Functions
 			player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
 		}
 
+		public static void SendTextHint(this ReferenceHub player, string text, ushort time)
+		{
+			player.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, null, time));
+		}
+
 		public static IEnumerable<Camera079> GetNearCams(this ReferenceHub player)
 		{
 			foreach(var cam in Scp079PlayerScript.allCameras)
@@ -677,6 +636,11 @@ namespace SanyaPlugin.Functions
 					yield return cam;
 				}
 			}
+		}
+
+		public static bool HasPermission(this Door.AccessRequirements value, Door.AccessRequirements flag)
+		{
+			return (value & flag) == flag;
 		}
 
 		public static T GetRandomOne<T>(this List<T> list)
