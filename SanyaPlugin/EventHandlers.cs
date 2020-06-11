@@ -7,6 +7,7 @@ using CustomPlayerEffects;
 using EXILED;
 using EXILED.Extensions;
 using Grenades;
+using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MEC;
 using Mirror;
@@ -432,7 +433,7 @@ namespace SanyaPlugin
 
 		public void OnAnnounceDecont(AnnounceDecontaminationEvent ev)
 		{
-			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId}");
+			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId} {DecontaminationController.Singleton.stopUpdating}");
 
 			if(Configs.cassie_subtitle)
 			{
@@ -464,11 +465,16 @@ namespace SanyaPlugin
 							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
 							break;
 						}
-					//case 5:
-					//	{
-					//		Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
-					//		break;
-					//	}
+					case 5:
+						{
+							//no announce
+							break;
+						}
+					case 6:
+						{
+							Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
+							break;
+						}
 				}
 			}
 		}
@@ -611,7 +617,6 @@ namespace SanyaPlugin
 		{
 			if(ev.Player.IsHost()) return;
 			Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
-			ev.Player.playerEffectsController?.Resync();
 
 			if(Configs.scp079_ex_enabled && ev.Role == RoleType.Scp079)
 			{
@@ -1137,6 +1142,28 @@ namespace SanyaPlugin
 						case "test":
 							{
 								ReturnStr = "test ok.";
+								break;
+							}
+						case "resynceffect":
+							{
+								foreach(var ply in Player.GetHubs())
+								{
+									ply.playerEffectsController.Resync();
+								}
+								ReturnStr = "Resync ok.";
+								break;
+							}
+						case "check":
+							{
+								ReturnStr = $"Players List ({PlayerManager.players.Count})\n";
+								foreach(var i in Player.GetHubs())
+								{
+									ReturnStr += $"{i.GetNickname()} {i.GetPosition()}\n";
+									foreach(var effect in i.playerEffectsController.syncEffectsIntensity)
+										ReturnStr += $"{effect}";
+									ReturnStr += "\n";
+								}
+								ReturnStr.Trim();
 								break;
 							}
 						case "showconfig":

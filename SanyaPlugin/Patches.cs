@@ -11,6 +11,7 @@ using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using Security;
 using UnityEngine;
+using CustomPlayerEffects;
 
 namespace SanyaPlugin.Patches
 {
@@ -442,7 +443,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance, ref bool b)
 		{
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(Configs.disable_all_chat) return false;
 			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
@@ -458,7 +459,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance)
 		{
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(Configs.disable_chat_bypass_whitelist && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(!Configs.disable_all_chat) return true;
 			Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
@@ -690,6 +691,64 @@ namespace SanyaPlugin.Patches
 				return false;
 			else
 				return true;
+		}
+	}
+
+	//override - test - for 1.0.0
+	[HarmonyPatch(typeof(PlayerEffectsController), nameof(PlayerEffectsController.Resync))]
+	public static class EffectControllerPatch
+	{
+		public static bool Prefix(PlayerEffectsController __instance)
+		{
+			if(!NetworkServer.active)
+			{
+				Debug.LogWarning("[Server] function 'System.Void PlayerEffectsController::Resync()' called on client");
+				return false;
+			}
+			if(__instance.AllEffects.Count != __instance.syncEffectsIntensity.Count)
+			{
+				__instance.syncEffectsIntensity.Clear();
+				foreach(PlayerEffect playerEffect in __instance.AllEffects.Values)
+				{
+					__instance.syncEffectsIntensity.Add(playerEffect.Intensity);
+				}
+				//return;
+			}
+			for(int i = 0; i < __instance.AllEffects.Count; i++)
+			{
+				KeyValuePair<Type, PlayerEffect> effectFromIndex = __instance.GetEffectFromIndex(i);
+				if(effectFromIndex.Value.Intensity != __instance.syncEffectsIntensity[i])
+				{
+					__instance.syncEffectsIntensity[i] = effectFromIndex.Value.Intensity;
+				}
+			}
+			return false;
+		}
+	}
+
+	//override - for 10.0.0
+	[HarmonyPatch(typeof(AnnounceDecontaminationEvent), nameof(AnnounceDecontaminationEvent.AnnouncementId), MethodType.Setter)]
+	public static class EXILEDAnnounceDecontaminationEvent
+	{
+		public static bool Prefix(AnnounceDecontaminationEvent __instance, ref int value)
+		{
+			AccessTools.Field(typeof(AnnounceDecontaminationEvent), "announcementId").SetValue(__instance, Mathf.Clamp(value, 0, 6));
+			return false;
+		}
+	}
+
+	//not override - for 10.0.0
+	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
+	public static class AutoNukePatch
+	{
+		[HarmonyPriority(Priority.HigherThanNormal)]
+		public static void Prefix(AlphaWarheadController __instance)
+		{
+			if(__instance._autoDetonateTimer <= 0f)
+			{
+				__instance.InstantPrepare();
+				__instance._autoDetonate = false;
+			}
 		}
 	}
 }
