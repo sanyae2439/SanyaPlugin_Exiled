@@ -442,7 +442,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance, ref bool b)
 		{
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(Configs.disable_all_chat) return false;
 			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
@@ -458,7 +458,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance)
 		{
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(!Configs.disable_all_chat) return true;
 			Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
@@ -676,6 +676,20 @@ namespace SanyaPlugin.Patches
 				}
 			}
 			return true;
+		}
+	}
+
+	//override - for 10.0.0
+	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.AntiCheatKillPlayer))]
+	public static class AntiCheatKillDisablePatch
+	{
+		public static bool Prefix(PlayerMovementSync __instance, string message)
+		{
+			Log.Warn($"[AntiCheatKill] {__instance._hub.GetNickname()} detect AntiCheat:{message}");
+			if(Configs.beta_anticheat_disable)
+				return false;
+			else
+				return true;
 		}
 	}
 }
