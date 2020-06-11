@@ -358,7 +358,7 @@ namespace SanyaPlugin.Patches
 				Collider collider = collision.collider;
 				int num2 = 1 << collider.gameObject.layer;
 
-				if(!Configs.scp018_cant_destory_object)
+				if(!Configs.scp018_cant_destroy_object)
 				{
 					if(num2 == __instance.layerGlass)
 					{

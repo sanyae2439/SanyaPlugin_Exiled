@@ -64,7 +64,7 @@ namespace SanyaPlugin
 		//SCP:Balanced
 		internal static bool scp018_friendly_fire;
 		internal static float scp018_damage_multiplier;
-		internal static bool scp018_cant_destory_object;
+		internal static bool scp018_cant_destroy_object;
 		internal static bool scp079_spot;
 		internal static int scp173_hurt_blink_percent;
 		internal static bool scp939_attack_bleeding;
@@ -182,7 +182,7 @@ namespace SanyaPlugin
 
 			scp018_friendly_fire = Plugin.Config.GetBool("sanya_grenade_friendly_fire", false);
 			scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
-			scp018_cant_destory_object = Plugin.Config.GetBool("sanya_scp018_cant_destory_object", false);
+			scp018_cant_destroy_object = Plugin.Config.GetBool("sanya_scp018_cant_destroy_object", false);
 			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
 			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
 			scp939_attack_bleeding = Plugin.Config.GetBool("sanya_scp939_attack_bleeding", false);
