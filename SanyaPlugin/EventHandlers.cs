@@ -397,6 +397,8 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnWarheadCancel] {ev.Player?.GetNickname()}");
 
+			if(AlphaWarheadController.Host._isLocked) return;
+
 			if(Configs.cassie_subtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
