@@ -1680,7 +1680,7 @@ namespace SanyaPlugin
 						case "heli":
 							{
 								MTFRespawn mtf_r = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-								mtf_r.SummonChopper(!mtf_r.mtf_a.isLanded);
+								mtf_r.SummonChopper(!mtf_r._mtfA.isLanded);
 								ReturnStr = "Heli Called!";
 								break;
 							}
