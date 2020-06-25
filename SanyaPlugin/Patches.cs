@@ -11,7 +11,7 @@ using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using Security;
 using UnityEngine;
-using CustomPlayerEffects;
+using LightContainmentZoneDecontamination;
 
 namespace SanyaPlugin.Patches
 {
@@ -140,15 +140,14 @@ namespace SanyaPlugin.Patches
 		{
 			if(!Configs.intercom_information) return true;
 
-			//int leftdecont = (int)((Math.Truncate(((11.74f * 60) * 100f)) / 100f) - (Math.Truncate(PlayerManager.localPlayer.GetComponent<DecontaminationLCZ>().time * 100f) / 100f));
-			int leftdecont = -1;
-			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
+			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
+			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController._autoDetonateTime) : -1;
 			int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
 			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
 
 			float totalvoltagefloat = 0f;
-			foreach(var i in Generator079.generators)
+			foreach(var i in Generator079.Generators)
 			{
 				totalvoltagefloat += i.localVoltage;
 			}
@@ -263,12 +262,13 @@ namespace SanyaPlugin.Patches
 		{
 			if(Configs.item_cleanup < 0 || __instance.name == "Host") return true;
 
-			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
 			if(Configs.item_cleanup_ignore.Contains(droppedItemId))
 			{
 				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}");
 				return true;
 			}
+
+			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
 
 			if(droppedItemId < ItemType.KeycardJanitor)
 			{
@@ -447,8 +447,8 @@ namespace SanyaPlugin.Patches
 			if(Configs.disable_all_chat) return false;
 			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
-			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton.roundEnded}");
-			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton.roundEnded) b = false;
+			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton._roundEnded}");
+			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton._roundEnded) b = false;
 			return true;
 		}
 	}
@@ -694,38 +694,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override - test - for 1.0.0
-	[HarmonyPatch(typeof(PlayerEffectsController), nameof(PlayerEffectsController.Resync))]
-	public static class EffectControllerPatch
-	{
-		public static bool Prefix(PlayerEffectsController __instance)
-		{
-			if(!NetworkServer.active)
-			{
-				Debug.LogWarning("[Server] function 'System.Void PlayerEffectsController::Resync()' called on client");
-				return false;
-			}
-			if(__instance.AllEffects.Count != __instance.syncEffectsIntensity.Count)
-			{
-				__instance.syncEffectsIntensity.Clear();
-				foreach(PlayerEffect playerEffect in __instance.AllEffects.Values)
-				{
-					__instance.syncEffectsIntensity.Add(playerEffect.Intensity);
-				}
-				//return;
-			}
-			for(int i = 0; i < __instance.AllEffects.Count; i++)
-			{
-				KeyValuePair<Type, PlayerEffect> effectFromIndex = __instance.GetEffectFromIndex(i);
-				if(effectFromIndex.Value.Intensity != __instance.syncEffectsIntensity[i])
-				{
-					__instance.syncEffectsIntensity[i] = effectFromIndex.Value.Intensity;
-				}
-			}
-			return false;
-		}
-	}
-
 	//override - for 10.0.0
 	[HarmonyPatch(typeof(AnnounceDecontaminationEvent), nameof(AnnounceDecontaminationEvent.AnnouncementId), MethodType.Setter)]
 	public static class EXILEDAnnounceDecontaminationEvent
@@ -744,11 +712,25 @@ namespace SanyaPlugin.Patches
 		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static void Prefix(AlphaWarheadController __instance)
 		{
-			if(__instance._autoDetonateTimer <= 0f)
+			if(AlphaWarheadController._autoDetonateTimer <= 0f)
 			{
 				__instance.InstantPrepare();
-				__instance._autoDetonate = false;
+				AlphaWarheadController._autoDetonate = false;
 			}
 		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(RagdollManager), nameof(RagdollManager.SpawnRagdoll))]
+	public static class PreventRagdollPatch
+	{
+		public static bool Prefix(RagdollManager __instance, PlayerStats.HitInfo ragdollInfo)
+		{
+			if(ragdollInfo.GetDamageType() == DamageTypes.Scp939
+				 || ragdollInfo.GetDamageType() == DamageTypes.Nuke
+				 || ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
+			return true;
+		}
+		
 	}
 }

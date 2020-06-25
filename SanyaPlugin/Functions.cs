@@ -638,6 +638,8 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
+		public static bool IsExmode(this ReferenceHub player) => player.animationController.curAnim == 1;
+
 		public static bool HasPermission(this Door.AccessRequirements value, Door.AccessRequirements flag)
 		{
 			return (value & flag) == flag;

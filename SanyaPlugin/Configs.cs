@@ -26,6 +26,7 @@ namespace SanyaPlugin
 		internal static List<int> event_mode_weight;
 		internal static bool cassie_subtitle;
 		internal static bool tesla_triggerable_disarmed;
+		internal static float tesla_range;
 		internal static bool close_doors_on_nukecancel;
 		internal static bool generator_unlock_to_open;
 		internal static bool generator_finish_to_lock;
@@ -40,7 +41,6 @@ namespace SanyaPlugin
 
 		//SanyaPlugin:Event
 		internal static List<ItemType> classd_insurgency_classd_inventory;
-		internal static List<int> classd_insurgency_classd_ammo;
 		internal static List<ItemType> classd_insurgency_scientist_inventory;
 
 		//SanyaPlugin:Data
@@ -60,11 +60,13 @@ namespace SanyaPlugin
 		internal static bool kill_hitmark;
 		internal static int traitor_limitter;
 		internal static int traitor_chance_percent;
+		internal static float stamina_jump_used;
 
 		//SCP:Balanced
 		internal static bool scp018_friendly_fire;
 		internal static float scp018_damage_multiplier;
 		internal static bool scp018_cant_destroy_object;
+		internal static bool scp0492_hurt_effect;
 		internal static bool scp079_spot;
 		internal static int scp173_hurt_blink_percent;
 		internal static bool scp939_attack_bleeding;
@@ -148,6 +150,7 @@ namespace SanyaPlugin
 			event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
 			cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);
 			tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
+			tesla_range = Plugin.Config.GetFloat("sanya_tesla_range", 5.5f);
 			close_doors_on_nukecancel = Plugin.Config.GetBool("sanya_close_doors_on_nukecancel", false);
 			generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
 			generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
@@ -161,7 +164,6 @@ namespace SanyaPlugin
 			beta_anticheat_disable = Plugin.Config.GetBool("sanya_beta_anticheat_disable", false);
 
 			classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-			classd_insurgency_classd_ammo = Plugin.Config.GetIntList("sanya_classd_insurgency_classd_ammo");
 			classd_insurgency_scientist_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_scientist_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
 
 			data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
@@ -179,11 +181,13 @@ namespace SanyaPlugin
 			kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
 			traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
 			traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
+			stamina_jump_used = Plugin.Config.GetFloat("sanya_stamina_jump_used", -1f);
 
 			scp018_friendly_fire = Plugin.Config.GetBool("sanya_grenade_friendly_fire", false);
 			scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
 			scp018_cant_destroy_object = Plugin.Config.GetBool("sanya_scp018_cant_destroy_object", false);
 			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
+			scp0492_hurt_effect = Plugin.Config.GetBool("sanya_scp0492_hurt_effect", false);
 			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
 			scp939_attack_bleeding = Plugin.Config.GetBool("sanya_scp939_attack_bleeding", false);
 			scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
