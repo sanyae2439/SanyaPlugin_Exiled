@@ -311,6 +311,8 @@ namespace SanyaPlugin
 				}
 			}
 
+			if(ReferenceHub.Hubs.ContainsKey(PlayerManager.localPlayer)) ReferenceHub.Hubs.Remove(PlayerManager.localPlayer);
+
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
 
