@@ -226,7 +226,6 @@ namespace SanyaPlugin
 		{
 			while(true)
 			{
-
 				try
 				{
 					//Blackouter
@@ -250,6 +249,7 @@ namespace SanyaPlugin
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 		private readonly int grenade_pickup_mask = 1049088;
+		private readonly int surfacemask = 1208303617;
 
 		/** RoundVar **/
 		private FlickerableLight flickerableLight = null;
@@ -301,6 +301,14 @@ namespace SanyaPlugin
 						eventmode = SANYA_GAME_MODE.NORMAL;
 						break;
 					}
+			}
+
+			if(Configs.tesla_range != 5.5f)
+			{
+				foreach(var tesla in UnityEngine.Object.FindObjectsOfType<TeslaGate>())
+				{
+					tesla.sizeOfTrigger = Configs.tesla_range;
+				}
 			}
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
@@ -435,7 +443,7 @@ namespace SanyaPlugin
 
 		public void OnAnnounceDecont(AnnounceDecontaminationEvent ev)
 		{
-			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId} {DecontaminationController.Singleton.stopUpdating}");
+			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId} {DecontaminationController.Singleton._stopUpdating}");
 
 			if(Configs.cassie_subtitle)
 			{
@@ -567,6 +575,10 @@ namespace SanyaPlugin
 			foreach(ReferenceHub player in Player.GetHubs())
 				if(player.IsMuted())
 					player.characterClassManager.SetDirtyBit(1uL);
+
+			//SpeedFixer
+			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
+			ServerConfigSynchronizer.Singleton.SetDirtyBit(4uL);
 		}
 
 		public void OnPlayerLeave(PlayerLeaveEvent ev)
@@ -624,6 +636,14 @@ namespace SanyaPlugin
 			{
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
 			}
+
+			if(Configs.recovery_amount_scp049 > 0 && ev.Role == RoleType.Scp0492)
+			{
+				foreach(var scp049 in RoleType.Scp049.GetHubs())
+				{
+					scp049.playerStats.HealHPAmount(Configs.recovery_amount_scp049);
+				}
+			}
 		}
 
 		public void OnPlayerSpawn(PlayerSpawnEvent ev)
@@ -657,8 +677,6 @@ namespace SanyaPlugin
 				&& ev.DamageType != DamageTypes.Tesla
 				&& ev.DamageType != DamageTypes.Scp207)
 			{
-				PlayerStats.HitInfo clinfo = ev.Info;
-
 				//GrenadeHitmark
 				if(Configs.grenade_hitmark
 					&& ev.DamageType == DamageTypes.Grenade
@@ -672,18 +690,28 @@ namespace SanyaPlugin
 				{
 					if(ev.Player.characterClassManager.IsAnyScp())
 					{
-						clinfo.Amount *= Configs.damage_usp_multiplier_scp;
+						ev.Amount *= Configs.damage_usp_multiplier_scp;
 					}
 					else
 					{
-						clinfo.Amount *= Configs.damage_usp_multiplier_human;
+						ev.Amount *= Configs.damage_usp_multiplier_human;
 					}
+					ev.Player.playerEffectsController.EnableEffect<Deafened>(3f);
+					ev.Player.playerEffectsController.EnableEffect<Blinded>(3f);
 				}
 
 				//939Bleeding
-				if(ev.DamageType == DamageTypes.Scp939)
+				if(Configs.scp939_attack_bleeding && ev.DamageType == DamageTypes.Scp939)
 				{
+					ev.Player.playerEffectsController.EnableEffect<Bleeding>();
 					ev.Player.playerEffectsController.EnableEffect<Hemorrhage>();
+				}
+
+				//049-2Effect
+				if(Configs.scp0492_hurt_effect && ev.DamageType == DamageTypes.Scp0492)
+				{
+					ev.Player.playerEffectsController.EnableEffect<Blinded>(2f);
+					ev.Player.playerEffectsController.EnableEffect<Amnesia>(2f);
 				}
 
 				//HurtBlink173
@@ -695,7 +723,7 @@ namespace SanyaPlugin
 				//CuffedDivisor
 				if(ev.Player.IsHandCuffed())
 				{
-					clinfo.Amount /= Configs.damage_divisor_cuffed;
+					ev.Amount /= Configs.damage_divisor_cuffed;
 				}
 
 				//SCPsDivisor
@@ -704,30 +732,27 @@ namespace SanyaPlugin
 					switch(ev.Player.GetRole())
 					{
 						case RoleType.Scp173:
-							clinfo.Amount /= Configs.damage_divisor_scp173;
+							ev.Amount /= Configs.damage_divisor_scp173;
 							break;
 						case RoleType.Scp106:
-							if(ev.DamageType == DamageTypes.Grenade) clinfo.Amount /= Configs.damage_divisor_scp106_grenade;
-							clinfo.Amount /= Configs.damage_divisor_scp106;
+							if(ev.DamageType == DamageTypes.Grenade) ev.Amount /= Configs.damage_divisor_scp106_grenade;
+							ev.Amount /= Configs.damage_divisor_scp106;
 							break;
 						case RoleType.Scp049:
-							clinfo.Amount /= Configs.damage_divisor_scp049;
+							ev.Amount /= Configs.damage_divisor_scp049;
 							break;
 						case RoleType.Scp096:
-							clinfo.Amount /= Configs.damage_divisor_scp096;
+							ev.Amount /= Configs.damage_divisor_scp096;
 							break;
 						case RoleType.Scp0492:
-							clinfo.Amount /= Configs.damage_divisor_scp0492;
+							ev.Amount /= Configs.damage_divisor_scp0492;
 							break;
 						case RoleType.Scp93953:
 						case RoleType.Scp93989:
-							clinfo.Amount /= Configs.damage_divisor_scp939;
+							ev.Amount /= Configs.damage_divisor_scp939;
 							break;
 					}
 				}
-
-				//*****Final*****
-				ev.Info = clinfo;
 			}
 
 			Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
@@ -766,6 +791,7 @@ namespace SanyaPlugin
 			if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRole() == RoleType.Scp93953 || ev.Killer.GetRole() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
 			{
 				ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
+				ev.Player.inventory.Clear();
 			}
 			if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRole() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
 			{
@@ -861,6 +887,11 @@ namespace SanyaPlugin
 
 				Methods.SendSubtitle(str, (ushort)(isForced ? 30 : 10));
 			}
+
+			if(ev.Info.GetDamageType() == DamageTypes.Tesla || ev.Info.GetDamageType() == DamageTypes.Nuke)
+			{
+				ev.Player.inventory.Clear();
+			}
 		}
 
 		public void OnPocketDimDeath(PocketDimDeathEvent ev)
@@ -901,6 +932,7 @@ namespace SanyaPlugin
 			if(ev.ItemType == ItemType.Medkit || ev.ItemType == ItemType.SCP500)
 			{
 				ev.Player.playerEffectsController.DisableEffect<Hemorrhage>();
+				ev.Player.playerEffectsController.DisableEffect<Bleeding>();
 			}
 		}
 
@@ -976,6 +1008,23 @@ namespace SanyaPlugin
 				else
 					ev.Player.SendTextHint(HintTexts.Extend079Disabled, 5);
 			}
+
+			if(Configs.stamina_jump_used != -1f
+				&& ev.State == 2 
+				&& ev.Player.characterClassManager.IsHuman() 
+				&& !ev.Player.fpc.staminaController._invigorated.Enabled 
+				&& !ev.Player.fpc.staminaController._scp207.Enabled
+				)
+			{
+				ev.Player.fpc.staminaController.RemainingStamina -= Configs.stamina_jump_used;
+				ev.Player.fpc.staminaController._regenerationTimer = 0f;
+
+				if(ev.Player.fpc.staminaController.RemainingStamina <= 0f)
+				{
+					ev.Player.playerEffectsController.EnableEffect<Disabled>(7f);
+					ev.Player.playerEffectsController.EnableEffect<Concussed>(5f);
+				}
+			}
 		}
 
 		public void OnTeamRespawn(ref TeamRespawnEvent ev)
@@ -995,7 +1044,7 @@ namespace SanyaPlugin
 
 		public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
 		{
-			Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
+			Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
 			if(Configs.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
 			{
 				foreach(var item in ev.Player.inventory.items)
@@ -1009,7 +1058,7 @@ namespace SanyaPlugin
 
 			if(ev.Allow && Configs.generator_unlock_to_open)
 			{
-				ev.Generator.doorAnimationCooldown = 1.5f;
+				ev.Generator._doorAnimationCooldown = 1.5f;
 				ev.Generator.NetworkisDoorOpen = true;
 				ev.Generator.RpcDoSound(true);
 			}
@@ -1017,24 +1066,24 @@ namespace SanyaPlugin
 
 		public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
 		{
-			Log.Debug($"[OnGeneratorOpen] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
+			Log.Debug($"[OnGeneratorOpen] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
 			if(ev.Generator.prevFinish && Configs.generator_finish_to_lock) ev.Allow = false;
 		}
 
 		public void OnGeneratorClose(ref GeneratorCloseEvent ev)
 		{
-			Log.Debug($"[OnGeneratorClose] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
+			Log.Debug($"[OnGeneratorClose] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
 			if(ev.Allow && ev.Generator.isTabletConnected && Configs.generator_activating_opened) ev.Allow = false;
 		}
 
 		public void OnGeneratorInsert(ref GeneratorInsertTabletEvent ev)
 		{
-			Log.Debug($"[OnGeneratorInsert] {ev.Player.GetNickname()} -> {ev.Generator.curRoom}");
+			Log.Debug($"[OnGeneratorInsert] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
 		}
 
 		public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
 		{
-			Log.Debug($"[OnGeneratorFinish] {ev.Generator.curRoom}");
+			Log.Debug($"[OnGeneratorFinish] {ev.Generator.CurRoom}");
 			if(Configs.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
 
 			int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
@@ -1075,6 +1124,27 @@ namespace SanyaPlugin
 						break;
 				}
 			}
+		}
+
+		public void On106MakePortal(Scp106CreatedPortalEvent ev)
+		{
+			Log.Debug($"[On106MakePortal] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
+
+			//var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
+			//Vector3 backvec = new Vector3(ev.Player.PlayerCameraReference.forward.x, 0f, ev.Player.PlayerCameraReference.forward.z);
+			//if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
+			//{
+			//	if(Physics.Raycast(ev.Player.GetPosition(), ev.Player.PlayerCameraReference.forward, out RaycastHit raycastHit, 500f, surfacemask)
+			//		&& Physics.Raycast(raycastHit.point, -Vector3.up, out RaycastHit raycastHit1, 500f, surfacemask))
+			//	{
+			//		ev.PortalPosition = (raycastHit1.point - backvec) - Vector3.up;
+			//	}
+			//}
+		}
+
+		public void On106Teleport(Scp106TeleportEvent ev)
+		{
+			Log.Debug($"[On106Teleport] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
 		}
 
 		public void On914Upgrade(ref SCP914UpgradeEvent ev)
@@ -1557,17 +1627,17 @@ namespace SanyaPlugin
 								{
 									if(args[2] == "unlock")
 									{
-										foreach(var generator in Generator079.generators)
+										foreach(var generator in Generator079.Generators)
 										{
 											generator.NetworkisDoorUnlocked = true;
 											generator.NetworkisDoorOpen = true;
-											generator.doorAnimationCooldown = 0.5f;
+											generator._doorAnimationCooldown = 0.5f;
 										}
 										ReturnStr = "gen unlocked.";
 									}
 									else if(args[2] == "door")
 									{
-										foreach(var generator in Generator079.generators)
+										foreach(var generator in Generator079.Generators)
 										{
 											if(!generator.prevFinish)
 											{
@@ -1581,7 +1651,7 @@ namespace SanyaPlugin
 									else if(args[2] == "set")
 									{
 										float cur = 10f;
-										foreach(var generator in Generator079.generators)
+										foreach(var generator in Generator079.Generators)
 										{
 											if(!generator.prevFinish)
 											{
@@ -1595,7 +1665,7 @@ namespace SanyaPlugin
 									}
 									else if(args[2] == "once")
 									{
-										Generator079 gen = Generator079.generators.FindAll(x => !x.prevFinish).GetRandomOne();
+										Generator079 gen = Generator079.Generators.FindAll(x => !x.prevFinish).GetRandomOne();
 
 										if(gen != null)
 										{
@@ -1607,7 +1677,7 @@ namespace SanyaPlugin
 									}
 									else if(args[2] == "eject")
 									{
-										foreach(var generator in Generator079.generators)
+										foreach(var generator in Generator079.Generators)
 										{
 											if(generator.isTabletConnected)
 											{

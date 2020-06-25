@@ -11,8 +11,8 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "2.0.0h";
-		public static readonly string TargetVersion = "1.12.16";
+		public static readonly string Version = "2.0.1a";
+		public static readonly string TargetVersion = "1.12.20";
 		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
 		public static SanyaPlugin instance { get; private set; }
@@ -34,9 +34,6 @@ namespace SanyaPlugin
 
 			Configs.Reload();
 			if(Configs.kick_vpn) ShitChecker.LoadLists();
-
-			//10.0.0
-			EventPlugin.Scp173PatchDisable = true;
 
 			EventHandlers = new EventHandlers(this);
 			Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
@@ -68,6 +65,8 @@ namespace SanyaPlugin
 			Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
 			Events.GeneratorInsertedEvent += EventHandlers.OnGeneratorInsert;
 			Events.GeneratorFinishedEvent += EventHandlers.OnGeneratorFinish;
+			Events.Scp106CreatedPortalEvent += EventHandlers.On106MakePortal;
+			Events.Scp106TeleportEvent += EventHandlers.On106Teleport;
 			Events.Scp079LvlGainEvent += EventHandlers.On079LevelGain;
 			Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
 			Events.ShootEvent += EventHandlers.OnShoot;
@@ -117,6 +116,8 @@ namespace SanyaPlugin
 			Events.GeneratorClosedEvent -= EventHandlers.OnGeneratorClose;
 			Events.GeneratorInsertedEvent -= EventHandlers.OnGeneratorInsert;
 			Events.GeneratorFinishedEvent -= EventHandlers.OnGeneratorFinish;
+			Events.Scp106CreatedPortalEvent -= EventHandlers.On106MakePortal;
+			Events.Scp106TeleportEvent -= EventHandlers.On106Teleport;
 			Events.Scp079LvlGainEvent -= EventHandlers.On079LevelGain;
 			Events.Scp914UpgradeEvent -= EventHandlers.On914Upgrade;
 			Events.ShootEvent -= EventHandlers.OnShoot;
