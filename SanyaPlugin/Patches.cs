@@ -733,4 +733,32 @@ namespace SanyaPlugin.Patches
 		}
 		
 	}
+
+	//transpiler
+	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.Update))]
+	public static class FixAutoNuke
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			bool isFirst = false;
+
+			foreach(CodeInstruction instruction in instructions)
+			{
+				if(!isFirst)
+				{
+					isFirst = true;
+					yield return new CodeInstruction(System.Reflection.Emit.OpCodes.Ldarg_0);
+				}
+
+				if(instruction.opcode == System.Reflection.Emit.OpCodes.Call
+					&& instruction.operand != null
+					&& instruction.operand is System.Reflection.MethodBase methodBase
+					&& methodBase.Name == "get_" + nameof(NetworkServer.active))
+				{
+					yield return new CodeInstruction(System.Reflection.Emit.OpCodes.Call, AccessTools.Method(typeof(AlphaWarheadController), "get_" + nameof(AlphaWarheadController.isLocalPlayer)));
+				}
+				else yield return instruction;
+			}
+		}
+	}
 }
