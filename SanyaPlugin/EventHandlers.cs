@@ -249,7 +249,7 @@ namespace SanyaPlugin
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 		private readonly int grenade_pickup_mask = 1049088;
-		private readonly int surfacemask = 1208303617;
+		//private readonly int surfacemask = 1208303617;
 
 		/** RoundVar **/
 		private FlickerableLight flickerableLight = null;
@@ -310,8 +310,6 @@ namespace SanyaPlugin
 					tesla.sizeOfTrigger = Configs.tesla_range;
 				}
 			}
-
-			if(ReferenceHub.Hubs.ContainsKey(PlayerManager.localPlayer)) ReferenceHub.Hubs.Remove(PlayerManager.localPlayer);
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
