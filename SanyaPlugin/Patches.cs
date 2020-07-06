@@ -141,7 +141,7 @@ namespace SanyaPlugin.Patches
 			if(!Configs.intercom_information) return true;
 
 			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
-			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController._autoDetonateTime) : -1;
+			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
 			int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
 			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
@@ -712,10 +712,10 @@ namespace SanyaPlugin.Patches
 		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static void Prefix(AlphaWarheadController __instance)
 		{
-			if(AlphaWarheadController._autoDetonateTimer <= 0f)
+			if(AlphaWarheadController.Host._autoDetonateTimer <= 0f)
 			{
 				__instance.InstantPrepare();
-				AlphaWarheadController._autoDetonate = false;
+				AlphaWarheadController.Host._autoDetonate = false;
 			}
 		}
 	}
@@ -732,33 +732,5 @@ namespace SanyaPlugin.Patches
 			return true;
 		}
 		
-	}
-
-	//transpiler
-	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.Update))]
-	public static class FixAutoNuke
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-		{
-			bool isFirst = false;
-
-			foreach(CodeInstruction instruction in instructions)
-			{
-				if(!isFirst)
-				{
-					isFirst = true;
-					yield return new CodeInstruction(System.Reflection.Emit.OpCodes.Ldarg_0);
-				}
-
-				if(instruction.opcode == System.Reflection.Emit.OpCodes.Call
-					&& instruction.operand != null
-					&& instruction.operand is System.Reflection.MethodBase methodBase
-					&& methodBase.Name == "get_" + nameof(NetworkServer.active))
-				{
-					yield return new CodeInstruction(System.Reflection.Emit.OpCodes.Call, AccessTools.Method(typeof(AlphaWarheadController), "get_" + nameof(AlphaWarheadController.isLocalPlayer)));
-				}
-				else yield return instruction;
-			}
-		}
 	}
 }
