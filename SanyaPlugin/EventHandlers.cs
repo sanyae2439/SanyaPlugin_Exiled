@@ -285,7 +285,6 @@ namespace SanyaPlugin
 				{
 					if(door.name.Contains("PrisonDoor"))
 					{
-						Log.Debug($"{door.name}");
 						door.lockdown = true;
 						door.UpdateLock();
 					}
