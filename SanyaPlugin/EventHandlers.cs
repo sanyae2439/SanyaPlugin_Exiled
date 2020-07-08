@@ -278,6 +278,28 @@ namespace SanyaPlugin
 
 			flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
+
+			if(Configs.classd_container_locked)
+			{
+				foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
+				{
+					if(door.name.Contains("PrisonDoor"))
+					{
+						Log.Debug($"{door.name}");
+						door.lockdown = true;
+						door.UpdateLock();
+					}
+				}
+			}
+
+			if(Configs.tesla_range != 5.5f)
+			{
+				foreach(var tesla in UnityEngine.Object.FindObjectsOfType<TeslaGate>())
+				{
+					tesla.sizeOfTrigger = Configs.tesla_range;
+				}
+			}
+
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
 			switch(eventmode)
 			{
@@ -303,13 +325,6 @@ namespace SanyaPlugin
 					}
 			}
 
-			if(Configs.tesla_range != 5.5f)
-			{
-				foreach(var tesla in UnityEngine.Object.FindObjectsOfType<TeslaGate>())
-				{
-					tesla.sizeOfTrigger = Configs.tesla_range;
-				}
-			}
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
