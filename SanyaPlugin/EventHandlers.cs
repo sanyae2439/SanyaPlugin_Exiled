@@ -1166,28 +1166,31 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[On106MakePortal] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
 
-			var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
-			if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
+			if(Configs.scp106_ex_enabled && ev.Player.GetRole() == RoleType.Scp106)
 			{
-				var target = Player.GetHubs().Where(
-					x => x.GetTeam() != Team.SCP 
-					&& x.GetTeam() != Team.RIP 
-					&& x.GetTeam() != Team.TUT 
-					&& x.falldamage.isGrounded 
-					&& !x.playerEffectsController.GetEffect<Corroding>().Enabled)
-				.Random();
+				var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
+				if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
+				{
+					var target = Player.GetHubs().Where(
+						x => x.GetTeam() != Team.SCP
+						&& x.GetTeam() != Team.RIP
+						&& x.GetTeam() != Team.TUT
+						&& x.falldamage.isGrounded
+						&& !x.playerEffectsController.GetEffect<Corroding>().Enabled)
+					.Random();
 
-				if(target == null)
-				{
-					ev.Player.SendTextHint(HintTexts.Extend106TargetNotFound, 5);
-					ev.Allow = false;
-				}
-				else
-				{
-					if(Physics.Raycast(new Ray(target.transform.position, -target.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
+					if(target == null)
 					{
-						ev.Player.SendTextHint(HintTexts.Extend106Success, 5);
-						ev.PortalPosition = raycastHit.point - Vector3.up;
+						ev.Player.SendTextHint(HintTexts.Extend106TargetNotFound, 5);
+						ev.Allow = false;
+					}
+					else
+					{
+						if(Physics.Raycast(new Ray(target.transform.position, -target.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
+						{
+							ev.Player.SendTextHint(HintTexts.Extend106Success, 5);
+							ev.PortalPosition = raycastHit.point - Vector3.up;
+						}
 					}
 				}
 			}
