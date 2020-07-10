@@ -278,19 +278,6 @@ namespace SanyaPlugin
 
 			flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
-
-			if(Configs.classd_container_locked)
-			{
-				foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
-				{
-					if(door.name.Contains("PrisonDoor"))
-					{
-						door.lockdown = true;
-						door.UpdateLock();
-					}
-				}
-			}
-
 			if(Configs.tesla_range != 5.5f)
 			{
 				foreach(var tesla in UnityEngine.Object.FindObjectsOfType<TeslaGate>())
@@ -906,6 +893,25 @@ namespace SanyaPlugin
 			{
 				ev.Player.inventory.Clear();
 			}
+
+			//Ticket Extend
+			switch(ev.Player.GetTeam())
+			{
+				case Team.CDP:
+					Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_classd_died_count;
+					if(ev.Killer.GetTeam() == Team.MTF || ev.Killer.GetTeam() == Team.RSC) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_classd_killed_count;
+					break;
+				case Team.RSC:
+					Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_scientist_died_count;
+					if(ev.Killer.GetTeam() == Team.CHI || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_scientist_killed_count;
+					break;
+				case Team.MTF:
+					if(ev.Killer.GetTeam() == Team.SCP || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_killed_by_enemy_count;
+					break;
+				case Team.CHI:
+					if(ev.Killer.GetTeam() == Team.SCP || ev.Killer.GetTeam() == Team.RSC) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_killed_by_enemy_count;
+					break;
+			}
 		}
 
 		public void OnPocketDimDeath(PocketDimDeathEvent ev)
@@ -1013,7 +1019,6 @@ namespace SanyaPlugin
 		public void OnPlayerChangeAnim(ref SyncDataEvent ev)
 		{
 			if(ev.Player.IsHost() || ev.Player.animationController.curAnim == ev.State) return;
-			Log.Debug($"[OnPlayerChangeAnim] {ev.State}");
 
 			if(Configs.scp079_ex_enabled && ev.Player.GetRole() == RoleType.Scp079)
 			{

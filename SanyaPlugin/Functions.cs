@@ -595,6 +595,18 @@ namespace SanyaPlugin.Functions
 			NetworkServer.Spawn(gameObject);
 			return gameObject;
 		}
+
+		public static int GetMTFTickets()
+		{
+			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
+			return Cassie.mtfRespawn.MtfRespawnTickets;
+		}
+
+		public static int GetCITickets()
+		{
+			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
+			return Cassie.mtfRespawn.ChaosRespawnTickets;
+		}
 	}
 
 	internal static class Extensions

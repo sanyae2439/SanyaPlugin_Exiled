@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using EXILED;
 using Harmony;
@@ -11,7 +12,7 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "2.0.2a";
+		public static readonly string Version = "2.0.3a";
 		public static readonly string TargetVersion = "1.12.27";
 		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
@@ -71,10 +72,13 @@ namespace SanyaPlugin
 			Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
 			Events.ShootEvent += EventHandlers.OnShoot;
 
-			harmony = HarmonyInstance.Create(harmonyId);
+			harmony = HarmonyInstance.Create(harmonyId);	
 			harmony.PatchAll();
 
 			EventHandlers.sendertask = EventHandlers.SenderAsync().StartSender();
+
+			ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
+			ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
 
 			Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
 		}

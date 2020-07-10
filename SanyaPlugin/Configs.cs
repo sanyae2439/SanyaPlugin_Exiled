@@ -38,7 +38,6 @@ namespace SanyaPlugin
 		internal static bool disable_spectator_chat;
 		internal static bool disable_chat_bypass_whitelist;
 		internal static bool beta_anticheat_disable;
-		internal static bool classd_container_locked;
 
 		//SanyaPlugin:Event
 		internal static List<ItemType> classd_insurgency_classd_inventory;
@@ -73,7 +72,16 @@ namespace SanyaPlugin
 		internal static bool scp939_attack_bleeding;
 		internal static bool scp914_intake_death;
 
-		//Damage/Recovery
+		//Ticket Extend
+		internal static int tickets_mtf_killed_by_enemy_count;
+		internal static int tickets_mtf_classd_killed_count;
+		internal static int tickets_mtf_scientist_died_count;
+		internal static int tickets_ci_killed_by_enemy_count;
+		internal static int tickets_ci_scientist_killed_count;
+		internal static int tickets_ci_classd_died_count;
+		
+
+		//Damage and Recovery
 		internal static float damage_usp_multiplier_human;
 		internal static float damage_usp_multiplier_scp;
 		internal static float damage_divisor_cuffed;
@@ -163,8 +171,6 @@ namespace SanyaPlugin
 			disable_all_chat = Plugin.Config.GetBool("sanya_disable_all_chat", false);
 			disable_chat_bypass_whitelist = Plugin.Config.GetBool("sanya_disable_chat_bypass_whitelist", false);
 			beta_anticheat_disable = Plugin.Config.GetBool("sanya_beta_anticheat_disable", false);
-			classd_container_locked = Plugin.Config.GetBool("sanya_classd_container_locked", false);
-
 
 			classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
 			classd_insurgency_scientist_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_scientist_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
@@ -194,6 +200,13 @@ namespace SanyaPlugin
 			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
 			scp939_attack_bleeding = Plugin.Config.GetBool("sanya_scp939_attack_bleeding", false);
 			scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
+
+			tickets_mtf_killed_by_enemy_count = Plugin.Config.GetInt("sanya_tickets_mtf_killed_by_enemy_count", 0);
+			tickets_mtf_classd_killed_count = Plugin.Config.GetInt("sanya_tickets_mtf_classd_killed_count", 0);
+			tickets_mtf_scientist_died_count = Plugin.Config.GetInt("sanya_tickets_mtf_scientist_died_count", 0);
+			tickets_ci_killed_by_enemy_count = Plugin.Config.GetInt("sanya_tickets_ci_killed_by_enemy_count", 0);
+			tickets_ci_scientist_killed_count = Plugin.Config.GetInt("sanya_tickets_ci_scientist_killed_count", 0);
+			tickets_ci_classd_died_count = Plugin.Config.GetInt("sanya_tickets_ci_classd_died_count", 0);
 
 			damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);
 			damage_usp_multiplier_scp = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_scp", 1.0f);

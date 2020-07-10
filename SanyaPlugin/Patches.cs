@@ -694,17 +694,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override - for 10.0.0
-	[HarmonyPatch(typeof(AnnounceDecontaminationEvent), nameof(AnnounceDecontaminationEvent.AnnouncementId), MethodType.Setter)]
-	public static class EXILEDAnnounceDecontaminationEvent
-	{
-		public static bool Prefix(AnnounceDecontaminationEvent __instance, ref int value)
-		{
-			AccessTools.Field(typeof(AnnounceDecontaminationEvent), "announcementId").SetValue(__instance, Mathf.Clamp(value, 0, 6));
-			return false;
-		}
-	}
-
 	//not override - for 10.0.0
 	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
 	public static class AutoNukePatch
@@ -731,6 +720,5 @@ namespace SanyaPlugin.Patches
 				 || ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
 			return true;
 		}
-		
 	}
 }
