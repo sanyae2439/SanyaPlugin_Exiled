@@ -12,13 +12,14 @@ namespace SanyaPlugin
 	{
 		public override string getName { get; } = "SanyaPlugin";
 		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "2.0.3a";
+		public static readonly string Version = "2.0.4a";
 		public static readonly string TargetVersion = "1.12.27";
 		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
 
 		public static SanyaPlugin instance { get; private set; }
 		public EventHandlers EventHandlers;
 		public HarmonyInstance harmony;
+		public static Random random = new Random();
 
 		public SanyaPlugin() => instance = this;
 
