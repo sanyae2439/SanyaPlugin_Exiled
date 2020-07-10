@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -645,6 +646,14 @@ namespace SanyaPlugin
 					scp049.playerStats.HealHPAmount(Configs.recovery_amount_scp049);
 				}
 			}
+
+			if(Configs.scp049_add_time_res_success && ev.Role == RoleType.Scp0492)
+			{
+				foreach(var target in RoleType.Spectator.GetHubs())
+				{
+					Methods.AddDeathTimeForScp049(target);
+				}
+			}
 		}
 
 		public void OnPlayerSpawn(PlayerSpawnEvent ev)
@@ -906,10 +915,10 @@ namespace SanyaPlugin
 					if(ev.Killer.GetTeam() == Team.CHI || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_scientist_killed_count;
 					break;
 				case Team.MTF:
-					if(ev.Killer.GetTeam() == Team.SCP || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_killed_by_enemy_count;
+					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_killed_by_scp_count;
 					break;
 				case Team.CHI:
-					if(ev.Killer.GetTeam() == Team.SCP || ev.Killer.GetTeam() == Team.RSC) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_killed_by_enemy_count;
+					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_killed_by_scp_count;
 					break;
 			}
 		}
@@ -1023,9 +1032,17 @@ namespace SanyaPlugin
 			if(Configs.scp079_ex_enabled && ev.Player.GetRole() == RoleType.Scp079)
 			{
 				if(ev.State == 1)
-					ev.Player.SendTextHint(HintTexts.Extend079Enabled, 5);
+					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
 				else
-					ev.Player.SendTextHint(HintTexts.Extend079Disabled, 5);
+					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
+			}
+
+			if(Configs.scp106_ex_enabled && ev.Player.GetRole() == RoleType.Scp106 && ev.Player.animationController.curAnim != 2 && ev.State != 2)
+			{
+				if(ev.State == 1)
+					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
+				else
+					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
 			}
 
 			if(Configs.stamina_jump_used != -1f
@@ -1149,16 +1166,31 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[On106MakePortal] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
 
-			//var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
-			//Vector3 backvec = new Vector3(ev.Player.PlayerCameraReference.forward.x, 0f, ev.Player.PlayerCameraReference.forward.z);
-			//if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
-			//{
-			//	if(Physics.Raycast(ev.Player.GetPosition(), ev.Player.PlayerCameraReference.forward, out RaycastHit raycastHit, 500f, surfacemask)
-			//		&& Physics.Raycast(raycastHit.point, -Vector3.up, out RaycastHit raycastHit1, 500f, surfacemask))
-			//	{
-			//		ev.PortalPosition = (raycastHit1.point - backvec) - Vector3.up;
-			//	}
-			//}
+			var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
+			if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
+			{
+				var target = Player.GetHubs().Where(
+					x => x.GetTeam() != Team.SCP 
+					&& x.GetTeam() != Team.RIP 
+					&& x.GetTeam() != Team.TUT 
+					&& x.falldamage.isGrounded 
+					&& !x.playerEffectsController.GetEffect<Corroding>().Enabled)
+				.Random();
+
+				if(target == null)
+				{
+					ev.Player.SendTextHint(HintTexts.Extend106TargetNotFound, 5);
+					ev.Allow = false;
+				}
+				else
+				{
+					if(Physics.Raycast(new Ray(target.transform.position, -target.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
+					{
+						ev.Player.SendTextHint(HintTexts.Extend106Success, 5);
+						ev.PortalPosition = raycastHit.point - Vector3.up;
+					}
+				}
+			}
 		}
 
 		public void On106Teleport(Scp106TeleportEvent ev)
@@ -1232,6 +1264,7 @@ namespace SanyaPlugin
 					{
 						case "test":
 							{
+								Log.Debug($"{Player.GetHubs().Random()?.GetNickname()}");
 								ReturnStr = "test ok.";
 								break;
 							}

@@ -66,17 +66,19 @@ namespace SanyaPlugin
 		internal static bool scp018_friendly_fire;
 		internal static float scp018_damage_multiplier;
 		internal static bool scp018_cant_destroy_object;
+		internal static bool scp049_add_time_res_success;
 		internal static bool scp0492_hurt_effect;
 		internal static bool scp079_spot;
+		internal static bool scp106_ex_enabled;
 		internal static int scp173_hurt_blink_percent;
 		internal static bool scp939_attack_bleeding;
 		internal static bool scp914_intake_death;
 
 		//Ticket Extend
-		internal static int tickets_mtf_killed_by_enemy_count;
+		internal static int tickets_mtf_killed_by_scp_count;
 		internal static int tickets_mtf_classd_killed_count;
 		internal static int tickets_mtf_scientist_died_count;
-		internal static int tickets_ci_killed_by_enemy_count;
+		internal static int tickets_ci_killed_by_scp_count;
 		internal static int tickets_ci_scientist_killed_count;
 		internal static int tickets_ci_classd_died_count;
 		
@@ -196,15 +198,17 @@ namespace SanyaPlugin
 			scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
 			scp018_cant_destroy_object = Plugin.Config.GetBool("sanya_scp018_cant_destroy_object", false);
 			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
+			scp049_add_time_res_success = Plugin.Config.GetBool("sanya_scp049_add_time_res_success", false);
 			scp0492_hurt_effect = Plugin.Config.GetBool("sanya_scp0492_hurt_effect", false);
+			scp106_ex_enabled = Plugin.Config.GetBool("sanya_scp106_ex_enabled", false);
 			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
 			scp939_attack_bleeding = Plugin.Config.GetBool("sanya_scp939_attack_bleeding", false);
 			scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
 
-			tickets_mtf_killed_by_enemy_count = Plugin.Config.GetInt("sanya_tickets_mtf_killed_by_enemy_count", 0);
+			tickets_mtf_killed_by_scp_count = Plugin.Config.GetInt("sanya_tickets_mtf_killed_by_scp_count", 0);
 			tickets_mtf_classd_killed_count = Plugin.Config.GetInt("sanya_tickets_mtf_classd_killed_count", 0);
 			tickets_mtf_scientist_died_count = Plugin.Config.GetInt("sanya_tickets_mtf_scientist_died_count", 0);
-			tickets_ci_killed_by_enemy_count = Plugin.Config.GetInt("sanya_tickets_ci_killed_by_enemy_count", 0);
+			tickets_ci_killed_by_scp_count = Plugin.Config.GetInt("sanya_tickets_ci_killed_by_scp_count", 0);
 			tickets_ci_scientist_killed_count = Plugin.Config.GetInt("sanya_tickets_ci_scientist_killed_count", 0);
 			tickets_ci_classd_died_count = Plugin.Config.GetInt("sanya_tickets_ci_classd_died_count", 0);
 

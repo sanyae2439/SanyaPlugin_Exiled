@@ -13,6 +13,7 @@ using EXILED.Extensions;
 using Hints;
 using MEC;
 using Mirror;
+using Dissonance.Integrations.MirrorIgnorance;
 using RemoteAdmin;
 using SanyaPlugin.Data;
 using UnityEngine;
@@ -547,17 +548,19 @@ namespace SanyaPlugin.Functions
 			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
-		public static void SpawnRagdoll()
+		public static void AddDeathTimeForScp049(ReferenceHub target)
 		{
-			//UnityEngine.Object.FindObjectOfType<RagdollManager>().SpawnRagdoll(ev.Machine.output.position,
-			//                                                   player.transform.rotation,
-			//                                                   (int)player.GetRoleType(),
-			//                                                   info,
-			//                                                   false,
-			//                                                   player.GetComponent<MirrorIgnorancePlayer>().PlayerId,
-			//                                                   player.GetName(),
-			//                                                   player.queryProcessor.PlayerId
-			//                                                   );
+			PlayerManager.localPlayer.GetComponent<RagdollManager>().SpawnRagdoll(
+				Vector3.zero, 
+				target.transform.rotation, 
+				Vector3.zero, 
+				(int)RoleType.ClassD,
+				new PlayerStats.HitInfo(-1, "Scp049Reviver", DamageTypes.Scp049, -1), 
+				true, 
+				target.GetComponent<MirrorIgnorancePlayer>().PlayerId, 
+				target.nicknameSync.DisplayName,
+				target.queryProcessor.PlayerId
+			);
 		}
 
 		public static bool CanLookToPlayer(this Camera079 camera, ReferenceHub player)
@@ -635,7 +638,7 @@ namespace SanyaPlugin.Functions
 
 		public static void SendTextHint(this ReferenceHub player, string text, ushort time)
 		{
-			player.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, null, time));
+			player.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[]{ HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
 		}
 
 		public static IEnumerable<Camera079> GetNearCams(this ReferenceHub player)
@@ -660,6 +663,12 @@ namespace SanyaPlugin.Functions
 		public static T GetRandomOne<T>(this List<T> list)
 		{
 			return list[UnityEngine.Random.Range(0, list.Count)];
+		}
+
+		public static T Random<T>(this IEnumerable<T> ie)
+		{
+			if(!ie.Any()) return default;
+			return ie.ElementAt(SanyaPlugin.random.Next(ie.Count()));
 		}
 	}
 }
