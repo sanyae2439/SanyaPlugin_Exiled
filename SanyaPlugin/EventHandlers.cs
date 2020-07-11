@@ -639,6 +639,11 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
 			}
 
+			if(Configs.scp106_ex_enabled && ev.Role == RoleType.Scp106)
+			{
+				roundCoroutines.Add(Timing.CallDelayed(5f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
+			}
+
 			if(Configs.recovery_amount_scp049 > 0 && ev.Role == RoleType.Scp0492)
 			{
 				foreach(var scp049 in RoleType.Scp049.GetHubs())
@@ -1267,7 +1272,6 @@ namespace SanyaPlugin
 					{
 						case "test":
 							{
-								Log.Debug($"{Player.GetHubs().Random()?.GetNickname()}");
 								ReturnStr = "test ok.";
 								break;
 							}
