@@ -44,21 +44,14 @@
       <HintPath>References\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp_publicized">
-      <HintPath>References\Assembly-CSharp_publicized.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Assembly-CSharp-publicized">
+      <HintPath>References\Assembly-CSharp-publicized.dll</HintPath>
     </Reference>
-    <Reference Include="EXILED">
-      <HintPath>References\EXILED.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Exiled.API">
+      <HintPath>References\Exiled.API.dll</HintPath>
     </Reference>
-    <Reference Include="EXILED_Events">
-      <HintPath>References\EXILED_Events.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="EXILED_Permissions">
-      <HintPath>References\EXILED_Permissions.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Exiled.Events">
+      <HintPath>References\Exiled.Events.dll</HintPath>
     </Reference>
     <Reference Include="Mirror">
       <HintPath>References\Mirror.dll</HintPath>

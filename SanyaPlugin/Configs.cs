@@ -1,278 +1,355 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
-using EXILED;
+using Exiled.API.Features;
+using Exiled.API.Interfaces;
 
 namespace SanyaPlugin
 {
-	internal static class Configs
+	public sealed class Configs : IConfig
 	{
-		//info and report
-		internal static string infosender_ip;
-		internal static int infosender_port;
-		internal static string report_webhook;
-
-		//Smod Emulation
-		internal static Dictionary<RoleType, List<ItemType>> defaultitems;
-		internal static List<int> tesla_triggerable_teams;
-		internal static int item_cleanup;
-		internal static List<ItemType> item_cleanup_ignore;
-
-		//SanyaPlugin
-		internal static bool kick_steam_limited;
-		internal static bool kick_vpn;
-		internal static string kick_vpn_apikey;
-		internal static string motd_message = "";
-		internal static List<int> event_mode_weight;
-		internal static bool cassie_subtitle;
-		internal static bool tesla_triggerable_disarmed;
-		internal static float tesla_range;
-		internal static bool close_doors_on_nukecancel;
-		internal static bool generator_unlock_to_open;
-		internal static bool generator_finish_to_lock;
-		internal static bool generator_activating_opened;
-		internal static bool intercom_information;
-		internal static int outsidezone_termination_time_after_nuke;
-		internal static bool godmode_after_endround;
-		internal static bool disable_all_chat;	
-		internal static bool disable_spectator_chat;
-		internal static bool disable_chat_bypass_whitelist;
-		internal static bool beta_anticheat_disable;
-
-		//SanyaPlugin:Event
-		internal static List<ItemType> classd_insurgency_classd_inventory;
-		internal static List<ItemType> classd_insurgency_scientist_inventory;
-
-		//SanyaPlugin:Data
-		internal static bool data_enabled;
-		internal static bool level_enabled;
-		internal static int level_exp_kill;
-		internal static int level_exp_death;
-		internal static int level_exp_win;
-		internal static int level_exp_other;
-
-		//Human:Balanced
-		internal static bool stop_respawn_after_detonated;
-		internal static bool inventory_keycard_act;
-		internal static bool item_shoot_move;
-		internal static bool grenade_shoot_fuse;
-		internal static bool grenade_hitmark;
-		internal static bool kill_hitmark;
-		internal static int traitor_limitter;
-		internal static int traitor_chance_percent;
-		internal static float stamina_jump_used;
-
-		//SCP:Balanced
-		internal static bool scp018_friendly_fire;
-		internal static float scp018_damage_multiplier;
-		internal static bool scp018_cant_destroy_object;
-		internal static bool scp049_add_time_res_success;
-		internal static bool scp0492_hurt_effect;
-		internal static bool scp079_spot;
-		internal static bool scp106_ex_enabled;
-		internal static int scp173_hurt_blink_percent;
-		internal static bool scp939_attack_bleeding;
-		internal static bool scp914_intake_death;
-
-		//Ticket Extend
-		internal static int tickets_mtf_killed_by_scp_count;
-		internal static int tickets_mtf_classd_killed_count;
-		internal static int tickets_mtf_scientist_died_count;
-		internal static int tickets_ci_killed_by_scp_count;
-		internal static int tickets_ci_scientist_killed_count;
-		internal static int tickets_ci_classd_died_count;
-		
-
-		//Damage and Recovery
-		internal static float damage_usp_multiplier_human;
-		internal static float damage_usp_multiplier_scp;
-		internal static float damage_divisor_cuffed;
-		internal static float damage_divisor_scp049;
-		internal static float damage_divisor_scp0492;
-		internal static float damage_divisor_scp096;
-		internal static float damage_divisor_scp106;
-		internal static float damage_divisor_scp106_grenade;
-		internal static float damage_divisor_scp173;
-		internal static float damage_divisor_scp939;
-		internal static int recovery_amount_scp049;
-		internal static int recovery_amount_scp0492;
-		internal static int recovery_amount_scp096;
-		internal static int recovery_amount_scp106;
-		internal static int recovery_amount_scp173;
-		internal static int recovery_amount_scp939;
-
-		//SCP-079
-		internal static float scp079_cost_camera;
-		internal static float scp079_cost_lock;
-		internal static float scp079_cost_lock_start;
-		internal static float scp079_cost_lock_minimum;
-		internal static float scp079_cost_door_default;
-		internal static float scp079_cost_door_contlv1;
-		internal static float scp079_cost_door_contlv2;
-		internal static float scp079_cost_door_contlv3;
-		internal static float scp079_cost_door_armlv1;
-		internal static float scp079_cost_door_armlv2;
-		internal static float scp079_cost_door_armlv3;
-		internal static float scp079_cost_door_exit;
-		internal static float scp079_cost_door_intercom;
-		internal static float scp079_cost_door_checkpoint;
-		internal static float scp079_cost_lockdown;
-		internal static float scp079_cost_tesla;
-		internal static float scp079_cost_elevator_use;
-		internal static float scp079_cost_elevator_teleport;
-		internal static float scp079_cost_speaker_start;
-		internal static float scp079_cost_speaker_update;
-
-		//SCP-079-Extend
-		internal static bool scp079_ex_enabled;
-		internal static float scp079_ex_level_findscp;
-		internal static float scp079_ex_cost_findscp;
-		internal static float scp079_ex_level_doorbeep;
-		internal static float scp079_ex_cost_doorbeep;
-		internal static float scp079_ex_level_nuke;
-		internal static float scp079_ex_cost_nuke;
-		internal static float scp079_ex_level_airbomb;
-		internal static float scp079_ex_cost_airbomb;
-
-		internal static void Reload()
+		public Configs()
 		{
-			infosender_ip = Plugin.Config.GetString("sanya_infosender_ip", "none");
-			infosender_port = Plugin.Config.GetInt("sanya_infosender_port", 37813);
-			report_webhook = Plugin.Config.GetString("sanya_report_webhook", string.Empty);
-			tesla_triggerable_teams = Plugin.Config.GetIntList("sanya_tesla_triggerable_teams");
-			defaultitems = new Dictionary<RoleType, List<ItemType>>
-			{
-				{ RoleType.ClassD, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_classd").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.Scientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_scientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.FacilityGuard, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_guard").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.NtfCadet, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_cadet").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.NtfLieutenant, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_lieutenant").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.NtfCommander, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_commander").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.NtfScientist, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ntfscientist").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) },
-				{ RoleType.ChaosInsurgency, new List<ItemType>(Plugin.Config.GetStringList("sanya_defaultitem_ci").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); })) }
-			};
-			item_cleanup = Plugin.Config.GetInt("sanya_item_cleanup", -1);
-			item_cleanup_ignore = Plugin.Config.GetStringList("sanya_item_cleanup_ignore").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-
-			kick_steam_limited = Plugin.Config.GetBool("sanya_kick_steam_limited", false);
-			kick_vpn = Plugin.Config.GetBool("sanya_kick_vpn", false);
-			kick_vpn_apikey = Plugin.Config.GetString("sanya_kick_vpn_apikey", string.Empty);
-			motd_message = Plugin.Config.GetString("sanya_motd_message", string.Empty);
-			event_mode_weight = Plugin.Config.GetIntList("sanya_event_mode_weight");
-			cassie_subtitle = Plugin.Config.GetBool("sanya_cassie_subtitle", false);
-			tesla_triggerable_disarmed = Plugin.Config.GetBool("sanya_tesla_triggerable_disarmed", false);
-			tesla_range = Plugin.Config.GetFloat("sanya_tesla_range", 5.5f);
-			close_doors_on_nukecancel = Plugin.Config.GetBool("sanya_close_doors_on_nukecancel", false);
-			generator_unlock_to_open = Plugin.Config.GetBool("sanya_generator_unlock_to_open", false);
-			generator_finish_to_lock = Plugin.Config.GetBool("sanya_generator_finish_to_lock", false);
-			generator_activating_opened = Plugin.Config.GetBool("sanya_generator_activating_opened", false);
-			intercom_information = Plugin.Config.GetBool("sanya_intercom_information", false);
-			outsidezone_termination_time_after_nuke = Plugin.Config.GetInt("sanya_outsidezone_termination_time_after_nuke", -1);
-			godmode_after_endround = Plugin.Config.GetBool("sanya_godmode_after_endround", false);
-			disable_spectator_chat = Plugin.Config.GetBool("sanya_disable_spectator_chat", false);
-			disable_all_chat = Plugin.Config.GetBool("sanya_disable_all_chat", false);
-			disable_chat_bypass_whitelist = Plugin.Config.GetBool("sanya_disable_chat_bypass_whitelist", false);
-			beta_anticheat_disable = Plugin.Config.GetBool("sanya_beta_anticheat_disable", false);
-
-			classd_insurgency_classd_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_classd_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-			classd_insurgency_scientist_inventory = Plugin.Config.GetStringList("sanya_classd_insurgency_scientist_inventory").ConvertAll((string x) => { return (ItemType)Enum.Parse(typeof(ItemType), x); });
-
-			data_enabled = Plugin.Config.GetBool("sanya_data_enabled", false);
-			level_enabled = Plugin.Config.GetBool("sanya_level_enabled", false);
-			level_exp_kill = Plugin.Config.GetInt("sanya_level_exp_kill", 3);
-			level_exp_death = Plugin.Config.GetInt("sanya_level_exp_death", 1);
-			level_exp_win = Plugin.Config.GetInt("sanya_level_exp_win", 10);
-			level_exp_other = Plugin.Config.GetInt("sanya_level_exp_other", 1);
-
-			stop_respawn_after_detonated = Plugin.Config.GetBool("sanya_stop_respawn_after_detonated", false);
-			inventory_keycard_act = Plugin.Config.GetBool("sanya_inventory_keycard_act", false);
-			item_shoot_move = Plugin.Config.GetBool("sanya_item_shoot_move", false);
-			grenade_shoot_fuse = Plugin.Config.GetBool("sanya_grenade_shoot_fuse", false);
-			grenade_hitmark = Plugin.Config.GetBool("sanya_grenade_hitmark", false);
-			kill_hitmark = Plugin.Config.GetBool("sanya_kill_hitmark", false);
-			traitor_limitter = Plugin.Config.GetInt("sanya_traitor_limitter", -1);
-			traitor_chance_percent = Plugin.Config.GetInt("sanya_traitor_chance_percent", 50);
-			stamina_jump_used = Plugin.Config.GetFloat("sanya_stamina_jump_used", -1f);
-
-			scp018_friendly_fire = Plugin.Config.GetBool("sanya_grenade_friendly_fire", false);
-			scp018_damage_multiplier = Plugin.Config.GetFloat("sanya_scp018_damage_multiplier", 1f);
-			scp018_cant_destroy_object = Plugin.Config.GetBool("sanya_scp018_cant_destroy_object", false);
-			scp079_spot = Plugin.Config.GetBool("sanya_scp079_spot", false);
-			scp049_add_time_res_success = Plugin.Config.GetBool("sanya_scp049_add_time_res_success", false);
-			scp0492_hurt_effect = Plugin.Config.GetBool("sanya_scp0492_hurt_effect", false);
-			scp106_ex_enabled = Plugin.Config.GetBool("sanya_scp106_ex_enabled", false);
-			scp173_hurt_blink_percent = Plugin.Config.GetInt("sanya_scp173_hurt_blink_percent", -1);
-			scp939_attack_bleeding = Plugin.Config.GetBool("sanya_scp939_attack_bleeding", false);
-			scp914_intake_death = Plugin.Config.GetBool("sanya_scp914_intake_death", false);
-
-			tickets_mtf_killed_by_scp_count = Plugin.Config.GetInt("sanya_tickets_mtf_killed_by_scp_count", 0);
-			tickets_mtf_classd_killed_count = Plugin.Config.GetInt("sanya_tickets_mtf_classd_killed_count", 0);
-			tickets_mtf_scientist_died_count = Plugin.Config.GetInt("sanya_tickets_mtf_scientist_died_count", 0);
-			tickets_ci_killed_by_scp_count = Plugin.Config.GetInt("sanya_tickets_ci_killed_by_scp_count", 0);
-			tickets_ci_scientist_killed_count = Plugin.Config.GetInt("sanya_tickets_ci_scientist_killed_count", 0);
-			tickets_ci_classd_died_count = Plugin.Config.GetInt("sanya_tickets_ci_classd_died_count", 0);
-
-			damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);
-			damage_usp_multiplier_scp = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_scp", 1.0f);
-			damage_divisor_cuffed = Plugin.Config.GetFloat("sanya_damage_divisor_cuffed", 1.0f);
-			damage_divisor_scp049 = Plugin.Config.GetFloat("sanya_damage_divisor_scp049", 1.0f);
-			damage_divisor_scp0492 = Plugin.Config.GetFloat("sanya_damage_divisor_scp0492", 1.0f);
-			damage_divisor_scp096 = Plugin.Config.GetFloat("sanya_damage_divisor_scp096", 1.0f);
-			damage_divisor_scp106 = Plugin.Config.GetFloat("sanya_damage_divisor_scp106", 1.0f);
-			damage_divisor_scp106_grenade = Plugin.Config.GetFloat("sanya_damage_divisor_scp106_grenade", 1.0f);
-			damage_divisor_scp173 = Plugin.Config.GetFloat("sanya_damage_divisor_scp173", 1.0f);
-			damage_divisor_scp939 = Plugin.Config.GetFloat("sanya_damage_divisor_scp939", 1.0f);
-			recovery_amount_scp049 = Plugin.Config.GetInt("sanya_recovery_amount_scp049", -1);
-			recovery_amount_scp0492 = Plugin.Config.GetInt("sanya_recovery_amount_scp0492", -1);
-			recovery_amount_scp096 = Plugin.Config.GetInt("sanya_recovery_amount_scp096", -1);
-			recovery_amount_scp106 = Plugin.Config.GetInt("sanya_recovery_amount_scp106", -1);
-			recovery_amount_scp173 = Plugin.Config.GetInt("sanya_recovery_amount_scp173", -1);
-			recovery_amount_scp939 = Plugin.Config.GetInt("sanya_recovery_amount_scp939", -1);
-
-			scp079_cost_camera = Plugin.Config.GetFloat("sanya_scp079_cost_camera", 1);
-			scp079_cost_lock = Plugin.Config.GetFloat("sanya_scp079_cost_lock", 4);
-			scp079_cost_lock_start = Plugin.Config.GetFloat("sanya_scp079_cost_lock_start", 5);
-			scp079_cost_lock_minimum = Plugin.Config.GetFloat("sanya_scp079_cost_lock_minimum", 10);
-			scp079_cost_door_default = Plugin.Config.GetFloat("sanya_scp079_cost_door_default", 5);
-			scp079_cost_door_contlv1 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv1", 50);
-			scp079_cost_door_contlv2 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv2", 40);
-			scp079_cost_door_contlv3 = Plugin.Config.GetFloat("sanya_scp079_cost_door_contlv3", 110);
-			scp079_cost_door_armlv1 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv1", 50);
-			scp079_cost_door_armlv2 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv2", 60);
-			scp079_cost_door_armlv3 = Plugin.Config.GetFloat("sanya_scp079_cost_door_armlv3", 70);
-			scp079_cost_door_exit = Plugin.Config.GetFloat("sanya_scp079_cost_door_exit", 60);
-			scp079_cost_door_intercom = Plugin.Config.GetFloat("sanya_scp079_cost_door_intercom", 30);
-			scp079_cost_door_checkpoint = Plugin.Config.GetFloat("sanya_scp079_cost_door_checkpoint", 10);
-			scp079_cost_lockdown = Plugin.Config.GetFloat("sanya_scp079_cost_lockdown", 60);
-			scp079_cost_tesla = Plugin.Config.GetFloat("sanya_scp079_cost_tesla", 50);
-			scp079_cost_elevator_teleport = Plugin.Config.GetFloat("sanya_scp079_cost_elevator_teleport", 30);
-			scp079_cost_elevator_use = Plugin.Config.GetFloat("sanya_scp079_cost_elevator_use", 10);
-			scp079_cost_speaker_start = Plugin.Config.GetFloat("sanya_scp079_cost_speaker_start", 10);
-			scp079_cost_speaker_update = Plugin.Config.GetFloat("sanya_scp079_cost_speaker_update", 0.8f);
-
-			scp079_ex_enabled = Plugin.Config.GetBool("sanya_scp079_ex_enabled", false);
-			scp079_ex_level_findscp = Plugin.Config.GetInt("sanya_scp079_ex_level_findscp", 1);
-			scp079_ex_cost_findscp = Plugin.Config.GetFloat("sanya_scp079_ex_cost_findscp", 10);
-			scp079_ex_level_doorbeep = Plugin.Config.GetInt("sanya_scp079_ex_level_doorbeep", 2);
-			scp079_ex_cost_doorbeep = Plugin.Config.GetFloat("sanya_scp079_ex_cost_doorbeep", 5);
-			scp079_ex_level_nuke = Plugin.Config.GetInt("sanya_scp079_ex_level_nuke", 3);
-			scp079_ex_cost_nuke = Plugin.Config.GetFloat("sanya_scp079_ex_cost_nuke", 50);
-			scp079_ex_level_airbomb = Plugin.Config.GetInt("sanya_scp079_ex_level_airbomb", 4);
-			scp079_ex_cost_airbomb = Plugin.Config.GetFloat("sanya_scp079_ex_cost_airbomb", 100);
-
-
-			Log.Info("[SanyaPluginConfig] Reloaded!");
+			DataDirectory = Path.Combine(Paths.Plugins, "SanyaPlugin");
 		}
 
-		internal static string GetConfigs()
+		[Description("さにゃぷらぐいんの有効化")]
+		public bool IsEnabled { get; set; } = false;
+
+		[Description("プレイヤーデータの有効化")]
+		public bool DataEnabled { get; set; } = false;
+
+		[Description("プレイヤーデータの場所")]
+		public string DataDirectory { get; private set; } = string.Empty;
+
+		[Description("プレイヤーレベルの有効化")]
+		public bool LevelEnabled { get; set; } = false;
+
+		[Description("キル時に手に入るレベル経験値")]
+		public int LevelExpKill { get; set; } = 3;
+
+		[Description("デス時に手に入るレベル経験値")]
+		public int LevelExpDeath { get; set; } = 1;
+
+		[Description("勝利時に手に入るレベル経験値")]
+		public int LevelExpWin { get; set; } = 10;
+
+		[Description("敗北時に手に入るレベル経験値")]
+		public int LevelExpLose { get; set; } = 1;
+
+		[Description("サーバー情報送信先IPアドレス")]
+		public string InfosenderIp { get; set; } = "none";
+
+		[Description("サーバー情報送信先UDPポート")]
+		public int InfosenderPort { get; set; } = -1;
+
+		[Description("通報送信先WebhookURL")]
+		public string ReportWebhook { get; set; } = String.Empty;
+
+		[Description("イベントモードのウェイト設定")]
+		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0, 0 };
+
+		[Description("Dクラス反乱時のDクラスの初期装備")]
+		public List<ItemType> ClassdInsurgentInventoryClassd { get; set; } = new List<ItemType>();
+
+		[Description("Dクラス反乱時の研究員の初期装備")]
+		public List<ItemType> ClassdInsurgentInventoryScientist { get; set; } = new List<ItemType>();
+
+		[Description("テスラが反応する距離")]
+		public float TeslaRange { get; set; } = 5.5f;
+
+		[Description("テスラが反応するチームID")]
+		public List<Team> TeslaTriggerableTeams { get; set; } = new List<Team>();
+
+		[Description("テスラが武装解除されている場合も反応させる")]
+		public bool TeslaTriggerableDisarmed { get; set; } = false;
+
+		[Description("アイテムが自動で削除されるまでの秒数")]
+		public int ItemCleanup { get; set; } = -1;
+
+		[Description("アイテム削除の対象外アイテム")]
+		public List<ItemType> ItemCleanupIgnore { get; set; } = new List<ItemType>();
+
+		[Description("Steamの制限付きユーザーをキックする")]
+		public bool KickSteamLimited { get; set; } = false;
+
+		[Description("VPNを使用しているユーザーをキックする")]
+		public bool KickVpn { get; set; } = false;
+
+		[Description("VPN検知に使用するIPHubのAPIキー")]
+		public string KickVpnApikey { get; set; } = string.Empty;
+
+		[Description("サーバー参加者に表示するブロードキャスト")]
+		public string MotdMessage { get; set; } = string.Empty;
+
+		[Description("CASSIE放送に字幕を表示する")]
+		public bool CassieSubtitle { get; set; } = false;
+
+		[Description("放送室のモニターの表示を拡張する")]
+		public bool IntercomInformation { get; set; } = false;
+
+		[Description("核カウントダウンキャンセル時に全ドアを閉じる")]
+		public bool CloseDoorsOnNukecancel { get; set; } = false;
+
+		[Description("発電機のアンロックと同時にドアを開ける")]
+		public bool GeneratorUnlockOpen { get; set; } = false;
+
+		[Description("発電機の終了時にドアを閉じてロックする")]
+		public bool GeneratorFinishLock { get; set; } = false;
+
+		[Description("発電機の起動中にドアを開放したままにする")]
+		public bool GeneratorActivatingLock { get; set; } = false;
+
+		[Description("核起爆後に地上エリアの空爆が開始するまでの秒数")]
+		public int OutsidezoneTerminationTimeAfterNuke { get; set; } = -1;
+
+		[Description("ラウンド終了後に無敵になる")]
+		public bool GodmodeAfterEndround { get; set; } = false;
+
+		[Description("全プレイヤーのボイスチャットを無効化する")]
+		public bool DisableAllChat { get; set; } = false;
+
+		[Description("観戦者のボイスチャットを無効化する")]
+		public bool DisableSpectatorChat { get; set; } = false;
+
+		[Description("ホワイトリストに入っているプレイヤーはボイスチャット無効の対象外にする")]
+		public bool DisableChatBypassWhitelist { get; set; } = false;
+
+		[Description("アンチチートによる死亡を無効化する")]
+		public bool AnticheatKillDisable { get; set; } = false;
+
+		[Description("核起爆後の増援を停止する")]
+		public bool StopRespawnAfterDetonated { get; set; } = false;
+
+		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
+		public bool InventoryKeycardActivation { get; set; } = false;
+
+		//[Description("アイテムを撃つと動くように")]
+		//public bool ItemShootMove { get; set; } = false;
+
+		//[Description("投げたグレネードを撃つと起爆するように")]
+		//public bool GrenadeShootFuse { get; set; } = false;
+
+		[Description("ジャンプすると使用するスタミナの比率")]
+		public float StaminaLostJump { get; set; } = -1f;
+
+		[Description("グレネードが命中するとヒットマークが出るように")]
+		public bool HitmarkGrenade { get; set; } = false;
+
+		[Description("キルすると大きいヒットマークが出るように")]
+		public bool HitmarkKilled { get; set; } = false;
+
+		[Description("裏切りが可能になる味方の残数")]
+		public int TraitorLimit { get; set; } = -1;
+
+		[Description("裏切りの成功率")]
+		public int TraitorChancePercent { get; set; } = 50;
+
+		[Description("MTFがSCPに殺された際のMTFチケット変動値")]
+		public int TicketsMtfKilledByScpCount { get; set; } = 0;
+
+		[Description("Dクラスが死亡した際のMTFチケット変動値")]
+		public int TicketsMtfClassdDiedCount { get; set; } = 0;
+
+		[Description("研究員が死亡した際のMTFチケット変動値")]
+		public int TicketsMtfScientistDiedCount { get; set; } = 0;
+
+		[Description("CIがSCPに殺された際のCIチケット変動値")]
+		public int TicketsCiKilledByScpCount { get; set; } = 0;
+
+		[Description("Dクラスが死亡した際のCIチケット変動値")]
+		public int TicketsCiClassdDiedCount { get; set; } = 0;
+
+		[Description("各ロールの初期装備")]
+		public Dictionary<RoleType, List<ItemType>> Defaultitems { get; set; } = new Dictionary<RoleType, List<ItemType>>()
+		{
+			{ RoleType.ClassD, new List<ItemType>() },
+			{ RoleType.Scientist, new List<ItemType>() },
+			{ RoleType.FacilityGuard, new List<ItemType>() },
+			{ RoleType.NtfCadet, new List<ItemType>() },
+			{ RoleType.NtfLieutenant, new List<ItemType>() },
+			{ RoleType.NtfCommander, new List<ItemType>() },
+			{ RoleType.NtfScientist,new List<ItemType>() },
+			{ RoleType.ChaosInsurgency, new List<ItemType>() },
+			{ RoleType.Tutorial, new List<ItemType>() }
+		};
+
+		[Description("USPのダメージ乗数(対人間)")]
+		public float UspDamageMultiplierHuman { get; set; } = 1f;
+
+		[Description("USPのダメージ乗数(対SCP)")]
+		public float UspDamageMultiplierScp { get; set; } = 1f;
+
+		[Description("武装解除時の被ダメージ乗数")]
+		public float CuffedDamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-914のINTAKEに入ると死亡する")]
+		public bool Scp914IntakeDeath { get; set; } = false;
+
+		[Description("SCP-018のダメージ乗数")]
+		public float Scp018DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-018のみフレンドリーファイアを有効にする")]
+		public bool Scp018FriendlyFire { get; set; } = false;
+
+		[Description("SCP-018が反射ではドアなどを破壊できないようにする")]
+		public bool Scp018CantDestroyObject { get; set; } = false;
+
+		[Description("SCP-049の被ダメージ乗数")]
+		public float Scp049DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-049の治療成功時回復量")]
+		public int Scp049RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-049が治療成功時死体の治療可能時間が延長される")]
+		public bool Scp049ExtensionRecallTime { get; set; } = false;
+
+		[Description("SCP-049-2の被ダメージ乗数")]
+		public float Scp0492DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-049-2のキル時回復量")]
+		public int Scp0492RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
+		public bool Scp0492AttackEffect { get; set; } = false;
+
+		[Description("SCP-096の被ダメージ乗数")]
+		public float Scp096DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-096のキル時回復量")]
+		public int Scp096RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-106の被ダメージ乗数")]
+		public float Scp106DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-106のポケットディメンションでのキル時回復量")]
+		public int Scp106RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-106のグレネードの被ダメージ乗数")]
+		public float Scp106GrenadeMultiplier { get; set; } = 1f;
+
+		[Description("SCP-106が敵の足元にポータルを作成できるように")]
+		public bool Scp106PortalExtensionEnabled { get; set; } = false;
+
+		[Description("SCP-173の被ダメージ乗数")]
+		public float Scp173DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-173のキル時回復量")]
+		public int Scp173RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-173が攻撃された際に強制瞬きを発生させる確率")]
+		public int Scp173ForceBlinkPercent { get; set; } = -1;
+
+		[Description("SCP-939-XXの被ダメージ乗数")]
+		public float Scp939DamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-939-XXのキル時回復量")]
+		public int Scp939RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
+		public bool Scp939AttackBleeding { get; set; } = false;
+
+		//[Description("SCP-079が視界に敵を入れると味方にしか聞こえない音を発する")]
+		//public bool Scp079Spot { get; set; } = false;
+
+		[Description("SCP-079のExモードを有効化")]
+		public bool Scp079ExtendEnabled { get; set; } = false;
+
+		[Description("SCP-079のExモードでのSCPの位置へカメラ移動の必要レベル")]
+		public int Scp079ExtendLevelFindscp { get; set; } = 1;
+
+		[Description("SCP-079のExモードでのSCPの位置へカメラ移動のコスト")]
+		public float Scp079ExtendCostFindscp { get; set; } = 10f;
+
+		[Description("SCP-079のExモードでのドアのエラー音発生の必要レベル")]
+		public int Scp079ExtendLevelDoorbeep { get; set; } = 2;
+
+		[Description("SCP-079のExモードでのドアのエラー音発生のコスト")]
+		public float Scp079ExtendCostDoorbeep { get; set; } = 5f;
+
+		[Description("SCP-079のExモードでの核の操作の必要レベル")]
+		public int Scp079ExtendLevelNuke { get; set; } = 3;
+
+		[Description("SCP-079のExモードでの核の操作のコスト")]
+		public float Scp079ExtendCostNuke { get; set; } = 50f;
+
+		[Description("SCP-079のExモードでの地上エリア空爆の必要レベル")]
+		public int Scp079ExtendLevelAirbomb { get; set; } = 4;
+
+		[Description("SCP-079のExモードでの地上エリア空爆のコスト")]
+		public float Scp079ExtendCostAirbomb { get; set; } = 100f;
+
+		[Description("SCP-079の1カメラ移動コスト")]
+		public float Scp079CostCamera { get; set; } = 1f;
+
+		[Description("SCP-079のドアロック維持コスト")]
+		public float Scp079CostLock { get; set; } = 4f;
+
+		[Description("SCP-079のドアロック初期コスト")]
+		public float Scp079CostLockStart { get; set; } = 5f;
+
+		[Description("SCP-079のドアロック必要最低量")]
+		public float Scp079ConstLockMinimum { get; set; } = 10f;
+
+		[Description("SCP-079のドア操作コスト(権限無しドア)")]
+		public float Scp079CostDoorDefault { get; set; } = 5f;
+
+		[Description("SCP-079のドア操作コスト(ContLv1)")]
+		public float Scp079CostDoorContlv1 { get; set; } = 50f;
+
+		[Description("SCP-079のドア操作コスト(ContLv2)")]
+		public float Scp079CostDoorContlv2 { get; set; } = 40f;
+
+		[Description("SCP-079のドア操作コスト(ContLv3)")]
+		public float Scp079CostDoorContlv3 { get; set; } = 110f;
+
+		[Description("SCP-079のドア操作コスト(ArmoryLv1)")]
+		public float Scp079CostDoorArmlv1 { get; set; } = 50f;
+
+		[Description("SCP-079のドア操作コスト(ArmoryLv2)")]
+		public float Scp079CostDoorArmlv2 { get; set; } = 60f;
+
+		[Description("SCP-079のドア操作コスト(ArmoryLv3)")]
+		public float Scp079CostDoorArmlv3 { get; set; } = 70f;
+
+		[Description("SCP-079のドア操作コスト(Exit<GateAB>)")]
+		public float Scp079CostDoorExit { get; set; } = 60f;
+
+		[Description("SCP-079のドア操作コスト(Intercom)")]
+		public float Scp079CostDoorIntercom { get; set; } = 30f;
+
+		[Description("SCP-079のドア操作コスト(Checkpoint)")]
+		public float Scp079CostDoorCheckpoint { get; set; } = 10f;
+
+		[Description("SCP-079のロックダウンコスト")]
+		public float Scp079CostLockDown { get; set; } = 60f;
+
+		[Description("SCP-079のテスラゲート使用コスト")]
+		public float Scp079CostTesla { get; set; } = 50f;
+
+		[Description("SCP-079の階層移動コスト")]
+		public float Scp079CostElevatorTeleport { get; set; } = 30f;
+
+		[Description("SCP-079のエレベーター操作コスト")]
+		public float Scp079CostElevatorUse { get; set; } = 10f;
+
+		[Description("SCP-079のスピーカー使用初期コスト")]
+		public float Scp079CostSpeakerStart { get; set; } = 10f;
+
+		[Description("SCP-079のスピーカー使用維持コスト")]
+		public float Scp079CostSpeakerUpdate { get; set; } = 0.8f;
+
+		public string GetConfigs()
 		{
 			string returned = "\n";
 
-			FieldInfo[] infoArray = typeof(Configs).GetFields(BindingFlags.Static | BindingFlags.NonPublic);
+			PropertyInfo[] infoArray = typeof(Configs).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-			foreach(FieldInfo info in infoArray)
+			foreach(PropertyInfo info in infoArray)
 			{
-				returned += $"{info.Name}: {info.GetValue(null)}\n";
+				returned += $"{info.Name}: {info.GetValue(this)}\n";
 			}
 
 			return returned;
