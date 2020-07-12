@@ -1,139 +1,174 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using EXILED;
-using Harmony;
+using Exiled.API.Enums;
+using Exiled.API.Features;
+using Exiled.Events;
+using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
 
+using ServerEvents = Exiled.Events.Handlers.Server;
+using MapEvents = Exiled.Events.Handlers.Map;
+using WarheadEvents = Exiled.Events.Handlers.Warhead;
+using PlayerEvents = Exiled.Events.Handlers.Player;
+using Scp079Events = Exiled.Events.Handlers.Scp079;
+using Scp106Events = Exiled.Events.Handlers.Scp106;
+using Scp914Events = Exiled.Events.Handlers.Scp914;
+
 namespace SanyaPlugin
 {
-	public class SanyaPlugin : Plugin
+	public class SanyaPlugin : Plugin<Configs>
 	{
-		public override string getName { get; } = "SanyaPlugin";
-		public static readonly string harmonyId = "jp.sanyae2439.SanyaPlugin";
-		public static readonly string Version = "2.0.4c";
-		public static readonly string TargetVersion = "1.12.27";
-		public static readonly string DataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Plugins", "SanyaPlugin");
+		//プラグイン設定
+		public override string Name => "SanyaPlugin";
+		public override string Prefix => "sanya";
+		public override string Author => "sanyae2439";
+		public override PluginPriority Priority => PluginPriority.Default;
+		public override Version Version => new Version(2, 0, 0, 0);
+		public override Version RequiredExiledVersion => new Version(2, 0, 0);
 
 		public static SanyaPlugin instance { get; private set; }
-		public EventHandlers EventHandlers;
-		public HarmonyInstance harmony;
-		public static Random random = new Random();
+		public EventHandlers Handlers { get; private set; }
+		public Harmony Harmony { get; private set; }
+		public Random Random { get; } = new Random();
+		private int patchCounter;
 
 		public SanyaPlugin() => instance = this;
 
-		public override void OnEnable()
+		public override void OnEnabled()
 		{
-			if(TargetVersion == $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}")
-			{
-				Log.Info($"[OnEnabled] Version Match(SanyaPlugin:{TargetVersion} EXILED:{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). Loading Start...");
-			}
-			else
-			{
-				Log.Warn($"[OnEnabled] Version Mismatched(SanyaPlugin:{TargetVersion} EXILED:{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}). May not work correctly.");
-			}
+			if(!Config.IsEnabled) return;
 
-			Configs.Reload();
-			if(Configs.kick_vpn) ShitChecker.LoadLists();
+			base.OnEnabled();
 
-			EventHandlers = new EventHandlers(this);
-			Events.RemoteAdminCommandEvent += EventHandlers.OnCommand;
-			Events.WaitingForPlayersEvent += EventHandlers.OnWaintingForPlayers;
-			Events.RoundStartEvent += EventHandlers.OnRoundStart;
-			Events.RoundEndEvent += EventHandlers.OnRoundEnd;
-			Events.RoundRestartEvent += EventHandlers.OnRoundRestart;
-			Events.WarheadStartEvent += EventHandlers.OnWarheadStart;
-			Events.WarheadCancelledEvent += EventHandlers.OnWarheadCancel;
-			Events.WarheadDetonationEvent += EventHandlers.OnDetonated;
-			Events.AnnounceDecontaminationEvent += EventHandlers.OnAnnounceDecont;
-			Events.PreAuthEvent += EventHandlers.OnPreAuth;
-			Events.PlayerJoinEvent += EventHandlers.OnPlayerJoin;
-			Events.PlayerLeaveEvent += EventHandlers.OnPlayerLeave;
-			Events.StartItemsEvent += EventHandlers.OnStartItems;
-			Events.SetClassEvent += EventHandlers.OnPlayerSetClass;
-			Events.PlayerSpawnEvent += EventHandlers.OnPlayerSpawn;
-			Events.PlayerHurtEvent += EventHandlers.OnPlayerHurt;
-			Events.PlayerDeathEvent += EventHandlers.OnPlayerDeath;
-			Events.PocketDimDeathEvent += EventHandlers.OnPocketDimDeath;
-			Events.UsedMedicalItemEvent += EventHandlers.OnPlayerUsedMedicalItem;
-			Events.TriggerTeslaEvent += EventHandlers.OnPlayerTriggerTesla;
-			Events.DoorInteractEvent += EventHandlers.OnPlayerDoorInteract;
-			Events.LockerInteractEvent += EventHandlers.OnPlayerLockerInteract;
-			Events.SyncDataEvent += EventHandlers.OnPlayerChangeAnim;
-			Events.TeamRespawnEvent += EventHandlers.OnTeamRespawn;
-			Events.GeneratorUnlockEvent += EventHandlers.OnGeneratorUnlock;
-			Events.GeneratorOpenedEvent += EventHandlers.OnGeneratorOpen;
-			Events.GeneratorClosedEvent += EventHandlers.OnGeneratorClose;
-			Events.GeneratorInsertedEvent += EventHandlers.OnGeneratorInsert;
-			Events.GeneratorFinishedEvent += EventHandlers.OnGeneratorFinish;
-			Events.Scp106CreatedPortalEvent += EventHandlers.On106MakePortal;
-			Events.Scp106TeleportEvent += EventHandlers.On106Teleport;
-			Events.Scp079LvlGainEvent += EventHandlers.On079LevelGain;
-			Events.Scp914UpgradeEvent += EventHandlers.On914Upgrade;
-			Events.ShootEvent += EventHandlers.OnShoot;
+			RegistEvents();
+			RegistNameFormatter();
 
-			harmony = HarmonyInstance.Create(harmonyId);	
-			harmony.PatchAll();
+			if(Config.KickVpn) ShitChecker.LoadLists();
+			if(Config.InfosenderIp != "none" && Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
 
-			EventHandlers.sendertask = EventHandlers.SenderAsync().StartSender();
+			RegistPatch();
 
+			Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled Complete.");
+		}
+
+		public override void OnDisabled()
+		{
+			base.OnDisabled();
+
+			foreach(var cor in Handlers.roundCoroutines)
+				Timing.KillCoroutines(cor);
+			Handlers.roundCoroutines.Clear();
+
+			UnRegistEvents();
+			UnRegistNameFormatter();
+			UnRegistPatch();
+
+			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled Complete.");
+		}
+
+		private void RegistEvents()
+		{
+			Handlers = new EventHandlers(this);
+			ServerEvents.WaitingForPlayers += Handlers.OnWaintingForPlayers;
+			ServerEvents.RoundStarted += Handlers.OnRoundStarted;
+			ServerEvents.RoundEnded += Handlers.OnRoundEnded;
+			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
+			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
+			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
+			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
+			WarheadEvents.Starting += Handlers.OnStarting;
+			WarheadEvents.Stopping += Handlers.OnStopping;
+			WarheadEvents.Detonated += Handlers.OnDetonated;
+			PlayerEvents.PreAuthenticating += Handlers.OnPreAuthenticating;
+			PlayerEvents.Joined += Handlers.OnJoined;
+			PlayerEvents.Left += Handlers.OnLeft;
+			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
+			PlayerEvents.Spawning += Handlers.OnSpawning;
+			PlayerEvents.Hurting += Handlers.OnHurting;
+			PlayerEvents.Died += Handlers.OnDied;
+			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
+			PlayerEvents.SyncingData += Handlers.OnSyncingData;
+			PlayerEvents.MedicalItemUsed += Handlers.OnUsedMedicalItem;
+			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
+			PlayerEvents.InteractingDoor += Handlers.OnInteractingDoor;
+			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
+			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
+			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
+			PlayerEvents.ClosingGenerator += Handlers.OnClosingGenerator;
+			PlayerEvents.InsertingGeneratorTablet += Handlers.OnInsertingGeneratorTablet;
+			PlayerEvents.Shooting += Handlers.OnShooting;
+			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
+			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
+			Scp106Events.Teleporting += Handlers.OnTeleporting;
+			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
+		}
+
+		private void UnRegistEvents()
+		{
+			ServerEvents.WaitingForPlayers -= Handlers.OnWaintingForPlayers;
+			ServerEvents.RoundStarted -= Handlers.OnRoundStarted;
+			ServerEvents.RoundEnded -= Handlers.OnRoundEnded;
+			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
+			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
+			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
+			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
+			WarheadEvents.Starting -= Handlers.OnStarting;
+			WarheadEvents.Stopping -= Handlers.OnStopping;
+			WarheadEvents.Detonated -= Handlers.OnDetonated;
+			PlayerEvents.PreAuthenticating -= Handlers.OnPreAuthenticating;
+			PlayerEvents.Joined -= Handlers.OnJoined;
+			PlayerEvents.Left -= Handlers.OnLeft;
+			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
+			PlayerEvents.Spawning -= Handlers.OnSpawning;
+			PlayerEvents.Hurting -= Handlers.OnHurting;
+			PlayerEvents.Died -= Handlers.OnDied;
+			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
+			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
+			PlayerEvents.MedicalItemUsed -= Handlers.OnUsedMedicalItem;
+			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			PlayerEvents.InteractingDoor -= Handlers.OnInteractingDoor;
+			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
+			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
+			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
+			PlayerEvents.ClosingGenerator -= Handlers.OnClosingGenerator;
+			PlayerEvents.InsertingGeneratorTablet -= Handlers.OnInsertingGeneratorTablet;
+			PlayerEvents.Shooting -= Handlers.OnShooting;
+			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
+			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
+			Scp106Events.Teleporting -= Handlers.OnTeleporting;
+			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
+			Handlers = null;
+		}
+
+		private void RegistNameFormatter()
+		{
 			ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
 			ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
-
-			Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled.");
 		}
 
-		public override void OnDisable()
+		private void UnRegistNameFormatter()
 		{
-			harmony.UnpatchAll();
-
-			foreach(var cor in EventHandlers.roundCoroutines)
-				Timing.KillCoroutines(cor);
-			EventHandlers.roundCoroutines.Clear();
-
-			Events.RemoteAdminCommandEvent -= EventHandlers.OnCommand;
-			Events.WaitingForPlayersEvent -= EventHandlers.OnWaintingForPlayers;
-			Events.RoundStartEvent -= EventHandlers.OnRoundStart;
-			Events.RoundEndEvent -= EventHandlers.OnRoundEnd;
-			Events.RoundRestartEvent -= EventHandlers.OnRoundRestart;
-			Events.WarheadStartEvent -= EventHandlers.OnWarheadStart;
-			Events.WarheadCancelledEvent -= EventHandlers.OnWarheadCancel;
-			Events.WarheadDetonationEvent -= EventHandlers.OnDetonated;
-			Events.AnnounceDecontaminationEvent -= EventHandlers.OnAnnounceDecont;
-			Events.PreAuthEvent -= EventHandlers.OnPreAuth;
-			Events.PlayerJoinEvent -= EventHandlers.OnPlayerJoin;
-			Events.PlayerLeaveEvent -= EventHandlers.OnPlayerLeave;
-			Events.StartItemsEvent -= EventHandlers.OnStartItems;
-			Events.SetClassEvent -= EventHandlers.OnPlayerSetClass;
-			Events.PlayerSpawnEvent -= EventHandlers.OnPlayerSpawn;
-			Events.PlayerHurtEvent -= EventHandlers.OnPlayerHurt;
-			Events.PlayerDeathEvent -= EventHandlers.OnPlayerDeath;
-			Events.PocketDimDeathEvent -= EventHandlers.OnPocketDimDeath;
-			Events.UsedMedicalItemEvent -= EventHandlers.OnPlayerUsedMedicalItem;
-			Events.TriggerTeslaEvent -= EventHandlers.OnPlayerTriggerTesla;
-			Events.DoorInteractEvent -= EventHandlers.OnPlayerDoorInteract;
-			Events.LockerInteractEvent -= EventHandlers.OnPlayerLockerInteract;
-			Events.SyncDataEvent -= EventHandlers.OnPlayerChangeAnim;
-			Events.TeamRespawnEvent -= EventHandlers.OnTeamRespawn;
-			Events.GeneratorUnlockEvent -= EventHandlers.OnGeneratorUnlock;
-			Events.GeneratorOpenedEvent -= EventHandlers.OnGeneratorOpen;
-			Events.GeneratorClosedEvent -= EventHandlers.OnGeneratorClose;
-			Events.GeneratorInsertedEvent -= EventHandlers.OnGeneratorInsert;
-			Events.GeneratorFinishedEvent -= EventHandlers.OnGeneratorFinish;
-			Events.Scp106CreatedPortalEvent -= EventHandlers.On106MakePortal;
-			Events.Scp106TeleportEvent -= EventHandlers.On106Teleport;
-			Events.Scp079LvlGainEvent -= EventHandlers.On079LevelGain;
-			Events.Scp914UpgradeEvent -= EventHandlers.On914Upgrade;
-			Events.ShootEvent -= EventHandlers.OnShoot;
-			EventHandlers = null;
-
-			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled.");
+			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("mtf_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("mtf_tickets");
+			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("ci_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("ci_tickets");
 		}
 
-		public override void OnReload()
+		private void RegistPatch()
 		{
-			Log.Info($"[OnReload] SanyaPlugin({Version}) Reloaded.");
+			try
+			{
+				Harmony = new Harmony(Author + Name + ++patchCounter);
+				Harmony.PatchAll();
+			}
+			catch(Exception ex)
+			{
+				Log.Error($"[RegistPatch] Patching Failed : {ex}");
+			}
+		}
+
+		private void UnRegistPatch()
+		{
+			Harmony.UnpatchAll();
 		}
 	}
 }
