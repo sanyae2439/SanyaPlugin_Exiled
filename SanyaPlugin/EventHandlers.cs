@@ -436,11 +436,6 @@ namespace SanyaPlugin
 			Log.Debug($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
 
 			detonatedDuration = RoundSummary.roundTime;
-
-			if(Configs.stop_respawn_after_detonated)
-			{
-				PlayerManager.localPlayer.GetComponent<MTFRespawn>().SummonChopper(false);
-			}
 		}
 
 		public void OnAnnounceDecont(AnnounceDecontaminationEvent ev)
@@ -866,8 +861,7 @@ namespace SanyaPlugin
 					}
 					else if(killerTeam == Team.MTF)
 					{
-						string unit = NineTailedFoxUnits.host.list[ev.Killer.characterClassManager.NtfUnit];
-						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", unit);
+						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", ev.Killer.characterClassManager.CurUnitName);
 					}
 					else
 					{
@@ -912,18 +906,17 @@ namespace SanyaPlugin
 			switch(ev.Player.GetTeam())
 			{
 				case Team.CDP:
-					Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_classd_died_count;
-					if(ev.Killer.GetTeam() == Team.MTF || ev.Killer.GetTeam() == Team.RSC) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_classd_killed_count;
+					if(ev.Killer.GetTeam() != Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, Configs.tickets_ci_classd_died_count);
+					if(ev.Killer.GetTeam() == Team.MTF || ev.Killer.GetTeam() == Team.RSC) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, Configs.tickets_mtf_classd_killed_count);
 					break;
 				case Team.RSC:
-					Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_scientist_died_count;
-					if(ev.Killer.GetTeam() == Team.CHI || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_scientist_killed_count;
+					Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, Configs.tickets_mtf_scientist_died_count);
 					break;
 				case Team.MTF:
-					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_killed_by_scp_count;
+					if(ev.Killer.GetTeam() == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, Configs.tickets_mtf_killed_by_scp_count);
 					break;
 				case Team.CHI:
-					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_killed_by_scp_count;
+					if(ev.Killer.GetTeam() == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, Configs.tickets_ci_killed_by_scp_count);
 					break;
 			}
 		}
@@ -1758,61 +1751,6 @@ namespace SanyaPlugin
 								}
 								break;
 							}
-						case "spawn":
-							{
-								var mtfrespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-								if(mtfrespawn.nextWaveIsCI)
-								{
-									mtfrespawn.timeToNextRespawn = 14f;
-								}
-								else
-								{
-									mtfrespawn.timeToNextRespawn = 18.5f;
-								}
-								ReturnStr = $"spawn soon. nextIsCI:{mtfrespawn.nextWaveIsCI}";
-								break;
-							}
-						case "next":
-							{
-								if(args.Length > 2)
-								{
-									MTFRespawn mtfRespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-									if(args[2] == "ci")
-									{
-										mtfRespawn.nextWaveIsCI = true;
-										ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
-									}
-									else if(args[2] == "mtf" || args[2] == "ntf")
-									{
-										mtfRespawn.nextWaveIsCI = false;
-										ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[next] Wrong Parameters.";
-									}
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "[next] Wrong Parameters.";
-								}
-								break;
-							}
-						case "van":
-							{
-								PlayerManager.localPlayer.GetComponent<MTFRespawn>()?.RpcVan();
-								ReturnStr = "Van Called!";
-								break;
-							}
-						case "heli":
-							{
-								MTFRespawn mtf_r = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-								mtf_r.SummonChopper(!mtf_r._mtfA.isLanded);
-								ReturnStr = "Heli Called!";
-								break;
-							}
 						case "now":
 							{
 								ReturnStr = TimeBehaviour.CurrentTimestamp().ToString();
@@ -1833,7 +1771,7 @@ namespace SanyaPlugin
 					ev.Allow = false;
 					ev.Sender.RAMessage(string.Concat(
 						"Usage : sanya < reload / startair / stopair / nukelock / list / blackout ",
-						"/ roompos / tppos / pocket / gen / spawn / next / van / heli / 106 / 096 / 914 / now / ammo / test >"
+						"/ roompos / tppos / pocket / gen / 106 / 096 / 914 / now / ammo / test >"
 						), false);
 				}
 			}

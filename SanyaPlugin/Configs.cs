@@ -79,7 +79,6 @@ namespace SanyaPlugin
 		internal static int tickets_mtf_classd_killed_count;
 		internal static int tickets_mtf_scientist_died_count;
 		internal static int tickets_ci_killed_by_scp_count;
-		internal static int tickets_ci_scientist_killed_count;
 		internal static int tickets_ci_classd_died_count;
 		
 
@@ -209,7 +208,6 @@ namespace SanyaPlugin
 			tickets_mtf_classd_killed_count = Plugin.Config.GetInt("sanya_tickets_mtf_classd_killed_count", 0);
 			tickets_mtf_scientist_died_count = Plugin.Config.GetInt("sanya_tickets_mtf_scientist_died_count", 0);
 			tickets_ci_killed_by_scp_count = Plugin.Config.GetInt("sanya_tickets_ci_killed_by_scp_count", 0);
-			tickets_ci_scientist_killed_count = Plugin.Config.GetInt("sanya_tickets_ci_scientist_killed_count", 0);
 			tickets_ci_classd_died_count = Plugin.Config.GetInt("sanya_tickets_ci_classd_died_count", 0);
 
 			damage_usp_multiplier_human = Plugin.Config.GetFloat("sanya_damage_usp_multiplier_human", 1.0f);

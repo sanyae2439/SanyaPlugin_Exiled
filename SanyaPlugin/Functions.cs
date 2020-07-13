@@ -19,6 +19,7 @@ using SanyaPlugin.Data;
 using UnityEngine;
 using UnityEngine.Networking;
 using Utf8Json;
+using Respawning;
 
 namespace SanyaPlugin.Functions
 {
@@ -344,7 +345,7 @@ namespace SanyaPlugin.Functions
 			{
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
 			}
-			PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
+			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
 			yield break;
 		}
@@ -372,7 +373,7 @@ namespace SanyaPlugin.Functions
 			if(Configs.cassie_subtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombStarting, 10);
-				PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
+				RespawnEffectsController.PlayCassieAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
 				yield return Timing.WaitForSeconds(5f);
 			}
 
@@ -407,7 +408,7 @@ namespace SanyaPlugin.Functions
 			if(Configs.cassie_subtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombEnded, 10);
-				PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("outside zone termination completed .", false, true);
+				RespawnEffectsController.PlayCassieAnnouncement("outside zone termination completed .", false, true);
 			}
 
 			Log.Info($"[AirSupportBomb] Ended.");
@@ -602,13 +603,13 @@ namespace SanyaPlugin.Functions
 		public static int GetMTFTickets()
 		{
 			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
-			return Cassie.mtfRespawn.MtfRespawnTickets;
+			return RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox);
 		}
 
 		public static int GetCITickets()
 		{
 			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
-			return Cassie.mtfRespawn.ChaosRespawnTickets;
+			return RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox);
 		}
 
 		public static void SendCustomSyncVar(this ReferenceHub player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar)
