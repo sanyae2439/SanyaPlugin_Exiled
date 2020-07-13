@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Exiled.API.Enums;
 using Exiled.API.Features;
-using Exiled.Events;
 using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
@@ -11,9 +10,11 @@ using ServerEvents = Exiled.Events.Handlers.Server;
 using MapEvents = Exiled.Events.Handlers.Map;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
 using PlayerEvents = Exiled.Events.Handlers.Player;
+using Scp049Events = Exiled.Events.Handlers.Scp049;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
+using System.Linq;
 
 namespace SanyaPlugin
 {
@@ -42,7 +43,7 @@ namespace SanyaPlugin
 			base.OnEnabled();
 
 			RegistEvents();
-			RegistNameFormatter();
+			Config.ParseConfig();
 
 			if(Config.KickVpn) ShitChecker.LoadLists();
 			if(Config.InfosenderIp != "none" && Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
@@ -61,7 +62,6 @@ namespace SanyaPlugin
 			Handlers.roundCoroutines.Clear();
 
 			UnRegistEvents();
-			UnRegistNameFormatter();
 			UnRegistPatch();
 
 			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled Complete.");
@@ -75,7 +75,9 @@ namespace SanyaPlugin
 			ServerEvents.RoundEnded += Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
+			ServerEvents.LocalReporting += Handlers.OnLocalReporting;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
+			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
@@ -95,12 +97,9 @@ namespace SanyaPlugin
 			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
-			PlayerEvents.ClosingGenerator += Handlers.OnClosingGenerator;
-			PlayerEvents.InsertingGeneratorTablet += Handlers.OnInsertingGeneratorTablet;
-			PlayerEvents.Shooting += Handlers.OnShooting;
+			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
-			Scp106Events.Teleporting += Handlers.OnTeleporting;
 			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
 		}
 
@@ -111,6 +110,7 @@ namespace SanyaPlugin
 			ServerEvents.RoundEnded -= Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
+			ServerEvents.LocalReporting -= Handlers.OnLocalReporting;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;
@@ -131,23 +131,19 @@ namespace SanyaPlugin
 			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
-			PlayerEvents.ClosingGenerator -= Handlers.OnClosingGenerator;
-			PlayerEvents.InsertingGeneratorTablet -= Handlers.OnInsertingGeneratorTablet;
-			PlayerEvents.Shooting -= Handlers.OnShooting;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
-			Scp106Events.Teleporting -= Handlers.OnTeleporting;
 			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;
 		}
 
-		private void RegistNameFormatter()
+		public void RegistNameFormatter()
 		{
 			ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
 			ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
 		}
 
-		private void UnRegistNameFormatter()
+		public void UnRegistNameFormatter()
 		{
 			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("mtf_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("mtf_tickets");
 			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("ci_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("ci_tickets");

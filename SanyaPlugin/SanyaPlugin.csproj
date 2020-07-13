@@ -46,12 +46,23 @@
     </Reference>
     <Reference Include="Assembly-CSharp-publicized">
       <HintPath>References\Assembly-CSharp-publicized.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CommandSystem.Core">
+      <HintPath>References\CommandSystem.Core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Exiled.API">
       <HintPath>References\Exiled.API.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Exiled.Events">
       <HintPath>References\Exiled.Events.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Exiled.Permissions">
+      <HintPath>References\Exiled.Permissions.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mirror">
       <HintPath>References\Mirror.dll</HintPath>
@@ -104,6 +115,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Configs.cs" />
     <Compile Include="Data.cs" />

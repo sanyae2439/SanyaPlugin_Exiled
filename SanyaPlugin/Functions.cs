@@ -8,17 +8,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
-using EXILED;
-using EXILED.Extensions;
-using Hints;
-using MEC;
-using Mirror;
-using Dissonance.Integrations.MirrorIgnorance;
-using RemoteAdmin;
-using SanyaPlugin.Data;
 using UnityEngine;
 using UnityEngine.Networking;
+using Mirror;
+using Dissonance.Integrations.MirrorIgnorance;
+using MEC;
 using Utf8Json;
+using RemoteAdmin;
+using Hints;
+using Exiled.Events.EventArgs;
+using Exiled.API.Features;
+using SanyaPlugin.Data;
 
 namespace SanyaPlugin.Functions
 {
@@ -28,17 +28,17 @@ namespace SanyaPlugin.Functions
 
 		public static PlayerData LoadPlayerData(string userid)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.DataPath, $"{userid}.txt");
-			if(!Directory.Exists(SanyaPlugin.DataPath)) Directory.CreateDirectory(SanyaPlugin.DataPath);
+			string targetuseridpath = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, $"{userid}.txt");
+			if(!Directory.Exists(SanyaPlugin.instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.instance.Config.DataDirectory);
 			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
 		public static void SavePlayerData(PlayerData data)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.DataPath, $"{data.userid}.txt");
+			string targetuseridpath = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, $"{data.userid}.txt");
 
-			if(!Directory.Exists(SanyaPlugin.DataPath)) Directory.CreateDirectory(SanyaPlugin.DataPath);
+			if(!Directory.Exists(SanyaPlugin.instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.instance.Config.DataDirectory);
 
 			string[] textdata = new string[] {
 				data.lastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzzz"),
@@ -67,7 +67,7 @@ namespace SanyaPlugin.Functions
 
 		public static void ResetLimitedFlag()
 		{
-			foreach(var file in Directory.GetFiles(SanyaPlugin.DataPath))
+			foreach(var file in Directory.GetFiles(SanyaPlugin.instance.Config.DataDirectory))
 			{
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
 				Log.Warn($"{data.userid}:{data.limited}");
@@ -79,12 +79,12 @@ namespace SanyaPlugin.Functions
 
 	internal static class ShitChecker
 	{
-		private static string whitelist_path = Path.Combine(SanyaPlugin.DataPath, "VPN-Whitelist.txt");
+		private static string whitelist_path = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, "VPN-Whitelist.txt");
 		public static HashSet<IPAddress> whitelist = new HashSet<IPAddress>();
-		private static string blacklist_path = Path.Combine(SanyaPlugin.DataPath, "VPN-Blacklist.txt");
+		private static string blacklist_path = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, "VPN-Blacklist.txt");
 		public static HashSet<IPAddress> blacklist = new HashSet<IPAddress>();
 
-		public static IEnumerator<float> CheckVPN(PreauthEvent ev)
+		public static IEnumerator<float> CheckVPN(PreAuthenticatingEventArgs ev)
 		{
 			IPAddress address = ev.Request.RemoteEndPoint.Address;
 
@@ -96,7 +96,7 @@ namespace SanyaPlugin.Functions
 
 			using(UnityWebRequest unityWebRequest = UnityWebRequest.Get($"https://v2.api.iphub.info/ip/{address}"))
 			{
-				unityWebRequest.SetRequestHeader("X-Key", Configs.kick_vpn_apikey);
+				unityWebRequest.SetRequestHeader("X-Key", SanyaPlugin.instance.Config.KickVpnApikey);
 				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
 				if(!unityWebRequest.isNetworkError)
 				{
@@ -115,10 +115,10 @@ namespace SanyaPlugin.Functions
 						Log.Info($"[VPNChecker] VPN Detected:{address} UserId:{ev.UserId}");
 						AddBlacklist(address);
 
-						ReferenceHub player = Player.GetPlayer(ev.UserId);
+						var player = Player.Get(ev.UserId);
 						if(player != null)
 						{
-							ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.VPNKickMessage);
+							ServerConsole.Disconnect(player.Connection, Subtitles.VPNKickMessage);
 						}
 						if(!EventHandlers.kickedbyChecker.ContainsKey(ev.UserId))
 							EventHandlers.kickedbyChecker.Add(ev.UserId, "vpn");
@@ -140,7 +140,7 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> CheckIsLimitedSteam(string userid)
 		{
 			PlayerData data = null;
-			if(Configs.data_enabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
+			if(SanyaPlugin.instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
 			{
 				Log.Debug($"[SteamCheck] Already Checked:{userid}");
 				yield break;
@@ -176,10 +176,10 @@ namespace SanyaPlugin.Functions
 							else
 							{
 								Log.Warn($"[SteamCheck] NG:{userid}");
-								ReferenceHub player = Player.GetPlayer(userid);
+								var player = Player.Get(userid);
 								if(player != null)
 								{
-									ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.LimitedKickMessage);
+									ServerConsole.Disconnect(player.Connection, Subtitles.LimitedKickMessage);
 								}
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
@@ -191,10 +191,10 @@ namespace SanyaPlugin.Functions
 						else
 						{
 							Log.Warn($"[SteamCheck] Falied(NoProfile):{userid}");
-							ReferenceHub player = Player.GetPlayer(userid);
+							var player = Player.Get(userid);
 							if(player != null)
 							{
-								ServerConsole.Disconnect(player.characterClassManager.connectionToClient, Subtitles.NoProfileKickMessage);
+								ServerConsole.Disconnect(player.Connection, Subtitles.NoProfileKickMessage);
 							}
 							if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
 								EventHandlers.kickedbyChecker.Add(userid, "steam");
@@ -222,20 +222,12 @@ namespace SanyaPlugin.Functions
 				File.WriteAllText(blacklist_path, null);
 
 			foreach(var line in File.ReadAllLines(whitelist_path))
-			{
 				if(IPAddress.TryParse(line, out var address))
-				{
 					whitelist.Add(address);
-				}
-			}
 
 			foreach(var line2 in File.ReadAllLines(blacklist_path))
-			{
 				if(IPAddress.TryParse(line2, out var address2))
-				{
 					blacklist.Add(address2);
-				}
-			}
 		}
 
 		public static void AddWhitelist(IPAddress address)
@@ -271,44 +263,33 @@ namespace SanyaPlugin.Functions
 	{
 		public static bool isAirBombGoing = false;
 
-		public static IEnumerator<float> GrantedLevel(ReferenceHub player, PlayerData data)
+		public static IEnumerator<float> GrantedLevel(Player player, PlayerData data)
 		{
 			yield return Timing.WaitForSeconds(1f);
 
-			var group = player.serverRoles.Group?.Clone();
+			var group = player.Group?.Clone();
 			string level = data.level.ToString();
-			string rolestr = player.serverRoles.GetUncoloredRoleString();
-			string rolecolor = player.serverRoles.MyColor;
+			string rolestr = player.ReferenceHub.serverRoles.GetUncoloredRoleString();
+			string rolecolor = player.RankColor;
 			string badge;
 
 			rolestr = rolestr.Replace("[", string.Empty).Replace("]", string.Empty).Replace("<", string.Empty).Replace(">", string.Empty);
 
 			if(rolecolor == "light_red")
-			{
 				rolecolor = "pink";
-			}
 
 			if(data.level == -1)
-			{
 				level = "???";
-			}
 
 			if(string.IsNullOrEmpty(rolestr))
-			{
 				badge = $"Level{level}";
-			}
 			else
-			{
 				badge = $"Level{level} : {rolestr}";
-			}
 
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(player.GetUserId()))
-			{
+			if(SanyaPlugin.instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
 				badge += " : 認証済み";
-			}
 
 			if(group == null)
-			{
 				group = new UserGroup()
 				{
 					BadgeText = badge,
@@ -320,7 +301,6 @@ namespace SanyaPlugin.Functions
 					RequiredKickPower = 0,
 					Shared = false
 				};
-			}
 			else
 			{
 				group.BadgeText = badge;
@@ -329,9 +309,9 @@ namespace SanyaPlugin.Functions
 				group.Cover = true;
 			}
 
-			player.serverRoles.SetGroup(group, false, false, true);
+			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
-			Log.Debug($"[GrantedLevel] {player.GetUserId()} : Level{level}");
+			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}");
 
 			yield break;
 		}
@@ -340,11 +320,9 @@ namespace SanyaPlugin.Functions
 		{
 			Log.Debug($"[StartNightMode] Started. Wait for {60}s...");
 			yield return Timing.WaitForSeconds(60f);
-			if(Configs.cassie_subtitle)
-			{
+			if(SanyaPlugin.instance.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
-			}
-			PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
+			Cassie.MtfRespawn.RpcPlayCustomAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
 			yield break;
 		}
@@ -365,11 +343,9 @@ namespace SanyaPlugin.Functions
 				yield break;
 			}
 			else
-			{
 				isAirBombGoing = true;
-			}
 
-			if(Configs.cassie_subtitle)
+			if(SanyaPlugin.instance.Config.CassieSubtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombStarting, 10);
 				PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
@@ -404,10 +380,10 @@ namespace SanyaPlugin.Functions
 				yield return Timing.WaitForSeconds(0.25f);
 			}
 
-			if(Configs.cassie_subtitle)
+			if(SanyaPlugin.instance.Config.CassieSubtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombEnded, 10);
-				PlayerManager.localPlayer.GetComponent<MTFRespawn>().RpcPlayCustomAnnouncement("outside zone termination completed .", false, true);
+				Cassie.MtfRespawn.RpcPlayCustomAnnouncement("outside zone termination completed .", false, true);
 			}
 
 			Log.Info($"[AirSupportBomb] Ended.");
@@ -463,18 +439,17 @@ namespace SanyaPlugin.Functions
 			return -1;
 		}
 
-		public static void SendSubtitle(string text, ushort time, ReferenceHub target = null)
+		public static void SendSubtitle(string text, ushort time, Player target = null)
 		{
-			Broadcast brd = PlayerManager.localPlayer.GetComponent<Broadcast>();
 			if(target != null)
 			{
-				brd.TargetClearElements(target.characterClassManager.connectionToClient);
-				brd.TargetAddElement(target.characterClassManager.connectionToClient, text, time, Broadcast.BroadcastFlags.Normal);
+				target.ClearBroadcasts();
+				target.Broadcast(time, text);
 			}
 			else
 			{
-				brd.RpcClearElements();
-				brd.RpcAddElement(text, time, Broadcast.BroadcastFlags.Normal);
+				Map.ClearBroadcasts();
+				Map.Broadcast(time, text);
 			}
 		}
 
@@ -488,7 +463,7 @@ namespace SanyaPlugin.Functions
 			PlayAmbientSound(UnityEngine.Random.Range(0, 32));
 		}
 
-		public static void SendReport(ReferenceHub reported, string reason, ReferenceHub reporter)
+		public static void SendReport(Player reported, string reason, Player reporter)
 		{
 			var hookdata = new WebhookData();
 			var embed = new Embed
@@ -496,27 +471,23 @@ namespace SanyaPlugin.Functions
 				title = "ゲームサーバーからの報告",
 				timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ")
 			};
-			embed.footer.text = $"報告者:{reporter.GetNickname()} [{reporter.GetUserId()}]";
+			embed.footer.text = $"報告者:{reporter.Nickname} [{reporter.Nickname}]";
 			embed.fields.Add(new EmbedField() { name = "発見サーバー", value = $"{FormatServerName()}" });
-			embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.GetNickname()}", inline = true });
-			embed.fields.Add(new EmbedField() { name = "対象プレイヤーID", value = $"{reported.GetUserId()}", inline = true });
+			embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.Nickname}", inline = true });
+			embed.fields.Add(new EmbedField() { name = "対象プレイヤーID", value = $"{reported.UserId}", inline = true });
 			embed.fields.Add(new EmbedField() { name = "内容", value = $"{reason}" });
 			hookdata.embeds.Add(embed);
 
 			var json = Utf8Json.JsonSerializer.ToJsonString<WebhookData>(hookdata);
 			var data = new StringContent(json, Encoding.UTF8, "application/json");
-			var result = httpClient.PostAsync(Configs.report_webhook, data).Result;
+			var result = httpClient.PostAsync(SanyaPlugin.instance.Config.ReportWebhook, data).Result;
 
 			Log.Debug($"{json}");
 
 			if(result.IsSuccessStatusCode)
-			{
 				Log.Info($"[SendReport] Send Report.");
-			}
 			else
-			{
 				Log.Error($"[SendReport] Error. {result.StatusCode}");
-			}
 		}
 
 		public static string FormatServerName()
@@ -536,53 +507,37 @@ namespace SanyaPlugin.Functions
 			NetworkWriterPool.Recycle(writer);
 		}
 
-		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, string rpcName, NetworkWriter writer) where T : NetworkBehaviour
-		{
-			var msg = new RpcMessage
-			{
-				netId = target.netId,
-				componentIndex = target.ComponentIndex,
-				functionHash = target.GetType().FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
-				payload = writer.ToArraySegment()
-			};
-			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
-		}
-
-		public static void AddDeathTimeForScp049(ReferenceHub target)
+		public static void AddDeathTimeForScp049(this Player target)
 		{
 			PlayerManager.localPlayer.GetComponent<RagdollManager>().SpawnRagdoll(
 				Vector3.zero, 
-				target.transform.rotation, 
+				target.GameObject.transform.rotation, 
 				Vector3.zero, 
 				(int)RoleType.ClassD,
 				new PlayerStats.HitInfo(-1, "Scp049Reviver", DamageTypes.Scp049, -1), 
 				true, 
-				target.GetComponent<MirrorIgnorancePlayer>().PlayerId, 
-				target.nicknameSync.DisplayName,
-				target.queryProcessor.PlayerId
+				target.GameObject.GetComponent<MirrorIgnorancePlayer>().PlayerId, 
+				target.Nickname,
+				target.Id
 			);
 		}
 
-		public static bool CanLookToPlayer(this Camera079 camera, ReferenceHub player)
+		public static bool CanLookToPlayer(this Camera079 camera, Player player)
 		{
-			if(player.GetRole() == RoleType.Spectator || player.GetRole() == RoleType.Scp079 || player.GetRole() == RoleType.None)
+			if(player.Role == (RoleType.Spectator | RoleType.Scp079 | RoleType.None))
 				return false;
 
-			Vector3 vector = player.transform.position - camera.transform.position;
-			float num = Vector3.Dot(camera.head.transform.forward, vector);
+			float num = Vector3.Dot(camera.head.transform.forward, player.Position - camera.transform.position);
 
-			RaycastHit raycastHit;
-			return (num >= 0f && num * num / vector.sqrMagnitude > 0.4225f)
-				&& Physics.Raycast(camera.transform.position, vector, out raycastHit, 100f, -117407543)
-				&& raycastHit.transform.name == player.name;
+			return (num >= 0f && num * num / (player.Position - camera.transform.position).sqrMagnitude > 0.4225f)
+				&& Physics.Raycast(camera.transform.position, player.Position - camera.transform.position, out RaycastHit raycastHit, 100f, -117407543)
+				&& raycastHit.transform.name == player.GameObject.name;
 		}
 
 		public static void Blink()
 		{
 			foreach(var scp173 in UnityEngine.Object.FindObjectsOfType<Scp173PlayerScript>())
-			{
 				scp173.RpcBlinkTime();
-			}
 		}
 
 		public static GameObject SpawnDummy(RoleType role, Vector3 pos, Quaternion rot)
@@ -602,13 +557,25 @@ namespace SanyaPlugin.Functions
 		public static int GetMTFTickets()
 		{
 			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
-			return Cassie.mtfRespawn.MtfRespawnTickets;
+			return Cassie.MtfRespawn.MtfRespawnTickets;
 		}
 
 		public static int GetCITickets()
 		{
 			if(CustomLiteNetLib4MirrorTransport.DelayConnections) return -1;
-			return Cassie.mtfRespawn.ChaosRespawnTickets;
+			return Cassie.MtfRespawn.ChaosRespawnTickets;
+		}
+
+		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, string rpcName, NetworkWriter writer) where T : NetworkBehaviour
+		{
+			var msg = new RpcMessage
+			{
+				netId = target.netId,
+				componentIndex = target.ComponentIndex,
+				functionHash = target.GetType().FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
+				payload = writer.ToArraySegment()
+			};
+			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
 		public static void SendCustomSyncVar(this ReferenceHub player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar)
@@ -672,33 +639,33 @@ namespace SanyaPlugin.Functions
 			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
 		}
 
-		public static bool IsEnemy(this ReferenceHub player, Team target)
+		public static bool IsEnemy(this Player player, Team target)
 		{
-			if(player.GetRole() == RoleType.Spectator || player.GetRole() == RoleType.None || player.GetTeam() == target)
+			if(player.Role == RoleType.Spectator || player.Role == RoleType.None || player.Team == target)
 				return false;
 
 			return target == Team.SCP ||
-				((player.GetTeam() != Team.MTF && player.GetTeam() != Team.RSC) || (target != Team.MTF && target != Team.RSC))
+				((player.Team != Team.MTF && player.Team != Team.RSC) || (target != Team.MTF && target != Team.RSC))
 				&&
-				((player.GetTeam() != Team.CDP && player.GetTeam() != Team.CHI) || (target != Team.CDP && target != Team.CHI))
+				((player.Team != Team.CDP && player.Team != Team.CHI) || (target != Team.CDP && target != Team.CHI))
 			;
 		}
 
-		public static void ShowHitmarker(this ReferenceHub player)
+		public static void ShowHitmarker(this Player player)
 		{
-			player.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.characterClassManager.connectionToClient);
+			player.ReferenceHub.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.Connection);
 		}
 
-		public static void SendTextHint(this ReferenceHub player, string text, ushort time)
+		public static void SendTextHint(this Player player, string text, ushort time)
 		{
-			player.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[]{ HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
+			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[]{ HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
 		}
 
-		public static IEnumerable<Camera079> GetNearCams(this ReferenceHub player)
+		public static IEnumerable<Camera079> GetNearCams(this Player player)
 		{
 			foreach(var cam in Scp079PlayerScript.allCameras)
 			{
-				var dis = Vector3.Distance(player.GetPosition(), cam.transform.position);
+				var dis = Vector3.Distance(player.Position, cam.transform.position);
 				if(dis <= 15f)
 				{
 					yield return cam;
@@ -706,11 +673,26 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
-		public static bool IsExmode(this ReferenceHub player) => player.animationController.curAnim == 1;
+		public static bool IsExmode(this Player player) => player.ReferenceHub.animationController.curAnim == 1;
 
 		public static bool HasPermission(this Door.AccessRequirements value, Door.AccessRequirements flag)
 		{
 			return (value & flag) == flag;
+		}
+
+		public static bool IsList(this Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
+		}
+
+		public static bool IsDictionary(this Type type)
+		{
+			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+		}
+
+		public static Type GetListArgs(this Type type)
+		{
+			return type.GetGenericArguments()[0];
 		}
 
 		public static T GetRandomOne<T>(this List<T> list)
@@ -721,7 +703,7 @@ namespace SanyaPlugin.Functions
 		public static T Random<T>(this IEnumerable<T> ie)
 		{
 			if(!ie.Any()) return default;
-			return ie.ElementAt(SanyaPlugin.random.Next(ie.Count()));
+			return ie.ElementAt(SanyaPlugin.instance.Random.Next(ie.Count()));
 		}
 	}
 }
