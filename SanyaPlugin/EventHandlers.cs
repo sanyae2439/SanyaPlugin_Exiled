@@ -4,52 +4,48 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using CustomPlayerEffects;
-using EXILED;
-using EXILED.Extensions;
-using Grenades;
-using LightContainmentZoneDecontamination;
+using UnityEngine;
+using Mirror;
 using LiteNetLib.Utils;
 using MEC;
-using Mirror;
-using PlayableScps;
+using Utf8Json;
+using CustomPlayerEffects;
+using Exiled.Events;
+using Exiled.Events.EventArgs;
+using Exiled.API.Features;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
-using UnityEngine;
-using Utf8Json;
 
 namespace SanyaPlugin
 {
 	public class EventHandlers
 	{
 		public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
-		internal readonly SanyaPlugin plugin;
-		internal List<CoroutineHandle> roundCoroutines = new List<CoroutineHandle>();
-		internal bool loaded = false;
+		public readonly SanyaPlugin plugin;
+		public List<CoroutineHandle> roundCoroutines = new List<CoroutineHandle>();
+		private bool loaded = false;
 
 		/** Infosender **/
 		private readonly UdpClient udpClient = new UdpClient();
 		internal Task sendertask;
-		private bool senderdisabled = false;
 		internal async Task SenderAsync()
 		{
-			Log.Debug($"[Infosender_Task] Started.");
+			Log.Debug($"[SenderAsync] Started.");
 
 			while(true)
 			{
 				try
 				{
-					if(Configs.infosender_ip == "none")
+					if(plugin.Config.InfosenderIp == "none" || plugin.Config.InfosenderPort == -1)
 					{
-						Log.Info($"[Infosender_Task] Disabled(config:({Configs.infosender_ip}). breaked.");
-						senderdisabled = true;
+						Log.Info($"[SenderAsync] Disabled(config:({plugin.Config.InfosenderIp}:{plugin.Config.InfosenderPort}). breaked.");
 						break;
 					}
 
 					if(!this.loaded)
 					{
-						Log.Debug($"[Infosender_Task] Plugin not loaded. Skipped...");
+						Log.Debug($"[SenderAsync] Plugin not loaded. Skipped...");
 						await Task.Delay(TimeSpan.FromSeconds(30));
 					}
 
@@ -58,8 +54,8 @@ namespace SanyaPlugin
 					DateTime dt = DateTime.Now;
 					cinfo.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
 					cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
-					cinfo.modversion = $"{EventPlugin.Version.Major}.{EventPlugin.Version.Minor}.{EventPlugin.Version.Patch}";
-					cinfo.sanyaversion = SanyaPlugin.Version;
+					cinfo.modversion = Events.Instance.Version.ToString();
+					cinfo.sanyaversion = SanyaPlugin.instance.Version.ToString();
 					cinfo.gamemode = eventmode.ToString();
 					cinfo.name = ServerConsole.singleton.RefreshServerName();
 					cinfo.ip = ServerConsole.Ip;
@@ -88,8 +84,8 @@ namespace SanyaPlugin
 					string json = JsonSerializer.ToJsonString(cinfo);
 
 					byte[] sendBytes = Encoding.UTF8.GetBytes(json);
-					udpClient.Send(sendBytes, sendBytes.Length, Configs.infosender_ip, Configs.infosender_port);
-					Log.Debug($"[Infosender_Task] {Configs.infosender_ip}:{Configs.infosender_port}");
+					udpClient.Send(sendBytes, sendBytes.Length, plugin.Config.InfosenderIp, plugin.Config.InfosenderPort);
+					Log.Debug($"[SenderAsync] {plugin.Config.InfosenderIp}:{plugin.Config.InfosenderPort}");
 				}
 				catch(Exception e)
 				{
@@ -106,73 +102,66 @@ namespace SanyaPlugin
 		internal static readonly Dictionary<string, string> kickedbyChecker = new Dictionary<string, string>();
 
 		/** Update **/
-		internal IEnumerator<float> EverySecond()
+		private IEnumerator<float> EverySecond()
 		{
 			while(true)
 			{
 				try
 				{
 					//自動空爆
-					if(Configs.outsidezone_termination_time_after_nuke > 0
+					if(plugin.Config.OutsidezoneTerminationTimeAfterNuke > 0
 						&& detonatedDuration != -1
-						&& RoundSummary.roundTime > (Configs.outsidezone_termination_time_after_nuke + detonatedDuration))
+						&& RoundSummary.roundTime > (plugin.Config.OutsidezoneTerminationTimeAfterNuke + detonatedDuration))
 					{
 						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb()));
 						detonatedDuration = -1;
 					}
 
 					//寝返り
-					if(Configs.traitor_limitter > 0)
+					if(plugin.Config.TraitorLimit > 0)
 					{
-						foreach(var player in Player.GetHubs())
+						foreach(var player in Player.List)
 						{
-							if((player.GetTeam() == Team.MTF || player.GetTeam() == Team.CHI)
-								&& player.IsHandCuffed()
-								&& Vector3.Distance(espaceArea, player.transform.position) <= Escape.radius
-								&& RoundSummary.singleton.CountTeam(player.GetTeam()) <= Configs.traitor_limitter)
+							if((player.Team == Team.MTF || player.Team == Team.CHI)
+								&& player.IsCuffed
+								&& Vector3.Distance(espaceArea, player.Position) <= Escape.radius
+								&& RoundSummary.singleton.CountTeam(player.Team) <= plugin.Config.TraitorLimit)
 							{
-								switch(player.GetTeam())
+								int hit = UnityEngine.Random.Range(0, 100);
+
+								if(hit >= plugin.Config.TraitorChancePercent){
+									switch(player.Team)
+									{
+										case Team.MTF:
+											Log.Info($"[Traitor] {player.Nickname} : MTF->CHI");
+											player.SetRole(RoleType.ChaosInsurgency);
+											break;
+										case Team.CHI:
+											Log.Info($"[Traitor] {player.Nickname} : CHI->MTF");
+											player.SetRole(RoleType.NtfCadet);
+											break;
+									}
+								}
+								else
 								{
-									case Team.MTF:
-										if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
-										{
-											Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : MTF->CHI");
-											player.characterClassManager.SetPlayersClass(RoleType.ChaosInsurgency, player.gameObject);
-										}
-										else
-										{
-											Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : Traitor Failed(by percent)");
-											player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
-										}
-										break;
-									case Team.CHI:
-										if(UnityEngine.Random.Range(0, 100) <= Configs.traitor_chance_percent)
-										{
-											Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : CHI->MTF");
-											player.characterClassManager.SetPlayersClass(RoleType.NtfCadet, player.gameObject);
-										}
-										else
-										{
-											Log.Info($"[_EverySecond:Traitor] {player.GetNickname()} : Traitor Failed(by percent)");
-											player.characterClassManager.SetPlayersClass(RoleType.Spectator, player.gameObject);
-										}
-										break;
+									Log.Info($"[Traitor] {player.Nickname} : Traitor Failed ({hit} <= {plugin.Config.TraitorChancePercent})");
+									player.SetRole(RoleType.Spectator);
 								}
 							}
 						}
 					}
 
 					//ItemCleanup
-					if(Configs.item_cleanup > 0)
+					if(plugin.Config.ItemCleanup > 0)
 					{
 						List<GameObject> nowitems = null;
 
 						foreach(var i in ItemCleanupPatch.items)
 						{
-							if(Time.time - i.Value > Configs.item_cleanup && i.Key != null)
+							if(Time.time - i.Value > plugin.Config.ItemCleanup && i.Key != null)
 							{
 								if(nowitems == null) nowitems = new List<GameObject>();
-								Log.Debug($"[ItemCleanupPatch] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {Configs.item_cleanup}");
+								Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}");
 								nowitems.Add(i.Key);
 							}
 						}
@@ -194,7 +183,8 @@ namespace SanyaPlugin
 					}
 
 					//SCP-079's Spot Humans
-					if(Configs.scp079_spot)
+					/*
+					if(plugin.Config.Scp079Spot)
 					{
 						foreach(var scp079 in Scp079PlayerScript.instances)
 						{
@@ -214,6 +204,7 @@ namespace SanyaPlugin
 							}
 						}
 					}
+					*/
 				}
 				catch(Exception e)
 				{
@@ -223,7 +214,7 @@ namespace SanyaPlugin
 				yield return Timing.WaitForSeconds(1f);
 			}
 		}
-		internal IEnumerator<float> FixedUpdate()
+		private IEnumerator<float> FixedUpdate()
 		{
 			while(true)
 			{
@@ -232,7 +223,6 @@ namespace SanyaPlugin
 					//Blackouter
 					if(flickerableLight != null && IsEnableBlackout && flickerableLight.remainingFlicker < 0f && !flickerableLight.IsDisabled())
 					{
-						//Log.Debug($"{UnityEngine.Object.FindObjectOfType<FlickerableLight>().remainingFlicker}");
 						Log.Debug($"[Blackouter] Fired.");
 						Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
 					}
@@ -249,7 +239,7 @@ namespace SanyaPlugin
 		/** Flag Params **/
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
-		private readonly int grenade_pickup_mask = 1049088;
+		//private readonly int grenade_pickup_mask = 1049088;
 		//private readonly int surfacemask = 1208303617;
 
 		/** RoundVar **/
@@ -260,11 +250,13 @@ namespace SanyaPlugin
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private Vector3 LCZArmoryPos;
 
+		//ServerEvents
 		public void OnWaintingForPlayers()
 		{
 			loaded = true;
 
-			if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation && !senderdisabled)
+			if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation 
+				&& plugin.Config.InfosenderIp != "none" && plugin.Config.InfosenderPort != -1)
 				sendertask = SenderAsync().StartSender();
 
 			roundCoroutines.Add(Timing.RunCoroutine(EverySecond(), Segment.FixedUpdate));
@@ -279,15 +271,15 @@ namespace SanyaPlugin
 
 			flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
-			if(Configs.tesla_range != 5.5f)
+			if(plugin.Config.TeslaRange != 5.5f)
 			{
-				foreach(var tesla in UnityEngine.Object.FindObjectsOfType<TeslaGate>())
+				foreach(var tesla in Map.TeslaGates)
 				{
-					tesla.sizeOfTrigger = Configs.tesla_range;
+					tesla.sizeOfTrigger = plugin.Config.TeslaRange;
 				}
 			}
 
-			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(Configs.event_mode_weight.ToArray());
+			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.NIGHT:
@@ -315,10 +307,9 @@ namespace SanyaPlugin
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
-
-		public void OnRoundStart()
+		public void OnRoundStarted()
 		{
-			Log.Info($"[OnRoundStart] Round Start!");
+			Log.Info($"[OnRoundStarted] Round Start!");
 
 			switch(eventmode)
 			{
@@ -330,27 +321,22 @@ namespace SanyaPlugin
 					}
 			}
 		}
-
-		public void OnRoundEnd()
+		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
-			Log.Info($"[OnRoundEnd] Round Ended.");
+			Log.Info($"[OnRoundEnded] Round Ended.");
 
-			if(Configs.data_enabled)
+			if(plugin.Config.DataEnabled)
 			{
-				foreach(ReferenceHub player in Player.GetHubs())
+				foreach(var player in Player.List)
 				{
-					if(string.IsNullOrEmpty(player.GetUserId())) continue;
+					if(string.IsNullOrEmpty(player.UserId)) continue;
 
-					if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
+					if(PlayerDataManager.playersData.ContainsKey(player.UserId))
 					{
-						if(player.GetRole() == RoleType.Spectator)
-						{
-							PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_other);
-						}
+						if(player.Role == RoleType.Spectator)
+							PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpLose);
 						else
-						{
-							PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_win);
-						}
+							PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpWin);
 					}
 				}
 
@@ -362,95 +348,48 @@ namespace SanyaPlugin
 				}
 			}
 
-			if(Configs.godmode_after_endround)
-			{
-				foreach(var player in Player.GetHubs())
-				{
-					player.characterClassManager.GodMode = true;
-				}
-			}
+			if(plugin.Config.GodmodeAfterEndround)
+				foreach(var player in Player.List)
+					player.IsGodModeEnabled = true;
 
 			Coroutines.isAirBombGoing = false;
 		}
-
-		public void OnRoundRestart()
+		public void OnRestartingRound()
 		{
-			Log.Info($"[OnRoundRestart] Restarting...");
+			Log.Info($"[OnRestartingRound] Restarting...");
 
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
 			roundCoroutines.Clear();
 		}
-
-		public void OnWarheadStart(WarheadStartEvent ev)
+		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
-			Log.Debug($"[OnWarheadStart] {ev.Player?.GetNickname()}");
+			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaximumRespawnAmount}");
 
-			if(Configs.cassie_subtitle)
+			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated
+				|| plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 			{
-				bool isresumed = AlphaWarheadController._resumeScenario != -1;
-				double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
-				double count = Math.Truncate(left / 10.0) * 10.0;
+				ev.Players.Clear();
+			}
+		}
+		public void OnLocalReporting(LocalReportingEventArgs ev)
+		{
+			Log.Debug($"[OnLocalReporting] {ev.Issuer.Nickname} -{ev.Reason}-> {ev.Target.Nickname}");
 
-				if(!isresumed)
-				{
-					Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
-				}
-				else
-				{
-					Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
-				}
+			if(!string.IsNullOrEmpty(plugin.Config.ReportWebhook) && ev.Issuer != ev.Target)
+			{
+				Log.Warn($"[OnLocalReporting] {ev.Issuer.Nickname} -{ev.Reason}-> {ev.Issuer.Nickname}");
+				Methods.SendReport(ev.Target, ev.Reason, ev.Issuer);
 			}
 		}
 
-		public void OnWarheadCancel(WarheadCancelEvent ev)
+		//MapEvents
+		public void OnAnnouncingDecontamination(AnnouncingDecontaminationEventArgs ev)
 		{
-			Log.Debug($"[OnWarheadCancel] {ev.Player?.GetNickname()}");
+			Log.Debug($"[OnAnnouncingDecontamination] {ev.Id}");
 
-			if(AlphaWarheadController.Host._isLocked) return;
-
-			if(Configs.cassie_subtitle)
-			{
-				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
-			}
-
-			if(Configs.close_doors_on_nukecancel)
-			{
-				foreach(var door in UnityEngine.Object.FindObjectsOfType<Door>())
-				{
-					if(door.warheadlock)
-					{
-						if(door.isOpen)
-						{
-							door.RpcDoSound();
-						}
-						door.moving.moving = true;
-						door.SetState(false);
-					}
-				}
-			}
-		}
-
-		public void OnDetonated()
-		{
-			Log.Debug($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
-
-			detonatedDuration = RoundSummary.roundTime;
-
-			if(Configs.stop_respawn_after_detonated)
-			{
-				PlayerManager.localPlayer.GetComponent<MTFRespawn>().SummonChopper(false);
-			}
-		}
-
-		public void OnAnnounceDecont(AnnounceDecontaminationEvent ev)
-		{
-			Log.Debug($"[OnAnnounceDecont] {ev.AnnouncementId} {DecontaminationController.Singleton._stopUpdating}");
-
-			if(Configs.cassie_subtitle)
-			{
-				ev.IsAnnouncementGlobal = true;
-				switch(ev.AnnouncementId)
+			if(plugin.Config.CassieSubtitle)
+				switch(ev.Id)
 				{
 					case 0:
 						{
@@ -477,25 +416,78 @@ namespace SanyaPlugin
 							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
 							break;
 						}
-					case 5:
-						{
-							//no announce
-							break;
-						}
-					case 6:
-						{
-							Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
-							break;
-						}
 				}
-			}
+		}
+		public void OnDecontaminating(DecontaminatingEventArgs ev)
+		{
+			Log.Debug($"[OnDecontaminating]");
+
+			if(plugin.Config.CassieSubtitle)
+				Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
+		}
+		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
+		{
+			Log.Debug($"[OnGeneratorActivated] {ev.Generator.CurRoom}");
+			if(plugin.Config.GeneratorFinishLock) ev.Generator.NetworkisDoorOpen = false;
+
+			int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
+			if(plugin.Config.CassieSubtitle && !Generator079.mainGenerator.forcedOvercharge)
+				if(curgen < 5)
+					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", curgen.ToString()), 10);
+				else
+					Methods.SendSubtitle(Subtitles.GeneratorComplete, 20);
+
+			if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout)
+				IsEnableBlackout = false;
 		}
 
-		public void OnPreAuth(ref PreauthEvent ev)
+		//WarheadEvents
+		public void OnStarting(StartingEventArgs ev)
 		{
-			Log.Debug($"[OnPreAuth] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}");
+			Log.Debug($"[OnStarting] {ev.Player.Nickname}");
 
-			if((Configs.kick_steam_limited || Configs.kick_vpn) && !ev.UserId.Contains("@northwood", StringComparison.InvariantCultureIgnoreCase))
+			if(plugin.Config.CassieSubtitle)
+			{
+				bool isresumed = AlphaWarheadController._resumeScenario != -1;
+				double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
+				double count = Math.Truncate(left / 10.0) * 10.0;
+
+				if(!isresumed)
+					Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
+				else
+					Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
+			}
+		}
+		public void OnStopping(StoppingEventArgs ev)
+		{
+			Log.Debug($"[OnStopping] {ev.Player.Nickname}");
+
+			if(AlphaWarheadController.Host._isLocked) return;
+
+			if(plugin.Config.CassieSubtitle)
+				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
+
+			if(plugin.Config.CloseDoorsOnNukecancel)
+				foreach(var door in Map.Doors)
+					if(door.warheadlock)
+						door.SetStateWithSound(false);
+		}
+		public void OnDetonated()
+		{
+			Log.Debug($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
+
+			detonatedDuration = RoundSummary.roundTime;
+
+			if(plugin.Config.StopRespawnAfterDetonated)
+				Cassie.MtfRespawn.SummonChopper(false);
+		}
+
+		//PlayerEvents
+		public void OnPreAuthenticating(PreAuthenticatingEventArgs ev)
+		{
+			Log.Debug($"[OnPreAuthenticating] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}");
+
+			if((plugin.Config.KickSteamLimited || plugin.Config.KickVpn) && !ev.UserId.Contains("@northwood", StringComparison.InvariantCultureIgnoreCase))
 			{
 				reader.SetSource(ev.Request.Data.RawData, 20);
 				if(reader.TryGetBytesWithLength(out var b) && reader.TryGetString(out var s) &&
@@ -503,44 +495,36 @@ namespace SanyaPlugin
 				{
 					if((flags & BypassFlags) > 0)
 					{
-						Log.Warn($"[OnPreAuth] User have bypassflags. {ev.UserId}");
+						Log.Warn($"[OnPreAuthenticating] User have bypassflags. {ev.UserId}");
 						return;
 					}
 				}
 			}
 
-			if(Configs.data_enabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
-			{
-				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
-			}
-
-			if(Configs.kick_vpn)
+			if(plugin.Config.KickVpn)
 			{
 				if(ShitChecker.IsBlacklisted(ev.Request.RemoteEndPoint.Address))
 				{
-					ev.Allow = false;
 					writer.Reset();
 					writer.Put((byte)10);
 					writer.Put(Subtitles.VPNKickMessageShort);
 					ev.Request.Reject(writer);
 					return;
 				}
-
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev)));
 			}
 
-			if(Configs.kick_steam_limited && ev.UserId.Contains("@steam", StringComparison.InvariantCultureIgnoreCase))
-			{
+			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam", StringComparison.InvariantCultureIgnoreCase))
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
-			}
+
+			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
+				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 		}
-
-		public void OnPlayerJoin(PlayerJoinEvent ev)
+		public void OnJoined(JoinedEventArgs ev)
 		{
-			if(ev.Player.IsHost()) return;
-			Log.Info($"[OnPlayerJoin] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+			Log.Info($"[OnJoined] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
-			if(kickedbyChecker.TryGetValue(ev.Player.GetUserId(), out var reason))
+			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
 			{
 				string reasonMessage = string.Empty;
 				if(reason == "steam")
@@ -548,611 +532,370 @@ namespace SanyaPlugin
 				else if(reason == "vpn")
 					reasonMessage = Subtitles.VPNKickMessage;
 
-				ServerConsole.Disconnect(ev.Player.characterClassManager.connectionToClient, reasonMessage);
-				kickedbyChecker.Remove(ev.Player.GetUserId());
+				ServerConsole.Disconnect(ev.Player.Connection, reasonMessage);
+				kickedbyChecker.Remove(ev.Player.UserId);
 				return;
 			}
 
-			if(!string.IsNullOrEmpty(Configs.motd_message))
-			{
-				Methods.SendSubtitle(Configs.motd_message.Replace("[name]", ev.Player.GetNickname()), 10, ev.Player);
-			}
+			if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
+				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
 
-			if(Configs.data_enabled
-				&& Configs.level_enabled
-				&& PlayerDataManager.playersData.TryGetValue(ev.Player.GetUserId(), out PlayerData data))
-			{
+			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
+				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
 				Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
-			}
 
-			if(Configs.disable_all_chat)
-			{
-				if(!(Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(ev.Player.GetUserId())))
-				{
-					ev.Player.characterClassManager.NetworkMuted = true;
-				}
-			}
+			if(plugin.Config.DisableAllChat)
+				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
+					ev.Player.IsMuted = true;
 
 			//MuteFixer
-			foreach(ReferenceHub player in Player.GetHubs())
-				if(player.IsMuted())
-					player.characterClassManager.SetDirtyBit(1uL);
+			foreach(var player in Player.List)
+				if(player.IsMuted)
+					player.ReferenceHub.characterClassManager.SetDirtyBit(1uL);
 
 			//SpeedFixer
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(4uL);
 		}
-
-		public void OnPlayerLeave(PlayerLeaveEvent ev)
+		public void OnLeft(LeftEventArgs ev)
 		{
-			if(ev.Player.IsHost()) return;
-			Log.Debug($"[OnPlayerLeave] {ev.Player.GetNickname()} ({ev.Player.GetIpAddress()}:{ev.Player.GetUserId()})");
+			Log.Debug($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
-			if(Configs.data_enabled && !string.IsNullOrEmpty(ev.Player.GetUserId()))
-			{
-				if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
-				{
-					PlayerDataManager.playersData.Remove(ev.Player.GetUserId());
-				}
-			}
+			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
+				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
+					PlayerDataManager.playersData.Remove(ev.Player.UserId);
 		}
-
-		public void OnStartItems(StartItemsEvent ev)
+		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
-			if(ev.Player.IsHost()) return;
-			Log.Debug($"[OnStartItems] {ev.Player.GetNickname()} -> {ev.Role}");
+			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} -> {ev.NewRole}");
 
-			if(Configs.defaultitems.TryGetValue(ev.Role, out List<ItemType> itemconfig) && itemconfig.Count > 0)
-			{
-				ev.StartItems = itemconfig;
-			}
-
-			if(itemconfig != null && itemconfig.Contains(ItemType.None))
-			{
-				ev.StartItems.Clear();
-			}
-
-			switch(eventmode)
-			{
-				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
-					{
-						if(ev.Role == RoleType.ClassD && Configs.classd_insurgency_classd_inventory.Count > 0)
-						{
-							ev.StartItems = Configs.classd_insurgency_classd_inventory;
-						}
-						if(ev.Role == RoleType.Scientist && Configs.classd_insurgency_scientist_inventory.Count > 0)
-						{
-							ev.StartItems = Configs.classd_insurgency_scientist_inventory;
-						}
-						break;
-					}
-			}
-		}
-
-		public void OnPlayerSetClass(SetClassEvent ev)
-		{
-			if(ev.Player.IsHost()) return;
-			Log.Debug($"[OnPlayerSetClass] {ev.Player.GetNickname()} -> {ev.Role}");
-
-			if(Configs.scp079_ex_enabled && ev.Role == RoleType.Scp079)
-			{
+			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
-			}
 
-			if(Configs.scp106_ex_enabled && ev.Role == RoleType.Scp106)
-			{
+			if(plugin.Config.Scp106PortalExtensionEnabled && ev.NewRole == RoleType.Scp106)
 				roundCoroutines.Add(Timing.CallDelayed(5f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
-			}
 
-			if(Configs.recovery_amount_scp049 > 0 && ev.Role == RoleType.Scp0492)
-			{
-				foreach(var scp049 in RoleType.Scp049.GetHubs())
-				{
-					scp049.playerStats.HealHPAmount(Configs.recovery_amount_scp049);
-				}
-			}
-
-			if(Configs.scp049_add_time_res_success && ev.Role == RoleType.Scp0492)
-			{
-				foreach(var target in RoleType.Spectator.GetHubs())
-				{
-					Methods.AddDeathTimeForScp049(target);
-				}
-			}
-		}
-
-		public void OnPlayerSpawn(PlayerSpawnEvent ev)
-		{
-			if(ev.Player.IsHost()) return;
-			Log.Debug($"[OnPlayerSpawn] {ev.Player.GetNickname()} -{ev.Role}-> {ev.Spawnpoint}");
+			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
+				ev.Items = itemconfig;
 
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 					{
-						if(ev.Role == RoleType.ClassD)
+						switch(ev.NewRole)
 						{
-							ev.Spawnpoint = LCZArmoryPos;
+							case RoleType.ClassD:
+								ev.Items = plugin.Config.ClassdInsurgentInventoryClassdParsed;
+								break;
+							case RoleType.Scientist:
+								ev.Items = plugin.Config.ClassdInsurgentInventoryScientistParsed;
+								break;
 						}
 						break;
 					}
 			}
 		}
-
-		public void OnPlayerHurt(ref PlayerHurtEvent ev)
+		public void OnSpawning(SpawningEventArgs ev)
 		{
-			if(ev.Player.IsHost() || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
-			Log.Debug($"[OnPlayerHurt:Before] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
+			Log.Debug($"[OnSpawning] {ev.Player.Nickname} -{ev.RoleType}-> {ev.Position}");
 
-			if(ev.Attacker == null) return;
-
-			if(ev.DamageType != DamageTypes.Nuke
-				&& ev.DamageType != DamageTypes.Decont
-				&& ev.DamageType != DamageTypes.Wall
-				&& ev.DamageType != DamageTypes.Tesla
-				&& ev.DamageType != DamageTypes.Scp207)
+			switch(eventmode)
 			{
-				//GrenadeHitmark
-				if(Configs.grenade_hitmark
-					&& ev.DamageType == DamageTypes.Grenade
-					&& ev.Player.GetUserId() != ev.Attacker.GetUserId())
-				{
-					ev.Attacker.ShowHitmarker();
-				}
-
-				//USPMultiplier
-				if(ev.DamageType == DamageTypes.Usp)
-				{
-					if(ev.Player.characterClassManager.IsAnyScp())
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 					{
-						ev.Amount *= Configs.damage_usp_multiplier_scp;
+						if(ev.RoleType == RoleType.ClassD)
+							ev.Position = LCZArmoryPos;
+						break;
 					}
-					else
-					{
-						ev.Amount *= Configs.damage_usp_multiplier_human;
-					}
-					ev.Player.playerEffectsController.EnableEffect<Deafened>(3f);
-					ev.Player.playerEffectsController.EnableEffect<Blinded>(3f);
-				}
-
-				//939Bleeding
-				if(Configs.scp939_attack_bleeding && ev.DamageType == DamageTypes.Scp939)
-				{
-					ev.Player.playerEffectsController.EnableEffect<Bleeding>();
-					ev.Player.playerEffectsController.EnableEffect<Hemorrhage>();
-				}
-
-				//049-2Effect
-				if(Configs.scp0492_hurt_effect && ev.DamageType == DamageTypes.Scp0492)
-				{
-					ev.Player.playerEffectsController.EnableEffect<Blinded>(2f);
-					ev.Player.playerEffectsController.EnableEffect<Amnesia>(2f);
-				}
-
-				//HurtBlink173
-				if(Configs.scp173_hurt_blink_percent > 0 && ev.Player.GetRole() == RoleType.Scp173 && UnityEngine.Random.Range(0, 100) < Configs.scp173_hurt_blink_percent)
-				{
-					Methods.Blink();
-				}
-
-				//CuffedDivisor
-				if(ev.Player.IsHandCuffed())
-				{
-					ev.Amount /= Configs.damage_divisor_cuffed;
-				}
-
-				//SCPsDivisor
-				if(ev.DamageType != DamageTypes.MicroHid)
-				{
-					switch(ev.Player.GetRole())
-					{
-						case RoleType.Scp173:
-							ev.Amount /= Configs.damage_divisor_scp173;
-							break;
-						case RoleType.Scp106:
-							if(ev.DamageType == DamageTypes.Grenade) ev.Amount /= Configs.damage_divisor_scp106_grenade;
-							ev.Amount /= Configs.damage_divisor_scp106;
-							break;
-						case RoleType.Scp049:
-							ev.Amount /= Configs.damage_divisor_scp049;
-							break;
-						case RoleType.Scp096:
-							ev.Amount /= Configs.damage_divisor_scp096;
-							break;
-						case RoleType.Scp0492:
-							ev.Amount /= Configs.damage_divisor_scp0492;
-							break;
-						case RoleType.Scp93953:
-						case RoleType.Scp93989:
-							ev.Amount /= Configs.damage_divisor_scp939;
-							break;
-					}
-				}
 			}
-
-			Log.Debug($"[OnPlayerHurt:After] {ev.Attacker?.GetNickname()}[{ev.Attacker?.GetRole()}] -{ev.Info.GetDamageName()}({ev.Info.Amount})-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
 		}
-
-		public void OnPlayerDeath(ref PlayerDeathEvent ev)
+		public void OnHurting(HurtingEventArgs ev)
 		{
-			if(ev.Player.IsHost() || ev.Player.GetRole() == RoleType.Spectator || ev.Player.characterClassManager.GodMode || ev.Player.characterClassManager.SpawnProtected) return;
-			Log.Debug($"[OnPlayerDeath] {ev.Killer?.GetNickname()}[{ev.Killer?.GetRole()}] -{ev.Info.GetDamageName()}-> {ev.Player?.GetNickname()}[{ev.Player?.GetRole()}]");
+			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]");
 
-			if(ev.Killer == null) return;
+			//GrenadeHitmark
+			if(plugin.Config.HitmarkGrenade && ev.DamageType == DamageTypes.Grenade && ev.Target != ev.Attacker)
+				ev.Attacker.ShowHitmarker();
 
-			if(Configs.data_enabled)
-			{
-				if(!string.IsNullOrEmpty(ev.Killer.GetUserId())
-					&& ev.Player.GetUserId() != ev.Killer.GetUserId()
-					&& PlayerDataManager.playersData.ContainsKey(ev.Killer.GetUserId()))
-				{
-					PlayerDataManager.playersData[ev.Killer.GetUserId()].AddExp(Configs.level_exp_kill);
-				}
-
-				if(PlayerDataManager.playersData.ContainsKey(ev.Player.GetUserId()))
-				{
-					PlayerDataManager.playersData[ev.Player.GetUserId()].AddExp(Configs.level_exp_death);
-				}
-			}
-
-			if(ev.Info.GetDamageType() == DamageTypes.Scp173 && ev.Killer.GetRole() == RoleType.Scp173 && Configs.recovery_amount_scp173 > 0)
-			{
-				ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp173);
-			}
-			if(ev.Info.GetDamageType() == DamageTypes.Scp096 && ev.Killer.GetRole() == RoleType.Scp096 && Configs.recovery_amount_scp096 > 0)
-			{
-				ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp096);
-			}
-			if(ev.Info.GetDamageType() == DamageTypes.Scp939 && (ev.Killer.GetRole() == RoleType.Scp93953 || ev.Killer.GetRole() == RoleType.Scp93989) && Configs.recovery_amount_scp939 > 0)
-			{
-				ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp939);
-				ev.Player.inventory.Clear();
-			}
-			if(ev.Info.GetDamageType() == DamageTypes.Scp0492 && ev.Killer.GetRole() == RoleType.Scp0492 && Configs.recovery_amount_scp0492 > 0)
-			{
-				ev.Killer.playerStats.HealHPAmount(Configs.recovery_amount_scp0492);
-			}
-
-			if(Configs.kill_hitmark
-				&& ev.Killer.GetTeam() != Team.SCP
-				&& !string.IsNullOrEmpty(ev.Killer.GetUserId())
-				&& ev.Killer.GetUserId() != ev.Player.GetUserId())
-			{
-				Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GetComponent<MicroHID>()));
-			}
-
-			if(Configs.cassie_subtitle
-				&& ev.Player.GetTeam() == Team.SCP
-				&& ev.Player.GetRole() != RoleType.Scp0492
-				&& ev.Player.GetRole() != RoleType.Scp079)
-			{
-				string fullname = CharacterClassManager._staticClasses.Get(ev.Player.GetRole()).fullName;
-				string str;
-				if(ev.Info.GetDamageType() == DamageTypes.Tesla)
-				{
-					str = Subtitles.SCPDeathTesla.Replace("{0}", fullname);
-				}
-				else if(ev.Info.GetDamageType() == DamageTypes.Nuke)
-				{
-					str = Subtitles.SCPDeathWarhead.Replace("{0}", fullname);
-				}
-				else if(ev.Info.GetDamageType() == DamageTypes.Decont)
-				{
-					str = Subtitles.SCPDeathDecont.Replace("{0}", fullname);
-				}
+			//USPMultiplier
+			if(ev.DamageType == DamageTypes.Usp)
+				if(ev.Target.Team == Team.SCP)
+					ev.Amount *= plugin.Config.UspDamageMultiplierScp;
 				else
-				{
-					Team killerTeam = ev.Killer.GetTeam();
-					foreach(var i in Player.GetHubs())
-					{
-						if(i.queryProcessor.PlayerId == ev.Info.PlayerId)
-						{
-							killerTeam = i.GetTeam();
-						}
-					}
-					Log.Debug($"[CheckTeam] ply:{ev.Player.queryProcessor.PlayerId} kil:{ev.Killer.queryProcessor.PlayerId} plyid:{ev.Info.PlayerId} killteam:{killerTeam}");
+					ev.Amount *= plugin.Config.UspDamageMultiplierHuman;
 
-					if(killerTeam == Team.CDP)
-					{
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
-					}
-					else if(killerTeam == Team.CHI)
-					{
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
-					}
-					else if(killerTeam == Team.RSC)
-					{
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
-					}
-					else if(killerTeam == Team.MTF)
-					{
-						string unit = NineTailedFoxUnits.host.list[ev.Killer.characterClassManager.NtfUnit];
-						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", unit);
-					}
-					else
-					{
-						str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
-					}
-				}
-
-				int count = 0;
-				bool isFound079 = false;
-				bool isForced = false;
-				foreach(var i in Player.GetHubs())
-				{
-					if(ev.Player.GetUserId() == i.GetUserId()) continue;
-					if(i.GetTeam() == Team.SCP) count++;
-					if(i.GetRole() == RoleType.Scp079) isFound079 = true;
-				}
-
-				Log.Debug($"[Check079] SCPs:{count} isFound079:{isFound079} totalvol:{Generator079.mainGenerator.totalVoltage} forced:{Generator079.mainGenerator.forcedOvercharge}");
-				if(count == 1
-					&& isFound079
-					&& Generator079.mainGenerator.totalVoltage < 4
-					&& !Generator079.mainGenerator.forcedOvercharge
-					&& ev.Info.GetDamageType() != DamageTypes.Nuke)
-				{
-					isForced = true;
-					str = str.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。").Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
-				}
-				else
-				{
-					str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
-				}
-
-				Methods.SendSubtitle(str, (ushort)(isForced ? 30 : 10));
-			}
-
-			if(ev.Info.GetDamageType() == DamageTypes.Tesla || ev.Info.GetDamageType() == DamageTypes.Nuke)
+			//SCP-939 Bleeding
+			if(plugin.Config.Scp939AttackBleeding && ev.DamageType == DamageTypes.Scp939)
 			{
-				ev.Player.inventory.Clear();
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Bleeding>();
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Hemorrhage>();
 			}
 
-			//Ticket Extend
-			switch(ev.Player.GetTeam())
+			//SCP-049-2 Effect
+			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(2f);
+
+			//SCP-173 Force Blink
+			if(plugin.Config.Scp173ForceBlinkPercent > 0 && ev.Target.Role == RoleType.Scp173 && plugin.Random.Next(0,100) < plugin.Config.Scp173ForceBlinkPercent)
+				Methods.Blink();
+
+
+			//CuffedMultiplier
+			if(ev.Target.IsCuffed)
+				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
+
+			//SCPsMultiplier
+			if(ev.Attacker != ev.Target)
+				switch(ev.Target.Role)
+				{
+					case RoleType.Scp173:
+						ev.Amount *= plugin.Config.Scp173DamageMultiplier;
+						break;
+					case RoleType.Scp106:
+						if(ev.DamageType == DamageTypes.Grenade)
+							ev.Amount *= plugin.Config.Scp106GrenadeMultiplier;
+						else
+							ev.Amount *= plugin.Config.Scp106DamageMultiplier;
+						break;
+					case RoleType.Scp049:
+						ev.Amount *= plugin.Config.Scp049DamageMultiplier;
+						break;
+					case RoleType.Scp096:
+						ev.Amount *= plugin.Config.Scp096DamageMultiplier;
+						break;
+					case RoleType.Scp0492:
+						ev.Amount *= plugin.Config.Scp0492DamageMultiplier;
+						break;
+					case RoleType.Scp93953:
+					case RoleType.Scp93989:
+						ev.Amount *= plugin.Config.Scp939DamageMultiplier;
+						break;
+				}
+
+			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]");
+		}
+		public void OnDied(DiedEventArgs ev)
+		{
+			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.Role}]");
+
+			if(plugin.Config.DataEnabled)
+			{
+				if(!string.IsNullOrEmpty(ev.Killer.UserId) && ev.Killer != ev.Target && PlayerDataManager.playersData.ContainsKey(ev.Killer.UserId))
+					PlayerDataManager.playersData[ev.Killer.UserId].AddExp(plugin.Config.LevelExpKill);
+
+				if(PlayerDataManager.playersData.ContainsKey(ev.Target.UserId))
+					PlayerDataManager.playersData[ev.Target.UserId].AddExp(plugin.Config.LevelExpDeath);
+			}
+
+			//HitmarkKilled
+			if(plugin.Config.HitmarkKilled && ev.Killer != ev.Target)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GameObject.GetComponent<MicroHID>())));
+
+			//SCPsRecovery
+			switch(ev.Killer.Role)
+			{
+				case RoleType.Scp173:
+					ev.Killer.Health += plugin.Config.Scp173RecoveryAmount;
+					break;
+				case RoleType.Scp106:
+					ev.Killer.Health += plugin.Config.Scp106RecoveryAmount;
+					break;
+				case RoleType.Scp096:
+					ev.Killer.Health += plugin.Config.Scp096RecoveryAmount;
+					break;
+				case RoleType.Scp0492:
+					ev.Killer.Health += plugin.Config.Scp0492RecoveryAmount;
+					break;
+				case RoleType.Scp93953:
+				case RoleType.Scp93989:
+					ev.Killer.Health += plugin.Config.Scp939RecoveryAmount;
+					break;
+			}
+
+			//TeslaDelete
+			if(plugin.Config.TeslaDeleteItems && ev.HitInformations.GetDamageType() == DamageTypes.Tesla)
+				ev.Target.Inventory.Clear();
+
+			//SCP-939 RemoveItems
+			if(plugin.Config.Scp939RemoveItem && ev.HitInformations.GetDamageType() == DamageTypes.Scp939)
+				ev.Target.Inventory.Clear();
+
+			//TicketExtend
+			switch(ev.Target.Team)
 			{
 				case Team.CDP:
-					Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_classd_died_count;
-					if(ev.Killer.GetTeam() == Team.MTF || ev.Killer.GetTeam() == Team.RSC) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_classd_killed_count;
+					if(ev.Killer.Team != Team.SCP) Cassie.MtfRespawn.ChaosRespawnTickets += plugin.Config.TicketsCiClassdDiedCount;
+					if(ev.Killer.Team == (Team.MTF | Team.RSC)) Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfClassdDiedCount;
 					break;
 				case Team.RSC:
-					Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_scientist_died_count;
-					if(ev.Killer.GetTeam() == Team.CHI || ev.Killer.GetTeam() == Team.CDP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_scientist_killed_count;
+					Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfScientistDiedCount;
 					break;
 				case Team.MTF:
-					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.MtfRespawnTickets += Configs.tickets_mtf_killed_by_scp_count;
+					if(ev.Killer.Team == Team.SCP) Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfKilledByScpCount;
 					break;
 				case Team.CHI:
-					if(ev.Killer.GetTeam() == Team.SCP) Cassie.mtfRespawn.ChaosRespawnTickets += Configs.tickets_ci_killed_by_scp_count;
+					if(ev.Killer.Team == Team.SCP) Cassie.MtfRespawn.ChaosRespawnTickets += plugin.Config.TicketsCiKilledByScpCount;
 					break;
 			}
-		}
 
-		public void OnPocketDimDeath(PocketDimDeathEvent ev)
-		{
-			Log.Debug($"[OnPocketDimDeath] {ev.Player.GetNickname()}");
-
-			if(Configs.data_enabled)
+			//CassieSubtitle
+			if(plugin.Config.CassieSubtitle && ev.Target.Team == Team.SCP && ev.Target.Role != RoleType.Scp0492 && ev.Target.Role != RoleType.Scp079)
 			{
-				foreach(ReferenceHub player in Player.GetHubs())
-				{
-					if(player.GetRole() == RoleType.Scp106)
-					{
-						if(PlayerDataManager.playersData.ContainsKey(player.GetUserId()))
-						{
-							PlayerDataManager.playersData[player.GetUserId()].AddExp(Configs.level_exp_kill);
-						}
-					}
-				}
-			}
+				var damageTypes = ev.HitInformations.GetDamageType();
+				string fullname = CharacterClassManager._staticClasses.Get(ev.Target.Role).fullName;
+				string str;
 
-			if(Configs.recovery_amount_scp106 > 0)
-			{
-				foreach(ReferenceHub player in Player.GetHubs())
-				{
-					if(player.GetRole() == RoleType.Scp106)
-					{
-						player.playerStats.HealHPAmount(Configs.recovery_amount_scp106);
-						player.ShowHitmarker();
-					}
-				}
-			}
-		}
-
-		public void OnPlayerUsedMedicalItem(UsedMedicalItemEvent ev)
-		{
-			Log.Debug($"[OnPlayerUsedMedicalItem] {ev.Player.GetNickname()} -> {ev.ItemType}");
-
-			if(ev.ItemType == ItemType.Medkit || ev.ItemType == ItemType.SCP500)
-			{
-				ev.Player.playerEffectsController.DisableEffect<Hemorrhage>();
-				ev.Player.playerEffectsController.DisableEffect<Bleeding>();
-			}
-		}
-
-		public void OnPlayerTriggerTesla(ref TriggerTeslaEvent ev)
-		{
-			if(Configs.tesla_triggerable_teams.Count == 0
-				|| Configs.tesla_triggerable_teams.Contains((int)ev.Player.GetTeam()))
-			{
-				if(Configs.tesla_triggerable_disarmed || ev.Player.handcuffs.CufferId == -1)
-				{
-					ev.Triggerable = true;
-				}
+				if(damageTypes == DamageTypes.Tesla)
+					str = Subtitles.SCPDeathTesla.Replace("{0}", fullname);
+				else if(damageTypes == DamageTypes.Nuke)
+					str = Subtitles.SCPDeathWarhead.Replace("{0}", fullname);
+				else if(damageTypes == DamageTypes.Decont)
+					str = Subtitles.SCPDeathDecont.Replace("{0}", fullname);
 				else
 				{
-					ev.Triggerable = false;
+					if(ev.Killer.Team == Team.CDP)
+						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
+					else if(ev.Killer.Team == Team.CHI)
+						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
+					else if(ev.Killer.Team == Team.RSC)
+						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
+					else if(ev.Killer.Team == Team.MTF)
+						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", NineTailedFoxUnits.host.list[ev.Killer.ReferenceHub.characterClassManager.NtfUnit]);
+					else
+						str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
 				}
+
+				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP && x != ev.Target) == 1
+					&& Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge && damageTypes != DamageTypes.Nuke)
+					str = str
+						.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。")
+						.Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
+
+				Methods.SendSubtitle(str, (ushort)(str.Contains("{-1") ? 10 : 30));
+			}
+		}
+		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
+		{
+			Log.Debug($"[OnFailingEscapePocketDimension] {ev.Player.Nickname}");
+
+			if(plugin.Config.DataEnabled)
+				foreach(var player in Player.List)
+					if(player.Role == RoleType.Scp106 && PlayerDataManager.playersData.ContainsKey(player.UserId))
+						PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpKill);
+
+			foreach(var player in Player.List.Where(x => x.Role == RoleType.Scp106))
+			{
+				player.Health += plugin.Config.Scp106RecoveryAmount;
+				player.ShowHitmarker();
+			}
+		}
+		public void OnSyncingData(SyncingDataEventArgs ev)
+		{
+			if(ev.Player.IsHost || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
+
+			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079
+				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2)
+				if(ev.CurrentAnimation == 1)
+					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
+				else
+					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
+
+			if(plugin.Config.StaminaLostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
+				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
+			{
+				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaLostJump;
+				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+
+				if(ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina <= 0f)
+				{
+					ev.Player.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(7f);
+					ev.Player.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(5f);
+				}
+			}
+		}
+		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
+		{
+			Log.Debug($"[OnUsedMedicalItem] {ev.Player.Nickname} -> {ev.Item}");
+
+			if(ev.Item == (ItemType.Medkit | ItemType.SCP500))
+			{
+				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Hemorrhage>();
+				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Bleeding>();
+			}
+		}
+		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
+		{
+			if(plugin.Config.TeslaTriggerableTeams.Count == 0 || plugin.Config.TeslaTriggerableTeamsParsed.Contains(ev.Player.Team))
+			{
+				if(plugin.Config.TeslaTriggerableDisarmed || !ev.Player.IsCuffed)
+					ev.IsTriggerable = true;
+				else
+					ev.IsTriggerable = false;
 			}
 			else
-			{
-				ev.Triggerable = false;
-			}
+				ev.IsTriggerable = false;
 		}
-
-		public void OnPlayerDoorInteract(ref DoorInteractionEvent ev)
+		public void OnInteractingDoor(InteractingDoorEventArgs ev)
 		{
-			Log.Debug($"[OnPlayerDoorInteract] {ev.Player.GetNickname()}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}");
+			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}");
 
-			if(Configs.inventory_keycard_act && ev.Player.GetTeam() != Team.SCP && !ev.Player.serverRoles.BypassMode && !ev.Door.locked)
-			{
-				foreach(var item in ev.Player.inventory.items)
-				{
-					foreach(var permission in ev.Player.inventory.GetItemByID(item.id).permissions)
-					{
+			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && !ev.Door.locked)
+				foreach(var item in ev.Player.Inventory.items)
+					foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
 						if(ev.Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
-						{
-							ev.Allow = true;
-						}
-					}
-				}
-			}
-
-			//Mini fix
-			if(ev.Door.DoorName.Contains("CHECKPOINT") && (ev.Door.decontlock || ev.Door.warheadlock) && !ev.Door.isOpen)
-			{
-				ev.Door.SetStateWithSound(true);
-			}
+							ev.IsAllowed = true;
 		}
-
-		public void OnPlayerLockerInteract(LockerInteractionEvent ev)
+		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{
-			Log.Debug($"[OnPlayerLockerInteract] {ev.Player.GetNickname()}:{ev.LockerId}");
-			if(Configs.inventory_keycard_act)
-			{
-				foreach(var item in ev.Player.inventory.items)
-				{
-					if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("PEDESTAL_ACC"))
-					{
-						ev.Allow = true;
-					}
-				}
-			}
+			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.Id}");
+
+			if(plugin.Config.InventoryKeycardActivation)
+				foreach(var item in ev.Player.Inventory.items)
+					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("PEDESTAL_ACC"))
+						ev.IsAllowed = true;
 		}
-
-		public void OnPlayerChangeAnim(ref SyncDataEvent ev)
+		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
 		{
-			if(ev.Player.IsHost() || ev.Player.animationController.curAnim == ev.State) return;
+			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}");
+			if(plugin.Config.InventoryKeycardActivation && !ev.Player.IsBypassModeEnabled)
+				foreach(var item in ev.Player.Inventory.items)
+					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
+						ev.IsAllowed = true;
 
-			if(Configs.scp079_ex_enabled && ev.Player.GetRole() == RoleType.Scp079)
+			if(ev.IsAllowed && plugin.Config.GeneratorUnlockOpen)
 			{
-				if(ev.State == 1)
-					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
-				else
-					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
-			}
-
-			if(Configs.scp106_ex_enabled && ev.Player.GetRole() == RoleType.Scp106 && ev.Player.animationController.curAnim != 2 && ev.State != 2)
-			{
-				if(ev.State == 1)
-					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
-				else
-					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
-			}
-
-			if(Configs.stamina_jump_used != -1f
-				&& ev.State == 2 
-				&& ev.Player.characterClassManager.IsHuman() 
-				&& !ev.Player.fpc.staminaController._invigorated.Enabled 
-				&& !ev.Player.fpc.staminaController._scp207.Enabled
-				)
-			{
-				ev.Player.fpc.staminaController.RemainingStamina -= Configs.stamina_jump_used;
-				ev.Player.fpc.staminaController._regenerationTimer = 0f;
-
-				if(ev.Player.fpc.staminaController.RemainingStamina <= 0f)
-				{
-					ev.Player.playerEffectsController.EnableEffect<Disabled>(7f);
-					ev.Player.playerEffectsController.EnableEffect<Concussed>(5f);
-				}
-			}
-		}
-
-		public void OnTeamRespawn(ref TeamRespawnEvent ev)
-		{
-			Log.Debug($"[OnTeamRespawn] Queues:{ev.ToRespawn.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaxRespawnAmt}");
-
-			if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated)
-			{
-				ev.ToRespawn.Clear();
-			}
-
-			if(Configs.godmode_after_endround && !RoundSummary.RoundInProgress())
-			{
-				ev.ToRespawn.Clear();
-			}
-		}
-
-		public void OnGeneratorUnlock(ref GeneratorUnlockEvent ev)
-		{
-			Log.Debug($"[OnGeneratorUnlock] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
-			if(Configs.inventory_keycard_act && !ev.Player.serverRoles.BypassMode)
-			{
-				foreach(var item in ev.Player.inventory.items)
-				{
-					if(ev.Player.inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
-					{
-						ev.Allow = true;
-					}
-				}
-			}
-
-			if(ev.Allow && Configs.generator_unlock_to_open)
-			{
-				ev.Generator._doorAnimationCooldown = 1.5f;
+				ev.Generator._doorAnimationCooldown = 2f;
 				ev.Generator.NetworkisDoorOpen = true;
 				ev.Generator.RpcDoSound(true);
 			}
 		}
-
-		public void OnGeneratorOpen(ref GeneratorOpenEvent ev)
+		public void OnOpeningGenerator(OpeningGeneratorEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorOpen] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
-			if(ev.Generator.prevFinish && Configs.generator_finish_to_lock) ev.Allow = false;
+			Log.Debug($"[OnOpeningGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}");
+
+			if(ev.Generator.prevFinish && plugin.Config.GeneratorFinishLock)
+				ev.IsAllowed = false;
 		}
 
-		public void OnGeneratorClose(ref GeneratorCloseEvent ev)
+		//Scp049
+		public void OnFinishingRecall(FinishingRecallEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorClose] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
-			if(ev.Allow && ev.Generator.isTabletConnected && Configs.generator_activating_opened) ev.Allow = false;
+			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}");
+
+			ev.Scp049.Health += plugin.Config.Scp049RecoveryAmount;
+
+			if(plugin.Config.Scp049ExtensionRecallTime)
+				foreach(var target in Player.List)
+					target.AddDeathTimeForScp049();
 		}
 
-		public void OnGeneratorInsert(ref GeneratorInsertTabletEvent ev)
+		//Scp079
+		public void OnGainingLevel(GainingLevelEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorInsert] {ev.Player.GetNickname()} -> {ev.Generator.CurRoom}");
-		}
+			Log.Debug($"[OnGainingLevel] {ev.Player.Nickname} {ev.OldLevel} -> {ev.NewLevel}");
 
-		public void OnGeneratorFinish(ref GeneratorFinishEvent ev)
-		{
-			Log.Debug($"[OnGeneratorFinish] {ev.Generator.CurRoom}");
-			if(Configs.generator_finish_to_lock) ev.Generator.NetworkisDoorOpen = false;
-
-			int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
-			if(Configs.cassie_subtitle && !Generator079.mainGenerator.forcedOvercharge)
-			{
-				if(curgen < 5)
-				{
-					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", curgen.ToString()), 10);
-				}
-				else
-				{
-					Methods.SendSubtitle(Subtitles.GeneratorComplete, 20);
-				}
-			}
-
-			if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout)
-			{
-				IsEnableBlackout = false;
-			}
-		}
-
-		public void On079LevelGain(Scp079LvlGainEvent ev)
-		{
-			Log.Debug($"[On079LevelGain] {ev.Player.GetNickname()}");
-
-			if(Configs.scp079_ex_enabled)
-			{
-				switch(ev.OldLvl)
+			if(plugin.Config.Scp079ExtendEnabled)
+				switch(ev.OldLevel)
 				{
 					case 1:
 						ev.Player.SendTextHint(HintTexts.Extend079Lv2, 10);
@@ -1164,679 +907,52 @@ namespace SanyaPlugin
 						ev.Player.SendTextHint(HintTexts.Extend079Lv4, 10);
 						break;
 				}
-			}
 		}
 
-		public void On106MakePortal(Scp106CreatedPortalEvent ev)
+		//Scp106
+		public void OnCreatingPortal(CreatingPortalEventArgs ev)
 		{
-			Log.Debug($"[On106MakePortal] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
+			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname}:{ev.Position}:{ev.Player.IsExmode()}");
 
-			if(Configs.scp106_ex_enabled && ev.Player.GetRole() == RoleType.Scp106)
+			if(plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106)
 			{
-				var scp106 = ev.Player.GetComponent<Scp106PlayerScript>();
-				if(!scp106.goingViaThePortal && ev.Player.falldamage.isGrounded && ev.Player.IsExmode())
+				var scp106 = ev.Player.GameObject.GetComponent<Scp106PlayerScript>();
+				if(!scp106.goingViaThePortal && ev.Player.ReferenceHub.falldamage.isGrounded && ev.Player.IsExmode())
 				{
-					var target = Player.GetHubs().Where(
-						x => x.GetTeam() != Team.SCP
-						&& x.GetTeam() != Team.RIP
-						&& x.GetTeam() != Team.TUT
-						&& x.falldamage.isGrounded
-						&& !x.playerEffectsController.GetEffect<Corroding>().Enabled)
+					var target = Player.List.Where(
+						x => x.Team != Team.SCP
+						&& x.Team != Team.RIP
+						&& x.Team != Team.TUT
+						&& x.ReferenceHub.falldamage.isGrounded
+						&& !x.ReferenceHub.playerEffectsController.GetEffect<Corroding>().Enabled)
 					.Random();
 
 					if(target == null)
 					{
 						ev.Player.SendTextHint(HintTexts.Extend106TargetNotFound, 5);
-						ev.Allow = false;
+						ev.IsAllowed = false;
 					}
 					else
-					{
-						if(Physics.Raycast(new Ray(target.transform.position, -target.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
+						if(Physics.Raycast(new Ray(target.Position, -target.GameObject.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
 						{
 							ev.Player.SendTextHint(HintTexts.Extend106Success, 5);
-							ev.PortalPosition = raycastHit.point - Vector3.up;
+							ev.Position = raycastHit.point - Vector3.up;
 						}
-					}
 				}
 			}
 		}
 
-		public void On106Teleport(Scp106TeleportEvent ev)
+		//Scp914
+		public void OnUpgradingItems(UpgradingItemsEventArgs ev)
 		{
-			Log.Debug($"[On106Teleport] {ev.Player.GetNickname()}:{ev.PortalPosition}:{ev.Player.IsExmode()}");
-		}
+			Log.Debug($"[OnUpgradingItems] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
 
-		public void On914Upgrade(ref SCP914UpgradeEvent ev)
-		{
-			Log.Debug($"[On914Upgrade] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}");
-
-			if(Configs.scp914_intake_death)
-			{
+			if(plugin.Config.Scp914IntakeDeath)
 				foreach(var player in ev.Players)
 				{
-					player.inventory.Clear();
-					var info = new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0);
-					player.playerStats.HurtPlayer(info, player.gameObject);
+					player.Inventory.Clear();
+					player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), player.GameObject);
 				}
-			}
-		}
-
-		public void OnShoot(ref ShootEvent ev)
-		{
-			Log.Debug($"[OnShoot] {ev.Shooter.GetNickname()} -{ev.TargetPos}-> {ev.Target?.name}");
-
-			if((Configs.grenade_shoot_fuse || Configs.item_shoot_move)
-				&& ev.TargetPos != Vector3.zero
-				&& Physics.Linecast(ev.Shooter.GetPosition(), ev.TargetPos, out RaycastHit raycastHit, grenade_pickup_mask))
-			{
-				if(Configs.item_shoot_move)
-				{
-					var pickup = raycastHit.transform.GetComponentInParent<Pickup>();
-					if(pickup != null && pickup.Rb != null)
-					{
-						pickup.Rb.AddExplosionForce(Vector3.Distance(ev.TargetPos, ev.Shooter.GetPosition()), ev.Shooter.GetPosition(), 500f, 3f, ForceMode.Impulse);
-					}
-				}
-
-				if(Configs.grenade_shoot_fuse)
-				{
-					var grenade = raycastHit.transform.GetComponentInParent<FragGrenade>();
-					if(grenade != null)
-					{
-						grenade.NetworkfuseTime = 0.1f;
-					}
-				}
-			}
-		}
-
-		public void OnCommand(ref RACommandEvent ev)
-		{
-			string[] args = ev.Command.Split(' ');
-			Log.Debug($"[OnCommand] sender:{ev.Sender.SenderId} command:{ev.Command} args:{args.Length}");
-
-			if(args[0].ToLower() == "sanya")
-			{
-				ReferenceHub player = ev.Sender.SenderId == "SERVER CONSOLE" || ev.Sender.SenderId == "GAME CONSOLE" ? PlayerManager.localPlayer.GetPlayer() : Player.GetPlayer(ev.Sender.SenderId);
-				if(!player.CheckPermission("sanya.racommand"))
-				{
-					ev.Allow = false;
-					ev.Sender.RAMessage("Permission denied.", false);
-					return;
-				}
-
-				if(args.Length > 1)
-				{
-					string ReturnStr;
-					bool isSuccess = true;
-					switch(args[1].ToLower())
-					{
-						case "test":
-							{
-								ReturnStr = "test ok.";
-								break;
-							}
-						case "resynceffect":
-							{
-								foreach(var ply in Player.GetHubs())
-								{
-									ply.playerEffectsController.Resync();
-								}
-								ReturnStr = "Resync ok.";
-								break;
-							}
-						case "check":
-							{
-								ReturnStr = $"Players List ({PlayerManager.players.Count})\n";
-								foreach(var i in Player.GetHubs())
-								{
-									ReturnStr += $"{i.GetNickname()} {i.GetPosition()}\n";
-									foreach(var effect in i.playerEffectsController.syncEffectsIntensity)
-										ReturnStr += $"{effect}";
-									ReturnStr += "\n";
-								}
-								ReturnStr.Trim();
-								break;
-							}
-						case "showconfig":
-							{
-								ReturnStr = Configs.GetConfigs();
-								break;
-							}
-						case "reload":
-							{
-								Plugin.Config.Reload();
-								Configs.Reload();
-								if(Configs.kick_vpn) ShitChecker.LoadLists();
-								ReturnStr = "reload ok";
-								break;
-							}
-						case "list":
-							{
-								ReturnStr = $"Players List ({PlayerManager.players.Count})\n";
-								foreach(var i in Player.GetHubs())
-								{
-									ReturnStr += $"[{i.GetPlayerId()}]{i.GetNickname()}({i.GetUserId()})<{i.GetRole()}/{i.GetHealth()}HP> {i.GetPosition()}\n";
-								}
-								ReturnStr.Trim();
-								break;
-							}
-						case "startair":
-							{
-								roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb()));
-								ReturnStr = "Started!";
-								break;
-							}
-						case "stopair":
-							{
-								ReturnStr = $"Stop ok. now:{Coroutines.isAirBombGoing}";
-								Coroutines.isAirBombGoing = false;
-								break;
-							}
-						case "dummy":
-							{
-								if(player != null)
-								{
-									var gameObject = Methods.SpawnDummy(player.GetRole(), player.GetPosition(), player.transform.rotation);
-									ReturnStr = $"{player.GetRole()}'s Dummy Created. pos:{gameObject.transform.position} rot:{gameObject.transform.rotation}";
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "sender should be Player.";
-								}
-								break;
-							}
-						case "106":
-							{
-								foreach(PocketDimensionTeleport pdt in UnityEngine.Object.FindObjectsOfType<PocketDimensionTeleport>())
-								{
-									pdt.SetType(PocketDimensionTeleport.PDTeleportType.Exit);
-								}
-								ReturnStr = "All set to [Exit].";
-								break;
-							}
-						case "096":
-							{
-								foreach(var i in Player.GetHubs())
-								{
-									if(i.GetRole() == RoleType.Scp096)
-									{
-										if(i.scpsController.curScp is Scp096 scp096)
-										{
-											scp096.Windup(true);
-										}
-									}
-								}
-								ReturnStr = "096 enraged!";
-								break;
-							}
-						case "914":
-							{
-								if(args.Length > 2)
-								{
-									if(!Scp914.Scp914Machine.singleton.working)
-									{
-
-										if(args[2] == "use")
-										{
-											Scp914.Scp914Machine.singleton.RpcActivate(NetworkTime.time);
-											ReturnStr = $"Used : {Scp914.Scp914Machine.singleton.knobState}";
-										}
-										else if(args[2] == "knob")
-										{
-											Scp914.Scp914Machine.singleton.ChangeKnobStatus();
-											ReturnStr = $"Knob Changed to:{Scp914.Scp914Machine.singleton.knobState}";
-										}
-										else
-										{
-											isSuccess = false;
-											ReturnStr = "[914] Wrong Parameters.";
-										}
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[914] SCP-914 is working now.";
-									}
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "[914] Parameters : 914 <use/knob>";
-								}
-								break;
-							}
-						case "nukecap":
-							{
-								var outsite = GameObject.Find("OutsitePanelScript")?.GetComponent<AlphaWarheadOutsitePanel>();
-								outsite.NetworkkeycardEntered = !outsite.keycardEntered;
-								ReturnStr = $"{outsite?.keycardEntered}";
-								break;
-							}
-						case "sonar":
-							{
-								if(player == null)
-								{
-									ReturnStr = $"Source not found. (Cant use from SERVER)";
-								}
-								else
-								{
-									int counter = 0;
-									foreach(var target in Player.GetHubs())
-									{
-										if(player.IsEnemy(target.GetTeam()))
-										{
-											// NEXT
-											counter++;
-										}
-									}
-									ReturnStr = $"Sonar Activated : {counter}";
-								}
-								break;
-							}
-						case "blackout":
-							{
-								if(args.Length > 2 && args[2] == "hcz")
-								{
-									Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, true);
-									ReturnStr = "HCZ blackout!";
-								}
-								else
-								{
-									Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
-									ReturnStr = "ALL blackout!";
-								}
-								break;
-							}
-						case "femur":
-							{
-								PlayerManager.localPlayer.GetComponent<PlayerInteract>()?.RpcContain106(PlayerManager.localPlayer);
-								ReturnStr = "FemurScreamer!";
-								break;
-							}
-						case "explode":
-							{
-								if(args.Length > 2)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null && target.GetRole() != RoleType.Spectator)
-									{
-										Methods.SpawnGrenade(target.transform.position, false, 0.1f, target);
-										ReturnStr = $"success. target:{target.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[explode] missing target.";
-									}
-								}
-								else
-								{
-									if(player != null)
-									{
-										Methods.SpawnGrenade(player.transform.position, false, 0.1f, player);
-										ReturnStr = $"success. target:{player.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[explode] missing target.";
-									}
-								}
-								break;
-							}
-						case "grenade":
-							{
-								if(args.Length > 2)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null && target.GetRole() != RoleType.Spectator)
-									{
-										Methods.SpawnGrenade(target.transform.position, false, -1, target);
-										ReturnStr = $"success. target:{target.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[grenade] missing target.";
-									}
-								}
-								else
-								{
-									if(player != null)
-									{
-										Methods.SpawnGrenade(player.transform.position, false, -1, player);
-										ReturnStr = $"success. target:{player.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[grenade] missing target.";
-									}
-								}
-								break;
-							}
-						case "flash":
-							{
-								if(args.Length > 2)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null && target.GetRole() != RoleType.Spectator)
-									{
-										Methods.SpawnGrenade(target.transform.position, true, -1, target);
-										ReturnStr = $"success. target:{target.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[flash] missing target.";
-									}
-								}
-								else
-								{
-									if(player != null)
-									{
-										Methods.SpawnGrenade(player.transform.position, true, -1, player);
-										ReturnStr = $"success. target:{player.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[flash] missing target.";
-									}
-								}
-								break;
-							}
-						case "ball":
-							{
-								if(args.Length > 2)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null && target.GetRole() != RoleType.Spectator)
-									{
-										Methods.Spawn018(target);
-										ReturnStr = $"success. target:{target.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[ball] missing target.";
-									}
-								}
-								else
-								{
-									if(player != null)
-									{
-										Methods.Spawn018(player);
-										ReturnStr = $"success. target:{player.GetNickname()}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[ball] missing target.";
-									}
-								}
-								break;
-							}
-						case "ammo":
-							{
-								if(player != null)
-								{
-									for(int i = 0; i < player.ammoBox.amount.Count; i++)
-									{
-										player.ammoBox.amount[i] = 200U;
-									}
-									ReturnStr = "Ammo set 200:200:200.";
-								}
-								else
-								{
-									ReturnStr = "Failed to set. (cant use from SERVER)";
-								}
-
-								break;
-							}
-						case "ev":
-							{
-								foreach(Lift lift in UnityEngine.Object.FindObjectsOfType<Lift>())
-								{
-									lift.UseLift();
-								}
-								ReturnStr = "EV Used.";
-								break;
-							}
-						case "roompos":
-							{
-								string output = "\n";
-								foreach(var rid in UnityEngine.Object.FindObjectsOfType<Rid>())
-								{
-									output += $"{rid.id} : {rid.transform.position}\n";
-								}
-								ReturnStr = output;
-								break;
-							}
-						case "tppos":
-							{
-								if(args.Length > 5)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null)
-									{
-										if(float.TryParse(args[3], out float x)
-											&& float.TryParse(args[4], out float y)
-											&& float.TryParse(args[5], out float z))
-										{
-											Vector3 pos = new Vector3(x, y, z);
-											target.playerMovementSync.OverridePosition(pos, 0f, true);
-											ReturnStr = $"TP to {pos}.";
-										}
-										else
-										{
-											isSuccess = false;
-											ReturnStr = "[tppos] Wrong parameters.";
-										}
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[tppos] missing target.";
-									}
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "[tppos] parameters : tppos <player> <x> <y> <z>";
-								}
-
-								break;
-							}
-						case "pocket":
-							{
-								if(args.Length > 2)
-								{
-									ReferenceHub target = Player.GetPlayer(args[2]);
-									if(target != null)
-									{
-										// next
-										ReturnStr = $"target[{target.GetNickname()}] move to PocketDimension.";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[pocket] missing target.";
-									}
-								}
-								else
-								{
-									if(player != null)
-									{
-										// next
-										ReturnStr = $"target[{player.GetNickname()}] move to PocketDimension.";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[pocket] missing target.";
-									}
-								}
-								break;
-							}
-						case "gen":
-							{
-								if(args.Length > 2)
-								{
-									if(args[2] == "unlock")
-									{
-										foreach(var generator in Generator079.Generators)
-										{
-											generator.NetworkisDoorUnlocked = true;
-											generator.NetworkisDoorOpen = true;
-											generator._doorAnimationCooldown = 0.5f;
-										}
-										ReturnStr = "gen unlocked.";
-									}
-									else if(args[2] == "door")
-									{
-										foreach(var generator in Generator079.Generators)
-										{
-											if(!generator.prevFinish)
-											{
-												bool now = !generator.isDoorOpen;
-												generator.NetworkisDoorOpen = now;
-												generator.CallRpcDoSound(now);
-											}
-										}
-										ReturnStr = $"gen doors interacted.";
-									}
-									else if(args[2] == "set")
-									{
-										float cur = 10f;
-										foreach(var generator in Generator079.Generators)
-										{
-											if(!generator.prevFinish)
-											{
-												generator.NetworkisDoorOpen = true;
-												generator.NetworkisTabletConnected = true;
-												generator.NetworkremainingPowerup = cur;
-												cur += 10f;
-											}
-										}
-										ReturnStr = "gen set.";
-									}
-									else if(args[2] == "once")
-									{
-										Generator079 gen = Generator079.Generators.FindAll(x => !x.prevFinish).GetRandomOne();
-
-										if(gen != null)
-										{
-											gen.NetworkisDoorUnlocked = true;
-											gen.NetworkisTabletConnected = true;
-											gen.NetworkisDoorOpen = true;
-										}
-										ReturnStr = "set once.";
-									}
-									else if(args[2] == "eject")
-									{
-										foreach(var generator in Generator079.Generators)
-										{
-											if(generator.isTabletConnected)
-											{
-												generator.EjectTablet();
-											}
-										}
-										ReturnStr = "gen ejected.";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[gen] Wrong Parameters.";
-									}
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "[gen] Parameters : gen <unlock/door/set/once/eject>";
-								}
-								break;
-							}
-						case "spawn":
-							{
-								var mtfrespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-								if(mtfrespawn.nextWaveIsCI)
-								{
-									mtfrespawn.timeToNextRespawn = 14f;
-								}
-								else
-								{
-									mtfrespawn.timeToNextRespawn = 18.5f;
-								}
-								ReturnStr = $"spawn soon. nextIsCI:{mtfrespawn.nextWaveIsCI}";
-								break;
-							}
-						case "next":
-							{
-								if(args.Length > 2)
-								{
-									MTFRespawn mtfRespawn = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-									if(args[2] == "ci")
-									{
-										mtfRespawn.nextWaveIsCI = true;
-										ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
-									}
-									else if(args[2] == "mtf" || args[2] == "ntf")
-									{
-										mtfRespawn.nextWaveIsCI = false;
-										ReturnStr = $"set NextIsCI:{mtfRespawn.nextWaveIsCI}";
-									}
-									else
-									{
-										isSuccess = false;
-										ReturnStr = "[next] Wrong Parameters.";
-									}
-								}
-								else
-								{
-									isSuccess = false;
-									ReturnStr = "[next] Wrong Parameters.";
-								}
-								break;
-							}
-						case "van":
-							{
-								PlayerManager.localPlayer.GetComponent<MTFRespawn>()?.RpcVan();
-								ReturnStr = "Van Called!";
-								break;
-							}
-						case "heli":
-							{
-								MTFRespawn mtf_r = PlayerManager.localPlayer.GetComponent<MTFRespawn>();
-								mtf_r.SummonChopper(!mtf_r._mtfA.isLanded);
-								ReturnStr = "Heli Called!";
-								break;
-							}
-						case "now":
-							{
-								ReturnStr = TimeBehaviour.CurrentTimestamp().ToString();
-								break;
-							}
-						default:
-							{
-								ReturnStr = "Wrong Parameters.";
-								isSuccess = false;
-								break;
-							}
-					}
-					ev.Allow = false;
-					ev.Sender.RAMessage(ReturnStr, isSuccess);
-				}
-				else
-				{
-					ev.Allow = false;
-					ev.Sender.RAMessage(string.Concat(
-						"Usage : sanya < reload / startair / stopair / nukelock / list / blackout ",
-						"/ roompos / tppos / pocket / gen / spawn / next / van / heli / 106 / 096 / 914 / now / ammo / test >"
-						), false);
-				}
-			}
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using EXILED;
 using UnityEngine;
+using Exiled.API.Features;
 
 namespace SanyaPlugin.Data
 {

@@ -3,8 +3,12 @@ using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Collections;
+using System.Linq;
 using Exiled.API.Features;
 using Exiled.API.Interfaces;
+using SanyaPlugin.Functions;
+
 
 namespace SanyaPlugin
 {
@@ -16,7 +20,7 @@ namespace SanyaPlugin
 		}
 
 		[Description("さにゃぷらぐいんの有効化")]
-		public bool IsEnabled { get; set; } = false;
+		public bool IsEnabled { get; set; } = true;
 
 		[Description("プレイヤーデータの有効化")]
 		public bool DataEnabled { get; set; } = false;
@@ -51,26 +55,43 @@ namespace SanyaPlugin
 		[Description("イベントモードのウェイト設定")]
 		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0, 0 };
 
+		[Description("各ロールの初期装備")]
+		public Dictionary<string, string> Defaultitems { get; set; } = new Dictionary<string, string>()
+		{
+			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
+		};
+		public Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
+
 		[Description("Dクラス反乱時のDクラスの初期装備")]
-		public List<ItemType> ClassdInsurgentInventoryClassd { get; set; } = new List<ItemType>();
+		public List<string> ClassdInsurgentInventoryClassd { get; set; } = new List<string>();
+		public List<ItemType> ClassdInsurgentInventoryClassdParsed = new List<ItemType>();
 
 		[Description("Dクラス反乱時の研究員の初期装備")]
-		public List<ItemType> ClassdInsurgentInventoryScientist { get; set; } = new List<ItemType>();
+		public List<string> ClassdInsurgentInventoryScientist { get; set; } = new List<string>();
+		public List<ItemType> ClassdInsurgentInventoryScientistParsed = new List<ItemType>();
 
 		[Description("テスラが反応する距離")]
 		public float TeslaRange { get; set; } = 5.5f;
 
 		[Description("テスラが反応するチームID")]
-		public List<Team> TeslaTriggerableTeams { get; set; } = new List<Team>();
+		public List<string> TeslaTriggerableTeams { get; set; } = new List<string>();
+		public List<Team> TeslaTriggerableTeamsParsed = new List<Team>();
 
 		[Description("テスラが武装解除されている場合も反応させる")]
 		public bool TeslaTriggerableDisarmed { get; set; } = false;
+
+		[Description("テスラで死亡した際のアイテムを削除する")]
+		public bool TeslaDeleteItems { get; set; } = false;
+
+		[Description("テスラで死亡した際の死体を削除する")]
+		public bool TeslaDeleteRagdolls { get; set; } = false;
 
 		[Description("アイテムが自動で削除されるまでの秒数")]
 		public int ItemCleanup { get; set; } = -1;
 
 		[Description("アイテム削除の対象外アイテム")]
-		public List<ItemType> ItemCleanupIgnore { get; set; } = new List<ItemType>();
+		public List<string> ItemCleanupIgnore { get; set; } = new List<string>();
+		public List<ItemType> ItemCleanupIgnoreParsed = new List<ItemType>();
 
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
@@ -99,9 +120,6 @@ namespace SanyaPlugin
 		[Description("発電機の終了時にドアを閉じてロックする")]
 		public bool GeneratorFinishLock { get; set; } = false;
 
-		[Description("発電機の起動中にドアを開放したままにする")]
-		public bool GeneratorActivatingLock { get; set; } = false;
-
 		[Description("核起爆後に地上エリアの空爆が開始するまでの秒数")]
 		public int OutsidezoneTerminationTimeAfterNuke { get; set; } = -1;
 
@@ -125,12 +143,6 @@ namespace SanyaPlugin
 
 		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
 		public bool InventoryKeycardActivation { get; set; } = false;
-
-		//[Description("アイテムを撃つと動くように")]
-		//public bool ItemShootMove { get; set; } = false;
-
-		//[Description("投げたグレネードを撃つと起爆するように")]
-		//public bool GrenadeShootFuse { get; set; } = false;
 
 		[Description("ジャンプすると使用するスタミナの比率")]
 		public float StaminaLostJump { get; set; } = -1f;
@@ -161,20 +173,6 @@ namespace SanyaPlugin
 
 		[Description("Dクラスが死亡した際のCIチケット変動値")]
 		public int TicketsCiClassdDiedCount { get; set; } = 0;
-
-		[Description("各ロールの初期装備")]
-		public Dictionary<RoleType, List<ItemType>> Defaultitems { get; set; } = new Dictionary<RoleType, List<ItemType>>()
-		{
-			{ RoleType.ClassD, new List<ItemType>() },
-			{ RoleType.Scientist, new List<ItemType>() },
-			{ RoleType.FacilityGuard, new List<ItemType>() },
-			{ RoleType.NtfCadet, new List<ItemType>() },
-			{ RoleType.NtfLieutenant, new List<ItemType>() },
-			{ RoleType.NtfCommander, new List<ItemType>() },
-			{ RoleType.NtfScientist,new List<ItemType>() },
-			{ RoleType.ChaosInsurgency, new List<ItemType>() },
-			{ RoleType.Tutorial, new List<ItemType>() }
-		};
 
 		[Description("USPのダメージ乗数(対人間)")]
 		public float UspDamageMultiplierHuman { get; set; } = 1f;
@@ -224,11 +222,11 @@ namespace SanyaPlugin
 		[Description("SCP-106の被ダメージ乗数")]
 		public float Scp106DamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-106のポケットディメンションでのキル時回復量")]
-		public int Scp106RecoveryAmount { get; set; } = 0;
-
 		[Description("SCP-106のグレネードの被ダメージ乗数")]
 		public float Scp106GrenadeMultiplier { get; set; } = 1f;
+
+		[Description("SCP-106のポケットディメンションでのキル時回復量")]
+		public int Scp106RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-106が敵の足元にポータルを作成できるように")]
 		public bool Scp106PortalExtensionEnabled { get; set; } = false;
@@ -250,6 +248,12 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
 		public bool Scp939AttackBleeding { get; set; } = false;
+
+		[Description("SCP-939-XXの攻撃で死体を発生させない")]
+		public bool Scp939RemoveRagdoll { get; set; } = false;
+
+		[Description("SCP-939-XXの攻撃でアイテムを発生させない")]
+		public bool Scp939RemoveItem { get; set; } = false;
 
 		//[Description("SCP-079が視界に敵を入れると味方にしか聞こえない音を発する")]
 		//public bool Scp079Spot { get; set; } = false;
@@ -349,10 +353,121 @@ namespace SanyaPlugin
 
 			foreach(PropertyInfo info in infoArray)
 			{
-				returned += $"{info.Name}: {info.GetValue(this)}\n";
+				if(info.PropertyType.IsList())
+				{
+					var list = info.GetValue(this) as IEnumerable;
+					returned += $"{info.Name}:\n";
+					if(list != null)
+						foreach(var i in list) returned += $"{i}\n";
+				}
+				else if(info.PropertyType.IsDictionary())
+				{
+					returned += $"{info.Name}: ";
+
+					var obj = info.GetValue(this);
+
+					IDictionary dict = (IDictionary)obj;
+
+					var key = obj.GetType().GetProperty("Keys");
+					var value = obj.GetType().GetProperty("Values");
+					var keyObj = key.GetValue(obj, null);
+					var valueObj = value.GetValue(obj, null);
+					var keyEnum = keyObj as IEnumerable;
+
+					foreach(var i in dict.Keys)
+					{
+						returned += $"[{i}:{dict[i]}]";
+					}
+
+					returned += "\n";
+				}
+				else
+				{
+					returned += $"{info.Name}: {info.GetValue(this)}\n";
+				}
+			}
+
+			FieldInfo[] fieldInfos = typeof(Configs).GetFields(BindingFlags.Public | BindingFlags.Instance);
+
+			foreach(var info in fieldInfos)
+			{
+				if(info.FieldType.IsList())
+				{
+					var list = info.GetValue(this) as IEnumerable;
+					returned += $"{info.Name}:\n";
+					if(list != null)
+						foreach(var i in list) returned += $"{i}\n";
+				}
+				else if(info.FieldType.IsDictionary())
+				{
+					returned += $"{info.Name}: ";
+
+					var obj = info.GetValue(this);
+
+					IDictionary dict = (IDictionary)obj;
+
+					var key = obj.GetType().GetProperty("Keys");
+					var value = obj.GetType().GetProperty("Values");
+					var keyObj = key.GetValue(obj, null);
+					var valueObj = value.GetValue(obj, null);
+					var keyEnum = keyObj as IEnumerable;
+
+					foreach(var i in dict.Keys)
+					{
+						if(dict[i].GetType().IsList())
+						{
+							var list = dict[i] as IEnumerable;
+							returned += $"[{i}:";
+							if(list != null)
+								foreach(var x in list) returned += $"{x},";
+							returned += "]";
+						}
+						else
+						{
+							returned += $"[{i}:{dict[i]}]";
+						}
+					}
+
+					returned += "\n";
+				}
+				else
+				{
+					returned += $"{info.Name}: {info.GetValue(this)}\n";
+				}
 			}
 
 			return returned;
+		}
+
+
+		public void ParseConfig()
+		{
+			try
+			{
+				foreach(var key in Defaultitems)
+					if(Enum.TryParse(key.Key, out RoleType role))
+						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
+
+				foreach(var item in ClassdInsurgentInventoryClassd)
+					if(Enum.TryParse(item, out ItemType type))
+						ClassdInsurgentInventoryClassdParsed.Add(type);
+
+				foreach(var item in ClassdInsurgentInventoryScientist)
+					if(Enum.TryParse(item, out ItemType type))
+						ClassdInsurgentInventoryScientistParsed.Add(type);
+
+				foreach(var item in ItemCleanupIgnore)
+					if(Enum.TryParse(item, out ItemType type))
+						ItemCleanupIgnoreParsed.Add(type);
+
+				foreach(var item in TeslaTriggerableTeams)
+					if(Enum.TryParse(item, out Team team))
+						TeslaTriggerableTeamsParsed.Add(team);
+			}
+			catch(Exception ex)
+			{
+				Log.Error($"[ParseConfig] Error : {ex}");
+			}
 		}
 	}
 }

@@ -1,124 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using EXILED;
-using EXILED.Extensions;
-using Grenades;
-using Harmony;
-using MEC;
+using UnityEngine;
 using Mirror;
+using MEC;
+using Grenades;
+using Security;
+using LightContainmentZoneDecontamination;
+using Exiled.API.Features;
+using HarmonyLib;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-using Security;
-using UnityEngine;
-using LightContainmentZoneDecontamination;
+
 
 namespace SanyaPlugin.Patches
 {
-	//override - 10.0.0 checked
-	[HarmonyPatch(typeof(PermissionPlugin), nameof(PermissionPlugin.CheckPermission))]
-	public static class EXILEDPermissionOnLevelPatch
-	{
-		public static bool Prefix(ref bool __result, ReferenceHub player, string permission)
-		{
-			if(!Configs.level_enabled) return true;
-			Log.Debug($"[EXILEDPermissionOnLevelPatch] Overrided.");
-
-			if(player == null)
-			{
-				Log.Error("Reference hub was null, unable to check permissions.");
-				__result = false;
-				return false;
-			}
-
-			Log.Debug($"Player: {player.GetNickname()} UserID: {player.GetUserId()}");
-			if(string.IsNullOrEmpty(permission))
-			{
-				Log.Error("Permission checked was null.");
-				__result = false;
-				return false;
-			}
-
-			Log.Debug($"Permission string: {permission}");
-			UserGroup userGroup = ServerStatic.GetPermissionsHandler().GetUserGroup(player.GetUserId());
-			PermissionPlugin.Group group = null;
-			if(userGroup != null)
-			{
-				Log.Debug($"UserGroup: {userGroup.BadgeText}");
-				string groupName = ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.serverRoles.Group).Key;
-				Log.Debug($"GroupName: {groupName}");
-
-				groupName = ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.GetUserId()).Value;
-				Log.Debug($"BadgeText:{player.serverRoles.Group.BadgeText} -> FixedGroupName:{groupName}");
-
-
-				if(PermissionPlugin.permissionsconfig == null)
-				{
-					Log.Error("Permissions config is null.");
-					__result = false;
-					return false;
-				}
-
-				if(!PermissionPlugin.permissionsconfig.groups.Any())
-				{
-					Log.Error("No permissionconfig groups.");
-					__result = false;
-					return false;
-				}
-
-				if(!PermissionPlugin.permissionsconfig.groups.TryGetValue(groupName, out group))
-				{
-					Log.Error("Could not get permission value.");
-					__result = false;
-					return false;
-				}
-				Log.Debug($"Got group.");
-			}
-			else
-			{
-				Log.Debug("user group is null, getting default..");
-				group = PermissionPlugin.GetDefaultGroup();
-			}
-
-			if(group != null)
-			{
-				Log.Debug("Group is not null!");
-				if(permission.Contains("."))
-				{
-					Log.Debug("Group contains perm seperator");
-					if(group.permissions.Any(s => s == ".*"))
-					{
-						Log.Debug("All perms granted for all nodes.");
-						__result = true;
-						return false;
-					}
-					if(group.permissions.Contains(permission.Split('.')[0] + ".*"))
-					{
-						Log.Debug("Check 1: True, returning.");
-						__result = true;
-						return false;
-					}
-				}
-
-				if(group.permissions.Contains(permission) || group.permissions.Contains("*"))
-				{
-					Log.Debug("Check 2: True, returning.");
-					__result = true;
-					return false;
-				}
-			}
-			else
-			{
-				Log.Debug("Group is null, returning false.");
-				__result = false;
-				return false;
-			}
-			Log.Debug("No permissions found.");
-			__result = false;
-			return false;
-		}
-	}
-
 	//not override - 10.0.0 checked - DEBUG
 	[HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
 	public static class RateLimitPatch
@@ -138,7 +34,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Intercom __instance)
 		{
-			if(!Configs.intercom_information) return true;
+			if(!SanyaPlugin.instance.Config.IntercomInformation) return true;
 
 			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
 			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
@@ -186,7 +82,7 @@ namespace SanyaPlugin.Patches
 				}
 				else
 				{
-					__instance._content = contentfix + $"{ReferenceHub.GetHub(__instance.speaker).GetNickname()}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
+					__instance._content = contentfix + $"{Player.Get(__instance.speaker).Nickname}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
 				}
 			}
 			else
@@ -218,25 +114,18 @@ namespace SanyaPlugin.Patches
 			if(PlayerManager.localPlayer == null || PlayerManager.localPlayer?.GetComponent<RandomSeedSync>().seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{unit}");
 
-			if(Configs.cassie_subtitle)
+			if(SanyaPlugin.instance.Config.CassieSubtitle)
 			{
 				int SCPCount = 0;
-				foreach(var i in Player.GetHubs())
-				{
-					if(i.GetTeam() == Team.SCP && i.GetRole() != RoleType.Scp0492)
-					{
+
+				foreach(var i in Player.List)
+					if(i.Team == Team.SCP && i.Role != RoleType.Scp0492)
 						SCPCount++;
-					}
-				}
 
 				if(SCPCount > 0)
-				{
 					Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}", unit).Replace("{1}", SCPCount.ToString()), 30);
-				}
 				else
-				{
 					Methods.SendSubtitle(Subtitles.MTFRespawnNOSCPs.Replace("{0}", unit), 30);
-				}
 			}
 		}
 	}
@@ -247,7 +136,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix()
 		{
-			if(Configs.stop_respawn_after_detonated && AlphaWarheadController.Host.detonated) return false;
+			if(SanyaPlugin.instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated) return false;
 			else return true;
 		}
 	}
@@ -260,15 +149,15 @@ namespace SanyaPlugin.Patches
 
 		public static bool Prefix(Inventory __instance, ref Pickup __result, ItemType droppedItemId, float dur, Vector3 pos, Quaternion rot, int s, int b, int o)
 		{
-			if(Configs.item_cleanup < 0 || __instance.name == "Host") return true;
+			if(SanyaPlugin.instance.Config.ItemCleanup < 0 || __instance.name == "Host") return true;
 
-			if(Configs.item_cleanup_ignore.Contains(droppedItemId))
+			if(SanyaPlugin.instance.Config.ItemCleanupIgnoreParsed.Contains(droppedItemId))
 			{
 				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}");
 				return true;
 			}
 
-			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{Configs.item_cleanup}");
+			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{SanyaPlugin.instance.Config.ItemCleanup}");
 
 			if(droppedItemId < ItemType.KeycardJanitor)
 			{
@@ -302,7 +191,7 @@ namespace SanyaPlugin.Patches
 		public static void Prefix(Grenade __instance, ref Team value)
 		{
 			Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Scp018Grenade}");
-			if(Configs.scp018_friendly_fire && __instance is Scp018Grenade) value = Team.TUT;
+			if(SanyaPlugin.instance.Config.Scp018FriendlyFire && __instance is Scp018Grenade) value = Team.TUT;
 		}
 	}
 
@@ -358,7 +247,7 @@ namespace SanyaPlugin.Patches
 				Collider collider = collision.collider;
 				int num2 = 1 << collider.gameObject.layer;
 
-				if(!Configs.scp018_cant_destroy_object)
+				if(!SanyaPlugin.instance.Config.Scp018CantDestroyObject)
 				{
 					if(num2 == __instance.layerGlass)
 					{
@@ -392,7 +281,7 @@ namespace SanyaPlugin.Patches
 					ReferenceHub componentInParent2 = collider.GetComponentInParent<ReferenceHub>();
 					if(componentInParent2 != null && (ServerConsole.FriendlyFire || componentInParent2.gameObject == __instance.thrower.gameObject || componentInParent2.weaponManager.GetShootPermission(__instance.throwerTeam)))
 					{
-						float num3 = relativeSpeed * __instance.damageHurt * Configs.scp018_damage_multiplier;
+						float num3 = relativeSpeed * __instance.damageHurt * SanyaPlugin.instance.Config.Scp018DamageMultiplier;
 
 						//componentInParent2.playerStats.ccm.CurClass != RoleType.Scp106 && 
 						if(componentInParent2.playerStats.ccm.Classes.SafeGet(componentInParent2.playerStats.ccm.CurClass).team == Team.SCP)
@@ -400,7 +289,7 @@ namespace SanyaPlugin.Patches
 							num3 *= __instance.damageScpMultiplier;
 						}
 
-						componentInParent2.playerStats.HurtPlayer(new PlayerStats.HitInfo(num3, __instance.logName, DamageTypes.Grenade, __instance.throwerGameObject.GetPlayer().GetPlayerId()), componentInParent2.playerStats.gameObject);
+						componentInParent2.playerStats.HurtPlayer(new PlayerStats.HitInfo(num3, __instance.logName, DamageTypes.Grenade, Player.Get(__instance.throwerGameObject).Id), componentInParent2.playerStats.gameObject);
 					}
 				}
 
@@ -415,40 +304,18 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//not override - 10.0.0 checked
-	[HarmonyPatch(typeof(CheaterReport), nameof(CheaterReport.CallCmdReport))]
-	public static class ReportPatch
-	{
-		public static void Prefix(CheaterReport __instance, int playerId, string reason, bool notifyGm)
-		{
-			ReferenceHub reported = Player.GetPlayer(playerId);
-			ReferenceHub reporter = Player.GetPlayer(__instance.gameObject);
-			Log.Debug($"[ReportPatch] Reported:{reported.GetNickname()} Reason:{reason} Reporter:{reporter.GetNickname()}");
-
-			if(!string.IsNullOrEmpty(Configs.report_webhook)
-				&& !string.IsNullOrEmpty(reporter.GetUserId())
-				&& !string.IsNullOrEmpty(reported.GetUserId())
-				&& reported.GetPlayerId() != reporter.GetPlayerId()
-				&& !notifyGm)
-			{
-				Log.Warn($"[Report] {reporter.GetNickname()} -> {reported.GetNickname()} Reason:{reason}");
-				Methods.SendReport(reported, reason, reporter);
-			}
-		}
-	}
-
 	//override - 10.0.0 checked
 	[HarmonyPatch(typeof(Radio), nameof(Radio.CallCmdSyncVoiceChatStatus))]
 	public static class VCPreventsPatch
 	{
 		public static bool Prefix(Radio __instance, ref bool b)
 		{
-			if(Configs.disable_chat_bypass_whitelist && WhiteList.Users != null && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
-			if(Configs.disable_all_chat) return false;
-			if(!Configs.disable_spectator_chat || (Configs.disable_chat_bypass_whitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
+			if(SanyaPlugin.instance.Config.DisableChatBypassWhitelist && WhiteList.Users != null && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(SanyaPlugin.instance.Config.DisableAllChat) return false;
+			if(!SanyaPlugin.instance.Config.DisableSpectatorChat || (SanyaPlugin.instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
 			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton._roundEnded}");
-			if(Configs.disable_spectator_chat && team == Team.RIP && !RoundSummary.singleton._roundEnded) b = false;
+			if(SanyaPlugin.instance.Config.DisableSpectatorChat && team == Team.RIP && !RoundSummary.singleton._roundEnded) b = false;
 			return true;
 		}
 	}
@@ -459,9 +326,9 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Radio __instance)
 		{
-			if(Configs.disable_chat_bypass_whitelist && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
-			if(!Configs.disable_all_chat) return true;
-			Log.Debug($"[VCTeamPatch] {__instance.ccm.gameObject.GetPlayer().GetNickname()} [{__instance.ccm.CurClass}]");
+			if(SanyaPlugin.instance.Config.DisableChatBypassWhitelist && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
+			if(!SanyaPlugin.instance.Config.DisableAllChat) return true;
+			Log.Debug($"[VCTeamPatch] {Player.Get(__instance.ccm.gameObject).Nickname} [{__instance.ccm.CurClass}]");
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
 			return false;
 		}
@@ -478,64 +345,64 @@ namespace SanyaPlugin.Patches
 				switch(ability.label)
 				{
 					case "Camera Switch":
-						ability.mana = Configs.scp079_cost_camera;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostCamera;
 						break;
 					case "Door Lock":
-						ability.mana = Configs.scp079_cost_lock;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostLock;
 						break;
 					case "Door Lock Start":
-						ability.mana = Configs.scp079_cost_lock_start;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostLockStart;
 						break;
 					case "Door Lock Minimum":
-						ability.mana = Configs.scp079_cost_lock_minimum;
+						ability.mana = SanyaPlugin.instance.Config.Scp079ConstLockMinimum;
 						break;
 					case "Door Interaction DEFAULT":
-						ability.mana = Configs.scp079_cost_door_default;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorDefault;
 						break;
 					case "Door Interaction CONT_LVL_1":
-						ability.mana = Configs.scp079_cost_door_contlv1;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorContlv1;
 						break;
 					case "Door Interaction CONT_LVL_2":
-						ability.mana = Configs.scp079_cost_door_contlv2;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorContlv2;
 						break;
 					case "Door Interaction CONT_LVL_3":
-						ability.mana = Configs.scp079_cost_door_contlv3;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorContlv3;
 						break;
 					case "Door Interaction ARMORY_LVL_1":
-						ability.mana = Configs.scp079_cost_door_armlv1;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorArmlv1;
 						break;
 					case "Door Interaction ARMORY_LVL_2":
-						ability.mana = Configs.scp079_cost_door_armlv2;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorArmlv2;
 						break;
 					case "Door Interaction ARMORY_LVL_3":
-						ability.mana = Configs.scp079_cost_door_armlv3;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorArmlv3;
 						break;
 					case "Door Interaction EXIT_ACC":
-						ability.mana = Configs.scp079_cost_door_exit;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorExit;
 						break;
 					case "Door Interaction INCOM_ACC":
-						ability.mana = Configs.scp079_cost_door_intercom;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorIntercom;
 						break;
 					case "Door Interaction CHCKPOINT_ACC":
-						ability.mana = Configs.scp079_cost_door_checkpoint;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostDoorCheckpoint;
 						break;
 					case "Room Lockdown":
-						ability.mana = Configs.scp079_cost_lockdown;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostLockDown;
 						break;
 					case "Tesla Gate Burst":
-						ability.mana = Configs.scp079_cost_tesla;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostTesla;
 						break;
 					case "Elevator Teleport":
-						ability.mana = Configs.scp079_cost_elevator_teleport;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostElevatorTeleport;
 						break;
 					case "Elevator Use":
-						ability.mana = Configs.scp079_cost_elevator_use;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostElevatorUse;
 						break;
 					case "Speaker Start":
-						ability.mana = Configs.scp079_cost_speaker_start;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostSpeakerStart;
 						break;
 					case "Speaker Update":
-						ability.mana = Configs.scp079_cost_speaker_update;
+						ability.mana = SanyaPlugin.instance.Config.Scp079CostSpeakerUpdate;
 						break;
 				}
 			}
@@ -548,40 +415,34 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Scp079PlayerScript __instance, ref ushort cameraId, bool lookatRotation)
 		{
-			if(!Configs.scp079_ex_enabled) return true;
+			if(!SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
 
 			Log.Debug($"[Scp079CameraPatch] {cameraId}:{lookatRotation}");
 
 			if(__instance.GetComponent<AnimationController>().curAnim != 1) return true;
 
-			if(__instance.curLvl + 1 >= Configs.scp079_ex_level_findscp)
+			if(__instance.curLvl + 1 >= SanyaPlugin.instance.Config.Scp079ExtendLevelFindscp)
 			{
 				List<Camera079> cams = new List<Camera079>();
-				foreach(var ply in Player.GetHubs())
-				{
-					if(ply.GetTeam() == Team.SCP && ply.GetRole() != RoleType.Scp079)
-					{
+				foreach(var ply in Player.List)
+					if(ply.Team == Team.SCP && ply.Role != RoleType.Scp079)
 						cams.AddRange(ply.GetNearCams());
-					}
-				}
 
 				Camera079 target;
 				if(cams.Count > 0)
-				{
 					target = cams.GetRandomOne();
-				}
 				else return true;
 
 				if(target != null)
 				{
-					if(Configs.scp079_ex_cost_findscp > __instance.curMana)
+					if(SanyaPlugin.instance.Config.Scp079ExtendCostFindscp > __instance.curMana)
 					{
-						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_findscp, __instance.curMana);
+						__instance.RpcNotEnoughMana(SanyaPlugin.instance.Config.Scp079ExtendCostFindscp, __instance.curMana);
 						return false;
 					}
 
 					__instance.RpcSwitchCamera(target.cameraId, lookatRotation);
-					__instance.Mana -= Configs.scp079_ex_cost_findscp;
+					__instance.Mana -= SanyaPlugin.instance.Config.Scp079ExtendCostFindscp;
 					__instance.currentCamera = target;
 					return false;
 				}
@@ -596,12 +457,12 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Scp079PlayerScript __instance, ref string command, ref GameObject target)
 		{
-			if(!Configs.scp079_ex_enabled) return true;
+			if(!SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
 
-			var player = __instance.gameObject.GetPlayer();
-			Log.Debug($"[Scp079InteractPatch] {player.animationController.curAnim} -> {command}");
+			var player = Player.Get(__instance.gameObject);
+			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}");
 
-			if(player.animationController.curAnim != 1) return true;
+			if(!player.IsExmode()) return true;
 
 			string[] args = command.Split(':');
 
@@ -615,11 +476,11 @@ namespace SanyaPlugin.Patches
 
 				if(b == "HCZ_Nuke")
 				{
-					if(__instance.curLvl + 1 >= Configs.scp079_ex_level_nuke)
+					if(__instance.curLvl + 1 >= SanyaPlugin.instance.Config.Scp079ExtendLevelNuke)
 					{
-						if(Configs.scp079_ex_cost_nuke > __instance.curMana)
+						if(SanyaPlugin.instance.Config.Scp079ExtendCostNuke > __instance.curMana)
 						{
-							__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_nuke, __instance.curMana);
+							__instance.RpcNotEnoughMana(SanyaPlugin.instance.Config.Scp079ExtendCostNuke, __instance.curMana);
 							return false;
 						}
 
@@ -627,12 +488,12 @@ namespace SanyaPlugin.Patches
 						{
 							AlphaWarheadController.Host.InstantPrepare();
 							AlphaWarheadController.Host.StartDetonation();
-							__instance.Mana -= Configs.scp079_ex_cost_nuke;
+							__instance.Mana -= SanyaPlugin.instance.Config.Scp079ExtendCostNuke;
 						}
 						else
 						{
 							AlphaWarheadController.Host.CancelDetonation();
-							__instance.Mana -= Configs.scp079_ex_cost_nuke;
+							__instance.Mana -= SanyaPlugin.instance.Config.Scp079ExtendCostNuke;
 						}
 						return false;
 					}
@@ -640,38 +501,37 @@ namespace SanyaPlugin.Patches
 			}
 			else if(command.Contains("DOOR:"))
 			{
-
-				if(__instance.curLvl + 1 >= Configs.scp079_ex_level_airbomb && command.Contains("NukeSurface"))
+				if(__instance.curLvl + 1 >= SanyaPlugin.instance.Config.Scp079ExtendLevelAirbomb && command.Contains("NukeSurface"))
 				{
-					if(Configs.scp079_ex_cost_airbomb > __instance.curMana)
+					if(SanyaPlugin.instance.Config.Scp079ExtendCostAirbomb > __instance.curMana)
 					{
-						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_airbomb, __instance.curMana);
+						__instance.RpcNotEnoughMana(SanyaPlugin.instance.Config.Scp079ExtendCostAirbomb, __instance.curMana);
 						return false;
 					}
 
 					var door = target.GetComponent<Door>();
 					if(door != null && door.DoorName == "NUKE_SURFACE" && !Coroutines.isAirBombGoing && NineTailedFoxAnnouncer.singleton.Free)
 					{
-						SanyaPlugin.instance.EventHandlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(limit: 5)));
-						__instance.Mana -= Configs.scp079_ex_cost_airbomb;
+						SanyaPlugin.instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(limit: 5)));
+						__instance.Mana -= SanyaPlugin.instance.Config.Scp079ExtendCostAirbomb;
 						return false;
 					}
 				}
 
-				if(__instance.curLvl + 1 >= Configs.scp079_ex_level_doorbeep)
+				if(__instance.curLvl + 1 >= SanyaPlugin.instance.Config.Scp079ExtendLevelDoorbeep)
 				{
-					if(Configs.scp079_ex_cost_doorbeep > __instance.curMana)
+					if(SanyaPlugin.instance.Config.Scp079ExtendCostDoorbeep > __instance.curMana)
 					{
-						__instance.RpcNotEnoughMana(Configs.scp079_ex_cost_doorbeep, __instance.curMana);
+						__instance.RpcNotEnoughMana(SanyaPlugin.instance.Config.Scp079ExtendCostDoorbeep, __instance.curMana);
 						return false;
 					}
 
 					var door = target.GetComponent<Door>();
 					if(door != null && door.curCooldown <= 0f)
 					{
-						player.playerInteract.RpcDenied(target);
+						player.ReferenceHub.playerInteract.RpcDenied(target);
 						door.curCooldown = 0.5f;
-						__instance.Mana -= Configs.scp079_ex_cost_doorbeep;
+						__instance.Mana -= SanyaPlugin.instance.Config.Scp079ExtendCostDoorbeep;
 					}
 					return false;
 				}
@@ -686,8 +546,8 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(PlayerMovementSync __instance, string message)
 		{
-			Log.Warn($"[AntiCheatKill] {__instance._hub.GetNickname()} detect AntiCheat:{message}");
-			if(Configs.beta_anticheat_disable)
+			Log.Warn($"[AntiCheatKill] {Player.Get(__instance.gameObject).Nickname} detect AntiCheat:{message}");
+			if(SanyaPlugin.instance.Config.AnticheatKillDisable)
 				return false;
 			else
 				return true;
@@ -715,10 +575,9 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(RagdollManager __instance, PlayerStats.HitInfo ragdollInfo)
 		{
-			if(ragdollInfo.GetDamageType() == DamageTypes.Scp939
-				 || ragdollInfo.GetDamageType() == DamageTypes.Nuke
-				 || ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
-			return true;
+			if(SanyaPlugin.instance.Config.TeslaDeleteRagdolls && ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
+			else if(SanyaPlugin.instance.Config.Scp939RemoveRagdoll && ragdollInfo.GetDamageType() == DamageTypes.Scp939) return false;
+			else return true;
 		}
 	}
 }
