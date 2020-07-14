@@ -13,6 +13,7 @@ using CustomPlayerEffects;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Exiled.API.Features;
+using Exiled.API.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
@@ -593,6 +594,9 @@ namespace SanyaPlugin
 						break;
 					}
 			}
+
+			//Fix Maingame
+			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
@@ -610,11 +614,16 @@ namespace SanyaPlugin
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
+			if(ev.Target.Role == RoleType.Spectator || ev.Attacker.Role == RoleType.Spectator) return;
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.instance.Config.IsDebugged);
 
 			//GrenadeHitmark
 			if(plugin.Config.HitmarkGrenade && ev.DamageType == DamageTypes.Grenade && ev.Target != ev.Attacker)
 				ev.Attacker.ShowHitmarker();
+
+			//TeslaDelete
+			if(plugin.Config.TeslaDeleteItems && ev.DamageType == DamageTypes.Tesla && ev.Target.ReferenceHub.characterClassManager.IsHuman())
+				ev.Target.Inventory.Clear();
 
 			//USPMultiplier
 			if(ev.DamageType == DamageTypes.Usp)
@@ -675,7 +684,10 @@ namespace SanyaPlugin
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
-			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.instance.Config.IsDebugged);
+			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator) return;
+			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.instance.Config.IsDebugged);
+			var targetteam = ev.Target.ReferenceHub.characterClassManager._prevId.GetTeam();
+			var targetrole = ev.Target.ReferenceHub.characterClassManager._prevId;
 
 			if(plugin.Config.DataEnabled)
 			{
@@ -711,16 +723,12 @@ namespace SanyaPlugin
 					break;
 			}
 
-			//TeslaDelete
-			if(plugin.Config.TeslaDeleteItems && ev.HitInformations.GetDamageType() == DamageTypes.Tesla)
-				ev.Target.Inventory.Clear();
-
 			//SCP-939 RemoveItems
 			if(plugin.Config.Scp939RemoveItem && ev.HitInformations.GetDamageType() == DamageTypes.Scp939)
 				ev.Target.Inventory.Clear();
 
 			//Ticket Extend
-			switch(ev.Target.Team)
+			switch(targetteam)
 			{
 				case Team.CDP:
 					if(ev.Killer.Team != Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, plugin.Config.TicketsCiClassdDiedCount);
@@ -738,10 +746,10 @@ namespace SanyaPlugin
 			}
 
 			//CassieSubtitle
-			if(plugin.Config.CassieSubtitle && ev.Target.Team == Team.SCP && ev.Target.Role != RoleType.Scp0492 && ev.Target.Role != RoleType.Scp079)
+			if(plugin.Config.CassieSubtitle && targetteam == Team.SCP && targetrole != RoleType.Scp0492 && targetrole != RoleType.Scp079)
 			{
 				var damageTypes = ev.HitInformations.GetDamageType();
-				string fullname = CharacterClassManager._staticClasses.Get(ev.Target.Role).fullName;
+				string fullname = CharacterClassManager._staticClasses.Get(targetrole).fullName;
 				string str;
 
 				if(damageTypes == DamageTypes.Tesla)
@@ -764,13 +772,17 @@ namespace SanyaPlugin
 						str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
 				}
 
-				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP && x != ev.Target) == 1
+				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP) == 1
 					&& Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge && damageTypes != DamageTypes.Nuke)
 					str = str
 						.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。")
 						.Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
+				else
+					str = str
+						.Replace("{-1}", string.Empty)
+						.Replace("{-2}", string.Empty);
 
-				Methods.SendSubtitle(str, (ushort)(str.Contains("{-1") ? 10 : 30));
+				Methods.SendSubtitle(str, (ushort)(str.Contains("t-minus") ? 30 : 10));
 			}
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
@@ -790,7 +802,7 @@ namespace SanyaPlugin
 		}
 		public void OnSyncingData(SyncingDataEventArgs ev)
 		{
-			if(ev.Player.IsHost || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
+			if(ev.Player.IsHost || !ev.Player.ReferenceHub.isReady || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079
 				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2)
