@@ -62,6 +62,7 @@
     </Reference>
     <Reference Include="Exiled.Loader">
       <HintPath>References\Exiled.Loader.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Exiled.Permissions">
       <HintPath>References\Exiled.Permissions.dll</HintPath>
