@@ -28,7 +28,7 @@ namespace SanyaPlugin.Patches
 				return false;
 			}
 
-			Log.Debug($"Player: {player.Nickname} UserID: {player.UserId}", Exiled.Loader.Loader.ShouldDebugBeShown);
+			Log.Debug($"Player: {player.Nickname} UserID: {player.UserId}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 			if(string.IsNullOrEmpty(permission))
 			{
 				Log.Error("Permission checked was null.");
@@ -36,18 +36,18 @@ namespace SanyaPlugin.Patches
 				return false;
 			}
 
-			Log.Debug($"Permission string: {permission}", Exiled.Loader.Loader.ShouldDebugBeShown);
+			Log.Debug($"Permission string: {permission}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 			UserGroup userGroup = ServerStatic.GetPermissionsHandler().GetUserGroup(player.UserId);
 			Exiled.Permissions.Features.Group group = null;
 
 			if(userGroup != null)
 			{
-				Log.Debug($"UserGroup: {userGroup.BadgeText}", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug($"UserGroup: {userGroup.BadgeText}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 				string groupName = ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.Group).Key;
 				Log.Debug($"GroupName: {groupName}", Exiled.Loader.Loader.ShouldDebugBeShown);
 
 				groupName = ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.UserId).Value;
-				Log.Debug($"BadgeText:{player.Group.BadgeText} -> FixedGroupName:{groupName}", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug($"BadgeText:{player.Group.BadgeText} -> FixedGroupName: {groupName}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 
 				if(Exiled.Permissions.Extensions.Permissions.Groups == null)
 				{
@@ -70,30 +70,30 @@ namespace SanyaPlugin.Patches
 					return false;
 				}
 
-				Log.Debug($"Got group.", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug($"Got group.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 			}
 			else
 			{
-				Log.Debug("Player group is null, getting default..", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug("Player group is null, getting default..", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 				group = Exiled.Permissions.Extensions.Permissions.DefaultGroup;
 			}
 
 			if(group != null)
 			{
-				Log.Debug("Group is not null!", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug("Group is not null!", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 				if(permission.Contains("."))
 				{
-					Log.Debug("Group contains permission separator", Exiled.Loader.Loader.ShouldDebugBeShown);
+					Log.Debug("Group contains permission separator", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 					if(group.Permissions.Any(s => s == ".*"))
 					{
-						Log.Debug("All permissions have been granted for all nodes.", Exiled.Loader.Loader.ShouldDebugBeShown);
+						Log.Debug("All permissions have been granted for all nodes.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 						__result = true;
 						return false;
 					}
 
 					if(group.Permissions.Contains(permission.Split('.')[0] + ".*"))
 					{
-						Log.Debug("Check 1: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown);
+						Log.Debug("Check 1: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 						__result = true;
 						return false;
 					}
@@ -101,34 +101,21 @@ namespace SanyaPlugin.Patches
 
 				if(group.Permissions.Contains(permission) || group.Permissions.Contains("*"))
 				{
-					Log.Debug("Check 2: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown);
+					Log.Debug("Check 2: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 					__result = true;
 					return false;
 				}
 			}
 			else
 			{
-				Log.Debug("Group is null, returning false.", Exiled.Loader.Loader.ShouldDebugBeShown);
+				Log.Debug("Group is null, returning false.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 				__result = false;
 				return false;
 			}
 
-			Log.Debug("No permissions found.", Exiled.Loader.Loader.ShouldDebugBeShown);
+			Log.Debug("No permissions found.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.instance.Config.IsDebugged);
 			__result = false;
 			return false;
-		}
-	}
-
-	//not override - 10.0.0 checked - DEBUG
-	[HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
-	public static class RateLimitPatch
-	{
-		public static void Postfix(RateLimit __instance, ref bool __result)
-		{
-			if(__result == false)
-			{
-				Log.Debug($"[RateLimitPatch] {__instance._usagesAllowed}:{__instance._timeWindow}", SanyaPlugin.instance.Config.IsDebugged);
-			}
 		}
 	}
 
