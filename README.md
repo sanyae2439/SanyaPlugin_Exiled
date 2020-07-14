@@ -7,3 +7,7 @@ SCP: Secret laboratory Serversided Plugin for [EXILED Framework](https://github.
 ## How to download dlls?
 
 Please build yourself.
+
+## Supported other languages?
+
+No. Only supported Japanese currently.
