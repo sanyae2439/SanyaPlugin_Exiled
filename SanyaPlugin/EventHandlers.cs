@@ -254,6 +254,7 @@ namespace SanyaPlugin
 		public void OnWaintingForPlayers()
 		{
 			loaded = true;
+			plugin.RegistNameFormatter();
 
 			if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation 
 				&& plugin.Config.InfosenderIp != "none" && plugin.Config.InfosenderPort != -1)
