@@ -485,6 +485,9 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnPreAuthenticating] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}");
 
+			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
+				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
+
 			if((plugin.Config.KickSteamLimited || plugin.Config.KickVpn) && !ev.UserId.Contains("@northwood", StringComparison.InvariantCultureIgnoreCase))
 			{
 				reader.SetSource(ev.Request.Data.RawData, 20);
@@ -514,9 +517,6 @@ namespace SanyaPlugin
 
 			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam", StringComparison.InvariantCultureIgnoreCase))
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
-
-			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
-				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 		}
 		public void OnJoined(JoinedEventArgs ev)
 		{
