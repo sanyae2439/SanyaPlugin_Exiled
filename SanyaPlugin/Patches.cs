@@ -4,14 +4,15 @@ using System.Linq;
 using UnityEngine;
 using Mirror;
 using MEC;
-using Grenades;
-using Security;
-using LightContainmentZoneDecontamination;
 using Exiled.API.Features;
 using HarmonyLib;
+using Security;
+using Grenades;
+using Respawning.NamingRules;
+using LightContainmentZoneDecontamination;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-
+using Respawning;
 
 namespace SanyaPlugin.Patches
 {
@@ -38,7 +39,7 @@ namespace SanyaPlugin.Patches
 
 			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
 			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
-			int nextRespawn = (int)Math.Truncate(PlayerManager.localPlayer.GetComponent<MTFRespawn>().timeToNextRespawn + PlayerManager.localPlayer.GetComponent<MTFRespawn>().respawnCooldown);
+			int nextRespawn = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence : 0);
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
 			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
 
@@ -106,7 +107,7 @@ namespace SanyaPlugin.Patches
 	}
 
 	//not override - 10.0.0 checked
-	[HarmonyPatch(typeof(NineTailedFoxUnits), nameof(NineTailedFoxUnits.AddUnit))]
+	[HarmonyPatch(typeof(UnitNamingRule), nameof(UnitNamingRule.AddCombination))]
 	public static class NTFUnitPatch
 	{
 		public static void Postfix(ref string unit)
@@ -131,12 +132,13 @@ namespace SanyaPlugin.Patches
 	}
 
 	//override - 10.0.0 checked
-	[HarmonyPatch(typeof(MTFRespawn), nameof(MTFRespawn.SummonChopper))]
-	public static class StopChopperAfterDetonatedPatch
+	[HarmonyPatch(typeof(RespawnEffectsController), nameof(RespawnEffectsController.ServerExecuteEffects))]
+	public static class RespawnEffectPatch
 	{
-		public static bool Prefix()
+		public static bool Prefix(RespawnEffectsController.EffectType type, SpawnableTeamType team)
 		{
-			if(SanyaPlugin.instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated) return false;
+			Log.Debug($"[RespawnEffectPatch] {type}:{team}");
+			if(SanyaPlugin.instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated && type == RespawnEffectsController.EffectType.Selection) return false;
 			else return true;
 		}
 	}
