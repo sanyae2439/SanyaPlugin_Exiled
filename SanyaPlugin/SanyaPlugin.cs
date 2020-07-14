@@ -62,6 +62,7 @@ namespace SanyaPlugin
 			Handlers.roundCoroutines.Clear();
 
 			UnRegistEvents();
+			UnRegistNameFormatter();
 			UnRegistPatch();
 
 			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled Complete.");

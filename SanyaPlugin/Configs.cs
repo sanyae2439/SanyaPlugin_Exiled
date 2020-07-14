@@ -16,7 +16,7 @@ namespace SanyaPlugin
 	{
 		public Configs()
 		{
-			DataDirectory = Path.Combine(Paths.Plugins, "SanyaPlugin");
+			DataDirectory = Path.Combine(Paths.Configs, "SanyaPlugin");
 		}
 
 		[Description("さにゃぷらぐいんの有効化")]

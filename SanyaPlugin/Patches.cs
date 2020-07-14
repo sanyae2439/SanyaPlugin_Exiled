@@ -110,10 +110,10 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(UnitNamingRule), nameof(UnitNamingRule.AddCombination))]
 	public static class NTFUnitPatch
 	{
-		public static void Postfix(ref string unit)
+		public static void Postfix(ref string regular)
 		{
 			if(PlayerManager.localPlayer == null || PlayerManager.localPlayer?.GetComponent<RandomSeedSync>().seed == 0) return;
-			Log.Debug($"[NTFUnitPatch] unit:{unit}");
+			Log.Debug($"[NTFUnitPatch] unit:{regular}");
 
 			if(SanyaPlugin.instance.Config.CassieSubtitle)
 			{
@@ -124,9 +124,9 @@ namespace SanyaPlugin.Patches
 						SCPCount++;
 
 				if(SCPCount > 0)
-					Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}", unit).Replace("{1}", SCPCount.ToString()), 30);
+					Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}", regular).Replace("{1}", SCPCount.ToString()), 30);
 				else
-					Methods.SendSubtitle(Subtitles.MTFRespawnNOSCPs.Replace("{0}", unit), 30);
+					Methods.SendSubtitle(Subtitles.MTFRespawnNOSCPs.Replace("{0}", regular), 30);
 			}
 		}
 	}
