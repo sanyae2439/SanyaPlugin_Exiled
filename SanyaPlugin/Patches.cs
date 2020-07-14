@@ -16,6 +16,109 @@ using Respawning;
 
 namespace SanyaPlugin.Patches
 {
+	//override - Exiled 2.0
+	[HarmonyPatch(typeof(Exiled.Permissions.Extensions.Permissions), nameof(Exiled.Permissions.Extensions.Permissions.CheckPermission), new Type[] { typeof(Player), typeof(string) })]
+	public static class ExiledPermissionPatcher
+	{
+		public static bool Prefix(Player player, string permission, ref bool __result)
+		{
+			if(player.GameObject == PlayerManager.localPlayer)
+			{
+				__result = true;
+				return false;
+			}
+
+			Log.Debug($"Player: {player.Nickname} UserID: {player.UserId}", Exiled.Loader.Loader.ShouldDebugBeShown);
+			if(string.IsNullOrEmpty(permission))
+			{
+				Log.Error("Permission checked was null.");
+				__result = false;
+				return false;
+			}
+
+			Log.Debug($"Permission string: {permission}", Exiled.Loader.Loader.ShouldDebugBeShown);
+			UserGroup userGroup = ServerStatic.GetPermissionsHandler().GetUserGroup(player.UserId);
+			Exiled.Permissions.Features.Group group = null;
+
+			if(userGroup != null)
+			{
+				Log.Debug($"UserGroup: {userGroup.BadgeText}", Exiled.Loader.Loader.ShouldDebugBeShown);
+				string groupName = ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.Group).Key;
+				Log.Debug($"GroupName: {groupName}", Exiled.Loader.Loader.ShouldDebugBeShown);
+
+				groupName = ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.UserId).Value;
+				Log.Debug($"BadgeText:{player.Group.BadgeText} -> FixedGroupName:{groupName}", Exiled.Loader.Loader.ShouldDebugBeShown);
+
+				if(Exiled.Permissions.Extensions.Permissions.Groups == null)
+				{
+					Log.Error("Permissions config is null.");
+					__result = false;
+					return false;
+				}
+
+				if(!Exiled.Permissions.Extensions.Permissions.Groups.Any())
+				{
+					Log.Error("No permission config groups.");
+					__result = false;
+					return false;
+				}
+
+				if(!Exiled.Permissions.Extensions.Permissions.Groups.TryGetValue(groupName, out group))
+				{
+					Log.Error("Could not get permission value.");
+					__result = false;
+					return false;
+				}
+
+				Log.Debug($"Got group.", Exiled.Loader.Loader.ShouldDebugBeShown);
+			}
+			else
+			{
+				Log.Debug("Player group is null, getting default..", Exiled.Loader.Loader.ShouldDebugBeShown);
+				group = Exiled.Permissions.Extensions.Permissions.DefaultGroup;
+			}
+
+			if(group != null)
+			{
+				Log.Debug("Group is not null!", Exiled.Loader.Loader.ShouldDebugBeShown);
+				if(permission.Contains("."))
+				{
+					Log.Debug("Group contains permission separator", Exiled.Loader.Loader.ShouldDebugBeShown);
+					if(group.Permissions.Any(s => s == ".*"))
+					{
+						Log.Debug("All permissions have been granted for all nodes.", Exiled.Loader.Loader.ShouldDebugBeShown);
+						__result = true;
+						return false;
+					}
+
+					if(group.Permissions.Contains(permission.Split('.')[0] + ".*"))
+					{
+						Log.Debug("Check 1: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown);
+						__result = true;
+						return false;
+					}
+				}
+
+				if(group.Permissions.Contains(permission) || group.Permissions.Contains("*"))
+				{
+					Log.Debug("Check 2: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown);
+					__result = true;
+					return false;
+				}
+			}
+			else
+			{
+				Log.Debug("Group is null, returning false.", Exiled.Loader.Loader.ShouldDebugBeShown);
+				__result = false;
+				return false;
+			}
+
+			Log.Debug("No permissions found.", Exiled.Loader.Loader.ShouldDebugBeShown);
+			__result = false;
+			return false;
+		}
+	}
+
 	//not override - 10.0.0 checked - DEBUG
 	[HarmonyPatch(typeof(RateLimit), nameof(RateLimit.CanExecute))]
 	public static class RateLimitPatch
@@ -24,7 +127,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(__result == false)
 			{
-				Log.Debug($"[RateLimitPatch] {__instance._usagesAllowed}:{__instance._timeWindow}");
+				Log.Debug($"[RateLimitPatch] {__instance._usagesAllowed}:{__instance._timeWindow}", SanyaPlugin.instance.Config.IsDebugged);
 			}
 		}
 	}
@@ -113,7 +216,7 @@ namespace SanyaPlugin.Patches
 		public static void Postfix(ref string regular)
 		{
 			if(PlayerManager.localPlayer == null || PlayerManager.localPlayer?.GetComponent<RandomSeedSync>().seed == 0) return;
-			Log.Debug($"[NTFUnitPatch] unit:{regular}");
+			Log.Debug($"[NTFUnitPatch] unit:{regular}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(SanyaPlugin.instance.Config.CassieSubtitle)
 			{
@@ -137,7 +240,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(RespawnEffectsController.EffectType type, SpawnableTeamType team)
 		{
-			Log.Debug($"[RespawnEffectPatch] {type}:{team}");
+			Log.Debug($"[RespawnEffectPatch] {type}:{team}", SanyaPlugin.instance.Config.IsDebugged);
 			if(SanyaPlugin.instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated && type == RespawnEffectsController.EffectType.Selection) return false;
 			else return true;
 		}
@@ -155,11 +258,11 @@ namespace SanyaPlugin.Patches
 
 			if(SanyaPlugin.instance.Config.ItemCleanupIgnoreParsed.Contains(droppedItemId))
 			{
-				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}");
+				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}", SanyaPlugin.instance.Config.IsDebugged);
 				return true;
 			}
 
-			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{SanyaPlugin.instance.Config.ItemCleanup}");
+			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{SanyaPlugin.instance.Config.ItemCleanup}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(droppedItemId < ItemType.KeycardJanitor)
 			{
@@ -192,7 +295,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Prefix(Grenade __instance, ref Team value)
 		{
-			Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Scp018Grenade}");
+			Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Scp018Grenade}", SanyaPlugin.instance.Config.IsDebugged);
 			if(SanyaPlugin.instance.Config.Scp018FriendlyFire && __instance is Scp018Grenade) value = Team.TUT;
 		}
 	}
@@ -316,7 +419,7 @@ namespace SanyaPlugin.Patches
 			if(SanyaPlugin.instance.Config.DisableAllChat) return false;
 			if(!SanyaPlugin.instance.Config.DisableSpectatorChat || (SanyaPlugin.instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(__instance.ccm.UserId))) return true;
 			var team = __instance.ccm.Classes.SafeGet(__instance.ccm.CurClass).team;
-			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton._roundEnded}");
+			Log.Debug($"[VCPreventsPatch] team:{team} value:{b} current:{__instance.isVoiceChatting} RoundEnded:{RoundSummary.singleton._roundEnded}", SanyaPlugin.instance.Config.IsDebugged);
 			if(SanyaPlugin.instance.Config.DisableSpectatorChat && team == Team.RIP && !RoundSummary.singleton._roundEnded) b = false;
 			return true;
 		}
@@ -330,7 +433,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(SanyaPlugin.instance.Config.DisableChatBypassWhitelist && !string.IsNullOrEmpty(__instance.ccm.UserId) && WhiteList.Users != null && WhiteList.IsOnWhitelist(__instance.ccm.UserId)) return true;
 			if(!SanyaPlugin.instance.Config.DisableAllChat) return true;
-			Log.Debug($"[VCTeamPatch] {Player.Get(__instance.ccm.gameObject).Nickname} [{__instance.ccm.CurClass}]");
+			Log.Debug($"[VCTeamPatch] {Player.Get(__instance.ccm.gameObject).Nickname} [{__instance.ccm.CurClass}]", SanyaPlugin.instance.Config.IsDebugged);
 			__instance._dissonanceSetup.TargetUpdateForTeam(Team.RIP);
 			return false;
 		}
@@ -419,7 +522,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(!SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
 
-			Log.Debug($"[Scp079CameraPatch] {cameraId}:{lookatRotation}");
+			Log.Debug($"[Scp079CameraPatch] {cameraId}:{lookatRotation}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(__instance.GetComponent<AnimationController>().curAnim != 1) return true;
 
@@ -462,7 +565,7 @@ namespace SanyaPlugin.Patches
 			if(!SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
 
 			var player = Player.Get(__instance.gameObject);
-			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}");
+			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(!player.IsExmode()) return true;
 
