@@ -17,7 +17,7 @@ namespace SanyaPlugin.Commands
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
-			Log.Debug($"[Commands] Sender:{sender.LogName} args:{arguments.Count}");
+			Log.Debug($"[Commands] Sender:{sender.LogName} args:{arguments.Count}", SanyaPlugin.instance.Config.IsDebugged);
 
 			Player player = null;
 			if(sender is PlayerCommandSender playerCommandSender) player = Player.Get(playerCommandSender.SenderId);

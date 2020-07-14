@@ -22,6 +22,9 @@ namespace SanyaPlugin
 		[Description("さにゃぷらぐいんの有効化")]
 		public bool IsEnabled { get; set; } = true;
 
+		[Description("デバッグメッセージの有効化")]
+		public bool IsDebugged { get; set; } = false;
+
 		[Description("プレイヤーデータの有効化")]
 		public bool DataEnabled { get; set; } = false;
 

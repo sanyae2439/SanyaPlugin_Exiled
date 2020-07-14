@@ -91,7 +91,7 @@ namespace SanyaPlugin.Functions
 
 			if(IsWhiteListed(address) || IsBlacklisted(address))
 			{
-				Log.Debug($"[VPNChecker] Already Checked:{address}");
+				Log.Debug($"[VPNChecker] Already Checked:{address}", SanyaPlugin.instance.Config.IsDebugged);
 				yield break;
 			}
 
@@ -143,7 +143,7 @@ namespace SanyaPlugin.Functions
 			PlayerData data = null;
 			if(SanyaPlugin.instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
 			{
-				Log.Debug($"[SteamCheck] Already Checked:{userid}");
+				Log.Debug($"[SteamCheck] Already Checked:{userid}", SanyaPlugin.instance.Config.IsDebugged);
 				yield break;
 			}
 
@@ -312,14 +312,14 @@ namespace SanyaPlugin.Functions
 
 			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
-			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}");
+			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}", SanyaPlugin.instance.Config.IsDebugged);
 
 			yield break;
 		}
 
 		public static IEnumerator<float> StartNightMode()
 		{
-			Log.Debug($"[StartNightMode] Started. Wait for {60}s...");
+			Log.Debug($"[StartNightMode] Started. Wait for {60}s...", SanyaPlugin.instance.Config.IsDebugged);
 			yield return Timing.WaitForSeconds(60f);
 			if(SanyaPlugin.instance.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
@@ -373,10 +373,10 @@ namespace SanyaPlugin.Functions
 				}
 				throwcount++;
 				Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
-				if(limit != -1 && limit <= throwcount) 
+				if(limit != -1 && limit <= throwcount)
 				{
 					isAirBombGoing = false;
-					break; 
+					break;
 				}
 				yield return Timing.WaitForSeconds(0.25f);
 			}
@@ -483,7 +483,7 @@ namespace SanyaPlugin.Functions
 			var data = new StringContent(json, Encoding.UTF8, "application/json");
 			var result = httpClient.PostAsync(SanyaPlugin.instance.Config.ReportWebhook, data).Result;
 
-			Log.Debug($"{json}");
+			Log.Debug($"{json}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(result.IsSuccessStatusCode)
 				Log.Info($"[SendReport] Send Report.");
@@ -511,13 +511,13 @@ namespace SanyaPlugin.Functions
 		public static void AddDeathTimeForScp049(this Player target)
 		{
 			PlayerManager.localPlayer.GetComponent<RagdollManager>().SpawnRagdoll(
-				Vector3.zero, 
-				target.GameObject.transform.rotation, 
-				Vector3.zero, 
+				Vector3.zero,
+				target.GameObject.transform.rotation,
+				Vector3.zero,
 				(int)RoleType.ClassD,
-				new PlayerStats.HitInfo(-1, "Scp049Reviver", DamageTypes.Scp049, -1), 
-				true, 
-				target.GameObject.GetComponent<MirrorIgnorancePlayer>().PlayerId, 
+				new PlayerStats.HitInfo(-1, "Scp049Reviver", DamageTypes.Scp049, -1),
+				true,
+				target.GameObject.GetComponent<MirrorIgnorancePlayer>().PlayerId,
 				target.Nickname,
 				target.Id
 			);
@@ -659,7 +659,7 @@ namespace SanyaPlugin.Functions
 
 		public static void SendTextHint(this Player player, string text, ushort time)
 		{
-			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[]{ HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
+			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
 		}
 
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
