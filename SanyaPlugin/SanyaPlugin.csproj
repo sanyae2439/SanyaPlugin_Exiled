@@ -46,6 +46,7 @@
     </Reference>
     <Reference Include="Assembly-CSharp_publicized">
       <HintPath>References\Assembly-CSharp_publicized.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="CommandSystem.Core">
       <HintPath>References\CommandSystem.Core.dll</HintPath>
