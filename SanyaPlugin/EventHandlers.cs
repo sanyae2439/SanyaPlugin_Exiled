@@ -364,7 +364,7 @@ namespace SanyaPlugin
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
-			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.IsChaos} MaxAmount:{ev.MaximumRespawnAmount}");
+			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}");
 
 			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated
 				|| plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
@@ -477,9 +477,6 @@ namespace SanyaPlugin
 			Log.Debug($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
 
 			detonatedDuration = RoundSummary.roundTime;
-
-			if(plugin.Config.StopRespawnAfterDetonated)
-				Cassie.MtfRespawn.SummonChopper(false);
 		}
 
 		//PlayerEvents
@@ -720,21 +717,21 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp939RemoveItem && ev.HitInformations.GetDamageType() == DamageTypes.Scp939)
 				ev.Target.Inventory.Clear();
 
-			//TicketExtend
+			//Ticket Extend
 			switch(ev.Target.Team)
 			{
 				case Team.CDP:
-					if(ev.Killer.Team != Team.SCP) Cassie.MtfRespawn.ChaosRespawnTickets += plugin.Config.TicketsCiClassdDiedCount;
-					if(ev.Killer.Team == (Team.MTF | Team.RSC)) Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfClassdDiedCount;
+					if(ev.Killer.Team != Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, plugin.Config.TicketsCiClassdDiedCount);
+					if(ev.Killer.Team == Team.MTF || ev.Killer.Team == Team.RSC) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfClassdDiedCount);
 					break;
 				case Team.RSC:
-					Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfScientistDiedCount;
+					Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfScientistDiedCount);
 					break;
 				case Team.MTF:
-					if(ev.Killer.Team == Team.SCP) Cassie.MtfRespawn.MtfRespawnTickets += plugin.Config.TicketsMtfKilledByScpCount;
+					if(ev.Killer.Team == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfKilledByScpCount);
 					break;
 				case Team.CHI:
-					if(ev.Killer.Team == Team.SCP) Cassie.MtfRespawn.ChaosRespawnTickets += plugin.Config.TicketsCiKilledByScpCount;
+					if(ev.Killer.Team == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, plugin.Config.TicketsCiKilledByScpCount);
 					break;
 			}
 
@@ -760,7 +757,7 @@ namespace SanyaPlugin
 					else if(ev.Killer.Team == Team.RSC)
 						str = Subtitles.SCPDeathTerminated.Replace("{0}", fullname).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
 					else if(ev.Killer.Team == Team.MTF)
-						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", NineTailedFoxUnits.host.list[ev.Killer.ReferenceHub.characterClassManager.NtfUnit]);
+						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", fullname).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
 					else
 						str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
 				}
