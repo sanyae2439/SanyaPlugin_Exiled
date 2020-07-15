@@ -579,7 +579,7 @@ namespace SanyaPlugin.Functions
 			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
-		public static void SendCustomSyncVar(this ReferenceHub player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar)
+		public static void SendCustomSyncVar(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar)
 		{
 			/* 
 			Example:
@@ -592,7 +592,7 @@ namespace SanyaPlugin.Functions
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
 			MakeCustomSyncVarWriter(behaviorOwner, targetType, customSyncVar, writer, writer2);
-			NetworkServer.SendToClientOfPlayer(player.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
+			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
 			NetworkWriterPool.Recycle(writer);
 			NetworkWriterPool.Recycle(writer2);
 		}
