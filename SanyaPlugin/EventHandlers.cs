@@ -828,7 +828,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnUsedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.instance.Config.IsDebugged);
 
-			if(ev.Item == (ItemType.Medkit | ItemType.SCP500))
+			if(ev.Item == ItemType.Medkit || ev.Item == ItemType.SCP500)
 			{
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Hemorrhage>();
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Bleeding>();

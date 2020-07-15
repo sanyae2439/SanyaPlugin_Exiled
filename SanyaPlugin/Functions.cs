@@ -525,7 +525,7 @@ namespace SanyaPlugin.Functions
 
 		public static bool CanLookToPlayer(this Camera079 camera, Player player)
 		{
-			if(player.Role == (RoleType.Spectator | RoleType.Scp079 | RoleType.None))
+			if(player.Role == RoleType.Spectator || player.Role ==  RoleType.Scp079 || player.Role ==  RoleType.None)
 				return false;
 
 			float num = Vector3.Dot(camera.head.transform.forward, player.Position - camera.transform.position);
