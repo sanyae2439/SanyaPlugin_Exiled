@@ -55,7 +55,7 @@ namespace SanyaPlugin
 					DateTime dt = DateTime.Now;
 					cinfo.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
 					cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
-					cinfo.modversion = Events.Instance.Version.ToString();
+					cinfo.modversion = $"{Events.Instance.Version.Major}.{Events.Instance.Version.Minor}.{Events.Instance.Version.Build}";
 					cinfo.sanyaversion = SanyaPlugin.instance.Version.ToString();
 					cinfo.gamemode = eventmode.ToString();
 					cinfo.name = ServerConsole.singleton.RefreshServerName();
