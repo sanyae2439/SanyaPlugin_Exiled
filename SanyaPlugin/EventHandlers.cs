@@ -802,7 +802,7 @@ namespace SanyaPlugin
 		}
 		public void OnSyncingData(SyncingDataEventArgs ev)
 		{
-			if(ev.Player.IsHost || !ev.Player.ReferenceHub.isReady || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
+			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.isReady || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079
 				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2)

@@ -140,8 +140,8 @@ namespace SanyaPlugin
 
 		public void RegistNameFormatter()
 		{
-			ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
-			ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
+			if(!ServerConsole.singleton.NameFormatter.Commands.ContainsKey("mtf_tickets")) ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
+			if(!ServerConsole.singleton.NameFormatter.Commands.ContainsKey("ci_tickets")) ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
 		}
 
 		public void UnRegistNameFormatter()
