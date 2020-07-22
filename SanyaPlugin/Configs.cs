@@ -258,6 +258,12 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXの攻撃でアイテムを発生させない")]
 		public bool Scp939RemoveItem { get; set; } = false;
 
+		[Description("SCP-939-XXが人間の視認数に応じてAHPを持つ際の一人当たりの量")]
+		public int Scp939SeeingAhpAmount { get; set; } = -1;
+
+		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
+		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
+
 		//[Description("SCP-079が視界に敵を入れると味方にしか聞こえない音を発する")]
 		//public bool Scp079Spot { get; set; } = false;
 

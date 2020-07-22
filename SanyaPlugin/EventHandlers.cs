@@ -228,6 +228,30 @@ namespace SanyaPlugin
 						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.instance.Config.IsDebugged);
 						Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
 					}
+
+					//SCP-939VoiceChatVision
+					if(plugin.Config.Scp939CanSeeVoiceChatting)
+					{
+						List<ReferenceHub> scp939 = null;
+						List<ReferenceHub> humans = new List<ReferenceHub>();
+						foreach(var player in ReferenceHub.GetAllHubs().Values)
+						{
+							if(player.characterClassManager.CurRole.team != Team.RIP && player.TryGetComponent(out Radio radio) && (radio.isVoiceChatting || radio.isTransmitting))
+							{
+								player.footstepSync._visionController.MakeNoise(25f);
+							}
+
+							if(player.characterClassManager.CurRole.roleId.Is939())
+							{
+								if(scp939 == null)
+									scp939 = new List<ReferenceHub>();
+								scp939.Add(player);
+							}
+
+							if(player.characterClassManager.IsHuman())
+								humans.Add(player);
+						}
+					}
 				}
 				catch(Exception e)
 				{
@@ -241,6 +265,7 @@ namespace SanyaPlugin
 		/** Flag Params **/
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
+		private int prevMaxAHP = 0;
 		//private readonly int grenade_pickup_mask = 1049088;
 		//private readonly int surfacemask = 1208303617;
 
@@ -597,6 +622,21 @@ namespace SanyaPlugin
 
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
+
+			//Scp939Extend
+			if(ev.NewRole.Is939())
+			{
+				if(prevMaxAHP == 0) prevMaxAHP = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
+				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 0;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0f;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
+			}
+			else if(ev.Player.ReferenceHub.characterClassManager._prevId.Is939())
+			{
+				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = this.prevMaxAHP;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0.75f;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 0.7f;
+			}
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
@@ -706,20 +746,20 @@ namespace SanyaPlugin
 			switch(ev.Killer.Role)
 			{
 				case RoleType.Scp173:
-					ev.Killer.Health += plugin.Config.Scp173RecoveryAmount;
+					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp173RecoveryAmount, 0, ev.Killer.MaxHealth);
 					break;
 				case RoleType.Scp106:
-					ev.Killer.Health += plugin.Config.Scp106RecoveryAmount;
+					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp106RecoveryAmount, 0, ev.Killer.MaxHealth);
 					break;
 				case RoleType.Scp096:
-					ev.Killer.Health += plugin.Config.Scp096RecoveryAmount;
+					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp096RecoveryAmount, 0, ev.Killer.MaxHealth);
 					break;
 				case RoleType.Scp0492:
-					ev.Killer.Health += plugin.Config.Scp0492RecoveryAmount;
+					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp0492RecoveryAmount, 0, ev.Killer.MaxHealth);
 					break;
 				case RoleType.Scp93953:
 				case RoleType.Scp93989:
-					ev.Killer.Health += plugin.Config.Scp939RecoveryAmount;
+					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp939RecoveryAmount, 0, ev.Killer.MaxHealth);
 					break;
 			}
 
@@ -796,7 +836,7 @@ namespace SanyaPlugin
 
 			foreach(var player in Player.List.Where(x => x.Role == RoleType.Scp106))
 			{
-				player.Health += plugin.Config.Scp106RecoveryAmount;
+				player.Health = Mathf.Clamp(player.Health + plugin.Config.Scp106RecoveryAmount, 0, player.MaxHealth);
 				player.ShowHitmarker();
 			}
 		}
@@ -893,7 +933,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
 
-			ev.Scp049.Health += plugin.Config.Scp049RecoveryAmount;
+			ev.Scp049.Health = Mathf.Clamp(ev.Scp049.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Scp049.MaxHealth);
 
 			if(plugin.Config.Scp049ExtensionRecallTime)
 				foreach(var target in Player.List)
