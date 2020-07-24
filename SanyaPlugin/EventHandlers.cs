@@ -601,7 +601,11 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.CallDelayed(5f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
 
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
-				ev.Items = itemconfig;
+			{
+				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
+				else ev.Items = itemconfig;
+			}
+				
 
 			switch(eventmode)
 			{
