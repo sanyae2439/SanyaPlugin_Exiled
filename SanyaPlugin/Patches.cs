@@ -691,7 +691,7 @@ namespace SanyaPlugin.Patches
 			
 			if(!isFound)
 			{
-				Log.Debug($"[Scp939VisionShieldPatch] {scp939._hub.nicknameSync.MyNick}({scp939._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})");
+				Log.Debug($"[Scp939VisionShieldPatch] {scp939._hub.nicknameSync.MyNick}({scp939._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.instance.Config.IsDebugged);
 				scp939._hub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.instance.Config.Scp939SeeingAhpAmount;
 				scp939._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(scp939._hub.playerStats.unsyncedArtificialHealth + SanyaPlugin.instance.Config.Scp939SeeingAhpAmount, 0, scp939._hub.playerStats.maxArtificialHealth);
 			}
@@ -714,7 +714,7 @@ namespace SanyaPlugin.Patches
 				{
 					if(__instance.seeingSCPs[i].scp != null && __instance.seeingSCPs[i].scp.iAm939)
 					{
-						Log.Debug($"[Scp939VisionShieldRemovePatch] {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})");
+						Log.Debug($"[Scp939VisionShieldRemovePatch] {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.instance.Config.IsDebugged);
 						__instance.seeingSCPs[i].scp._hub.playerStats.NetworkmaxArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth - SanyaPlugin.instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
 						__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth - SanyaPlugin.instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
 					}

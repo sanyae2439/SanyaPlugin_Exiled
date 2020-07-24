@@ -943,10 +943,10 @@ namespace SanyaPlugin
 		//Scp079
 		public void OnGainingLevel(GainingLevelEventArgs ev)
 		{
-			Log.Debug($"[OnGainingLevel] {ev.Player.Nickname} {ev.OldLevel} -> {ev.NewLevel}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnGainingLevel] {ev.Player.Nickname} {ev.NewLevel}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled)
-				switch(ev.OldLevel)
+				switch(ev.NewLevel)
 				{
 					case 1:
 						ev.Player.SendTextHint(HintTexts.Extend079Lv2, 10);
