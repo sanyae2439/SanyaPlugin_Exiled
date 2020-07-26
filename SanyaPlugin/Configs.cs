@@ -234,6 +234,9 @@ namespace SanyaPlugin
 		[Description("SCP-106が敵の足元にポータルを作成できるように")]
 		public bool Scp106PortalExtensionEnabled { get; set; } = false;
 
+		[Description("SCP-106が敵の足元にポータルを作成できるように")]
+		public int Scp106PortalExtensionEnabledWait { get; set; } = 180;
+
 		[Description("SCP-173の被ダメージ乗数")]
 		public float Scp173DamageMultiplier { get; set; } = 1f;
 

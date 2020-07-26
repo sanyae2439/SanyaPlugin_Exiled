@@ -389,6 +389,9 @@ namespace SanyaPlugin
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
 			roundCoroutines.Clear();
+
+			//CoroutineRemover
+			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
@@ -598,14 +601,14 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
 
 			if(plugin.Config.Scp106PortalExtensionEnabled && ev.NewRole == RoleType.Scp106)
-				roundCoroutines.Add(Timing.CallDelayed(5f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(Mathf.Clamp(plugin.Config.Scp106PortalExtensionEnabledWait - 5, 0, plugin.Config.Scp106PortalExtensionEnabledWait), () => { if(ev.Player.Role == RoleType.Scp106) ev.Player.SendTextHint(HintTexts.Extend106First, 10); }));
 
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
 				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
 				else ev.Items = itemconfig;
 			}
-				
+
 
 			switch(eventmode)
 			{
@@ -849,7 +852,7 @@ namespace SanyaPlugin
 			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.isReady || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079
-				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2)
+				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2 && RoundSummary.roundTime > plugin.Config.Scp106PortalExtensionEnabledWait)
 				if(ev.CurrentAnimation == 1)
 					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
 				else
@@ -969,7 +972,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname}:{ev.Position}:{ev.Player.IsExmode()}", SanyaPlugin.instance.Config.IsDebugged);
 
-			if(plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106)
+			if(plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && RoundSummary.roundTime > plugin.Config.Scp106PortalExtensionEnabledWait)
 			{
 				var scp106 = ev.Player.GameObject.GetComponent<Scp106PlayerScript>();
 				if(!scp106.goingViaThePortal && ev.Player.ReferenceHub.falldamage.isGrounded && ev.Player.IsExmode())
