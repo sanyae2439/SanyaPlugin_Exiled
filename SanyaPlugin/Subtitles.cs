@@ -260,5 +260,13 @@
 			"You got to Tier4. On Extend mode, You can start airbomb by ActivateRooms door.\n",
 			"</size></color>"
 		);
+
+		internal static readonly string Error079NotEnoughTier = string.Concat(
+			"<color=#bbee00><size=25>",
+			"このドアを操作するにはTierが足りません。\n",
+			"</size><size=20>",
+			"Not enough Tier on interact it.\n",
+			"</size></color>"
+		);
 	}
 }

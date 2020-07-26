@@ -165,6 +165,9 @@ namespace SanyaPlugin
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
 
+		[Description("落下のダメージ乗数")]
+		public float FalldamageMultiplier { get; set; } = 1f;
+
 		[Description("SCP-914のINTAKEに入ると死亡する")]
 		public bool Scp914IntakeDeath { get; set; } = false;
 
@@ -180,6 +183,9 @@ namespace SanyaPlugin
 		[Description("SCP-049の治療成功時回復量")]
 		public int Scp049RecoveryAmount { get; set; } = 0;
 
+		[Description("SCP-049の最大HP")]
+		public int Scp049MaxHp { get; set; } = 1700;
+
 		[Description("SCP-049が治療成功時死体の治療可能時間が延長される")]
 		public bool Scp049ExtensionRecallTime { get; set; } = false;
 
@@ -188,6 +194,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-049-2のキル時回復量")]
 		public int Scp0492RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-049-2の最大HP")]
+		public int Scp0492MaxHp { get; set; } = 300;
 
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
@@ -198,6 +207,15 @@ namespace SanyaPlugin
 		[Description("SCP-096のキル時回復量")]
 		public int Scp096RecoveryAmount { get; set; } = 0;
 
+		[Description("SCP-096の最大HP")]
+		public int Scp096MaxHp { get; set; } = 500;
+
+		[Description("SCP-096の初期AHP")]
+		public int Scp096InitialShield { get; set; } = 500;
+
+		[Description("SCP-096の一人当たりの増加AHP量")]
+		public int Scp096ShieldPerTargets { get; set; } = 200;
+
 		[Description("SCP-106の被ダメージ乗数")]
 		public float Scp106DamageMultiplier { get; set; } = 1f;
 
@@ -206,6 +224,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-106のポケットディメンションでのキル時回復量")]
 		public int Scp106RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-106の最大HP")]
+		public int Scp106MaxHp { get; set; } = 650;
 
 		[Description("SCP-106が敵の足元にポータルを作成できるように")]
 		public bool Scp106PortalExtensionEnabled { get; set; } = false;
@@ -219,6 +240,9 @@ namespace SanyaPlugin
 		[Description("SCP-173のキル時回復量")]
 		public int Scp173RecoveryAmount { get; set; } = 0;
 
+		[Description("SCP-106の最大HP")]
+		public int Scp173MaxHp { get; set; } = 3200;
+
 		[Description("SCP-173が攻撃された際に強制瞬きを発生させる確率")]
 		public int Scp173ForceBlinkPercent { get; set; } = -1;
 
@@ -227,6 +251,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXのキル時回復量")]
 		public int Scp939RecoveryAmount { get; set; } = 0;
+
+		[Description("SCP-939-XXの最大HP")]
+		public int Scp939MaxHp { get; set; } = 2200;
 
 		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
 		public bool Scp939AttackBleeding { get; set; } = false;
@@ -239,6 +266,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
+
+		[Description("SCP-079がゲートと914操作に必要なTier")]
+		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;
 
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;

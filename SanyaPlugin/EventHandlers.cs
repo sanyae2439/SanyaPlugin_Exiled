@@ -664,6 +664,10 @@ namespace SanyaPlugin
 				else
 					ev.Amount *= plugin.Config.UspDamageMultiplierHuman;
 
+			//FallMultiplier
+			if(ev.DamageType == DamageTypes.Falldown)
+				ev.Amount *= plugin.Config.FalldamageMultiplier;
+
 			//SCP-939 Bleeding
 			if(plugin.Config.Scp939AttackBleeding && ev.DamageType == DamageTypes.Scp939)
 			{

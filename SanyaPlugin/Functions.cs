@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -66,13 +65,12 @@ namespace SanyaPlugin.Functions
 				);
 		}
 
-		public static void ResetLimitedFlag()
+		public static void ReloadParams()
 		{
 			foreach(var file in Directory.GetFiles(SanyaPlugin.instance.Config.DataDirectory))
 			{
+				if(!file.Contains("@")) continue;
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
-				Log.Warn($"{data.userid}:{data.limited}");
-				data.limited = true;
 				SavePlayerData(data);
 			}
 		}

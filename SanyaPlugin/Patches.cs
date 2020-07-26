@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Linq;
 using UnityEngine;
 using Mirror;
 using MEC;
 using Exiled.API.Features;
 using HarmonyLib;
-using Security;
 using Grenades;
+using Respawning;
 using Respawning.NamingRules;
 using LightContainmentZoneDecontamination;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-using Respawning;
 
 namespace SanyaPlugin.Patches
 {
@@ -536,12 +536,22 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(Scp079PlayerScript), nameof(Scp079PlayerScript.CallCmdInteract))]
 	public static class Scp079InteractPatch
 	{
+		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static bool Prefix(Scp079PlayerScript __instance, ref string command, ref GameObject target)
 		{
-			if(!SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
+			if(SanyaPlugin.instance.Config.Scp079NeedInteractTierGateand914 < 0 && !SanyaPlugin.instance.Config.Scp079ExtendEnabled) return true;
 
 			var player = Player.Get(__instance.gameObject);
 			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}", SanyaPlugin.instance.Config.IsDebugged);
+
+			if(command.Contains("DOOR:") 
+				&& SanyaPlugin.instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1 
+				&& target.TryGetComponent<Door>(out var targetdoor)
+				&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
+			{
+				player.SendTextHint(HintTexts.Error079NotEnoughTier, 3);
+				return false;
+			}
 
 			if(!player.IsExmode()) return true;
 
@@ -712,6 +722,61 @@ namespace SanyaPlugin.Patches
 				}
 			}
 			return false;
+		}
+	}
+
+	//transpiler
+	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.MaxShield), MethodType.Getter)]
+	public static class Scp096InitPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			foreach(var code in instructions)
+			{
+				if(code.opcode == OpCodes.Ldc_R4) code.operand = (float)SanyaPlugin.instance.Config.Scp096InitialShield;
+				yield return code;
+			}
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.AdjustShield))]
+	public static class Scp096ShieldPatch
+	{
+		public static void Prefix(PlayableScps.Scp096 __instance, ref int amt)
+		{
+			amt = SanyaPlugin.instance.Config.Scp096ShieldPerTargets;
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.Start))]
+	public static class InitHPPatch
+	{
+		public static void Prefix(CharacterClassManager __instance)
+		{
+			foreach(var role in __instance.Classes)
+			{
+				switch(role.roleId)
+				{
+					case RoleType.Scp173:
+						role.maxHP = SanyaPlugin.instance.Config.Scp173MaxHp;
+						break;
+					case RoleType.Scp106:
+						role.maxHP = SanyaPlugin.instance.Config.Scp106MaxHp;
+						break;
+					case RoleType.Scp049:
+						role.maxHP = SanyaPlugin.instance.Config.Scp049MaxHp;
+						break;
+					case RoleType.Scp096:
+						role.maxHP = SanyaPlugin.instance.Config.Scp096MaxHp;
+						break;
+					case RoleType.Scp93953:
+					case RoleType.Scp93989:
+						role.maxHP = SanyaPlugin.instance.Config.Scp939MaxHp;
+						break;
+				}
+			}
 		}
 	}
 }
