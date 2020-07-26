@@ -464,33 +464,6 @@ namespace SanyaPlugin.Functions
 			PlayAmbientSound(UnityEngine.Random.Range(0, 32));
 		}
 
-		public static void SendReport(Player reported, string reason, Player reporter)
-		{
-			var hookdata = new WebhookData();
-			var embed = new Embed
-			{
-				title = "ゲームサーバーからの報告",
-				timestamp = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fffZ")
-			};
-			embed.footer.text = $"報告者:{reporter.Nickname} [{reporter.Nickname}]";
-			embed.fields.Add(new EmbedField() { name = "発見サーバー", value = $"{FormatServerName()}" });
-			embed.fields.Add(new EmbedField() { name = "対象プレイヤー名", value = $"{reported.Nickname}", inline = true });
-			embed.fields.Add(new EmbedField() { name = "対象プレイヤーID", value = $"{reported.UserId}", inline = true });
-			embed.fields.Add(new EmbedField() { name = "内容", value = $"{reason}" });
-			hookdata.embeds.Add(embed);
-
-			var json = Utf8Json.JsonSerializer.ToJsonString<WebhookData>(hookdata);
-			var data = new StringContent(json, Encoding.UTF8, "application/json");
-			var result = httpClient.PostAsync(SanyaPlugin.instance.Config.ReportWebhook, data).Result;
-
-			Log.Debug($"{json}", SanyaPlugin.instance.Config.IsDebugged);
-
-			if(result.IsSuccessStatusCode)
-				Log.Info($"[SendReport] Send Report.");
-			else
-				Log.Error($"[SendReport] Error. {result.StatusCode}");
-		}
-
 		public static string FormatServerName()
 		{
 			string result = ServerConsole.singleton.RefreshServerName();

@@ -266,8 +266,6 @@ namespace SanyaPlugin
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 		private int prevMaxAHP = 0;
-		//private readonly int grenade_pickup_mask = 1049088;
-		//private readonly int surfacemask = 1208303617;
 
 		/** RoundVar **/
 		private FlickerableLight flickerableLight = null;
@@ -397,21 +395,8 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.instance.Config.IsDebugged);
 
-			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated
-				|| plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
-			{
+			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
-			}
-		}
-		public void OnLocalReporting(LocalReportingEventArgs ev)
-		{
-			Log.Debug($"[OnLocalReporting] {ev.Issuer.Nickname} -{ev.Reason}-> {ev.Target.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
-
-			if(!string.IsNullOrEmpty(plugin.Config.ReportWebhook) && ev.Issuer != ev.Target)
-			{
-				Log.Warn($"[OnLocalReporting] {ev.Issuer.Nickname} -{ev.Reason}-> {ev.Issuer.Nickname}");
-				Methods.SendReport(ev.Target, ev.Reason, ev.Issuer);
-			}
 		}
 
 		//MapEvents
@@ -770,28 +755,6 @@ namespace SanyaPlugin
 					break;
 			}
 
-			//SCP-939 RemoveItems
-			if(plugin.Config.Scp939RemoveItem && ev.HitInformations.GetDamageType() == DamageTypes.Scp939)
-				ev.Target.Inventory.Clear();
-
-			//Ticket Extend
-			switch(targetteam)
-			{
-				case Team.CDP:
-					if(ev.Killer.Team != Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, plugin.Config.TicketsCiClassdDiedCount);
-					if(ev.Killer.Team == Team.MTF || ev.Killer.Team == Team.RSC) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfClassdDiedCount);
-					break;
-				case Team.RSC:
-					Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfScientistDiedCount);
-					break;
-				case Team.MTF:
-					if(ev.Killer.Team == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.NineTailedFox, plugin.Config.TicketsMtfKilledByScpCount);
-					break;
-				case Team.CHI:
-					if(ev.Killer.Team == Team.SCP) Respawning.RespawnTickets.Singleton.GrantTickets(Respawning.SpawnableTeamType.ChaosInsurgency, plugin.Config.TicketsCiKilledByScpCount);
-					break;
-			}
-
 			//CassieSubtitle
 			if(plugin.Config.CassieSubtitle && targetteam == Team.SCP && targetrole != RoleType.Scp0492 && targetrole != RoleType.Scp079)
 			{
@@ -857,19 +820,6 @@ namespace SanyaPlugin
 					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
 				else
 					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
-
-			if(plugin.Config.StaminaLostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
-				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
-			{
-				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaLostJump;
-				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
-
-				if(ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina <= 0f)
-				{
-					ev.Player.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(7f);
-					ev.Player.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(5f);
-				}
-			}
 		}
 		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
 		{

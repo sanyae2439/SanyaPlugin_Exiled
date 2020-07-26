@@ -25,7 +25,7 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 1, 1);
+		public override Version Version => new Version(2, 2, 0);
 		public override Version RequiredExiledVersion => new Version(2, 0, 7);
 
 		public static SanyaPlugin instance { get; private set; }
@@ -76,7 +76,6 @@ namespace SanyaPlugin
 			ServerEvents.RoundEnded += Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
-			ServerEvents.LocalReporting += Handlers.OnLocalReporting;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
@@ -111,7 +110,6 @@ namespace SanyaPlugin
 			ServerEvents.RoundEnded -= Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
-			ServerEvents.LocalReporting -= Handlers.OnLocalReporting;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;

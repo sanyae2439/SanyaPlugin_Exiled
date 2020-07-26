@@ -277,17 +277,6 @@ namespace SanyaPlugin.Patches
 	}
 
 	//override - 10.0.0 checked
-	[HarmonyPatch(typeof(Grenade), nameof(Grenade.NetworkthrowerTeam), MethodType.Setter)]
-	public static class GrenadeThrowerPatch
-	{
-		public static void Prefix(Grenade __instance, ref Team value)
-		{
-			Log.Debug($"[GrenadeThrowerPatch] value:{value} isscp018:{__instance is Scp018Grenade}", SanyaPlugin.instance.Config.IsDebugged);
-			if(SanyaPlugin.instance.Config.Scp018FriendlyFire && __instance is Scp018Grenade) value = Team.TUT;
-		}
-	}
-
-	//override - 10.0.0 checked
 	[HarmonyPatch(typeof(Grenade), nameof(Grenade.ServersideExplosion))]
 	public static class GrenadeLogPatch
 	{
@@ -653,10 +642,10 @@ namespace SanyaPlugin.Patches
 		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static void Prefix(AlphaWarheadController __instance)
 		{
-			if(AlphaWarheadController.Host._autoDetonateTimer <= 0f)
+			if(__instance._autoDetonate && __instance._autoDetonateTimer <= 0f)
 			{
 				__instance.InstantPrepare();
-				AlphaWarheadController.Host._autoDetonate = false;
+				__instance._autoDetonate = false;
 			}
 		}
 	}

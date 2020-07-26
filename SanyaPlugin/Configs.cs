@@ -52,9 +52,6 @@ namespace SanyaPlugin
 		[Description("サーバー情報送信先UDPポート")]
 		public int InfosenderPort { get; set; } = -1;
 
-		[Description("通報送信先WebhookURL")]
-		public string ReportWebhook { get; set; } = String.Empty;
-
 		[Description("イベントモードのウェイト設定")]
 		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0, 0 };
 
@@ -147,9 +144,6 @@ namespace SanyaPlugin
 		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
 		public bool InventoryKeycardActivation { get; set; } = false;
 
-		[Description("ジャンプすると使用するスタミナの比率")]
-		public float StaminaLostJump { get; set; } = -1f;
-
 		[Description("グレネードが命中するとヒットマークが出るように")]
 		public bool HitmarkGrenade { get; set; } = false;
 
@@ -161,21 +155,6 @@ namespace SanyaPlugin
 
 		[Description("裏切りの成功率")]
 		public int TraitorChancePercent { get; set; } = 50;
-
-		[Description("MTFがSCPに殺された際のMTFチケット変動値")]
-		public int TicketsMtfKilledByScpCount { get; set; } = 0;
-
-		[Description("Dクラスが死亡した際のMTFチケット変動値")]
-		public int TicketsMtfClassdDiedCount { get; set; } = 0;
-
-		[Description("研究員が死亡した際のMTFチケット変動値")]
-		public int TicketsMtfScientistDiedCount { get; set; } = 0;
-
-		[Description("CIがSCPに殺された際のCIチケット変動値")]
-		public int TicketsCiKilledByScpCount { get; set; } = 0;
-
-		[Description("Dクラスが死亡した際のCIチケット変動値")]
-		public int TicketsCiClassdDiedCount { get; set; } = 0;
 
 		[Description("USPのダメージ乗数(対人間)")]
 		public float UspDamageMultiplierHuman { get; set; } = 1f;
@@ -191,9 +170,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-018のダメージ乗数")]
 		public float Scp018DamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-018のみフレンドリーファイアを有効にする")]
-		public bool Scp018FriendlyFire { get; set; } = false;
 
 		[Description("SCP-018が反射ではドアなどを破壊できないようにする")]
 		public bool Scp018CantDestroyObject { get; set; } = false;
@@ -258,17 +234,11 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXの攻撃で死体を発生させない")]
 		public bool Scp939RemoveRagdoll { get; set; } = false;
 
-		[Description("SCP-939-XXの攻撃でアイテムを発生させない")]
-		public bool Scp939RemoveItem { get; set; } = false;
-
 		[Description("SCP-939-XXが人間の視認数に応じてAHPを持つ際の一人当たりの量")]
 		public int Scp939SeeingAhpAmount { get; set; } = -1;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
-
-		//[Description("SCP-079が視界に敵を入れると味方にしか聞こえない音を発する")]
-		//public bool Scp079Spot { get; set; } = false;
 
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;
