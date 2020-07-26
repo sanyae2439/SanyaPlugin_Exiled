@@ -240,7 +240,7 @@ namespace SanyaPlugin
 		[Description("SCP-173のキル時回復量")]
 		public int Scp173RecoveryAmount { get; set; } = 0;
 
-		[Description("SCP-106の最大HP")]
+		[Description("SCP-173の最大HP")]
 		public int Scp173MaxHp { get; set; } = 3200;
 
 		[Description("SCP-173が攻撃された際に強制瞬きを発生させる確率")]
