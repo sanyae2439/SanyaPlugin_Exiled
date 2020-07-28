@@ -328,39 +328,35 @@ namespace SanyaPlugin.Patches
 				Collider collider = collision.collider;
 				int num2 = 1 << collider.gameObject.layer;
 
-				if(!SanyaPlugin.instance.Config.Scp018CantDestroyObject)
+				if(num2 == __instance.layerGlass)
 				{
-					if(num2 == __instance.layerGlass)
+					if(__instance.actionAllowed && relativeSpeed >= __instance.breakpointGlass)
 					{
-						if(__instance.actionAllowed && relativeSpeed >= __instance.breakpointGlass)
+						__instance.cooldown = __instance.cooldownGlass;
+						BreakableWindow component = collider.GetComponent<BreakableWindow>();
+						if(component != null)
 						{
-							__instance.cooldown = __instance.cooldownGlass;
-							BreakableWindow component = collider.GetComponent<BreakableWindow>();
-							if(component != null)
-							{
-								component.ServerDamageWindow(relativeSpeed * __instance.damageGlass);
-							}
-						}
-					}
-					else if(num2 == __instance.layerDoor)
-					{
-						if(relativeSpeed >= __instance.breakpointDoor)
-						{
-							__instance.cooldown = __instance.cooldownDoor;
-							Door componentInParent = collider.GetComponentInParent<Door>();
-							if(componentInParent != null && !componentInParent.GrenadesResistant)
-							{
-								componentInParent.DestroyDoor(b: true);
-							}
+							component.ServerDamageWindow(relativeSpeed * __instance.damageGlass);
 						}
 					}
 				}
-
-				if((num2 == __instance.layerHitbox || num2 == __instance.layerIgnoreRaycast) && __instance.actionAllowed && relativeSpeed >= __instance.breakpointHurt)
+				else if(num2 == __instance.layerDoor)
+				{
+					if(relativeSpeed >= __instance.breakpointDoor)
+					{
+						__instance.cooldown = __instance.cooldownDoor;
+						Door componentInParent = collider.GetComponentInParent<Door>();
+						if(componentInParent != null && !componentInParent.GrenadesResistant)
+						{
+							componentInParent.DestroyDoor(true);
+						}
+					}
+				}
+				else if((num2 == __instance.layerHitbox || num2 == __instance.layerIgnoreRaycast) && __instance.actionAllowed && relativeSpeed >= __instance.breakpointHurt)
 				{
 					__instance.cooldown = __instance.cooldownHurt;
 					ReferenceHub componentInParent2 = collider.GetComponentInParent<ReferenceHub>();
-					if(componentInParent2 != null && (ServerConsole.FriendlyFire || componentInParent2.gameObject == __instance.thrower.gameObject || componentInParent2.weaponManager.GetShootPermission(__instance.throwerTeam)))
+					if(componentInParent2 != null && (ServerConsole.FriendlyFire || componentInParent2.gameObject == __instance.thrower.gameObject || componentInParent2.weaponManager.GetShootPermission(__instance.throwerTeam, false)))
 					{
 						float num3 = relativeSpeed * __instance.damageHurt * SanyaPlugin.instance.Config.Scp018DamageMultiplier;
 
@@ -380,7 +376,6 @@ namespace SanyaPlugin.Patches
 					__instance.hasHitMaxSpeed = true;
 				}
 			}
-			//__instance.OnSpeedCollisionEnter(collision, relativeSpeed);
 			return false;
 		}
 	}
@@ -631,20 +626,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override - for 10.0.0
-	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.AntiCheatKillPlayer))]
-	public static class AntiCheatKillDisablePatch
-	{
-		public static bool Prefix(PlayerMovementSync __instance, string message)
-		{
-			Log.Warn($"[AntiCheatKill] {Player.Get(__instance.gameObject).Nickname} detect AntiCheat:{message}");
-			if(SanyaPlugin.instance.Config.AnticheatKillDisable)
-				return false;
-			else
-				return true;
-		}
-	}
-
 	//not override - for 10.0.0
 	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.StartDetonation))]
 	public static class AutoNukePatch
@@ -666,7 +647,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(RagdollManager __instance, PlayerStats.HitInfo ragdollInfo)
 		{
-			if(SanyaPlugin.instance.Config.TeslaDeleteRagdolls && ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
+			if(SanyaPlugin.instance.Config.TeslaDeleteObjects && ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
 			else if(SanyaPlugin.instance.Config.Scp939RemoveRagdoll && ragdollInfo.GetDamageType() == DamageTypes.Scp939) return false;
 			else return true;
 		}

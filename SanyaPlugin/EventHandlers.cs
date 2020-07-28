@@ -273,13 +273,11 @@ namespace SanyaPlugin
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
-		private Vector3 LCZArmoryPos;
 
 		//ServerEvents
 		public void OnWaintingForPlayers()
 		{
 			loaded = true;
-			plugin.RegistNameFormatter();
 
 			if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation
 				&& plugin.Config.InfosenderIp != "none" && plugin.Config.InfosenderPort != -1)
@@ -297,30 +295,11 @@ namespace SanyaPlugin
 
 			flickerableLight = UnityEngine.Object.FindObjectOfType<FlickerableLight>();
 
-			if(plugin.Config.TeslaRange != 5.5f)
-			{
-				foreach(var tesla in Map.TeslaGates)
-				{
-					tesla.sizeOfTrigger = plugin.Config.TeslaRange;
-				}
-			}
-
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.NIGHT:
 					{
-						break;
-					}
-				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
-					{
-						foreach(var room in Map.Rooms)
-						{
-							if(room.Name == "LCZ_Armory")
-							{
-								LCZArmoryPos = room.Position + new Vector3(0, 2, 0);
-							}
-						}
 						break;
 					}
 				default:
@@ -585,31 +564,10 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
 
-			if(plugin.Config.Scp106PortalExtensionEnabled && ev.NewRole == RoleType.Scp106)
-				roundCoroutines.Add(Timing.CallDelayed(Mathf.Clamp(plugin.Config.Scp106PortalExtensionEnabledWait - 5, 0, plugin.Config.Scp106PortalExtensionEnabledWait), () => { if(ev.Player.Role == RoleType.Scp106) ev.Player.SendTextHint(HintTexts.Extend106First, 10); }));
-
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
 				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
 				else ev.Items = itemconfig;
-			}
-
-
-			switch(eventmode)
-			{
-				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
-					{
-						switch(ev.NewRole)
-						{
-							case RoleType.ClassD:
-								ev.Items = plugin.Config.ClassdInsurgentInventoryClassdParsed;
-								break;
-							case RoleType.Scientist:
-								ev.Items = plugin.Config.ClassdInsurgentInventoryScientistParsed;
-								break;
-						}
-						break;
-					}
 			}
 
 			//Fix Maingame
@@ -633,16 +591,6 @@ namespace SanyaPlugin
 		public void OnSpawning(SpawningEventArgs ev)
 		{
 			Log.Debug($"[OnSpawning] {ev.Player.Nickname} -{ev.RoleType}-> {ev.Position}", SanyaPlugin.instance.Config.IsDebugged);
-
-			switch(eventmode)
-			{
-				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
-					{
-						if(ev.RoleType == RoleType.ClassD)
-							ev.Position = LCZArmoryPos;
-						break;
-					}
-			}
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
@@ -654,7 +602,7 @@ namespace SanyaPlugin
 				ev.Attacker.ShowHitmarker();
 
 			//TeslaDelete
-			if(plugin.Config.TeslaDeleteItems && ev.DamageType == DamageTypes.Tesla && ev.Target.ReferenceHub.characterClassManager.IsHuman())
+			if(plugin.Config.TeslaDeleteObjects && ev.DamageType == DamageTypes.Tesla && ev.Target.ReferenceHub.characterClassManager.IsHuman())
 				ev.Target.Inventory.Clear();
 
 			//USPMultiplier
@@ -685,7 +633,7 @@ namespace SanyaPlugin
 
 
 			//CuffedMultiplier
-			if(ev.Target.IsCuffed)
+			if(ev.Target.IsCuffed && ev.Attacker.ReferenceHub.characterClassManager.IsHuman())
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
 
 			//SCPsMultiplier
@@ -818,8 +766,7 @@ namespace SanyaPlugin
 		{
 			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.isReady || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
-			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079
-				|| plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && ev.Player.ReferenceHub.animationController.curAnim != 2 && ev.CurrentAnimation != 2 && RoundSummary.roundTime > plugin.Config.Scp106PortalExtensionEnabledWait)
+			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079)
 				if(ev.CurrentAnimation == 1)
 					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
 				else
@@ -838,12 +785,7 @@ namespace SanyaPlugin
 		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
 		{
 			if(plugin.Config.TeslaTriggerableTeams.Count == 0 || plugin.Config.TeslaTriggerableTeamsParsed.Contains(ev.Player.Team))
-			{
-				if(plugin.Config.TeslaTriggerableDisarmed || !ev.Player.IsCuffed)
-					ev.IsTriggerable = true;
-				else
-					ev.IsTriggerable = false;
-			}
+				ev.IsTriggerable = true;
 			else
 				ev.IsTriggerable = false;
 		}
@@ -921,50 +863,29 @@ namespace SanyaPlugin
 				}
 		}
 
-		//Scp106
-		public void OnCreatingPortal(CreatingPortalEventArgs ev)
-		{
-			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname}:{ev.Position}:{ev.Player.IsExmode()}", SanyaPlugin.instance.Config.IsDebugged);
-
-			if(plugin.Config.Scp106PortalExtensionEnabled && ev.Player.Role == RoleType.Scp106 && RoundSummary.roundTime > plugin.Config.Scp106PortalExtensionEnabledWait)
-			{
-				var scp106 = ev.Player.GameObject.GetComponent<Scp106PlayerScript>();
-				if(!scp106.goingViaThePortal && ev.Player.ReferenceHub.falldamage.isGrounded && ev.Player.IsExmode())
-				{
-					var target = Player.List.Where(
-						x => x.Team != Team.SCP
-						&& x.Team != Team.RIP
-						&& x.Team != Team.TUT
-						&& x.ReferenceHub.falldamage.isGrounded
-						&& !x.ReferenceHub.playerEffectsController.GetEffect<Corroding>().Enabled)
-					.Random();
-
-					if(target == null)
-					{
-						ev.Player.SendTextHint(HintTexts.Extend106TargetNotFound, 5);
-						ev.IsAllowed = false;
-					}
-					else
-						if(Physics.Raycast(new Ray(target.Position, -target.GameObject.transform.up), out RaycastHit raycastHit, 10f, scp106.teleportPlacementMask))
-					{
-						ev.Player.SendTextHint(HintTexts.Extend106Success, 5);
-						ev.Position = raycastHit.point - Vector3.up;
-					}
-				}
-			}
-		}
-
 		//Scp914
 		public void OnUpgradingItems(UpgradingItemsEventArgs ev)
 		{
 			Log.Debug($"[OnUpgradingItems] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}", SanyaPlugin.instance.Config.IsDebugged);
 
-			if(plugin.Config.Scp914IntakeDeath)
+			if(plugin.Config.Scp914Death)
+			{
 				foreach(var player in ev.Players)
 				{
 					player.Inventory.Clear();
 					player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), player.GameObject);
 				}
+
+				var coliders = Physics.OverlapBox(ev.Scp914.output.position, ev.Scp914.inputSize / 2f);
+				foreach(var colider in coliders)
+				{
+					if(colider.TryGetComponent(out CharacterClassManager ccm))
+					{
+						ccm._hub.inventory.Clear();
+						ccm._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), ccm.gameObject);
+					}
+				}
+			}
 		}
 	}
 }

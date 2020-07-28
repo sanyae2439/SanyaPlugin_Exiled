@@ -12,7 +12,6 @@ using WarheadEvents = Exiled.Events.Handlers.Warhead;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp049Events = Exiled.Events.Handlers.Scp049;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
-using Scp106Events = Exiled.Events.Handlers.Scp106;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 
 
@@ -25,7 +24,7 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 3, 0);
+		public override Version Version => new Version(2, 3, 1);
 		public override Version RequiredExiledVersion => new Version(2, 0, 7);
 
 		public static SanyaPlugin instance { get; private set; }
@@ -62,7 +61,6 @@ namespace SanyaPlugin
 			Handlers.roundCoroutines.Clear();
 
 			UnRegistEvents();
-			UnRegistNameFormatter();
 			UnRegistPatch();
 
 			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled Complete.");
@@ -99,7 +97,6 @@ namespace SanyaPlugin
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
-			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
 		}
 
@@ -131,21 +128,8 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
-			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;
-		}
-
-		public void RegistNameFormatter()
-		{
-			if(!ServerConsole.singleton.NameFormatter.Commands.ContainsKey("mtf_tickets")) ServerConsole.singleton.NameFormatter.Commands.Add("mtf_tickets", (List<string> args) => Methods.GetMTFTickets().ToString());
-			if(!ServerConsole.singleton.NameFormatter.Commands.ContainsKey("ci_tickets")) ServerConsole.singleton.NameFormatter.Commands.Add("ci_tickets", (List<string> args) => Methods.GetCITickets().ToString());
-		}
-
-		public void UnRegistNameFormatter()
-		{
-			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("mtf_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("mtf_tickets");
-			if(ServerConsole.singleton.NameFormatter.Commands.ContainsKey("ci_tickets")) ServerConsole.singleton.NameFormatter.Commands.Remove("ci_tickets");
 		}
 
 		private void RegistPatch()

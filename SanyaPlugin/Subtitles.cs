@@ -205,30 +205,6 @@
 			"</size>"
 		);
 
-		internal static readonly string Extend106First = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで切り替えられます.\n拡張モードでポータル作成を使用することでランダムな人間の足元へ作成できます。\n",
-			"</size><size=20>",
-			"Extend mode available. You can toggle by sprint keys.\nIt can be created at random humans position by using [create sinkhole] in extend mode.",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend106TargetNotFound = string.Concat(
-			"<color=#bbee00><size=25>",
-			"対象のターゲットが見つかりません.\n",
-			"</size><size=20>",
-			"Target not found.",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend106Success = string.Concat(
-			"<color=#bbee00><size=25>",
-			"対象の足元へポータルを作成しました.\n",
-			"</size><size=20>",
-			"Created a portal at targets position.",
-			"</size></color>"
-		);
-
 		internal static readonly string Extend079First = string.Concat(
 			"<color=#bbee00><size=25>",
 			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1ではカメラ操作でSCPのもとへカメラ移動ができます.\n",
