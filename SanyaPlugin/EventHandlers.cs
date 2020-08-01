@@ -567,7 +567,11 @@ namespace SanyaPlugin
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
 				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
-				else ev.Items = itemconfig;
+				else 
+				{
+					ev.Items.Clear();
+					ev.Items.AddRange(itemconfig);
+				}
 			}
 
 			//Fix Maingame
