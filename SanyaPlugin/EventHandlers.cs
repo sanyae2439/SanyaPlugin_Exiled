@@ -154,29 +154,29 @@ namespace SanyaPlugin
 					}
 
 					//ItemCleanup
-					if(plugin.Config.ItemCleanup > 0)
-					{
-						List<GameObject> nowitems = null;
+					//if(plugin.Config.ItemCleanup > 0)
+					//{
+					//	List<GameObject> nowitems = null;
 
-						foreach(var i in ItemCleanupPatch.items)
-						{
-							if(Time.time - i.Value > plugin.Config.ItemCleanup && i.Key != null)
-							{
-								if(nowitems == null) nowitems = new List<GameObject>();
-								Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}", SanyaPlugin.instance.Config.IsDebugged);
-								nowitems.Add(i.Key);
-							}
-						}
+					//	foreach(var i in ItemCleanupPatch.items)
+					//	{
+					//		if(Time.time - i.Value > plugin.Config.ItemCleanup && i.Key != null)
+					//		{
+					//			if(nowitems == null) nowitems = new List<GameObject>();
+					//			Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}", SanyaPlugin.instance.Config.IsDebugged);
+					//			nowitems.Add(i.Key);
+					//		}
+					//	}
 
-						if(nowitems != null)
-						{
-							foreach(var x in nowitems)
-							{
-								ItemCleanupPatch.items.Remove(x);
-								NetworkServer.Destroy(x);
-							}
-						}
-					}
+					//	if(nowitems != null)
+					//	{
+					//		foreach(var x in nowitems)
+					//		{
+					//			ItemCleanupPatch.items.Remove(x);
+					//			NetworkServer.Destroy(x);
+					//		}
+					//	}
+					//}
 
 					//停電時強制再収用の際復電
 					if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
@@ -223,11 +223,11 @@ namespace SanyaPlugin
 				try
 				{
 					//Blackouter
-					if(flickerableLight != null && IsEnableBlackout && flickerableLight.remainingFlicker < 0f && !flickerableLight.IsDisabled())
-					{
-						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.instance.Config.IsDebugged);
-						Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
-					}
+					//if(flickerableLight != null && IsEnableBlackout && flickerableLight.remainingFlicker < 0f && !flickerableLight.IsDisabled())
+					//{
+					//	Log.Debug($"[Blackouter] Fired.", SanyaPlugin.instance.Config.IsDebugged);
+					//	Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
+					//}
 
 					//SCP-939VoiceChatVision
 					if(plugin.Config.Scp939CanSeeVoiceChatting)
@@ -287,7 +287,7 @@ namespace SanyaPlugin
 			roundCoroutines.Add(Timing.RunCoroutine(FixedUpdate(), Segment.FixedUpdate));
 
 			PlayerDataManager.playersData.Clear();
-			ItemCleanupPatch.items.Clear();
+			//ItemCleanupPatch.items.Clear();
 			Coroutines.isAirBombGoing = false;
 
 			detonatedDuration = -1;
@@ -559,6 +559,7 @@ namespace SanyaPlugin
 		}
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
+			if(ev.Player.Nickname == null) return;
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} -> {ev.NewRole}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
@@ -797,11 +798,11 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}", SanyaPlugin.instance.Config.IsDebugged);
 
-			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && !ev.Door.locked)
-				foreach(var item in ev.Player.Inventory.items)
-					foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
-						if(ev.Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
-							ev.IsAllowed = true;
+			//if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && !ev.Door.locked)
+			//	foreach(var item in ev.Player.Inventory.items)
+			//		foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
+			//			if(ev.Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
+			//				ev.IsAllowed = true;
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{
