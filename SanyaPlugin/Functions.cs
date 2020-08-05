@@ -322,7 +322,7 @@ namespace SanyaPlugin.Functions
 			if(SanyaPlugin.instance.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			//Generator079.mainGenerator.RpcCustomOverchargeForOurBeautifulModCreators(10f, false);
+			SanyaPlugin.instance.Handlers.IsEnableBlackout = true;
 			yield break;
 		}
 

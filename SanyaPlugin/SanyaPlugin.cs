@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using HarmonyLib;
@@ -24,7 +23,7 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 3, 4);
+		public override Version Version => new Version(2, 3, 5);
 		public override Version RequiredExiledVersion => new Version(2, 0, 10);
 
 		public static SanyaPlugin instance { get; private set; }
