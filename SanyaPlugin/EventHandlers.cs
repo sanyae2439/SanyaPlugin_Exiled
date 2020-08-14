@@ -481,7 +481,7 @@ namespace SanyaPlugin
 			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
 				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 
-			if((plugin.Config.KickSteamLimited || plugin.Config.KickVpn) && !ev.UserId.Contains("@northwood", StringComparison.InvariantCultureIgnoreCase))
+			if((plugin.Config.KickSteamLimited || plugin.Config.KickVpn) && !ev.UserId.Contains("@northwood"))
 			{
 				reader.SetSource(ev.Request.Data.RawData, 20);
 				if(reader.TryGetBytesWithLength(out var b) && reader.TryGetString(out var s) &&
@@ -508,7 +508,7 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev)));
 			}
 
-			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam", StringComparison.InvariantCultureIgnoreCase))
+			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam"))
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
 		}
 		public void OnJoined(JoinedEventArgs ev)
@@ -805,7 +805,7 @@ namespace SanyaPlugin
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{
-			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.Id}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.LockerId}", SanyaPlugin.instance.Config.IsDebugged);
 
 			if(plugin.Config.InventoryKeycardActivation)
 				foreach(var item in ev.Player.Inventory.items)
