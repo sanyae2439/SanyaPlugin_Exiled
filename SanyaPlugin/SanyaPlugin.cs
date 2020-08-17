@@ -23,8 +23,8 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 3, 6);
-		public override Version RequiredExiledVersion => new Version(2, 0, 13);
+		public override Version Version => new Version(2, 3, 7);
+		public override Version RequiredExiledVersion => new Version(2, 1, 0);
 
 		public static SanyaPlugin instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }

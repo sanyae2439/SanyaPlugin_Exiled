@@ -3,6 +3,7 @@ using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using RemoteAdmin;
+using UnityEngine;
 
 namespace SanyaPlugin.Commands
 {
@@ -28,7 +29,10 @@ namespace SanyaPlugin.Commands
 				return false;
 			}
 
-			response = SanyaPlugin.instance.Config.GetConfigs();
+			//player.SetRole(RoleType.ClassD, true);
+			//player.Position = new Vector3(177.5f, 985.0f, 29.0f);
+
+			response = "ok";
 			return true;
 
 
