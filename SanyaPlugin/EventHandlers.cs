@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Mirror;
+using Mirror.LiteNetLib4Mirror;
 using LiteNetLib.Utils;
 using MEC;
 using Utf8Json;
@@ -17,6 +18,7 @@ using Exiled.API.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
+
 
 namespace SanyaPlugin
 {
@@ -182,6 +184,18 @@ namespace SanyaPlugin
 					if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
 					{
 						IsEnableBlackout = false;
+					}
+
+					//HigherPingDetect
+					if(plugin.Config.PingLimit > 0)
+					{
+						foreach(var ply in Player.List)
+						{
+							if(LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping > plugin.Config.PingLimit)
+							{
+								ply.Kick(Subtitles.PingLimittedMessage,"SanyaPlugin_Exiled");
+							}
+						}
 					}
 
 					//SCP-079's Spot Humans
@@ -481,7 +495,7 @@ namespace SanyaPlugin
 			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
 				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 
-			if((plugin.Config.KickSteamLimited || plugin.Config.KickVpn) && !ev.UserId.Contains("@northwood"))
+			if((plugin.Config.KickSteamLimited || !string.IsNullOrEmpty(plugin.Config.KickVpnApikey)) && !ev.UserId.Contains("@northwood"))
 			{
 				reader.SetSource(ev.Request.Data.RawData, 20);
 				if(reader.TryGetBytesWithLength(out var b) && reader.TryGetString(out var s) &&
@@ -495,7 +509,7 @@ namespace SanyaPlugin
 				}
 			}
 
-			if(plugin.Config.KickVpn)
+			if(!string.IsNullOrEmpty(plugin.Config.KickVpnApikey))
 			{
 				if(ShitChecker.IsBlacklisted(ev.Request.RemoteEndPoint.Address))
 				{

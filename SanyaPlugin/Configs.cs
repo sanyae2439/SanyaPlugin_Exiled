@@ -79,11 +79,11 @@ namespace SanyaPlugin
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
-		[Description("VPNを使用しているユーザーをキックする")]
-		public bool KickVpn { get; set; } = false;
-
 		[Description("VPN検知に使用するIPHubのAPIキー")]
 		public string KickVpnApikey { get; set; } = string.Empty;
+
+		[Description("指定されたPingを超えたプレイヤーはキックされる")]
+		public int PingLimit { get; set; } = -1;
 
 		[Description("サーバー参加者に表示するブロードキャスト")]
 		public string MotdMessage { get; set; } = string.Empty;

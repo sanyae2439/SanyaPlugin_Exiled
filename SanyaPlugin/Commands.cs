@@ -2,11 +2,13 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
 using UnityEngine;
 
 namespace SanyaPlugin.Commands
 {
+	[CommandHandler(typeof(GameConsoleCommandHandler))]
 	[CommandHandler(typeof(RemoteAdminCommandHandler))]
 	class Commands : ICommand
 	{
@@ -23,18 +25,46 @@ namespace SanyaPlugin.Commands
 			Player player = null;
 			if(sender is PlayerCommandSender playerCommandSender) player = Player.Get(playerCommandSender.SenderId);
 
-			if(player != null && !player.CheckPermission("sanya.racommand"))
+			if(player != null && !player.CheckPermission("sanya.command"))
 			{
 				response = "Permission denied.";
 				return false;
 			}
 
-			//player.SetRole(RoleType.ClassD, true);
-			//player.Position = new Vector3(177.5f, 985.0f, 29.0f);
+			if(arguments.Count == 0)
+			{
+				response = "sanya plugins command.";
+				return true;
+			}
 
-			response = "ok";
-			return true;
+			switch(arguments.FirstElement())
+			{
+				case "test":
+					{
+						response = "test ok.";
+						return true;
+					}
+				case "ping":
+					{
+						response = "Pings:\n";
 
+						foreach(var ply in Player.List)
+						{
+							response += $"{ply.Nickname} : {LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping}ms\n";
+						}
+						return true;
+					}
+				case "config":
+					{
+						response = SanyaPlugin.instance.Config.GetConfigs();
+						return true;
+					}
+				default:
+					{
+						response = "invalid params.";
+						return false;
+					}
+			}
 
 			/*
 			if(args[0].ToLower() == "sanya")

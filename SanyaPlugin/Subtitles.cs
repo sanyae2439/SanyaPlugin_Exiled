@@ -13,13 +13,17 @@
 			);
 
 		internal static readonly string VPNKickMessage = string.Concat(
-			"VPNまたはプロキシ経由の接続を検出しました。このサーバーはそれらをを許可していません。\n",
+			"VPNまたはプロキシ経由の接続を検出しました。このサーバーはそれらを許可していません。\n",
 			"(VPN or Proxy connection detected. This server doesn't allow VPN and Proxy.)"
 			);
 		internal static readonly string VPNKickMessageShort = string.Concat(
 			"This server doesn't allow VPN and Proxy."
 			);
 
+		internal static readonly string PingLimittedMessage = string.Concat(
+			"通信環境が不安定なため、サーバーからキックされました。\n",
+			"(You has been kicked by Higher ping checker.)"
+		);
 		internal static readonly string MTFRespawnSCPs = string.Concat(
 			"<color=#6c80ff><size=25>",
 			"《機動部隊イプシロン-11「{0}」が施設に到着しました。\n残りの全職員は、機動部隊が貴方の場所へ到着するまで「標準避難プロトコル」の続行を推奨します。\n「{1}」オブジェクトが再収容されていません。》\n",

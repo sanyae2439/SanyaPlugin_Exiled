@@ -23,7 +23,7 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 3, 7);
+		public override Version Version => new Version(2, 4, 0);
 		public override Version RequiredExiledVersion => new Version(2, 1, 0);
 
 		public static SanyaPlugin instance { get; private set; }
@@ -43,7 +43,7 @@ namespace SanyaPlugin
 			RegistEvents();
 			Config.ParseConfig();
 
-			if(Config.KickVpn) ShitChecker.LoadLists();
+			if(!string.IsNullOrEmpty(Config.KickVpnApikey)) ShitChecker.LoadLists();
 			if(Config.InfosenderIp != "none" && Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
 
 			RegistPatch();
