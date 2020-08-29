@@ -194,6 +194,7 @@ namespace SanyaPlugin
 							if(LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping > plugin.Config.PingLimit)
 							{
 								ply.Kick(Subtitles.PingLimittedMessage,"SanyaPlugin_Exiled");
+								Log.Warn($"[PingChecker] Kicked:{ply.Nickname}({ply.UserId}) Ping:{LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping}");
 							}
 						}
 					}
