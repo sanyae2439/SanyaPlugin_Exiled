@@ -285,6 +285,7 @@ namespace SanyaPlugin
 		/** RoundVar **/
 		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
+		private uint playerlistnetid = 0;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -310,6 +311,18 @@ namespace SanyaPlugin
 
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
+
+			if(plugin.Config.DisablePlayerLists)
+			{
+				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
+				{
+					if(identity.name == "PlayerList")
+					{
+						playerlistnetid = identity.netId;
+					}
+				}
+			}
+
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
@@ -323,7 +336,6 @@ namespace SanyaPlugin
 						break;
 					}
 			}
-
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
@@ -554,6 +566,30 @@ namespace SanyaPlugin
 				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
 					ev.Player.IsMuted = true;
 
+
+			if(plugin.Config.DisablePlayerLists && playerlistnetid > 0)
+			{
+				ObjectDestroyMessage objectDestroyMessage = new ObjectDestroyMessage();
+				objectDestroyMessage.netId = playerlistnetid;
+				ev.Player.Connection.Send(objectDestroyMessage, 0);
+			}
+
+			if(plugin.Config.WaitingTutorials)
+			{
+				NetworkIdentity identitytarget = null;
+				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
+					if(identity.name == "StartRound")
+						identitytarget = identity;
+
+				identitytarget.gameObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+				ObjectDestroyMessage objectDestroyMessage = new ObjectDestroyMessage();
+				objectDestroyMessage.netId = identitytarget.netId;
+				ev.Player.Connection.Send(objectDestroyMessage, 0);
+				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identitytarget, ev.Player.Connection });
+
+				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));		
+			}
+
 			//MuteFixer
 			foreach(var player in Player.List)
 				if(player.IsMuted)
@@ -562,6 +598,7 @@ namespace SanyaPlugin
 			//SpeedFixer
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(4uL);
+
 		}
 		public void OnLeft(LeftEventArgs ev)
 		{

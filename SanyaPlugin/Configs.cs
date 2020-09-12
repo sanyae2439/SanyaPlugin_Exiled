@@ -118,6 +118,12 @@ namespace SanyaPlugin
 		[Description("ホワイトリストに入っているプレイヤーはボイスチャット無効の対象外にする")]
 		public bool DisableChatBypassWhitelist { get; set; } = false;
 
+		[Description("プレイヤーリストの無効化")]
+		public bool DisablePlayerLists { get; set; } = false;
+
+		[Description("ラウンド待機時のチュートリアルモード")]
+		public bool WaitingTutorials { get; set; } = false;
+
 		[Description("核起爆後の増援を停止する")]
 		public bool StopRespawnAfterDetonated { get; set; } = false;
 
