@@ -574,7 +574,7 @@ namespace SanyaPlugin
 				ev.Player.Connection.Send(objectDestroyMessage, 0);
 			}
 
-			if(plugin.Config.WaitingTutorials)
+			if(plugin.Config.WaitingTutorials && !ReferenceHub.HostHub.characterClassManager.RoundStarted)
 			{
 				NetworkIdentity identitytarget = null;
 				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
