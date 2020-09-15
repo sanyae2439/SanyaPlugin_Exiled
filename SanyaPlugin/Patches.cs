@@ -123,9 +123,9 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(Intercom), nameof(Intercom.UpdateText))]
 	public static class IntercomTextPatch
 	{
-		public static bool Prefix(Intercom __instance)
+		public static void Prefix(Intercom __instance)
 		{
-			if(!SanyaPlugin.instance.Config.IntercomInformation) return true;
+			if(!SanyaPlugin.instance.Config.IntercomInformation) return;
 
 			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
 			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
@@ -153,46 +153,9 @@ namespace SanyaPlugin.Patches
 				$"接近中の部隊突入まで : {nextRespawn / 60:00}:{nextRespawn % 60:00}\n"
 				);
 
-			if(__instance.Muted)
-			{
-				__instance._content = contentfix + "アクセスが拒否されました";
-			}
-			else if(Intercom.AdminSpeaking)
-			{
-				__instance._content = contentfix + "管理者が放送設備をオーバーライド中";
-			}
-			else if(__instance.remainingCooldown > 0f)
-			{
-				__instance._content = contentfix + "放送設備再起動中 : " + Mathf.CeilToInt(__instance.remainingCooldown) + "秒必要";
-			}
-			else if(__instance.speaker != null)
-			{
-				if(__instance.speechRemainingTime == -77f)
-				{
-					__instance._content = contentfix + "放送中... : オーバーライド";
-				}
-				else
-				{
-					__instance._content = contentfix + $"{Player.Get(__instance.speaker).Nickname}が放送中... : 残り" + Mathf.CeilToInt(__instance.speechRemainingTime) + "秒";
-				}
-			}
-			else
-			{
-				__instance._content = contentfix + "放送設備準備完了";
-			}
+			__instance.CustomContent = contentfix;
 
-			if(__instance._contentDirty)
-			{
-				__instance.NetworkintercomText = __instance._content;
-				__instance._contentDirty = false;
-			}
-			if(Intercom.AdminSpeaking != Intercom.LastState)
-			{
-				Intercom.LastState = Intercom.AdminSpeaking;
-				__instance.RpcUpdateAdminStatus(Intercom.AdminSpeaking);
-			}
-
-			return false;
+			return;
 		}
 	}
 
