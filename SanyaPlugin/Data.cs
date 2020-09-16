@@ -134,7 +134,7 @@ namespace SanyaPlugin.Data
 		{
 			if(string.IsNullOrEmpty(amount.ToString()) || exp == -1 || level == -1) return;
 
-			Log.Debug($"[AddExp] Player:{userid} EXP:{exp} + {amount} = {exp + amount} ", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[AddExp] Player:{userid} EXP:{exp} + {amount} = {exp + amount} ", SanyaPlugin.Instance.Config.IsDebugged);
 
 			int sum = exp + amount;
 

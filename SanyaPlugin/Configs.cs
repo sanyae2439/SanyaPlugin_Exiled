@@ -124,6 +124,10 @@ namespace SanyaPlugin
 		[Description("ラウンド待機時のチュートリアルモード")]
 		public bool WaitingTutorials { get; set; } = false;
 
+		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
+		public List<string> AltvoicechatScps { get; set; } = new List<string>();
+		public List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
+
 		[Description("核起爆後の増援を停止する")]
 		public bool StopRespawnAfterDetonated { get; set; } = false;
 
@@ -427,8 +431,6 @@ namespace SanyaPlugin
 
 			return returned;
 		}
-
-
 		public void ParseConfig()
 		{
 			try
@@ -444,6 +446,10 @@ namespace SanyaPlugin
 				foreach(var item in TeslaTriggerableTeams)
 					if(Enum.TryParse(item, out Team team))
 						TeslaTriggerableTeamsParsed.Add(team);
+
+				foreach(var item in AltvoicechatScps)
+					if(Enum.TryParse(item, out RoleType role))
+						AltvoicechatScpsParsed.Add(role);
 			}
 			catch(Exception ex)
 			{

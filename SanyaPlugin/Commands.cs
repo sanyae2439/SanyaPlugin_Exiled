@@ -20,7 +20,7 @@ namespace SanyaPlugin.Commands
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
-			Log.Debug($"[Commands] Sender:{sender.LogName} args:{arguments.Count}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[Commands] Sender:{sender.LogName} args:{arguments.Count}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			Player player = null;
 			if(sender is PlayerCommandSender playerCommandSender) player = Player.Get(playerCommandSender.SenderId);
@@ -56,7 +56,7 @@ namespace SanyaPlugin.Commands
 					}
 				case "config":
 					{
-						response = SanyaPlugin.instance.Config.GetConfigs();
+						response = SanyaPlugin.Instance.Config.GetConfigs();
 						return true;
 					}
 				default:

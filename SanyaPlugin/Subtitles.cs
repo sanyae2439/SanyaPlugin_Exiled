@@ -22,7 +22,7 @@
 
 		internal static readonly string PingLimittedMessage = string.Concat(
 			"通信環境が不安定なため、サーバーからキックされました。\n",
-			"(You has been kicked by Higher ping checker.)"
+			"(You has been kicked by Higher ping.)"
 		);
 		internal static readonly string MTFRespawnSCPs = string.Concat(
 			"<color=#6c80ff><size=25>",

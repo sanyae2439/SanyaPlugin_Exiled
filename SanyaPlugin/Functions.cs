@@ -28,17 +28,17 @@ namespace SanyaPlugin.Functions
 
 		public static PlayerData LoadPlayerData(string userid)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, $"{userid}.txt");
-			if(!Directory.Exists(SanyaPlugin.instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.instance.Config.DataDirectory);
+			string targetuseridpath = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, $"{userid}.txt");
+			if(!Directory.Exists(SanyaPlugin.Instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.Instance.Config.DataDirectory);
 			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
 		public static void SavePlayerData(PlayerData data)
 		{
-			string targetuseridpath = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, $"{data.userid}.txt");
+			string targetuseridpath = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, $"{data.userid}.txt");
 
-			if(!Directory.Exists(SanyaPlugin.instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.instance.Config.DataDirectory);
+			if(!Directory.Exists(SanyaPlugin.Instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.Instance.Config.DataDirectory);
 
 			string[] textdata = new string[] {
 				data.lastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzzz"),
@@ -67,7 +67,7 @@ namespace SanyaPlugin.Functions
 
 		public static void ReloadParams()
 		{
-			foreach(var file in Directory.GetFiles(SanyaPlugin.instance.Config.DataDirectory))
+			foreach(var file in Directory.GetFiles(SanyaPlugin.Instance.Config.DataDirectory))
 			{
 				if(!file.Contains("@")) continue;
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
@@ -78,9 +78,9 @@ namespace SanyaPlugin.Functions
 
 	internal static class ShitChecker
 	{
-		private static string whitelist_path = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, "VPN-Whitelist.txt");
+		private static string whitelist_path = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, "VPN-Whitelist.txt");
 		public static HashSet<IPAddress> whitelist = new HashSet<IPAddress>();
-		private static string blacklist_path = Path.Combine(SanyaPlugin.instance.Config.DataDirectory, "VPN-Blacklist.txt");
+		private static string blacklist_path = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, "VPN-Blacklist.txt");
 		public static HashSet<IPAddress> blacklist = new HashSet<IPAddress>();
 
 		public static IEnumerator<float> CheckVPN(PreAuthenticatingEventArgs ev)
@@ -89,13 +89,13 @@ namespace SanyaPlugin.Functions
 
 			if(IsWhiteListed(address) || IsBlacklisted(address))
 			{
-				Log.Debug($"[VPNChecker] Already Checked:{address}", SanyaPlugin.instance.Config.IsDebugged);
+				Log.Debug($"[VPNChecker] Already Checked:{address}", SanyaPlugin.Instance.Config.IsDebugged);
 				yield break;
 			}
 
 			using(UnityWebRequest unityWebRequest = UnityWebRequest.Get($"https://v2.api.iphub.info/ip/{address}"))
 			{
-				unityWebRequest.SetRequestHeader("X-Key", SanyaPlugin.instance.Config.KickVpnApikey);
+				unityWebRequest.SetRequestHeader("X-Key", SanyaPlugin.Instance.Config.KickVpnApikey);
 				yield return Timing.WaitUntilDone(unityWebRequest.SendWebRequest());
 				if(!unityWebRequest.isNetworkError)
 				{
@@ -139,9 +139,9 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> CheckIsLimitedSteam(string userid)
 		{
 			PlayerData data = null;
-			if(SanyaPlugin.instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
+			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
 			{
-				Log.Debug($"[SteamCheck] Already Checked:{userid}", SanyaPlugin.instance.Config.IsDebugged);
+				Log.Debug($"[SteamCheck] Already Checked:{userid}", SanyaPlugin.Instance.Config.IsDebugged);
 				yield break;
 			}
 
@@ -285,7 +285,7 @@ namespace SanyaPlugin.Functions
 			else
 				badge = $"Level{level} : {rolestr}";
 
-			if(SanyaPlugin.instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
+			if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
 				badge += " : 認証済み";
 
 			if(group == null)
@@ -310,19 +310,19 @@ namespace SanyaPlugin.Functions
 
 			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
-			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			yield break;
 		}
 
 		public static IEnumerator<float> StartNightMode()
 		{
-			Log.Debug($"[StartNightMode] Started. Wait for {60}s...", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[StartNightMode] Started. Wait for {60}s...", SanyaPlugin.Instance.Config.IsDebugged);
 			yield return Timing.WaitForSeconds(60f);
-			if(SanyaPlugin.instance.Config.CassieSubtitle)
+			if(SanyaPlugin.Instance.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			SanyaPlugin.instance.Handlers.IsEnableBlackout = true;
+			SanyaPlugin.Instance.Handlers.IsEnableBlackout = true;
 			yield break;
 		}
 
@@ -344,7 +344,7 @@ namespace SanyaPlugin.Functions
 			else
 				isAirBombGoing = true;
 
-			if(SanyaPlugin.instance.Config.CassieSubtitle)
+			if(SanyaPlugin.Instance.Config.CassieSubtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombStarting, 10);
 				RespawnEffectsController.PlayCassieAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
@@ -379,7 +379,7 @@ namespace SanyaPlugin.Functions
 				yield return Timing.WaitForSeconds(0.25f);
 			}
 
-			if(SanyaPlugin.instance.Config.CassieSubtitle)
+			if(SanyaPlugin.Instance.Config.CassieSubtitle)
 			{
 				Methods.SendSubtitle(Subtitles.AirbombEnded, 10);
 				RespawnEffectsController.PlayCassieAnnouncement("outside zone termination completed .", false, true);
@@ -675,7 +675,7 @@ namespace SanyaPlugin.Functions
 		public static T Random<T>(this IEnumerable<T> ie)
 		{
 			if(!ie.Any()) return default;
-			return ie.ElementAt(SanyaPlugin.instance.Random.Next(ie.Count()));
+			return ie.ElementAt(SanyaPlugin.Instance.Random.Next(ie.Count()));
 		}
 	}
 }

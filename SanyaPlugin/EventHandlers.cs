@@ -34,7 +34,7 @@ namespace SanyaPlugin
 		internal Task sendertask;
 		internal async Task SenderAsync()
 		{
-			Log.Debug($"[SenderAsync] Started.", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[SenderAsync] Started.", SanyaPlugin.Instance.Config.IsDebugged);
 
 			while(true)
 			{
@@ -48,7 +48,7 @@ namespace SanyaPlugin
 
 					if(!this.loaded)
 					{
-						Log.Debug($"[SenderAsync] Plugin not loaded. Skipped...", SanyaPlugin.instance.Config.IsDebugged);
+						Log.Debug($"[SenderAsync] Plugin not loaded. Skipped...", SanyaPlugin.Instance.Config.IsDebugged);
 						await Task.Delay(TimeSpan.FromSeconds(30));
 					}
 
@@ -58,7 +58,7 @@ namespace SanyaPlugin
 					cinfo.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
 					cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
 					cinfo.modversion = $"{Events.Instance.Version.Major}.{Events.Instance.Version.Minor}.{Events.Instance.Version.Build}";
-					cinfo.sanyaversion = SanyaPlugin.instance.Version.ToString();
+					cinfo.sanyaversion = SanyaPlugin.Instance.Version.ToString();
 					cinfo.gamemode = eventmode.ToString();
 					cinfo.name = ServerConsole.singleton.RefreshServerName();
 					cinfo.ip = ServerConsole.Ip;
@@ -88,7 +88,7 @@ namespace SanyaPlugin
 
 					byte[] sendBytes = Encoding.UTF8.GetBytes(json);
 					udpClient.Send(sendBytes, sendBytes.Length, plugin.Config.InfosenderIp, plugin.Config.InfosenderPort);
-					Log.Debug($"[SenderAsync] {plugin.Config.InfosenderIp}:{plugin.Config.InfosenderPort}", SanyaPlugin.instance.Config.IsDebugged);
+					Log.Debug($"[SenderAsync] {plugin.Config.InfosenderIp}:{plugin.Config.InfosenderPort}", SanyaPlugin.Instance.Config.IsDebugged);
 				}
 				catch(Exception e)
 				{
@@ -165,7 +165,7 @@ namespace SanyaPlugin
 							if(Time.time - i.Value > plugin.Config.ItemCleanup && i.Key != null)
 							{
 								if(nowitems == null) nowitems = new List<GameObject>();
-								Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}", SanyaPlugin.instance.Config.IsDebugged);
+								Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}", SanyaPlugin.Instance.Config.IsDebugged);
 								nowitems.Add(i.Key);
 							}
 						}
@@ -240,7 +240,7 @@ namespace SanyaPlugin
 					//Blackouter
 					if(flickerableLightController != null && IsEnableBlackout && !flickerableLightController.IsEnabled())
 					{
-						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.instance.Config.IsDebugged);
+						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.Instance.Config.IsDebugged);
 						Generator079.mainGenerator.ServerOvercharge(10f, false);
 					}
 
@@ -398,7 +398,7 @@ namespace SanyaPlugin
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
-			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
@@ -407,7 +407,7 @@ namespace SanyaPlugin
 		//MapEvents
 		public void OnAnnouncingDecontamination(AnnouncingDecontaminationEventArgs ev)
 		{
-			Log.Debug($"[OnAnnouncingDecontamination] {ev.Id}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnAnnouncingDecontamination] {ev.Id}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.CassieSubtitle)
 				switch(ev.Id)
@@ -441,14 +441,14 @@ namespace SanyaPlugin
 		}
 		public void OnDecontaminating(DecontaminatingEventArgs ev)
 		{
-			Log.Debug($"[OnDecontaminating]", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnDecontaminating]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
 		}
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorActivated] {ev.Generator.CurRoom}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnGeneratorActivated] {ev.Generator.CurRoom}", SanyaPlugin.Instance.Config.IsDebugged);
 			if(plugin.Config.GeneratorFinishLock) ev.Generator.NetworkisDoorOpen = false;
 
 			int curgen = Generator079.mainGenerator.NetworktotalVoltage + 1;
@@ -465,7 +465,7 @@ namespace SanyaPlugin
 		//WarheadEvents
 		public void OnStarting(StartingEventArgs ev)
 		{
-			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.CassieSubtitle)
 			{
@@ -481,7 +481,7 @@ namespace SanyaPlugin
 		}
 		public void OnStopping(StoppingEventArgs ev)
 		{
-			Log.Debug($"[OnStopping] {ev.Player.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnStopping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(AlphaWarheadController.Host._isLocked) return;
 
@@ -503,7 +503,7 @@ namespace SanyaPlugin
 		//PlayerEvents
 		public void OnPreAuthenticating(PreAuthenticatingEventArgs ev)
 		{
-			Log.Debug($"[OnPreAuthenticating] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnPreAuthenticating] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
 				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
@@ -602,7 +602,7 @@ namespace SanyaPlugin
 		}
 		public void OnLeft(LeftEventArgs ev)
 		{
-			Log.Debug($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
 				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
@@ -611,7 +611,7 @@ namespace SanyaPlugin
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
 			if(ev.Player.Nickname == null) return;
-			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} -> {ev.NewRole}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} -> {ev.NewRole}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
@@ -646,12 +646,12 @@ namespace SanyaPlugin
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
-			Log.Debug($"[OnSpawning] {ev.Player.Nickname} -{ev.RoleType}-> {ev.Position}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnSpawning] {ev.Player.Nickname} -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
 			if(ev.Target.Role == RoleType.Spectator || ev.Attacker.Role == RoleType.Spectator) return;
-			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//GrenadeHitmark
 			if(plugin.Config.HitmarkGrenade && ev.DamageType == DamageTypes.Grenade && ev.Target != ev.Attacker)
@@ -720,12 +720,12 @@ namespace SanyaPlugin
 						break;
 				}
 
-			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
 			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator) return;
-			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.Instance.Config.IsDebugged);
 			var targetteam = ev.Target.ReferenceHub.characterClassManager._prevId.GetTeam();
 			var targetrole = ev.Target.ReferenceHub.characterClassManager._prevId;
 
@@ -805,7 +805,7 @@ namespace SanyaPlugin
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{
-			Log.Debug($"[OnFailingEscapePocketDimension] {ev.Player.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnFailingEscapePocketDimension] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.DataEnabled)
 				foreach(var player in Player.List)
@@ -830,7 +830,7 @@ namespace SanyaPlugin
 		}
 		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
 		{
-			Log.Debug($"[OnUsedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnUsedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(ev.Item == ItemType.Medkit || ev.Item == ItemType.SCP500)
 			{
@@ -847,7 +847,7 @@ namespace SanyaPlugin
 		}
 		public void OnInteractingDoor(InteractingDoorEventArgs ev)
 		{
-			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && !ev.Door.locked)
 				foreach(var item in ev.Player.Inventory.items)
@@ -857,7 +857,7 @@ namespace SanyaPlugin
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{
-			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.LockerId}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.LockerId}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.InventoryKeycardActivation)
 				foreach(var item in ev.Player.Inventory.items)
@@ -866,7 +866,7 @@ namespace SanyaPlugin
 		}
 		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
 		{
-			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}", SanyaPlugin.Instance.Config.IsDebugged);
 			if(plugin.Config.InventoryKeycardActivation && !ev.Player.IsBypassModeEnabled)
 				foreach(var item in ev.Player.Inventory.items)
 					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
@@ -881,7 +881,7 @@ namespace SanyaPlugin
 		}
 		public void OnOpeningGenerator(OpeningGeneratorEventArgs ev)
 		{
-			Log.Debug($"[OnOpeningGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnOpeningGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(ev.Generator.prevFinish && plugin.Config.GeneratorFinishLock)
 				ev.IsAllowed = false;
@@ -890,7 +890,7 @@ namespace SanyaPlugin
 		//Scp049
 		public void OnFinishingRecall(FinishingRecallEventArgs ev)
 		{
-			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			ev.Scp049.Health = Mathf.Clamp(ev.Scp049.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Scp049.MaxHealth);
 
@@ -902,7 +902,7 @@ namespace SanyaPlugin
 		//Scp079
 		public void OnGainingLevel(GainingLevelEventArgs ev)
 		{
-			Log.Debug($"[OnGainingLevel] {ev.Player.Nickname} {ev.NewLevel}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnGainingLevel] {ev.Player.Nickname} {ev.NewLevel}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled)
 				switch(ev.NewLevel)
@@ -922,7 +922,7 @@ namespace SanyaPlugin
 		//Scp914
 		public void OnUpgradingItems(UpgradingItemsEventArgs ev)
 		{
-			Log.Debug($"[OnUpgradingItems] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}", SanyaPlugin.instance.Config.IsDebugged);
+			Log.Debug($"[OnUpgradingItems] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp914Death)
 			{

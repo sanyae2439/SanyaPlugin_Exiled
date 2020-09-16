@@ -23,16 +23,16 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 4, 4);
-		public override Version RequiredExiledVersion => new Version(2, 1, 4);
+		public override Version Version => new Version(2, 4, 5);
+		public override Version RequiredExiledVersion => new Version(2, 1, 5);
 
-		public static SanyaPlugin instance { get; private set; }
+		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
 		public Harmony Harmony { get; private set; }
 		public Random Random { get; } = new Random();
 		private int patchCounter;
 
-		public SanyaPlugin() => instance = this;
+		public SanyaPlugin() => Instance = this;
 
 		public override void OnEnabled()
 		{
