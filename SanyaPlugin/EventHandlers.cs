@@ -286,6 +286,7 @@ namespace SanyaPlugin
 		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
 		private uint playerlistnetid = 0;
+		private uint roundplayertotal = 0;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -311,6 +312,7 @@ namespace SanyaPlugin
 
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
+			roundplayertotal = 0;
 
 			if(plugin.Config.DisablePlayerLists)
 			{
@@ -588,6 +590,11 @@ namespace SanyaPlugin
 				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identitytarget, ev.Player.Connection });
 
 				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));		
+			}
+
+			if(plugin.Config.ScramblePlayersNickname)
+			{
+				ev.Player.DisplayNickname = $"Player{++roundplayertotal}";
 			}
 
 			//MuteFixer

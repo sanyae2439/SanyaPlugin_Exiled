@@ -121,6 +121,9 @@ namespace SanyaPlugin
 		[Description("プレイヤーリストの無効化")]
 		public bool DisablePlayerLists { get; set; } = false;
 
+		[Description("プレイヤー名のスクランブル")]
+		public bool ScramblePlayersNickname { get; set; } = false;
+
 		[Description("ラウンド待機時のチュートリアルモード")]
 		public bool WaitingTutorials { get; set; } = false;
 
