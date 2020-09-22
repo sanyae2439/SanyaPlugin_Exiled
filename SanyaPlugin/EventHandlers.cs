@@ -422,11 +422,6 @@ namespace SanyaPlugin
 
 			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
-
-			if(plugin.Config.DisableSpectator)
-				foreach(var ply in ev.Players)
-					foreach(var lives in Player.List)
-						ply.SendCustomSyncVar(lives.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)lives.Role); });
 		}
 
 		//MapEvents
@@ -623,7 +618,7 @@ namespace SanyaPlugin
 			//MuteFixer
 			foreach(var player in Player.List)
 				if(player.IsMuted)
-					player.ReferenceHub.characterClassManager.SetDirtyBit(1uL);
+					player.ReferenceHub.characterClassManager.SetDirtyBit(2uL);
 
 			//SpeedFixer
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
@@ -672,21 +667,6 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = this.prevMaxAHP;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0.75f;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 0.7f;
-			}
-
-			//
-			if(plugin.Config.DisableSpectator)
-			{
-				if(ev.NewRole == RoleType.Spectator)
-				{
-					foreach(var ply in Player.List)
-						ev.Player.SendCustomSyncVar(ply.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)RoleType.Spectator); });
-				}
-				else if(ev.NewRole != RoleType.Spectator && ev.NewRole != RoleType.None)
-				{
-					foreach(var lives in Player.List)
-						ev.Player.SendCustomSyncVar(lives.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)lives.Role); });
-				}
 			}
 		}
 		public void OnSpawning(SpawningEventArgs ev)
@@ -847,11 +827,6 @@ namespace SanyaPlugin
 
 				Methods.SendSubtitle(str, (ushort)(str.Contains("t-minus") ? 30 : 10));
 			}
-
-			//
-			if(plugin.Config.DisableSpectator)
-				foreach(var ply in Player.List)
-					ev.Target.SendCustomSyncVar(ply.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)RoleType.Spectator); });
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{
@@ -946,18 +921,7 @@ namespace SanyaPlugin
 
 			if(plugin.Config.Scp049ExtensionRecallTime)
 				foreach(var target in Player.List)
-					target.AddDeathTimeForScp049();
-
-			if(plugin.Config.DisableSpectator) {
-				foreach(var lives in Player.List)
-					ev.Target.SendCustomSyncVar(lives.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)lives.Role); });
-
-				roundCoroutines.Add(Timing.CallDelayed(1f, () =>
-				{
-					foreach(var spectator in Player.List.Where(x => x.Role == RoleType.Spectator || x.Role == RoleType.None))
-						spectator.SendCustomSyncVar(ev.Target.ReferenceHub.networkIdentity, typeof(CharacterClassManager), (writer) => { writer.WritePackedUInt64(16ul); writer.WriteSByte((sbyte)RoleType.Spectator); });
-				}));
-			}				
+					target.AddDeathTimeForScp049();		
 		}
 
 		//Scp079

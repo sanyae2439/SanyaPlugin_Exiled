@@ -37,7 +37,7 @@ namespace SanyaPlugin.Commands
 				return true;
 			}
 
-			switch(arguments.FirstElement())
+			switch(arguments.FirstElement().ToLower())
 			{
 				case "test":
 					{
@@ -52,6 +52,11 @@ namespace SanyaPlugin.Commands
 						{
 							response += $"{ply.Nickname} : {LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping}ms\n";
 						}
+						return true;
+					}
+				case "addscps":
+					{
+						response = $"ok.{RoundSummary.singleton.classlistStart.scps_except_zombies++}";
 						return true;
 					}
 				case "forceend":

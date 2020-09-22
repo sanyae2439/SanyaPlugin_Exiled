@@ -121,9 +121,6 @@ namespace SanyaPlugin
 		[Description("プレイヤーリストの無効化")]
 		public bool DisablePlayerLists { get; set; } = false;
 
-		[Description("観戦の無効化")]
-		public bool DisableSpectator { get; set; } = false;
-
 		[Description("プレイヤー名のスクランブル")]
 		public bool ScramblePlayersNickname { get; set; } = false;
 
