@@ -235,7 +235,7 @@
 
 		internal static readonly string Extend079Lv4 = string.Concat(
 			"<color=#bbee00><size=25>",
-			"Tier4になりました. \n拡張モードにて地上のドア開閉を操作すると空爆が開始できます. \n",
+			"Tier4になりました. \n拡張モードにて地上のゲート開閉を操作すると空爆が開始できます. \n",
 			"</size><size=20>",
 			"You got to Tier4. On Extend mode, You can start airbomb by ActivateRooms door.\n",
 			"</size></color>"

@@ -561,7 +561,7 @@ namespace SanyaPlugin.Patches
 					}
 
 					var door = target.GetComponent<Door>();
-					if(door != null && door.DoorName == "NUKE_SURFACE" && !Coroutines.isAirBombGoing && NineTailedFoxAnnouncer.singleton.Free)
+					if(door != null && door.DoorName == "SURFACE_GATE" && !Coroutines.isAirBombGoing && NineTailedFoxAnnouncer.singleton.Free)
 					{
 						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(limit: 5)));
 						__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb;
