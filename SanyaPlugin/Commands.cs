@@ -54,6 +54,12 @@ namespace SanyaPlugin.Commands
 						}
 						return true;
 					}
+				case "foreceend":
+					{
+						RoundSummary.singleton.ForceEnd();
+						response = "Force Ended!";
+						return true;
+					}
 				case "config":
 					{
 						response = SanyaPlugin.Instance.Config.GetConfigs();

@@ -121,11 +121,17 @@ namespace SanyaPlugin
 		[Description("プレイヤーリストの無効化")]
 		public bool DisablePlayerLists { get; set; } = false;
 
+		[Description("観戦の無効化")]
+		public bool DisableSpectator { get; set; } = false;
+
 		[Description("プレイヤー名のスクランブル")]
 		public bool ScramblePlayersNickname { get; set; } = false;
 
 		[Description("ラウンド待機時のチュートリアルモード")]
 		public bool WaitingTutorials { get; set; } = false;
+
+		[Description("リスポーンカウンターを表示")]
+		public bool ShowRespawnCounter { get; set; } = false;
 
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();

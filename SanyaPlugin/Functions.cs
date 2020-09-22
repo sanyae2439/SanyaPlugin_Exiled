@@ -633,6 +633,11 @@ namespace SanyaPlugin.Functions
 			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
 		}
 
+		public static void SendTextHintNotEffect(this Player player, string text, ushort time)
+		{
+			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, null, time));
+		}
+
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
 		{
 			foreach(var cam in Scp079PlayerScript.allCameras)
