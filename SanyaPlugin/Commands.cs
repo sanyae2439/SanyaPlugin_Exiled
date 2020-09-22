@@ -54,7 +54,7 @@ namespace SanyaPlugin.Commands
 						}
 						return true;
 					}
-				case "foreceend":
+				case "forceend":
 					{
 						RoundSummary.singleton.ForceEnd();
 						response = "Force Ended!";
