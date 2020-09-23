@@ -421,7 +421,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
+			if(plugin.Config.StopRespawnAfterDetonated && (Warhead.IsDetonated || Warhead.IsInProgress) || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
 
 			if(plugin.Config.RandomRespawnPosPercent > 0)
@@ -466,7 +466,7 @@ namespace SanyaPlugin
 					}
 
 					nextRespawnPos = poslist[UnityEngine.Random.Range(0, poslist.Count)];
-					Log.Debug($"Determined:{nextRespawnPos}");
+					Log.Info($"Determined:{nextRespawnPos}");
 				}
 				else
 				{
