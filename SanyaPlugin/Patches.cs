@@ -134,6 +134,8 @@ namespace SanyaPlugin.Patches
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
 			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
 
+			leftdecont = Mathf.Clamp(leftdecont, 0, leftdecont);
+
 			float totalvoltagefloat = 0f;
 			foreach(var i in Generator079.Generators)
 			{
