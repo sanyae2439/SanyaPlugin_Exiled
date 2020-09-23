@@ -487,7 +487,7 @@ namespace SanyaPlugin
 					}
 
 					int randomnumlast = UnityEngine.Random.Range(0, poslist.Count);
-					nextRespawnPos = new Vector3(poslist[UnityEngine.Random.Range(0, poslist.Count)].x, poslist[UnityEngine.Random.Range(0, poslist.Count)].y + 1, poslist[UnityEngine.Random.Range(0, poslist.Count)].z);
+					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y + 2, poslist[randomnumlast].z);
 					
 					Log.Info($"[RandomRespawnPos] Determined:{nextRespawnPos}");
 				}
