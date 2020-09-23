@@ -19,7 +19,7 @@ using Exiled.API.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
-
+using LightContainmentZoneDecontamination;
 
 namespace SanyaPlugin
 {
@@ -305,6 +305,7 @@ namespace SanyaPlugin
 		internal bool IsEnableBlackout = false;
 		private uint playerlistnetid = 0;
 		private uint roundplayertotal = 0;
+		private Vector3 nextRespawnPos = Vector3.zero;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -422,6 +423,56 @@ namespace SanyaPlugin
 
 			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
+
+			if(plugin.Config.RandomRespawnPosPercent > 0)
+			{
+				int randomnum = UnityEngine.Random.Range(0, 100);
+				Log.Info($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent} : {RespawnManager.CurrentSequence()}");
+				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated)
+				{
+					List<Vector3> poslist = new List<Vector3>();
+					poslist.Add(RoleType.Scp049.GetRandomSpawnPoint());
+					poslist.Add(RoleType.Scp93953.GetRandomSpawnPoint());
+
+					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 4)
+					{
+						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
+
+						foreach(var itempos in RandomItemSpawner.singleton.posIds)
+						{
+							if(itempos.posID == "RandomPistol" && itempos.position.position.y > 0.5f && itempos.position.position.y < 0.7f)
+							{
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
+							}
+							else if(itempos.posID == "toilet_keycard" && itempos.position.position.y > 1.25f && itempos.position.position.y < 1.35f)
+							{
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y - 0.5f, itempos.position.position.z));
+							}
+						}
+					}
+
+					foreach(GameObject roomid in GameObject.FindGameObjectsWithTag("RoomID"))
+					{
+						Rid rid = roomid.GetComponent<Rid>();
+						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter"))
+						{
+							poslist.Add(roomid.transform.position);
+						}
+					}
+
+					foreach(var i in poslist)
+					{
+						Log.Debug($"[RandomRespawnPos] TargetLists:{i}");
+					}
+
+					nextRespawnPos = poslist[UnityEngine.Random.Range(0, poslist.Count)];
+					Log.Debug($"Determined:{nextRespawnPos}");
+				}
+				else
+				{
+					nextRespawnPos = Vector3.zero;
+				}
+			}
 		}
 
 		//MapEvents
@@ -671,7 +722,15 @@ namespace SanyaPlugin
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
-			Log.Debug($"[OnSpawning] {ev.Player.Nickname} -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnSpawning] {ev.Player.Nickname}(old:{ev.Player.ReferenceHub.characterClassManager._prevId}) -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.RandomRespawnPosPercent > 0 
+				&& ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.Spectator 
+				&& (ev.RoleType.GetTeam() == Team.MTF || ev.RoleType.GetTeam() == Team.CHI) 
+				&& nextRespawnPos != Vector3.zero)
+			{
+				ev.Position = nextRespawnPos;
+			}
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{

@@ -552,7 +552,7 @@ namespace SanyaPlugin.Patches
 			}
 			else if(command.Contains("DOOR:"))
 			{
-				if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb && command.Contains("NukeSurface"))
+				if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb && command.Contains("ContDoor"))
 				{
 					if(SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb > __instance.curMana)
 					{

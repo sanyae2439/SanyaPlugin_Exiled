@@ -130,6 +130,9 @@ namespace SanyaPlugin
 		[Description("リスポーンカウンターを表示")]
 		public bool ShowRespawnCounter { get; set; } = false;
 
+		[Description("リスポーン場所をランダムにする")]
+		public int RandomRespawnPosPercent { get; set; } = -1;
+
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
