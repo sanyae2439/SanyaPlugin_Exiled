@@ -12,6 +12,8 @@ using MEC;
 using Utf8Json;
 using CustomPlayerEffects;
 using Respawning;
+using Respawning.NamingRules;
+using LightContainmentZoneDecontamination;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Exiled.API.Features;
@@ -19,7 +21,6 @@ using Exiled.API.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
-using LightContainmentZoneDecontamination;
 
 namespace SanyaPlugin
 {
@@ -214,6 +215,26 @@ namespace SanyaPlugin
 						{
 							foreach(var ply in Player.List.Where(x => x.Role == RoleType.Spectator))
 								ply.SendTextHintNotEffect($"間もなくリスポーンします", 2);
+						}
+					}
+
+					//MTF-SCPInformation
+					if(plugin.Config.MtfScpInformation && RoundSummary.RoundInProgress())
+					{
+						List<Player> scpcounts = Player.List.Where(x => x.Team == Team.SCP).ToList();
+
+						RespawnManager.Singleton.NamingManager.AllUnitNames.Clear();
+
+						if(scpcounts.Count == 0)
+						{
+							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>NO SCPs</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
+						}
+						else
+						{
+							foreach(var scp in scpcounts)
+							{
+								RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = $"<color=#ff0000>{scp.ReferenceHub.characterClassManager.CurRole.fullName}</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
+							}
 						}
 					}
 
@@ -427,7 +448,7 @@ namespace SanyaPlugin
 			if(plugin.Config.RandomRespawnPosPercent > 0)
 			{
 				int randomnum = UnityEngine.Random.Range(0, 100);
-				Log.Info($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent} : {RespawnManager.CurrentSequence()}");
+				Log.Debug($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
 				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated)
 				{
 					List<Vector3> poslist = new List<Vector3>();
@@ -462,11 +483,11 @@ namespace SanyaPlugin
 
 					foreach(var i in poslist)
 					{
-						Log.Debug($"[RandomRespawnPos] TargetLists:{i}");
+						Log.Debug($"[RandomRespawnPos] TargetLists:{i}", SanyaPlugin.Instance.Config.IsDebugged);
 					}
 
 					nextRespawnPos = poslist[UnityEngine.Random.Range(0, poslist.Count)];
-					Log.Info($"Determined:{nextRespawnPos}");
+					Log.Info($"[RandomRespawnPos] Determined:{nextRespawnPos}");
 				}
 				else
 				{
@@ -808,7 +829,7 @@ namespace SanyaPlugin
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
-			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator) return;
+			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator || ev.Target == null) return;
 			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.Instance.Config.IsDebugged);
 			var targetteam = ev.Target.ReferenceHub.characterClassManager._prevId.GetTeam();
 			var targetrole = ev.Target.ReferenceHub.characterClassManager._prevId;

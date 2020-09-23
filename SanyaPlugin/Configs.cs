@@ -130,6 +130,9 @@ namespace SanyaPlugin
 		[Description("リスポーンカウンターを表示")]
 		public bool ShowRespawnCounter { get; set; } = false;
 
+		[Description("MTF陣営がSCPの情報を確認できる")]
+		public bool MtfScpInformation { get; set; } = false;
+
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
 
