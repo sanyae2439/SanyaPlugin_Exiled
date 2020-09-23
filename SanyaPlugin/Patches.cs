@@ -601,7 +601,6 @@ namespace SanyaPlugin.Patches
 			if(__instance._autoDetonate && __instance._autoDetonateTimer <= 0f)
 			{
 				__instance.InstantPrepare();
-				__instance._autoDetonate = false;
 			}
 		}
 	}
