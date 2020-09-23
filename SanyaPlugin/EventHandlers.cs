@@ -201,7 +201,7 @@ namespace SanyaPlugin
 					}
 
 					//RespawnCounter
-					if(plugin.Config.ShowRespawnCounter && RoundSummary.RoundInProgress())
+					if(plugin.Config.ShowRespawnCounter && RoundSummary.RoundInProgress() && !Warhead.IsInProgress && !Warhead.IsDetonated)
 					{
 						int respawntime = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
 						
