@@ -754,6 +754,9 @@ namespace SanyaPlugin
 			{
 				ev.Position = nextRespawnPos;
 			}
+
+			//EXILED fix
+			ev.Player.ReferenceHub.playerMovementSync.IsAFK = true;
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
