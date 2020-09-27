@@ -231,6 +231,7 @@ namespace SanyaPlugin
 						}
 						else
 						{
+							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>Confirmed SCPs</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
 							foreach(var scp in scpcounts)
 							{
 								RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = $"<color=#ff0000>{scp.ReferenceHub.characterClassManager.CurRole.fullName}</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
