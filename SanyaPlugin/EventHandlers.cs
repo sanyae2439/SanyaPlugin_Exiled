@@ -938,6 +938,13 @@ namespace SanyaPlugin
 					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
 				else
 					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
+
+			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
+				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
+			{
+				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
+				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+			}
 		}
 		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
 		{

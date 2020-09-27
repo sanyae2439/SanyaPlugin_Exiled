@@ -158,6 +158,9 @@ namespace SanyaPlugin
 		[Description("裏切りの成功率")]
 		public int TraitorChancePercent { get; set; } = 50;
 
+		[Description("ジャンプで消費するスタミナ量")]
+		public float StaminaCostJump { get; set; } = -1f;
+
 		[Description("USPのダメージ乗数(対人間)")]
 		public float UspDamageMultiplierHuman { get; set; } = 1f;
 
