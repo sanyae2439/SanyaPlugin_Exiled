@@ -246,13 +246,13 @@ namespace SanyaPlugin
 						List<Player> foundplayers = new List<Player>();
 						var scp079 = Scp079PlayerScript.instances.Count != 0 ? Player.Get(Scp079PlayerScript.instances.First().gameObject) : null;
 						string message = string.Empty;
-						if(scp079 != null && scp079.IsExmode() && last079room != scp079.CurrentRoom)
+						if(scp079 != null && scp079.IsExmode() && last079cam != scp079.Camera)
 						{
 							foreach(var player in Player.List)
 							{
 								if(player.ReferenceHub.characterClassManager.IsHuman() && scp079.CurrentRoom != null && scp079.CurrentRoom.Players.Contains(player))
 								{
-									last079room = scp079.CurrentRoom;
+									last079cam = scp079.Camera;
 									foundplayers.Add(player);
 									message = $"<color=#bbee00><size=25>SCP-079が{player.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
 									break;
@@ -334,7 +334,7 @@ namespace SanyaPlugin
 		private uint playerlistnetid = 0;
 		private uint roundplayertotal = 0;
 		private Vector3 nextRespawnPos = Vector3.zero;
-		private Room last079room = null;
+		private Camera079 last079cam = null;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -361,6 +361,7 @@ namespace SanyaPlugin
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
 			roundplayertotal = 0;
+			last079cam = null;
 
 			if(plugin.Config.DisablePlayerLists)
 			{
@@ -1021,7 +1022,7 @@ namespace SanyaPlugin
 
 			if(plugin.Config.Scp049ExtensionRecallTime)
 				foreach(var target in Player.List)
-					target.AddDeathTimeForScp049();		
+					target.AddDeathTimeForScp049();
 		}
 
 		//Scp079
