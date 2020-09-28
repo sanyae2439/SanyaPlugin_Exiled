@@ -2,8 +2,10 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
+using SanyaPlugin.Functions;
 
 namespace SanyaPlugin.Commands
 {
@@ -51,6 +53,18 @@ namespace SanyaPlugin.Commands
 						{
 							response += $"{ply.Nickname} : {LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping}ms\n";
 						}
+						return true;
+					}
+				case "actwatch":
+					{
+						player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+							writer.WritePackedUInt64(1ul);
+							writer.WritePackedUInt32((uint)1);
+							writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+							writer.WritePackedUInt32((uint)3);
+							writer.WriteByte((byte)1);
+						}, null);
+						response = "ok.";
 						return true;
 					}
 				case "addscps":

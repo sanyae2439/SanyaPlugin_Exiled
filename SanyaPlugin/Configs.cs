@@ -266,6 +266,9 @@ namespace SanyaPlugin
 		[Description("SCP-079がゲートと914操作に必要なTier")]
 		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;
 
+		[Description("SCP-079のSpotを有効化")]
+		public bool Scp079Spot { get; set; } = false;
+
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;
 

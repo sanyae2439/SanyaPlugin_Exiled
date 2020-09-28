@@ -16,6 +16,7 @@ using Respawning.NamingRules;
 using LightContainmentZoneDecontamination;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
+using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
 using SanyaPlugin.Data;
@@ -240,28 +241,33 @@ namespace SanyaPlugin
 					}
 
 					//SCP-079's Spot Humans
-					/*
 					if(plugin.Config.Scp079Spot)
 					{
-						foreach(var scp079 in Scp079PlayerScript.instances)
+						List<Player> foundplayers = new List<Player>();
+						var scp079 = Scp079PlayerScript.instances.Count != 0 ? Player.Get(Scp079PlayerScript.instances.First().gameObject) : null;
+						string message = string.Empty;
+						if(scp079 != null && scp079.IsExmode() && last079room != scp079.CurrentRoom)
 						{
-							if(scp079.iAm079)
+							foreach(var player in Player.List)
 							{
-								foreach(var player in Player.GetHubs())
+								if(player.ReferenceHub.characterClassManager.IsHuman() && scp079.CurrentRoom != null && scp079.CurrentRoom.Players.Contains(player))
 								{
-									if(player.characterClassManager.IsHuman() && scp079.currentCamera.CanLookToPlayer(player))
-									{
-										player.playerStats.TargetBloodEffect(player.playerStats.connectionToClient, Vector3.zero, 0.1f);
-										foreach(var scp in Player.GetHubs(Team.SCP))
-										{
-											// NEXT
-										}
-									}
+									last079room = scp079.CurrentRoom;
+									foundplayers.Add(player);
+									message = $"<color=#bbee00><size=25>SCP-079が{player.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
+									break;
 								}
 							}
 						}
+
+						if(!string.IsNullOrEmpty(message))
+						{
+							foreach(var scp in Player.Get(Team.SCP))
+							{
+								scp.SendTextHint(message, 5);
+							}
+						}
 					}
-					*/
 				}
 				catch(Exception e)
 				{
@@ -328,6 +334,7 @@ namespace SanyaPlugin
 		private uint playerlistnetid = 0;
 		private uint roundplayertotal = 0;
 		private Vector3 nextRespawnPos = Vector3.zero;
+		private Room last079room = null;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;

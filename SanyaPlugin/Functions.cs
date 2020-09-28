@@ -550,25 +550,36 @@ namespace SanyaPlugin.Functions
 			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
-		public static void SendCustomSyncVar(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar)
+		public static void SendCustomSync(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject, Action<NetworkWriter> customSyncVar)
 		{
 			/* 
-			Example:
-			player.SendCustomSyncVar(player.networkIdentity, typeof(ServerRoles), (targetwriter) =>
+			
+			Example(SyncVar) [TargetOnlyBadge]:
+			player.SendCustomSync(player.networkIdentity, typeof(ServerRoles), null, (targetwriter) =>
 			{
 				targetwriter.WritePackedUInt64(2UL);
 				targetwriter.WriteString("test");
 			});
-			 */
+
+			Example(SyncList) [EffectOnlySCP207]:
+			player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+				writer.WritePackedUInt64(1ul);								// DirtyObjectsBit
+				writer.WritePackedUInt32((uint)1);							// DirtyIndexCount
+				writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);	// Operations
+				writer.WritePackedUInt32((uint)0);							// EditIndex
+				writer.WriteByte((byte)1);									// Item
+			}, null);
+
+			*/
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
-			MakeCustomSyncVarWriter(behaviorOwner, targetType, customSyncVar, writer, writer2);
+			MakeCustomSyncWriter(behaviorOwner, targetType, customSyncObject, customSyncVar, writer, writer2);
 			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
 			NetworkWriterPool.Recycle(writer);
 			NetworkWriterPool.Recycle(writer2);
 		}
 
-		public static void MakeCustomSyncVarWriter(NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncVar, NetworkWriter owner, NetworkWriter observer)
+		public static void MakeCustomSyncWriter(NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject, Action<NetworkWriter> customSyncVar, NetworkWriter owner, NetworkWriter observer)
 		{
 			ulong dirty = 0ul;
 			ulong dirty_o = 0ul;
@@ -589,8 +600,13 @@ namespace SanyaPlugin.Functions
 			owner.WriteInt32(0);
 			int position2 = owner.Position;
 
-			behaviour.SerializeObjectsDelta(owner);
-			customSyncVar(owner);
+			if(customSyncObject != null)
+				customSyncObject.Invoke(owner);
+			else
+				behaviour.SerializeObjectsDelta(owner);
+
+			customSyncVar?.Invoke(owner);
+
 			int position3 = owner.Position;
 			owner.Position = position;
 			owner.WriteInt32(position3 - position2);
@@ -628,14 +644,14 @@ namespace SanyaPlugin.Functions
 			player.ReferenceHub.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.Connection);
 		}
 
-		public static void SendTextHint(this Player player, string text, ushort time)
+		public static void SendTextHint(this Player player, string text, float time)
 		{
-			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
+			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(text) }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
 		}
 
-		public static void SendTextHintNotEffect(this Player player, string text, ushort time)
+		public static void SendTextHintNotEffect(this Player player, string text, float time)
 		{
-			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter("") }, null, time));
+			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(text) }, null, time));
 		}
 
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
