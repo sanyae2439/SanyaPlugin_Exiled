@@ -806,6 +806,22 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp173ForceBlinkPercent > 0 && ev.Target.Role == RoleType.Scp173 && plugin.Random.Next(0, 100) < plugin.Config.Scp173ForceBlinkPercent)
 				Methods.Blink();
 
+			//SCP-049 ReCure
+			if(plugin.Config.Scp049ExtendCure && ev.DamageType == DamageTypes.Scp049)
+			{
+				ev.Target.Inventory.ServerDropAll();
+				ev.Attacker.Health = Mathf.Clamp(ev.Attacker.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Attacker.MaxHealth);
+				ev.Target.SetRole(RoleType.Scp0492, true);
+				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => {
+					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(5f);
+					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
+					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(5f);
+					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(5f);
+					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Flashed>(1f);
+				}));
+				ev.IsAllowed = false;
+				return;
+			}
 
 			//CuffedMultiplier
 			if(ev.Target.IsCuffed && ev.Attacker.ReferenceHub.characterClassManager.IsHuman())
@@ -843,7 +859,7 @@ namespace SanyaPlugin
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
-			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator || ev.Target == null) return;
+			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator || ev.Killer == null || ev.Target == null) return;
 			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.Instance.Config.IsDebugged);
 			var targetteam = ev.Target.ReferenceHub.characterClassManager._prevId.GetTeam();
 			var targetrole = ev.Target.ReferenceHub.characterClassManager._prevId;
@@ -1019,10 +1035,6 @@ namespace SanyaPlugin
 			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			ev.Scp049.Health = Mathf.Clamp(ev.Scp049.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Scp049.MaxHealth);
-
-			if(plugin.Config.Scp049ExtensionRecallTime)
-				foreach(var target in Player.List)
-					target.AddDeathTimeForScp049();
 		}
 
 		//Scp079
