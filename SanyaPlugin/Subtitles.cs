@@ -211,17 +211,17 @@
 
 		internal static readonly string Extend079First = string.Concat(
 			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1ではカメラ操作でSCPのもとへカメラ移動ができたり, \n見ている部屋にいる生存者の場所を伝えることができます.\n",
+			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1では見ている部屋にいる生存者の場所を伝えることができます.\n",
 			"</size><size=20>",
-			"You can use Extend mode. You can toggle by sprint keys.\nYou can move to SCPs by camera interacts,\nand spot living humans on current watching room.\n",
+			"You can use Extend mode. You can toggle by sprint keys.\nYou can spot living humans on current watching room.\n",
 			"</size></color>"
 		);
 
 		internal static readonly string Extend079Lv2 = string.Concat(
 			"<color=#bbee00><size=25>",
-			"Tier2になりました. 拡張モードにてドアを開閉するボタンで音を出すことができるようになります.\n",
+			"Tier2になりました. 拡張モードにてカメラ操作でSCPのもとへカメラ移動ができます.\n",
 			"</size><size=20>",
-			"You got to Tier2. On Extend mode, You can beep-sound from door.\n",
+			"You got to Tier2. On Extend mode, You can move to SCPs by camera interacts.\n",
 			"</size></color>"
 		);
 

@@ -464,7 +464,7 @@ namespace SanyaPlugin.Patches
 
 			if(__instance.GetComponent<AnimationController>().curAnim != 1) return true;
 
-			if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelFindscp)
+			if(SanyaPlugin.Instance.Config.Scp079ExtendLevelFindscp > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelFindscp)
 			{
 				List<Camera079> cams = new List<Camera079>();
 				foreach(var ply in Player.List)
@@ -529,7 +529,7 @@ namespace SanyaPlugin.Patches
 
 				if(b == "HCZ_Nuke")
 				{
-					if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke)
+					if(SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke > 0 &&__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke)
 					{
 						if(SanyaPlugin.Instance.Config.Scp079ExtendCostNuke > __instance.curMana)
 						{
@@ -554,7 +554,7 @@ namespace SanyaPlugin.Patches
 			}
 			else if(command.Contains("DOOR:"))
 			{
-				if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb && command.Contains("ContDoor"))
+				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb && command.Contains("ContDoor"))
 				{
 					if(SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb > __instance.curMana)
 					{
@@ -569,24 +569,6 @@ namespace SanyaPlugin.Patches
 						__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb;
 						return false;
 					}
-				}
-
-				if(__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelDoorbeep)
-				{
-					if(SanyaPlugin.Instance.Config.Scp079ExtendCostDoorbeep > __instance.curMana)
-					{
-						__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostDoorbeep, __instance.curMana);
-						return false;
-					}
-
-					var door = target.GetComponent<Door>();
-					if(door != null && door.curCooldown <= 0f)
-					{
-						player.ReferenceHub.playerInteract.RpcDenied(target);
-						door.curCooldown = 0.5f;
-						__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostDoorbeep;
-					}
-					return false;
 				}
 			}
 			return true;

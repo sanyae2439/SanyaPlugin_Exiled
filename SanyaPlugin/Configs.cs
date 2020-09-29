@@ -266,23 +266,17 @@ namespace SanyaPlugin
 		[Description("SCP-079がゲートと914操作に必要なTier")]
 		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;
 
-		[Description("SCP-079のSpotを有効化")]
-		public bool Scp079Spot { get; set; } = false;
-
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;
 
+		[Description("SCP-079のExモードでのスポットの必要レベル")]
+		public int Scp079ExtendLevelSpot { get; set; } = 1;
+
 		[Description("SCP-079のExモードでのSCPの位置へカメラ移動の必要レベル")]
-		public int Scp079ExtendLevelFindscp { get; set; } = 1;
+		public int Scp079ExtendLevelFindscp { get; set; } = 2;
 
 		[Description("SCP-079のExモードでのSCPの位置へカメラ移動のコスト")]
 		public float Scp079ExtendCostFindscp { get; set; } = 10f;
-
-		[Description("SCP-079のExモードでのドアのエラー音発生の必要レベル")]
-		public int Scp079ExtendLevelDoorbeep { get; set; } = 2;
-
-		[Description("SCP-079のExモードでのドアのエラー音発生のコスト")]
-		public float Scp079ExtendCostDoorbeep { get; set; } = 5f;
 
 		[Description("SCP-079のExモードでの核の操作の必要レベル")]
 		public int Scp079ExtendLevelNuke { get; set; } = 3;

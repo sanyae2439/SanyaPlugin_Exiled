@@ -241,7 +241,7 @@ namespace SanyaPlugin
 					}
 
 					//SCP-079's Spot Humans
-					if(plugin.Config.Scp079Spot)
+					if(plugin.Config.Scp079ExtendEnabled && plugin.Config.Scp079ExtendLevelSpot > 0)
 					{
 						List<Player> foundplayers = new List<Player>();
 						var scp079 = Scp079PlayerScript.instances.Count != 0 ? Player.Get(Scp079PlayerScript.instances.First().gameObject) : null;
