@@ -10,10 +10,13 @@ using HarmonyLib;
 using Grenades;
 using Respawning;
 using Respawning.NamingRules;
+using Assets._Scripts.Dissonance;
 using LightContainmentZoneDecontamination;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-using Assets._Scripts.Dissonance;
+
+using Exiled.Permissions.Extensions;
+using NorthwoodLib.Pools;
 
 namespace SanyaPlugin.Patches
 {
@@ -23,99 +26,98 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Player player, string permission, ref bool __result)
 		{
-			if(player.GameObject == PlayerManager.localPlayer)
+			if(string.IsNullOrEmpty(permission))
+			{
+				__result = false;
+				return false;
+			}
+
+			if(player == null || player.GameObject == null || Permissions.Groups == null || Permissions.Groups.Count == 0)
+			{
+				__result = false;
+				return false;
+			}
+
+			if(player.ReferenceHub.isDedicatedServer)
+			{
+				__result = false;
+				return false;
+			}
+
+			Log.Debug($"UserID: {player.UserId} | PlayerId: {player.Id}", Exiled.Loader.Loader.ShouldDebugBeShown | SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"Permission string: {permission}", Exiled.Loader.Loader.ShouldDebugBeShown | SanyaPlugin.Instance.Config.IsDebugged);
+
+			var plyGroupKey = player.Group != null ? ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.Group).Key : player.GroupName;
+			if(string.IsNullOrEmpty(plyGroupKey))
+				plyGroupKey = player.Group != null ? ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.UserId).Value : player.GroupName;
+
+			if(string.IsNullOrEmpty(plyGroupKey))
+			{
+				__result = false;
+				return false;
+			}
+
+			Log.Debug($"GroupKey: {plyGroupKey}", Exiled.Loader.Loader.ShouldDebugBeShown | SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(!Permissions.Groups.TryGetValue(plyGroupKey, out var group))
+				group = Permissions.DefaultGroup;
+
+			if(group is null)
+			{
+				__result = false;
+				return false;
+			}
+
+			const char PERM_SEPARATOR = '.';
+			const string ALL_PERMS = ".*";
+
+			if(group.CombinedPermissions.Contains(ALL_PERMS))
 			{
 				__result = true;
 				return false;
 			}
+				
 
-			Log.Debug($"Player: {player.Nickname} UserID: {player.UserId}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-			if(string.IsNullOrEmpty(permission))
+			if(permission.Contains(PERM_SEPARATOR))
 			{
-				Log.Error("Permission checked was null.");
-				__result = false;
-				return false;
-			}
+				var strBuilder = StringBuilderPool.Shared.Rent();
+				var seraratedPermissions = permission.Split(PERM_SEPARATOR);
 
-			Log.Debug($"Permission string: {permission}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-			UserGroup userGroup = ServerStatic.GetPermissionsHandler().GetUserGroup(player.UserId);
-			Exiled.Permissions.Features.Group group = null;
+				bool Check(string source) => group.CombinedPermissions.Contains(source, StringComparison.OrdinalIgnoreCase);
 
-			if(userGroup != null)
-			{
-				Log.Debug($"UserGroup: {userGroup.BadgeText}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-				string groupName = ServerStatic.GetPermissionsHandler()._groups.FirstOrDefault(g => g.Value == player.Group).Key;
-				Log.Debug($"GroupName: {groupName}", Exiled.Loader.Loader.ShouldDebugBeShown);
-
-				groupName = ServerStatic.GetPermissionsHandler()._members.FirstOrDefault(g => g.Key == player.UserId).Value;
-				Log.Debug($"BadgeText:{player.Group.BadgeText} -> FixedGroupName: {groupName}", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-
-				if(Exiled.Permissions.Extensions.Permissions.Groups == null)
+				var result = false;
+				for(var z = 0; z < seraratedPermissions.Length; z++)
 				{
-					Log.Error("Permissions config is null.");
-					__result = false;
-					return false;
-				}
-
-				if(!Exiled.Permissions.Extensions.Permissions.Groups.Any())
-				{
-					Log.Error("No permission config groups.");
-					__result = false;
-					return false;
-				}
-
-				if(!Exiled.Permissions.Extensions.Permissions.Groups.TryGetValue(groupName, out group))
-				{
-					Log.Error("Could not get permission value.");
-					__result = false;
-					return false;
-				}
-
-				Log.Debug($"Got group.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-			}
-			else
-			{
-				Log.Debug("Player group is null, getting default..", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-				group = Exiled.Permissions.Extensions.Permissions.DefaultGroup;
-			}
-
-			if(group != null)
-			{
-				Log.Debug("Group is not null!", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-				if(permission.Contains("."))
-				{
-					Log.Debug("Group contains permission separator", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-					if(group.Permissions.Any(s => s == ".*"))
+					if(z != 0)
 					{
-						Log.Debug("All permissions have been granted for all nodes.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-						__result = true;
-						return false;
+						strBuilder.Length -= ALL_PERMS.Length;
+
+						strBuilder.Append(PERM_SEPARATOR);
 					}
 
-					if(group.Permissions.Contains(permission.Split('.')[0] + ".*"))
+					strBuilder.Append(seraratedPermissions[z]);
+
+					if(z == seraratedPermissions.Length - 1)
 					{
-						Log.Debug("Check 1: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-						__result = true;
-						return false;
+						result = Check(strBuilder.ToString());
+						break;
+					}
+
+					strBuilder.Append(ALL_PERMS);
+					if(Check(strBuilder.ToString()))
+					{
+						result = true;
+						break;
 					}
 				}
 
-				if(group.Permissions.Contains(permission) || group.Permissions.Contains("*"))
-				{
-					Log.Debug("Check 2: True, returning.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-					__result = true;
-					return false;
-				}
-			}
-			else
-			{
-				Log.Debug("Group is null, returning false.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-				__result = false;
+				StringBuilderPool.Shared.Return(strBuilder);
+
+				__result = result;
 				return false;
 			}
 
-			Log.Debug("No permissions found.", Exiled.Loader.Loader.ShouldDebugBeShown || SanyaPlugin.Instance.Config.IsDebugged);
-			__result = false;
+			__result = group.CombinedPermissions.Contains(permission, StringComparison.OrdinalIgnoreCase);
 			return false;
 		}
 	}
@@ -178,7 +180,7 @@ namespace SanyaPlugin.Patches
 			}
 
 
-			
+
 
 			__instance.CustomContent = contentfix;
 

@@ -72,6 +72,10 @@
       <HintPath>References\Mirror.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="NorthwoodLib">
+      <HintPath>References\NorthwoodLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
