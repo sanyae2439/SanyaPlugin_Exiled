@@ -128,8 +128,8 @@ namespace SanyaPlugin.Patches
 		{
 			if(!SanyaPlugin.Instance.Config.IntercomInformation) return;
 
-			int leftdecont = (int)((Math.Truncate((15f * 60) * 100f) / 100f) - (Math.Truncate(DecontaminationController.GetServerTime * 100f) / 100f));
-			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - RoundSummary.roundTime, 0, AlphaWarheadController.Host._autoDetonateTime) : -1;
+			int leftdecont = (int)Math.Truncate((DecontaminationController.Singleton.DecontaminationPhases[DecontaminationController.Singleton.DecontaminationPhases.Length - 1].TimeTrigger) - Math.Truncate(DecontaminationController.GetServerTime));
+			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - (AlphaWarheadController.Host._autoDetonateTime - AlphaWarheadController.Host._autoDetonateTimer), 0, AlphaWarheadController.Host._autoDetonateTimer) : -1;
 			int nextRespawn = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
 			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
@@ -153,8 +153,32 @@ namespace SanyaPlugin.Patches
 				$"SCP-106再収用設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
 				$"軽度収用区画閉鎖まで : {leftdecont / 60:00}:{leftdecont % 60:00}\n",
 				$"自動施設爆破開始まで : {leftautowarhead / 60:00}:{leftautowarhead % 60:00}\n",
-				$"接近中の部隊突入まで : {nextRespawn / 60:00}:{nextRespawn % 60:00}\n"
+				$"接近中の部隊突入まで : {nextRespawn / 60:00}:{nextRespawn % 60:00}\n\n"
 				);
+
+			if(__instance.Muted)
+			{
+				contentfix += "アクセスが拒否されました";
+			}
+			else if(Intercom.AdminSpeaking)
+			{
+				contentfix += $"施設管理者が放送設備をオーバーライド中";
+			}
+			else if(__instance.remainingCooldown > 0f)
+			{
+				contentfix += $"放送設備再起動中 : 残り{Mathf.CeilToInt(__instance.remainingCooldown)}秒";
+			}
+			else if(__instance.speaker != null)
+			{
+				contentfix += $"{Player.Get(__instance.speaker).Nickname}が放送中... : 残り{Mathf.CeilToInt(__instance.speechRemainingTime)}秒";
+			}
+			else
+			{
+				contentfix += "放送設備準備完了";
+			}
+
+
+			
 
 			__instance.CustomContent = contentfix;
 
@@ -506,8 +530,8 @@ namespace SanyaPlugin.Patches
 			var player = Player.Get(__instance.gameObject);
 			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(command.Contains("DOOR:") 
-				&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1 
+			if(command.Contains("DOOR:")
+				&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1
 				&& target.TryGetComponent<Door>(out var targetdoor)
 				&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
 			{
@@ -529,7 +553,7 @@ namespace SanyaPlugin.Patches
 
 				if(b == "HCZ_Nuke")
 				{
-					if(SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke > 0 &&__instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke)
+					if(SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke)
 					{
 						if(SanyaPlugin.Instance.Config.Scp079ExtendCostNuke > __instance.curMana)
 						{
@@ -552,25 +576,6 @@ namespace SanyaPlugin.Patches
 					}
 				}
 			}
-			else if(command.Contains("DOOR:"))
-			{
-				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelAirbomb && command.Contains("ContDoor"))
-				{
-					if(SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb > __instance.curMana)
-					{
-						__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb, __instance.curMana);
-						return false;
-					}
-
-					var door = target.GetComponent<Door>();
-					if(door != null && door.DoorName == "SURFACE_GATE" && !Coroutines.isAirBombGoing && NineTailedFoxAnnouncer.singleton.Free)
-					{
-						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(limit: 5)));
-						__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostAirbomb;
-						return false;
-					}
-				}
-			}
 			return true;
 		}
 	}
@@ -586,6 +591,22 @@ namespace SanyaPlugin.Patches
 			{
 				__instance.InstantPrepare();
 			}
+		}
+	}
+
+	//transpiler
+	[HarmonyPatch(typeof(AlphaWarheadController), nameof(AlphaWarheadController.CancelDetonation), new Type[] { typeof(GameObject) })]
+	public static class AutoNukeReEnablePatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var newInst = instructions.ToList();
+			var index = newInst.FindLastIndex(x => x.opcode == OpCodes.Ldarg_0);
+
+			newInst.RemoveRange(index, 3);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
 		}
 	}
 
@@ -616,7 +637,7 @@ namespace SanyaPlugin.Patches
 					isFound = true;
 				}
 			}
-			
+
 			if(!isFound)
 			{
 				Log.Debug($"[Scp939VisionShieldPatch] {scp939._hub.nicknameSync.MyNick}({scp939._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);

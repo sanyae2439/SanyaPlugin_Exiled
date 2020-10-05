@@ -203,7 +203,7 @@ namespace SanyaPlugin
 					}
 
 					//RespawnCounter
-					if(plugin.Config.ShowRespawnCounter && RoundSummary.RoundInProgress() && !Warhead.IsInProgress && !Warhead.IsDetonated)
+					if(plugin.Config.ShowRespawnCounter && RoundSummary.RoundInProgress() && !Warhead.IsDetonated)
 					{
 						int respawntime = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
 						
@@ -451,20 +451,20 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.StopRespawnAfterDetonated && (Warhead.IsDetonated || Warhead.IsInProgress) || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
+			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
 
 			if(plugin.Config.RandomRespawnPosPercent > 0)
 			{
 				int randomnum = UnityEngine.Random.Range(0, 100);
 				Log.Debug($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
-				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated)
+				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
 					poslist.Add(RoleType.Scp049.GetRandomSpawnPoint());
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnPoint());
 
-					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 4)
+					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
 						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
 
@@ -719,7 +719,7 @@ namespace SanyaPlugin
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
 			if(ev.Player.Nickname == null) return;
-			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} -> {ev.NewRole}", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
@@ -1050,9 +1050,6 @@ namespace SanyaPlugin
 						break;
 					case 2:
 						ev.Player.SendTextHint(HintTexts.Extend079Lv3, 10);
-						break;
-					case 3:
-						ev.Player.SendTextHint(HintTexts.Extend079Lv4, 10);
 						break;
 				}
 		}

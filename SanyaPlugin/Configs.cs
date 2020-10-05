@@ -284,12 +284,6 @@ namespace SanyaPlugin
 		[Description("SCP-079のExモードでの核の操作のコスト")]
 		public float Scp079ExtendCostNuke { get; set; } = 50f;
 
-		[Description("SCP-079のExモードでの地上エリア空爆の必要レベル")]
-		public int Scp079ExtendLevelAirbomb { get; set; } = 4;
-
-		[Description("SCP-079のExモードでの地上エリア空爆のコスト")]
-		public float Scp079ExtendCostAirbomb { get; set; } = 100f;
-
 		[Description("SCP-079の1カメラ移動コスト")]
 		public float Scp079CostCamera { get; set; } = 1f;
 
