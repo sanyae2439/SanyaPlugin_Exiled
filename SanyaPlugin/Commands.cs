@@ -19,6 +19,8 @@ namespace SanyaPlugin.Commands
 
 		public string Description { get; } = "SanyaPlugin Commands";
 
+		private bool isActwatchEnabled = false;
+
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
 			Log.Debug($"[Commands] Sender:{sender.LogName} args:{arguments.Count}", SanyaPlugin.Instance.Config.IsDebugged);
@@ -57,14 +59,30 @@ namespace SanyaPlugin.Commands
 					}
 				case "actwatch":
 					{
-						player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
-							writer.WritePackedUInt64(1ul);
-							writer.WritePackedUInt32((uint)1);
-							writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-							writer.WritePackedUInt32((uint)3);
-							writer.WriteByte((byte)1);
-						}, null);
-						response = "ok.";
+						if(!isActwatchEnabled)
+						{
+							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+								writer.WritePackedUInt64(1ul);
+								writer.WritePackedUInt32((uint)1);
+								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+								writer.WritePackedUInt32((uint)3);
+								writer.WriteByte((byte)1);
+							}, null);
+							isActwatchEnabled = true;
+						}
+						else
+						{
+							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+								writer.WritePackedUInt64(1ul);
+								writer.WritePackedUInt32((uint)1);
+								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+								writer.WritePackedUInt32((uint)3);
+								writer.WriteByte((byte)0);
+							}, null);
+							isActwatchEnabled = false;
+						}
+
+						response = $"ok. [{isActwatchEnabled}]";
 						return true;
 					}
 				case "addscps":
