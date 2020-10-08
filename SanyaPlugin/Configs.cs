@@ -239,8 +239,8 @@ namespace SanyaPlugin
 		[Description("SCP-173のキル時回復量")]
 		public int Scp173RecoveryAmount { get; set; } = 0;
 
-		[Description("SCP-173が攻撃された際に強制瞬きを発生させる確率")]
-		public int Scp173ForceBlinkPercent { get; set; } = -1;
+		[Description("SCP-173の被視認者に応じて増加するAHPの一人当たりの量")]
+		public int Scp173SeeingByHumansAhpAmount { get; set; } = -1;
 
 		[Description("SCP-939-XXの被ダメージ乗数")]
 		public float Scp939DamageMultiplier { get; set; } = 1f;

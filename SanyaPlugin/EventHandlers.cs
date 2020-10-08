@@ -326,7 +326,6 @@ namespace SanyaPlugin
 		/** Flag Params **/
 		private int detonatedDuration = -1;
 		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
-		private int prevMaxAHP = 0;
 
 		/** RoundVar **/
 		private FlickerableLightController flickerableLightController = null;
@@ -738,18 +737,17 @@ namespace SanyaPlugin
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 
 			//Scp939Extend
-			if(ev.NewRole.Is939())
+			if(ev.NewRole.GetTeam() != Team.SCP)
 			{
-				if(prevMaxAHP == 0) prevMaxAHP = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
+				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 75;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0.75f;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 0.7f;
+			}
+			else if(ev.NewRole.Is939() || ev.NewRole == RoleType.Scp173)
+			{
 				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 0;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0f;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
-			}
-			else if(ev.Player.ReferenceHub.characterClassManager._prevId.Is939())
-			{
-				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = this.prevMaxAHP;
-				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0.75f;
-				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 0.7f;
 			}
 		}
 		public void OnSpawning(SpawningEventArgs ev)
@@ -801,10 +799,6 @@ namespace SanyaPlugin
 			//SCP-049-2 Effect
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(2f);
-
-			//SCP-173 Force Blink
-			if(plugin.Config.Scp173ForceBlinkPercent > 0 && ev.Target.Role == RoleType.Scp173 && plugin.Random.Next(0, 100) < plugin.Config.Scp173ForceBlinkPercent)
-				Methods.Blink();
 
 			//SCP-049 ReCure
 			if(plugin.Config.Scp049ExtendCure && ev.DamageType == DamageTypes.Scp049)
