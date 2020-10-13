@@ -232,7 +232,7 @@ namespace SanyaPlugin
 						}
 						else
 						{
-							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>Confirmed SCPs</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
+							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>MTF-Scout-Sys</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
 							foreach(var scp in scpcounts)
 							{
 								RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = $"<color=#ff0000>{scp.ReferenceHub.characterClassManager.CurRole.fullName}</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
@@ -248,7 +248,7 @@ namespace SanyaPlugin
 						string message = string.Empty;
 						if(scp079 != null && scp079.IsExmode() && last079cam != scp079.Camera)
 						{
-							foreach(var player in Player.List)
+							foreach(var player in Player.List.Where(x => x.Team != Team.RIP && x.Team != Team.SCP))
 							{
 								if(player.ReferenceHub.characterClassManager.IsHuman() && scp079.CurrentRoom != null && scp079.CurrentRoom.Players.Contains(player))
 								{

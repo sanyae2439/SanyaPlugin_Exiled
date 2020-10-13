@@ -96,6 +96,11 @@ namespace SanyaPlugin.Commands
 						response = "Force Ended!";
 						return true;
 					}
+				case "now":
+					{
+						response = $"now ticks:{TimeBehaviour.CurrentTimestamp()}";
+						return true;
+					}
 				case "config":
 					{
 						response = SanyaPlugin.Instance.Config.GetConfigs();
