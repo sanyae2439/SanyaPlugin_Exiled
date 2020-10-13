@@ -15,10 +15,12 @@ using MEC;
 using Utf8Json;
 using RemoteAdmin;
 using Hints;
+using Respawning;
+using CustomPlayerEffects;
 using Exiled.Events.EventArgs;
 using Exiled.API.Features;
 using SanyaPlugin.Data;
-using Respawning;
+
 
 namespace SanyaPlugin.Functions
 {
@@ -387,6 +389,44 @@ namespace SanyaPlugin.Functions
 
 			Log.Info($"[AirSupportBomb] Ended.");
 			yield break;
+		}
+
+		public static IEnumerator<float> Scp106WalkingThrough(Player player, Vector3 lastpos)
+		{
+			yield return Timing.WaitForOneFrame;
+
+			Vector3 forward = player.CameraTransform.forward;
+			forward.Set(forward.x * 0.1f, 0f, forward.z * 0.1f);
+
+			var hits = Physics.RaycastAll(player.Position, forward, 50f, 1);
+			if(hits.Length < 2) yield break;
+			if(hits[0].distance > 1f) yield break;
+
+			if(!Physics.Raycast(hits.Last().point + forward, forward * -1f, out var BackHits, 50f, 1)) yield break;
+
+			PlayerMovementSync.FindSafePosition(BackHits.point, out var pos);
+			player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
+			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+			player.AddItem(ItemType.SCP268);
+			player.ReferenceHub.playerEffectsController.EnableEffect<Scp268>();
+			player.ReferenceHub.playerEffectsController.EnableEffect<Deafened>();
+			player.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Visuals939>(1);
+			SanyaPlugin.Instance.Handlers.last106walkthrough.Restart();
+
+			while(true)
+			{
+				if(player.Position == pos || player.Role != RoleType.Scp106)
+				{
+					player.ReferenceHub.playerMovementSync.WhitelistPlayer = false;
+					player.ReferenceHub.fpc.NetworkforceStopInputs = false;	
+					player.ClearInventory();
+					player.ReferenceHub.playerEffectsController.DisableEffect<Deafened>();
+					player.ReferenceHub.playerEffectsController.DisableEffect<Visuals939>();
+					yield break;
+				}
+				player.Position = Vector3.MoveTowards(player.Position, pos, 0.25f);
+				yield return Timing.WaitForOneFrame;
+			}
 		}
 	}
 

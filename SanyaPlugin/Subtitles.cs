@@ -240,5 +240,21 @@
 			"Not enough Tier on interact it.\n",
 			"</size></color>"
 		);
+
+		internal static readonly string Extend106First = string.Concat(
+			"<color=#bbee00><size=25>",
+			"拡張モードを使用可能です. スプリントキーで使用可能です.\n壁を通り抜けて移動することができます。\n",
+			"</size><size=20>",
+			"You can use Extend mode. Use by sprint keys.\nYou can walkthrough on walls.\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend106NotReady = string.Concat(
+			"<size=25>",
+			"まだ使用できません。{0}秒後に使用可能です。\n",
+			"</size><size=20>",
+			"Wait for ready. {0} seconds left.\n",
+			"</size>"
+		);
 	}
 }

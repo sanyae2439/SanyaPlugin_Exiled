@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -16,12 +17,12 @@ using Respawning.NamingRules;
 using LightContainmentZoneDecontamination;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
-using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
+
 
 namespace SanyaPlugin
 {
@@ -232,7 +233,7 @@ namespace SanyaPlugin
 						}
 						else
 						{
-							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>MTF-Scout-Sys</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
+							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>MTFSupportSys</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
 							foreach(var scp in scpcounts)
 							{
 								RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = $"<color=#ff0000>{scp.ReferenceHub.characterClassManager.CurRole.fullName}</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
@@ -334,6 +335,7 @@ namespace SanyaPlugin
 		private uint roundplayertotal = 0;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		private Camera079 last079cam = null;
+		internal Stopwatch last106walkthrough = new Stopwatch();
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -361,6 +363,7 @@ namespace SanyaPlugin
 
 			roundplayertotal = 0;
 			last079cam = null;
+			last106walkthrough.Restart();
 
 			if(plugin.Config.DisablePlayerLists)
 			{
@@ -723,6 +726,9 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
 
+			if(plugin.Config.Scp106WalkthroughCooldown > 0 && ev.NewRole == RoleType.Scp106)
+				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
+
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
 				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
@@ -747,6 +753,12 @@ namespace SanyaPlugin
 			{
 				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 0;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0f;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
+			}
+			else if(ev.NewRole == RoleType.Scp106)
+			{
+				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 0;
+				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = -0.25f;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
 			}
 		}
@@ -799,6 +811,12 @@ namespace SanyaPlugin
 			//SCP-049-2 Effect
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(2f);
+
+			//SCP-106 AHP
+			if(plugin.Config.Scp106SendPocketAhpAmount > 0 && ev.DamageType == DamageTypes.Scp106)
+			{
+				ev.Attacker.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
+			}
 
 			//SCP-049 ReCure
 			if(plugin.Config.Scp049ExtendCure && ev.DamageType == DamageTypes.Scp049)
@@ -945,6 +963,7 @@ namespace SanyaPlugin
 			{
 				player.Health = Mathf.Clamp(player.Health + plugin.Config.Scp106RecoveryAmount, 0, player.MaxHealth);
 				player.ShowHitmarker();
+				if(plugin.Config.Scp106SendPocketAhpDecayAmount > 0) player.ReferenceHub.playerStats.NetworkartificialHpDecay -= plugin.Config.Scp106SendPocketAhpDecayAmount;
 			}
 		}
 		public void OnSyncingData(SyncingDataEventArgs ev)
@@ -957,12 +976,24 @@ namespace SanyaPlugin
 				else
 					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
 
+			if(plugin.Config.Scp106WalkthroughCooldown > 0
+				&& ev.Player.Role == RoleType.Scp106 
+				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
+				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
+			{
+				if(last106walkthrough.Elapsed.TotalSeconds > plugin.Config.Scp106WalkthroughCooldown || ev.Player.IsBypassModeEnabled)
+					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106WalkingThrough(ev.Player, ev.Player.Position)));
+				else
+					ev.Player.SendTextHint(HintTexts.Extend106NotReady.Replace("{0}", $"{plugin.Config.Scp106WalkthroughCooldown - (int)last106walkthrough.Elapsed.TotalSeconds}"),3);
+			}
+
 			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
 				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
 			{
 				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
 				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
 			}
+
 		}
 		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
 		{

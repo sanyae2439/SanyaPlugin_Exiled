@@ -230,6 +230,15 @@ namespace SanyaPlugin
 		[Description("SCP-106のポケットディメンションでのキル時回復量")]
 		public int Scp106RecoveryAmount { get; set; } = 0;
 
+		[Description("SCP-106のポケットディメンション転送時に増加するAHPの量")]
+		public int Scp106SendPocketAhpAmount { get; set; } = 0;
+
+		[Description("SCP-106のポケットディメンションで死亡時に回復するAHPの自然回復増加量")]
+		public float Scp106SendPocketAhpDecayAmount { get; set; } = 0;
+
+		[Description("SCP-106の壁抜け移動が使用可能になるまでの秒数")]
+		public int Scp106WalkthroughCooldown { get; set; } = -1;
+
 		[Description("SCP-173の最大HP")]
 		public int Scp173MaxHp { get; set; } = 3200;
 
@@ -240,7 +249,7 @@ namespace SanyaPlugin
 		public int Scp173RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-173の被視認者に応じて増加するAHPの一人当たりの量")]
-		public int Scp173SeeingByHumansAhpAmount { get; set; } = -1;
+		public int Scp173SeeingByHumansAhpAmount { get; set; } = 0;
 
 		[Description("SCP-939-XXの被ダメージ乗数")]
 		public float Scp939DamageMultiplier { get; set; } = 1f;
@@ -258,7 +267,7 @@ namespace SanyaPlugin
 		public bool Scp939RemoveRagdoll { get; set; } = false;
 
 		[Description("SCP-939-XXが人間の視認数に応じてAHPを持つ際の一人当たりの量")]
-		public int Scp939SeeingAhpAmount { get; set; } = -1;
+		public int Scp939SeeingAhpAmount { get; set; } = 0;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;

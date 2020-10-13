@@ -629,7 +629,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Prefix(Scp939_VisionController __instance, Scp939PlayerScript scp939)
 		{
-			if(SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount < 0 || __instance._ccm.CurRole.team == Team.SCP) return;
+			if(SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount <= 0 || __instance._ccm.CurRole.team == Team.SCP) return;
 			bool isFound = false;
 			for(int i = 0; i < __instance.seeingSCPs.Count; i++)
 			{
@@ -683,7 +683,7 @@ namespace SanyaPlugin.Patches
 
 		public static void Postfix(Scp173PlayerScript __instance)
 		{
-			if(SanyaPlugin.Instance.Config.Scp173SeeingByHumansAhpAmount < 0 || !__instance.iAm173) return;
+			if(SanyaPlugin.Instance.Config.Scp173SeeingByHumansAhpAmount <= 0 || !__instance.iAm173) return;
 
 			foreach(var ply in Player.List)
 			{
