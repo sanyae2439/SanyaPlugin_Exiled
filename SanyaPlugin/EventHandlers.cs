@@ -982,7 +982,7 @@ namespace SanyaPlugin
 				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
 			{
 				if(last106walkthrough.Elapsed.TotalSeconds > plugin.Config.Scp106WalkthroughCooldown || ev.Player.IsBypassModeEnabled)
-					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106WalkingThrough(ev.Player, ev.Player.Position)));
+					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106WalkingThrough(ev.Player)));
 				else
 					ev.Player.SendTextHint(HintTexts.Extend106NotReady.Replace("{0}", $"{plugin.Config.Scp106WalkthroughCooldown - (int)last106walkthrough.Elapsed.TotalSeconds}"),3);
 			}

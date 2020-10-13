@@ -391,9 +391,15 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> Scp106WalkingThrough(Player player, Vector3 lastpos)
+		public static IEnumerator<float> Scp106WalkingThrough(Player player)
 		{
 			yield return Timing.WaitForOneFrame;
+
+			if(!Physics.Raycast(player.Position, -Vector3.up, 50f, player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
+			{
+				player.Position = Map.GetRandomSpawnPoint(RoleType.Scp106);
+				yield break;
+			}
 
 			Vector3 forward = player.CameraTransform.forward;
 			forward.Set(forward.x * 0.1f, 0f, forward.z * 0.1f);
@@ -404,7 +410,7 @@ namespace SanyaPlugin.Functions
 
 			if(!Physics.Raycast(hits.Last().point + forward, forward * -1f, out var BackHits, 50f, 1)) yield break;
 
-			PlayerMovementSync.FindSafePosition(BackHits.point, out var pos);
+			if(!PlayerMovementSync.FindSafePosition(BackHits.point, out var pos, true)) yield break;
 			player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
 			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
 			player.AddItem(ItemType.SCP268);
@@ -418,7 +424,7 @@ namespace SanyaPlugin.Functions
 				if(player.Position == pos || player.Role != RoleType.Scp106)
 				{
 					player.ReferenceHub.playerMovementSync.WhitelistPlayer = false;
-					player.ReferenceHub.fpc.NetworkforceStopInputs = false;	
+					player.ReferenceHub.fpc.NetworkforceStopInputs = false;
 					player.ClearInventory();
 					player.ReferenceHub.playerEffectsController.DisableEffect<Deafened>();
 					player.ReferenceHub.playerEffectsController.DisableEffect<Visuals939>();
@@ -536,7 +542,7 @@ namespace SanyaPlugin.Functions
 
 		public static bool CanLookToPlayer(this Camera079 camera, Player player)
 		{
-			if(player.Role == RoleType.Spectator || player.Role ==  RoleType.Scp079 || player.Role ==  RoleType.None)
+			if(player.Role == RoleType.Spectator || player.Role == RoleType.Scp079 || player.Role == RoleType.None)
 				return false;
 
 			float num = Vector3.Dot(camera.head.transform.forward, player.Position - camera.transform.position);
