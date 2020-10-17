@@ -765,13 +765,14 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//not override
-	[HarmonyPatch(typeof(SinkholeEnvironmentalHazard), nameof(SinkholeEnvironmentalHazard.OnStart))]
-	public static class SinkHoleSCPEnablePatch
+	//notify
+	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.AntiCheatKillPlayer))]
+	public static class AntiCheatNotifyPatch
 	{
-		public static void Prefix(SinkholeEnvironmentalHazard __instance)
+		public static void Prefix(PlayerMovementSync __instance, string message, string code)
 		{
-			__instance.SCPImmune = false;
+			var player = Player.Get(__instance._hub);
+			Log.Warn($"[SanyaPlugin] AntiCheatKill Detect:{player.Nickname} [{message}({code})]");
 		}
 	}
 }

@@ -412,6 +412,7 @@ namespace SanyaPlugin.Functions
 
 			if(!PlayerMovementSync.FindSafePosition(BackHits.point, out var pos, true)) yield break;
 			player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
+			yield return Timing.WaitForOneFrame;
 			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
 			player.AddItem(ItemType.SCP268);
 			player.ReferenceHub.playerEffectsController.EnableEffect<Scp268>();
@@ -423,11 +424,12 @@ namespace SanyaPlugin.Functions
 			{
 				if(player.Position == pos || player.Role != RoleType.Scp106)
 				{
-					player.ReferenceHub.playerMovementSync.WhitelistPlayer = false;
 					player.ReferenceHub.fpc.NetworkforceStopInputs = false;
 					player.ClearInventory();
 					player.ReferenceHub.playerEffectsController.DisableEffect<Deafened>();
 					player.ReferenceHub.playerEffectsController.DisableEffect<Visuals939>();
+					yield return Timing.WaitForOneFrame;
+					player.ReferenceHub.playerMovementSync.WhitelistPlayer = false;
 					yield break;
 				}
 				player.Position = Vector3.MoveTowards(player.Position, pos, 0.25f);
