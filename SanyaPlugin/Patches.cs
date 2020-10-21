@@ -608,7 +608,7 @@ namespace SanyaPlugin.Patches
 						return false;
 					}
 					__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostBomb;
-					Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, 0.1f, player.ReferenceHub);
+					Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);
 					return false;
 				}
 			}
