@@ -53,7 +53,7 @@ namespace SanyaPlugin
 		public int InfosenderPort { get; set; } = -1;
 
 		[Description("イベントモードのウェイト設定")]
-		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0};
+		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0 };
 
 		[Description("各ロールの初期装備")]
 		public Dictionary<string, string> Defaultitems { get; set; } = new Dictionary<string, string>()
@@ -61,6 +61,13 @@ namespace SanyaPlugin
 			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
 		};
 		public Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
+
+		[Description("Dクラスの脱出成功時装備")]
+		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
+		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
+
+		[Description("施設警備員をLCZにスポーンさせる")]
+		public bool FacilityGuardSpawnToLcz { get; set; } = false;
 
 		[Description("テスラが反応するチームID")]
 		public List<string> TeslaTriggerableTeams { get; set; } = new List<string>();
@@ -129,9 +136,6 @@ namespace SanyaPlugin
 
 		[Description("リスポーンカウンターを表示")]
 		public bool ShowRespawnCounter { get; set; } = false;
-
-		[Description("MTF陣営がSCPの情報を確認できる")]
-		public bool MtfScpInformation { get; set; } = false;
 
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
@@ -293,6 +297,18 @@ namespace SanyaPlugin
 		[Description("SCP-079のExモードでの核の操作のコスト")]
 		public float Scp079ExtendCostNuke { get; set; } = 50f;
 
+		[Description("SCP-079のExモードでの爆発物起爆の必要レベル")]
+		public int Scp079ExtendLevelBomb { get; set; } = 4;
+
+		[Description("SCP-079のExモードでの爆発物起爆の必要コスト")]
+		public float Scp079ExtendCostBomb { get; set; } = 50f;
+
+		[Description("SCP-079のExモードでの地上ターゲット起爆の必要レベル")]
+		public int Scp079ExtendLevelTargetBomb { get; set; } = 5;
+
+		[Description("SCP-079のExモードでの地上ターゲット起爆の必要コスト")]
+		public float Scp079ExtendCostTargetBomb { get; set; } = 75f;
+
 		[Description("SCP-079の1カメラ移動コスト")]
 		public float Scp079CostCamera { get; set; } = 1f;
 
@@ -450,9 +466,19 @@ namespace SanyaPlugin
 		{
 			try
 			{
+				DefaultitemsParsed.Clear();
+				DefaultitemsEscapeClassdParsed.Clear();
+				ItemCleanupIgnoreParsed.Clear();
+				TeslaTriggerableTeamsParsed.Clear();
+				AltvoicechatScpsParsed.Clear();
+
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
 						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
+
+				foreach(var item in DefaultitemsEscapeClassd)
+					if(Enum.TryParse(item, out ItemType type))
+						DefaultitemsEscapeClassdParsed.Add(type);
 
 				foreach(var item in ItemCleanupIgnore)
 					if(Enum.TryParse(item, out ItemType type))

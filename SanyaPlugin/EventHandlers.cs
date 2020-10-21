@@ -220,27 +220,6 @@ namespace SanyaPlugin
 						}
 					}
 
-					//MTF-SCPInformation
-					if(plugin.Config.MtfScpInformation && RoundSummary.RoundInProgress())
-					{
-						List<Player> scpcounts = Player.List.Where(x => x.Team == Team.SCP).ToList();
-
-						RespawnManager.Singleton.NamingManager.AllUnitNames.Clear();
-
-						if(scpcounts.Count == 0)
-						{
-							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>NO SCPs</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
-						}
-						else
-						{
-							RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = "<color=#ff0000>MTFSupportSys</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
-							foreach(var scp in scpcounts)
-							{
-								RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { UnitName = $"<color=#ff0000>{scp.ReferenceHub.characterClassManager.CurRole.fullName}</color>", SpawnableTeam = (byte)SpawnableTeamType.NineTailedFox });
-							}
-						}
-					}
-
 					//SCP-079's Spot Humans
 					if(plugin.Config.Scp079ExtendEnabled && plugin.Config.Scp079ExtendLevelSpot > 0)
 					{
@@ -448,6 +427,12 @@ namespace SanyaPlugin
 
 			//CoroutineRemover
 			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
+		}
+		public void OnReloadConfigs()
+		{
+			Log.Debug($"[OnReloadConfigs]", SanyaPlugin.Instance.Config.IsDebugged);
+
+			plugin.Config.ParseConfig();
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
@@ -721,7 +706,7 @@ namespace SanyaPlugin
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
 			if(ev.Player.Nickname == null) return;
-			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}]", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.IsEscaped})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
@@ -738,6 +723,13 @@ namespace SanyaPlugin
 					ev.Items.AddRange(itemconfig);
 				}
 			}
+
+			if(plugin.Config.DefaultitemsEscapeClassd.Count > 0 && ev.NewRole == RoleType.ChaosInsurgency && ev.IsEscaped)
+			{
+				ev.Items.Clear();
+				ev.Items.AddRange(plugin.Config.DefaultitemsEscapeClassdParsed);
+			}
+
 
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
@@ -772,6 +764,11 @@ namespace SanyaPlugin
 				&& nextRespawnPos != Vector3.zero)
 			{
 				ev.Position = nextRespawnPos;
+			}
+
+			if(plugin.Config.FacilityGuardSpawnToLcz && ev.RoleType == RoleType.FacilityGuard)
+			{
+				ev.Position = Map.GetRandomSpawnPoint(RoleType.Scientist);
 			}
 
 			//EXILED fix
@@ -1075,6 +1072,12 @@ namespace SanyaPlugin
 						break;
 					case 2:
 						ev.Player.SendTextHint(HintTexts.Extend079Lv3, 10);
+						break;
+					case 3:
+						ev.Player.SendTextHint(HintTexts.Extend079Lv4, 10);
+						break;
+					case 4:
+						ev.Player.SendTextHint(HintTexts.Extend079Lv5, 10);
 						break;
 				}
 		}

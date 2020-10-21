@@ -233,6 +233,22 @@
 			"</size></color>"
 		);
 
+		internal static readonly string Extend079Lv4 = string.Concat(
+			"<color=#bbee00><size=25>",
+			"Tier4になりました. 拡張モードにて停電マークを押すと部屋の特定位置で爆発を起こせるようになります.\n",
+			"</size><size=20>",
+			"You got to Tier3. On Extend mode, You can explode where press LockDown button.\n",
+			"</size></color>"
+		);
+
+		internal static readonly string Extend079Lv5 = string.Concat(
+			"<color=#bbee00><size=25>",
+			"Tier5になりました. 拡張モードにて地上ゲートを操作することにより人間陣営の爆発物を起爆できます.\n",
+			"</size><size=20>",
+			"You got to Tier3. On Extend mode, You can explode on humans inventory press Gate Door button.\n",
+			"</size></color>"
+		);
+
 		internal static readonly string Error079NotEnoughTier = string.Concat(
 			"<color=#bbee00><size=25>",
 			"このドアを操作するにはTierが足りません。\n",

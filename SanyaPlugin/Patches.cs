@@ -75,7 +75,7 @@ namespace SanyaPlugin.Patches
 				__result = true;
 				return false;
 			}
-				
+
 
 			if(permission.Contains(PERM_SEPARATOR))
 			{
@@ -130,8 +130,8 @@ namespace SanyaPlugin.Patches
 			var newInst = instructions.ToList();
 			var index = newInst.FindLastIndex(x => x.opcode == OpCodes.Brtrue_S) + 1;
 
-			newInst.InsertRange(index, new[] 
-			{ 
+			newInst.InsertRange(index, new[]
+			{
 				new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(RoundSummary), nameof(RoundSummary.singleton))),
 				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(RoundSummary), nameof(RoundSummary._roundEnded))),
 				new CodeInstruction(OpCodes.Brtrue_S, newInst[newInst.Count - 1].labels[0])
@@ -598,6 +598,45 @@ namespace SanyaPlugin.Patches
 					}
 				}
 			}
+			else if(command.Contains("LOCKDOWN:"))
+			{
+				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelBomb)
+				{
+					if(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb > __instance.curMana)
+					{
+						__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb, __instance.curMana);
+						return false;
+					}
+					__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostBomb;
+					Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, 0.1f, player.ReferenceHub);
+					return false;
+				}
+			}
+			else if(command.Contains("DOOR:"))
+			{
+				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
+				{
+					var door = target.GetComponent<Door>();
+					if(door != null && door.DoorName == "SURFACE_GATE")
+					{
+						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
+						{
+							__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
+							return false;
+						}
+
+
+						var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
+						if(bombtarget != null)
+						{
+							Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
+							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
+						}
+
+						return false;
+					}
+				}
+			}
 			return true;
 		}
 	}
@@ -697,6 +736,7 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
+	//not override
 	[HarmonyPatch(typeof(Scp173PlayerScript), nameof(Scp173PlayerScript.FixedUpdate))]
 	public static class Scp173ShieldPatch
 	{
@@ -708,8 +748,8 @@ namespace SanyaPlugin.Patches
 
 			foreach(var ply in Player.List)
 			{
-				if(!ply.ReferenceHub.characterClassManager.Scp173.SameClass 
-					&& ply.ReferenceHub.characterClassManager.Scp173.LookFor173(__instance.gameObject, true) 
+				if(!ply.ReferenceHub.characterClassManager.Scp173.SameClass
+					&& ply.ReferenceHub.characterClassManager.Scp173.LookFor173(__instance.gameObject, true)
 					&& __instance.LookFor173(ply.GameObject, false))
 				{
 					if(!seeingHumans.Contains(ply))
