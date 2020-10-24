@@ -820,8 +820,8 @@ namespace SanyaPlugin
 			{
 				ev.Target.Inventory.ServerDropAll();
 				ev.Attacker.Health = Mathf.Clamp(ev.Attacker.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Attacker.MaxHealth);
-				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(5f);
-				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(5f);
+				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(3f);
+				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(3f);
 				ev.Target.SetRole(RoleType.Scp0492, true);
 				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => {
 					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(5f);
