@@ -766,9 +766,9 @@ namespace SanyaPlugin
 				ev.Position = nextRespawnPos;
 			}
 
-			if(plugin.Config.FacilityGuardSpawnToLcz && ev.RoleType == RoleType.FacilityGuard)
+			if(plugin.Config.FacilityGuardChangeSpawnPos && ev.RoleType == RoleType.FacilityGuard)
 			{
-				ev.Position = Map.GetRandomSpawnPoint(RoleType.Scientist);
+				ev.Position = UnityEngine.GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>().id == "nukesite").transform.position;
 			}
 
 			//EXILED fix

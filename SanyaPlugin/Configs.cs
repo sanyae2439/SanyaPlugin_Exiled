@@ -67,7 +67,7 @@ namespace SanyaPlugin
 		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
 
 		[Description("施設警備員をLCZにスポーンさせる")]
-		public bool FacilityGuardSpawnToLcz { get; set; } = false;
+		public bool FacilityGuardChangeSpawnPos { get; set; } = false;
 
 		[Description("テスラが反応するチームID")]
 		public List<string> TeslaTriggerableTeams { get; set; } = new List<string>();

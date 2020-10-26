@@ -836,4 +836,14 @@ namespace SanyaPlugin.Patches
 			Log.Warn($"[SanyaPlugin] AntiCheatKill Detect:{player.Nickname} [{message}({code})]");
 		}
 	}
+
+	//Pink
+	[HarmonyPatch(typeof(SCPSL.Halloween.Scp330), MethodType.Constructor)]
+	public static class PinkRipPatch
+	{
+		public static void Postfix(SCPSL.Halloween.Scp330 __instance)
+		{
+			__instance._candyHints.Remove(ItemType.PinkCandy);
+		}
+	}
 }

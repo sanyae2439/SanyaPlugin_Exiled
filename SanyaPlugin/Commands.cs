@@ -3,6 +3,7 @@ using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using HarmonyLib;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
@@ -46,11 +47,28 @@ namespace SanyaPlugin.Commands
 				case "test":
 					{
 						response = "test ok.\n";
-						for(int i = 0; i < arguments.Count; i++)
-						{
-							response += $"[{i}]:{arguments.At(i)}\n";
-						}
 						return true;
+					}
+				case "hand":
+					{
+						if(arguments.Count > 1)
+						{
+							var hub = ReferenceHub.GetHub(int.Parse(arguments.At(1)));
+							UnityEngine.Object.FindObjectOfType<SCPSL.Halloween.Scp330>()?.SpawnHands(hub);
+							response = "ok.";
+							return true;
+						}
+						else if(player != null)
+						{
+							UnityEngine.Object.FindObjectOfType<SCPSL.Halloween.Scp330>()?.SpawnHands(player.ReferenceHub);
+							response = "ok.";
+							return true;
+						}
+						else
+						{
+							response = "this command cant use on server console.";
+							return false;
+						}
 					}
 				case "ping":
 					{
