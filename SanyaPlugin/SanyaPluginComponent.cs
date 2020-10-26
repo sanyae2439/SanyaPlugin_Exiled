@@ -15,7 +15,7 @@ namespace SanyaPlugin
 {
 	public class SanyaPluginComponent : MonoBehaviour
 	{
-		public static readonly string _hudTemplate = "<align=left><voffset=38em><size=50%>SanyaPlugin Ex-HUD Ver1.0\n</size></align><align=right>[SCPLIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
+		
 		public static readonly HashSet<Player> _scplists = new HashSet<Player>();
 
 		public bool DisableHud = false;
@@ -23,6 +23,7 @@ namespace SanyaPlugin
 		private SanyaPlugin _plugin;
 		private Player _player;
 		private Vector3 _espaceArea;
+		private string _hudTemplate = "<align=left><voffset=38em><size=50%>SanyaPlugin Ex-HUD [VERSION]\n</size></align><align=right>[SCPLIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
 		private int _respawnCounter = -1;
@@ -36,6 +37,7 @@ namespace SanyaPlugin
 			_plugin = SanyaPlugin.Instance;
 			_player = Player.Get(gameObject);
 			_espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
+			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
 		}
 
 		private void FixedUpdate()

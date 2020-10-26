@@ -854,6 +854,8 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(HintDisplay __instance, Hint hint)
 		{
+			if(!SanyaPlugin.Instance.Config.ExHudEnabled) return true;
+
 			if(hint.GetType() == typeof(TranslationHint))
 			{
 				Log.Debug($"[HintPreventPatch] TranslationHint Detect:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
