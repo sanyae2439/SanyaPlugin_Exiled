@@ -675,6 +675,11 @@ namespace SanyaPlugin.Functions
 			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
 		}
 
+		public static bool IsHuman(this Player player)
+		{
+			return player.Team != Team.SCP && player.Team != Team.RIP;
+		}
+
 		public static bool IsEnemy(this Player player, Team target)
 		{
 			if(player.Role == RoleType.Spectator || player.Role == RoleType.None || player.Team == target)
@@ -685,6 +690,11 @@ namespace SanyaPlugin.Functions
 				&&
 				((player.Team != Team.CDP && player.Team != Team.CHI) || (target != Team.CDP && target != Team.CHI))
 			;
+		}
+
+		public static int GetHealthAmountPercent(this Player player)
+		{
+			return (int)(100f - (player.ReferenceHub.playerStats.GetHealthPercent() * 100f));
 		}
 
 		public static void ShowHitmarker(this Player player)

@@ -46,7 +46,15 @@ namespace SanyaPlugin.Commands
 			{
 				case "test":
 					{
-						response = "test ok.\n";
+						response = "test ok.";
+						return true;
+					}
+				case "hud":
+					{
+						var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
+						response = $"ok.{comp.DisableHud} -> ";
+						comp.DisableHud = !comp.DisableHud;
+						response += $"{comp.DisableHud}";
 						return true;
 					}
 				case "hand":

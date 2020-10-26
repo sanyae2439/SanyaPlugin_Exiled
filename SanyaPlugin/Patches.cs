@@ -7,6 +7,7 @@ using Mirror;
 using Exiled.API.Features;
 using HarmonyLib;
 using Grenades;
+using Hints;
 using Respawning;
 using Respawning.NamingRules;
 using Assets._Scripts.Dissonance;
@@ -557,7 +558,7 @@ namespace SanyaPlugin.Patches
 				&& target.TryGetComponent<Door>(out var targetdoor)
 				&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
 			{
-				player.SendTextHint(HintTexts.Error079NotEnoughTier, 3);
+				player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
 				return false;
 			}
 
@@ -844,6 +845,27 @@ namespace SanyaPlugin.Patches
 		public static void Postfix(SCPSL.Halloween.Scp330 __instance)
 		{
 			__instance._candyHints.Remove(ItemType.PinkCandy);
+		}
+	}
+
+	//Prevent
+	[HarmonyPatch(typeof(HintDisplay), nameof(HintDisplay.Show))]
+	public static class HintPreventPatch
+	{
+		public static bool Prefix(HintDisplay __instance, Hint hint)
+		{
+			if(hint.GetType() == typeof(TranslationHint))
+			{
+				Log.Debug($"[HintPreventPatch] TranslationHint Detect:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+				return false;
+			}
+			if(hint._effects != null && hint._effects.Length > 0)
+			{
+				Log.Debug($"[HintPreventPatch] HintEffects Detect:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+				return false;
+			}
+			Log.Debug($"[HintPreventPatch] Allow:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+			return true;
 		}
 	}
 }

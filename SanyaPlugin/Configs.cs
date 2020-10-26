@@ -95,6 +95,9 @@ namespace SanyaPlugin
 		[Description("サーバー参加者に表示するブロードキャスト")]
 		public string MotdMessage { get; set; } = string.Empty;
 
+		[Description("ExHudの有効化")]
+		public bool ExHudEnabled { get; set; } = false;
+
 		[Description("CASSIE放送に字幕を表示する")]
 		public bool CassieSubtitle { get; set; } = false;
 
@@ -155,9 +158,6 @@ namespace SanyaPlugin
 
 		[Description("キルすると大きいヒットマークが出るように")]
 		public bool HitmarkKilled { get; set; } = false;
-
-		[Description("裏切りが可能になる味方の残数")]
-		public int TraitorLimit { get; set; } = -1;
 
 		[Description("裏切りの成功率")]
 		public int TraitorChancePercent { get; set; } = 50;

@@ -124,41 +124,6 @@ namespace SanyaPlugin
 						detonatedDuration = -1;
 					}
 
-					//寝返り
-					if(plugin.Config.TraitorLimit > 0)
-					{
-						foreach(var player in Player.List)
-						{
-							if((player.Team == Team.MTF || player.Team == Team.CHI)
-								&& player.IsCuffed
-								&& Vector3.Distance(espaceArea, player.Position) <= Escape.radius
-								&& RoundSummary.singleton.CountTeam(player.Team) <= plugin.Config.TraitorLimit)
-							{
-								int hit = UnityEngine.Random.Range(0, 100);
-
-								if(hit >= plugin.Config.TraitorChancePercent)
-								{
-									switch(player.Team)
-									{
-										case Team.MTF:
-											Log.Info($"[Traitor] {player.Nickname} : MTF->CHI");
-											player.SetRole(RoleType.ChaosInsurgency);
-											break;
-										case Team.CHI:
-											Log.Info($"[Traitor] {player.Nickname} : CHI->MTF");
-											player.SetRole(RoleType.NtfCadet);
-											break;
-									}
-								}
-								else
-								{
-									Log.Info($"[Traitor] {player.Nickname} : Traitor Failed ({hit} <= {plugin.Config.TraitorChancePercent})");
-									player.SetRole(RoleType.Spectator);
-								}
-							}
-						}
-					}
-
 					//ItemCleanup
 					if(plugin.Config.ItemCleanup > 0)
 					{
@@ -190,36 +155,6 @@ namespace SanyaPlugin
 						IsEnableBlackout = false;
 					}
 
-					//HigherPingDetect
-					if(plugin.Config.PingLimit > 0)
-					{
-						foreach(var ply in Player.List)
-						{
-							if(LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping > plugin.Config.PingLimit)
-							{
-								ply.Kick(Subtitles.PingLimittedMessage,"SanyaPlugin_Exiled");
-								Log.Warn($"[PingChecker] Kicked:{ply.Nickname}({ply.UserId}) Ping:{LiteNetLib4MirrorServer.Peers[ply.Connection.connectionId].Ping}");
-							}
-						}
-					}
-
-					//RespawnCounter
-					if(plugin.Config.ShowRespawnCounter && RoundSummary.RoundInProgress() && !Warhead.IsDetonated)
-					{
-						int respawntime = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
-						
-						if(respawntime != 0)
-						{
-							foreach(var ply in Player.List.Where(x => x.Role == RoleType.Spectator))
-								ply.SendTextHintNotEffect($"リスポーンまで{respawntime}秒", 2);
-						}
-						else
-						{
-							foreach(var ply in Player.List.Where(x => x.Role == RoleType.Spectator))
-								ply.SendTextHintNotEffect($"間もなくリスポーンします", 2);
-						}
-					}
-
 					//SCP-079's Spot Humans
 					if(plugin.Config.Scp079ExtendEnabled && plugin.Config.Scp079ExtendLevelSpot > 0)
 					{
@@ -244,7 +179,7 @@ namespace SanyaPlugin
 						{
 							foreach(var scp in Player.Get(Team.SCP))
 							{
-								scp.SendTextHint(message, 5);
+								scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
 							}
 						}
 					}
@@ -269,30 +204,6 @@ namespace SanyaPlugin
 						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.Instance.Config.IsDebugged);
 						Generator079.mainGenerator.ServerOvercharge(10f, false);
 					}
-
-					//SCP-939VoiceChatVision
-					if(plugin.Config.Scp939CanSeeVoiceChatting)
-					{
-						List<ReferenceHub> scp939 = null;
-						List<ReferenceHub> humans = new List<ReferenceHub>();
-						foreach(var player in ReferenceHub.GetAllHubs().Values)
-						{
-							if(player.characterClassManager.CurRole.team != Team.RIP && player.TryGetComponent(out Radio radio) && (radio.isVoiceChatting || radio.isTransmitting))
-							{
-								player.footstepSync._visionController.MakeNoise(25f);
-							}
-
-							if(player.characterClassManager.CurRole.roleId.Is939())
-							{
-								if(scp939 == null)
-									scp939 = new List<ReferenceHub>();
-								scp939.Add(player);
-							}
-
-							if(player.characterClassManager.IsHuman())
-								humans.Add(player);
-						}
-					}
 				}
 				catch(Exception e)
 				{
@@ -305,7 +216,6 @@ namespace SanyaPlugin
 
 		/** Flag Params **/
 		private int detonatedDuration = -1;
-		private Vector3 espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
 		/** RoundVar **/
 		private FlickerableLightController flickerableLightController = null;
@@ -694,6 +604,9 @@ namespace SanyaPlugin
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
 			ServerConfigSynchronizer.Singleton.SetDirtyBit(4uL);
 
+			//Component
+			ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
+
 		}
 		public void OnLeft(LeftEventArgs ev)
 		{
@@ -702,6 +615,9 @@ namespace SanyaPlugin
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
 				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
 					PlayerDataManager.playersData.Remove(ev.Player.UserId);
+
+			if(SanyaPluginComponent._scplists.Contains(ev.Player))
+				SanyaPluginComponent._scplists.Remove(ev.Player);
 		}
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
@@ -709,10 +625,10 @@ namespace SanyaPlugin
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.IsEscaped})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
-				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.SendTextHint(HintTexts.Extend079First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First,10)));
 
 			if(plugin.Config.Scp106WalkthroughCooldown > 0 && ev.NewRole == RoleType.Scp106)
-				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.SendTextHint(HintTexts.Extend106First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
 
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
@@ -969,22 +885,12 @@ namespace SanyaPlugin
 		{
 			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
-			if(plugin.Config.Scp079ExtendEnabled && ev.Player.Role == RoleType.Scp079)
-				if(ev.CurrentAnimation == 1)
-					ev.Player.SendTextHint(HintTexts.ExtendEnabled, 5);
-				else
-					ev.Player.SendTextHint(HintTexts.ExtendDisabled, 5);
-
 			if(plugin.Config.Scp106WalkthroughCooldown > 0
 				&& ev.Player.Role == RoleType.Scp106 
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
 				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
-			{
 				if(last106walkthrough.Elapsed.TotalSeconds > plugin.Config.Scp106WalkthroughCooldown || ev.Player.IsBypassModeEnabled)
 					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106WalkingThrough(ev.Player)));
-				else
-					ev.Player.SendTextHint(HintTexts.Extend106NotReady.Replace("{0}", $"{plugin.Config.Scp106WalkthroughCooldown - (int)last106walkthrough.Elapsed.TotalSeconds}"),3);
-			}
 
 			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
 				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
@@ -1070,16 +976,16 @@ namespace SanyaPlugin
 				switch(ev.NewLevel)
 				{
 					case 1:
-						ev.Player.SendTextHint(HintTexts.Extend079Lv2, 10);
+						ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079Lv2, 10);
 						break;
 					case 2:
-						ev.Player.SendTextHint(HintTexts.Extend079Lv3, 10);
+						ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079Lv3, 10);
 						break;
 					case 3:
-						ev.Player.SendTextHint(HintTexts.Extend079Lv4, 10);
+						ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079Lv4, 10);
 						break;
 					case 4:
-						ev.Player.SendTextHint(HintTexts.Extend079Lv5, 10);
+						ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079Lv5, 10);
 						break;
 				}
 		}
