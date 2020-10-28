@@ -684,7 +684,8 @@ namespace SanyaPlugin
 
 			if(plugin.Config.FacilityGuardChangeSpawnPos && ev.RoleType == RoleType.FacilityGuard)
 			{
-				ev.Position = UnityEngine.GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>().id == "nukesite").transform.position;
+				PlayerMovementSync.FindSafePosition(Map.Doors.First(x => x.DoorName.ToUpper() == "CHECKPOINT_ENT").transform.position, out var pos, true);
+				ev.Position = pos;
 			}
 
 			//EXILED fix

@@ -857,16 +857,11 @@ namespace SanyaPlugin.Patches
 			if(!SanyaPlugin.Instance.Config.ExHudEnabled) return true;
 
 			if(hint.GetType() == typeof(TranslationHint))
-			{
-				Log.Debug($"[HintPreventPatch] TranslationHint Detect:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 				return false;
-			}
+
 			if(hint._effects != null && hint._effects.Length > 0)
-			{
-				Log.Debug($"[HintPreventPatch] HintEffects Detect:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 				return false;
-			}
-			Log.Debug($"[HintPreventPatch] Allow:{Player.Get(__instance.gameObject).Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
 			return true;
 		}
 	}
