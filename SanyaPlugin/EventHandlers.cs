@@ -220,8 +220,6 @@ namespace SanyaPlugin
 		/** RoundVar **/
 		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
-		private uint playerlistnetid = 0;
-		private uint roundplayertotal = 0;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		private Camera079 last079cam = null;
 		internal Stopwatch last106walkthrough = new Stopwatch();
@@ -250,20 +248,8 @@ namespace SanyaPlugin
 
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
-			roundplayertotal = 0;
 			last079cam = null;
 			last106walkthrough.Restart();
-
-			if(plugin.Config.DisablePlayerLists)
-			{
-				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
-				{
-					if(identity.name == "PlayerList")
-					{
-						playerlistnetid = identity.netId;
-					}
-				}
-			}
 
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
@@ -394,7 +380,7 @@ namespace SanyaPlugin
 
 					int randomnumlast = UnityEngine.Random.Range(0, poslist.Count);
 					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y + 2, poslist[randomnumlast].z);
-					
+
 					Log.Info($"[RandomRespawnPos] Determined:{nextRespawnPos}");
 				}
 				else
@@ -555,9 +541,6 @@ namespace SanyaPlugin
 				return;
 			}
 
-			if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
-				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
-
 			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
 				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
 				Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
@@ -565,14 +548,6 @@ namespace SanyaPlugin
 			if(plugin.Config.DisableAllChat)
 				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
 					ev.Player.IsMuted = true;
-
-
-			if(plugin.Config.DisablePlayerLists && playerlistnetid > 0)
-			{
-				ObjectDestroyMessage objectDestroyMessage = new ObjectDestroyMessage();
-				objectDestroyMessage.netId = playerlistnetid;
-				ev.Player.Connection.Send(objectDestroyMessage, 0);
-			}
 
 			if(plugin.Config.WaitingTutorials && !ReferenceHub.HostHub.characterClassManager.RoundStarted)
 			{
@@ -587,22 +562,18 @@ namespace SanyaPlugin
 				ev.Player.Connection.Send(objectDestroyMessage, 0);
 				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identitytarget, ev.Player.Connection });
 
-				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));		
+				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));
 			}
 
-			if(plugin.Config.ScramblePlayersNickname)
-			{
-				ev.Player.DisplayNickname = $"Player{++roundplayertotal}";
-			}
+			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
+				Methods.SendSubtitle(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
+			else if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
+				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
 
 			//MuteFixer
 			foreach(var player in Player.List)
 				if(player.IsMuted)
 					player.ReferenceHub.characterClassManager.SetDirtyBit(2uL);
-
-			//SpeedFixer
-			ServerConfigSynchronizer.Singleton.SetDirtyBit(2uL);
-			ServerConfigSynchronizer.Singleton.SetDirtyBit(4uL);
 
 			//Component
 			ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
@@ -625,7 +596,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.IsEscaped})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
-				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First,10)));
+				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
 
 			if(plugin.Config.Scp106WalkthroughCooldown > 0 && ev.NewRole == RoleType.Scp106)
 				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
@@ -633,7 +604,7 @@ namespace SanyaPlugin
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
 				if(itemconfig.Contains(ItemType.None)) ev.Items.Clear();
-				else 
+				else
 				{
 					ev.Items.Clear();
 					ev.Items.AddRange(itemconfig);
@@ -645,7 +616,6 @@ namespace SanyaPlugin
 				ev.Items.Clear();
 				ev.Items.AddRange(plugin.Config.DefaultitemsEscapeClassdParsed);
 			}
-
 
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
@@ -674,13 +644,11 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnSpawning] {ev.Player.Nickname}(old:{ev.Player.ReferenceHub.characterClassManager._prevId}) -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.RandomRespawnPosPercent > 0 
-				&& ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.Spectator 
-				&& (ev.RoleType.GetTeam() == Team.MTF || ev.RoleType.GetTeam() == Team.CHI) 
+			if(plugin.Config.RandomRespawnPosPercent > 0
+				&& ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.Spectator
+				&& (ev.RoleType.GetTeam() == Team.MTF || ev.RoleType.GetTeam() == Team.CHI)
 				&& nextRespawnPos != Vector3.zero)
-			{
 				ev.Position = nextRespawnPos;
-			}
 
 			if(plugin.Config.FacilityGuardChangeSpawnPos && ev.RoleType == RoleType.FacilityGuard)
 			{
@@ -728,9 +696,7 @@ namespace SanyaPlugin
 
 			//SCP-106 AHP
 			if(plugin.Config.Scp106SendPocketAhpAmount > 0 && ev.DamageType == DamageTypes.Scp106)
-			{
 				ev.Attacker.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
-			}
 
 			//SCP-049 ReCure
 			if(plugin.Config.Scp049ExtendCure && ev.DamageType == DamageTypes.Scp049)
@@ -740,7 +706,8 @@ namespace SanyaPlugin
 				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(3f);
 				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(3f);
 				ev.Target.SetRole(RoleType.Scp0492, true);
-				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => {
+				roundCoroutines.Add(Timing.CallDelayed(0.1f, () =>
+				{
 					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(5f);
 					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
 					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(5f);
@@ -853,7 +820,7 @@ namespace SanyaPlugin
 						str = Subtitles.SCPDeathUnknown.Replace("{0}", fullname);
 				}
 
-				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP) == 1
+				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP && x != ev.Target) == 1
 					&& Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge && damageTypes != DamageTypes.Nuke)
 					str = str
 						.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。")
@@ -887,7 +854,7 @@ namespace SanyaPlugin
 			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
 			if(plugin.Config.Scp106WalkthroughCooldown > 0
-				&& ev.Player.Role == RoleType.Scp106 
+				&& ev.Player.Role == RoleType.Scp106
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
 				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
 				if(last106walkthrough.Elapsed.TotalSeconds > plugin.Config.Scp106WalkthroughCooldown || ev.Player.IsBypassModeEnabled)
@@ -910,13 +877,6 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Hemorrhage>();
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Bleeding>();
 			}
-		}
-		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
-		{
-			if(plugin.Config.TeslaTriggerableTeams.Count == 0 || plugin.Config.TeslaTriggerableTeamsParsed.Contains(ev.Player.Team))
-				ev.IsTriggerable = true;
-			else
-				ev.IsTriggerable = false;
 		}
 		public void OnInteractingDoor(InteractingDoorEventArgs ev)
 		{

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
 using Exiled.API.Features;
@@ -9,13 +8,12 @@ using Exiled.API.Features;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace SanyaPlugin
 {
 	public class SanyaPluginComponent : MonoBehaviour
 	{
-		
+
 		public static readonly HashSet<Player> _scplists = new HashSet<Player>();
 
 		public bool DisableHud = false;
@@ -23,7 +21,7 @@ namespace SanyaPlugin
 		private SanyaPlugin _plugin;
 		private Player _player;
 		private Vector3 _espaceArea;
-		private string _hudTemplate = "<align=left><voffset=38em><size=50%>SanyaPlugin Ex-HUD [VERSION]\n</size></align><align=right>[SCPLIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
+		private string _hudTemplate = "<align=left><voffset=38em><size=50%>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n</size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
 		private int _respawnCounter = -1;
@@ -152,8 +150,9 @@ namespace SanyaPlugin
 		private void UpdateExHud()
 		{
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
+			if(!(_timer > 1f)) return;
 
-			string curText = _hudTemplate;
+			string curText = _hudTemplate.Replace("[STATS]", $"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping}ms Vc:{(_player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
 			if(_player.Team == Team.SCP)
@@ -161,15 +160,27 @@ namespace SanyaPlugin
 				string scpList = string.Empty;
 				foreach(var scp in _scplists)
 					if(scp.Role == RoleType.Scp079)
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl+1}\n";
+						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}\n";
 					else
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
 				scpList.TrimEnd('\n');
 
-				curText = curText.Replace("[SCPLIST]", FormatStringForHud(scpList,6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 6));
+			}
+			else if(_player.Team == Team.MTF)
+			{
+				string MtfList = string.Empty;
+				MtfList += $"FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}\n";
+				MtfList += $"Commander:{RoundSummary.singleton.CountRole(RoleType.NtfCommander)}\n";
+				MtfList += $"Lieutenant:{RoundSummary.singleton.CountRole(RoleType.NtfLieutenant)}\n";
+				MtfList += $"Cadet:{RoundSummary.singleton.CountRole(RoleType.NtfCadet)}\n";
+				MtfList += $"NTFScientist:{RoundSummary.singleton.CountRole(RoleType.NtfScientist)}";
+				MtfList.TrimEnd('\n');
+
+				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 6));
 			}
 			else
-				curText = curText.Replace("[SCPLIST]", FormatStringForHud(string.Empty, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_UP]
 			if(_player.Role == RoleType.Scp079)
@@ -190,7 +201,7 @@ namespace SanyaPlugin
 				if(_respawnCounter == 0)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします", 6));
 				else
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒",6));
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 6));
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(_hudCenterDownString, 6));
 			else
@@ -199,10 +210,10 @@ namespace SanyaPlugin
 			//[BOTTOM]
 			curText = curText.Replace("[BOTTOM]", FormatStringForHud(string.Empty, 6));
 
-			if(_hudText != curText || _timer > 1f)
+			if(_timer > 1f)
 			{
 				_hudText = curText;
-				_player.SendTextHintNotEffect(_hudText, 3);
+				_player.SendTextHintNotEffect(_hudText, 2);
 			}
 		}
 

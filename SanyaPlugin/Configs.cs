@@ -66,12 +66,8 @@ namespace SanyaPlugin
 		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
 		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
 
-		[Description("施設警備員をLCZにスポーンさせる")]
+		[Description("施設警備員のスポーン位置を変更する")]
 		public bool FacilityGuardChangeSpawnPos { get; set; } = false;
-
-		[Description("テスラが反応するチームID")]
-		public List<string> TeslaTriggerableTeams { get; set; } = new List<string>();
-		public List<Team> TeslaTriggerableTeamsParsed = new List<Team>();
 
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
@@ -128,17 +124,11 @@ namespace SanyaPlugin
 		[Description("ホワイトリストに入っているプレイヤーはボイスチャット無効の対象外にする")]
 		public bool DisableChatBypassWhitelist { get; set; } = false;
 
-		[Description("プレイヤーリストの無効化")]
-		public bool DisablePlayerLists { get; set; } = false;
-
-		[Description("プレイヤー名のスクランブル")]
-		public bool ScramblePlayersNickname { get; set; } = false;
+		[Description("ホワイトリストに入っていないミュートされたプレイヤーへのメッセージ")]
+		public string MotdMessageOnDisabledChat { get; set; } = string.Empty;
 
 		[Description("ラウンド待機時のチュートリアルモード")]
 		public bool WaitingTutorials { get; set; } = false;
-
-		[Description("リスポーンカウンターを表示")]
-		public bool ShowRespawnCounter { get; set; } = false;
 
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
@@ -469,7 +459,6 @@ namespace SanyaPlugin
 				DefaultitemsParsed.Clear();
 				DefaultitemsEscapeClassdParsed.Clear();
 				ItemCleanupIgnoreParsed.Clear();
-				TeslaTriggerableTeamsParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 
 				foreach(var key in Defaultitems)
@@ -483,10 +472,6 @@ namespace SanyaPlugin
 				foreach(var item in ItemCleanupIgnore)
 					if(Enum.TryParse(item, out ItemType type))
 						ItemCleanupIgnoreParsed.Add(type);
-
-				foreach(var item in TeslaTriggerableTeams)
-					if(Enum.TryParse(item, out Team team))
-						TeslaTriggerableTeamsParsed.Add(team);
 
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))

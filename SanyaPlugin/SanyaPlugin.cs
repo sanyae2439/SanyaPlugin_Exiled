@@ -23,7 +23,7 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(2, 9, 2);
+		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
 		public override Version RequiredExiledVersion => new Version(2, 1, 11);
 
 		public static SanyaPlugin Instance { get; private set; }
@@ -48,7 +48,7 @@ namespace SanyaPlugin
 
 			RegistPatch();
 
-			Log.Info($"[OnEnabled] SanyaPlugin({Version}) Enabled Complete.");
+			Log.Info($"[OnEnabled] SanyaPlugin(Ver{Version}) Enabled Complete.");
 		}
 
 		public override void OnDisabled()
@@ -62,7 +62,7 @@ namespace SanyaPlugin
 			UnRegistEvents();
 			UnRegistPatch();
 
-			Log.Info($"[OnDisable] SanyaPlugin({Version}) Disabled Complete.");
+			Log.Info($"[OnDisable] SanyaPlugin(Ver{Version}) Disabled Complete.");
 		}
 
 		private void RegistEvents()
@@ -90,7 +90,6 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemUsed += Handlers.OnUsedMedicalItem;
-			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingDoor += Handlers.OnInteractingDoor;
 			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
@@ -123,7 +122,6 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemUsed -= Handlers.OnUsedMedicalItem;
-			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingDoor -= Handlers.OnInteractingDoor;
 			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
