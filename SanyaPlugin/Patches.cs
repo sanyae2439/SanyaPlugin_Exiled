@@ -879,8 +879,8 @@ namespace SanyaPlugin.Patches
 			foreach(var code in instructions)
 			{
 				if(code.opcode == OpCodes.Call)
-					if(code.operand != null 
-						&& code.operand is MethodBase methodBase 
+					if(code.operand != null
+						&& code.operand is MethodBase methodBase
 						&& methodBase.Name != nameof(Scp106PlayerScript._DoTeleportAnimation))
 						yield return code;
 					else

@@ -90,14 +90,16 @@ namespace SanyaPlugin.Commands
 					}
 				case "actwatch":
 					{
-						if(player == null) {
+						if(player == null)
+						{
 							response = "Only can use with RemoteAdmin.";
-							return false; 
+							return false;
 						}
 
 						if(!isActwatchEnabled)
 						{
-							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
@@ -108,7 +110,8 @@ namespace SanyaPlugin.Commands
 						}
 						else
 						{
-							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
