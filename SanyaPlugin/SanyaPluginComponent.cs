@@ -21,7 +21,7 @@ namespace SanyaPlugin
 		private SanyaPlugin _plugin;
 		private Player _player;
 		private Vector3 _espaceArea;
-		private string _hudTemplate = "<align=left><voffset=38em><size=50%>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n</size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
+		private string _hudTemplate = "<align=left><voffset=38em><size=50%><alpha=#22>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n<alpha=#ff></size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
 		private int _respawnCounter = -1;

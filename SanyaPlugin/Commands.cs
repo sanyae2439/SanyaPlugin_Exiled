@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
@@ -46,7 +47,23 @@ namespace SanyaPlugin.Commands
 			{
 				case "test":
 					{
-						response = "test ok.";
+						response = $"test ok.";
+						return true;
+					}
+				case "args":
+					{
+						response = "ok.\n";
+						for(int i = 0; i < arguments.Count; i++)
+						{
+							response += $"[{i}]{arguments.At(i)}\n";
+						}
+						response.TrimEnd('\n');
+						return true;
+					}
+				case "htest":
+					{
+						player.SendTextHintNotEffect(arguments.Skip(1).Join(delimiter: " ").Replace("\\n","\n"), 5);
+						response = "ok.";
 						return true;
 					}
 				case "hud":
