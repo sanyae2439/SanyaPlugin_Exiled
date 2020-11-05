@@ -323,6 +323,8 @@ namespace SanyaPlugin
 
 			//CoroutineRemover
 			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
+
+			RoundSummary.singleton._roundEnded = true;
 		}
 		public void OnReloadConfigs()
 		{

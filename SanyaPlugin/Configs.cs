@@ -198,7 +198,7 @@ namespace SanyaPlugin
 		public bool Scp0492AttackEffect { get; set; } = false;
 
 		[Description("SCP-096の最大HP")]
-		public int Scp096MaxHp { get; set; } = 500;
+		public int Scp096MaxHp { get; set; } = 1500;
 
 		[Description("SCP-096の被ダメージ乗数")]
 		public float Scp096DamageMultiplier { get; set; } = 1f;
@@ -207,10 +207,10 @@ namespace SanyaPlugin
 		public int Scp096RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-096の初期AHP")]
-		public int Scp096InitialShield { get; set; } = 500;
+		public int Scp096InitialShield { get; set; } = 350;
 
 		[Description("SCP-096の一人当たりの増加AHP量")]
-		public int Scp096ShieldPerTargets { get; set; } = 200;
+		public int Scp096ShieldPerTargets { get; set; } = 70;
 
 		[Description("SCP-106の最大HP")]
 		public int Scp106MaxHp { get; set; } = 650;

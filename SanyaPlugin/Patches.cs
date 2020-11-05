@@ -156,7 +156,7 @@ namespace SanyaPlugin.Patches
 			int leftautowarhead = AlphaWarheadController.Host != null ? (int)Mathf.Clamp(AlphaWarheadController.Host._autoDetonateTime - (AlphaWarheadController.Host._autoDetonateTime - AlphaWarheadController.Host._autoDetonateTimer), 0, AlphaWarheadController.Host._autoDetonateTimer) : -1;
 			int nextRespawn = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
 			bool isContain = PlayerManager.localPlayer.GetComponent<CharacterClassManager>()._lureSpj.allowContain;
-			bool isAlreadyUsed = UnityEngine.Object.FindObjectOfType<OneOhSixContainer>().used;
+			bool isAlreadyUsed = OneOhSixContainer.used;
 
 			leftdecont = Mathf.Clamp(leftdecont, 0, leftdecont);
 
@@ -839,16 +839,6 @@ namespace SanyaPlugin.Patches
 		{
 			var player = Player.Get(__instance._hub);
 			Log.Warn($"[SanyaPlugin] AntiCheatKill Detect:{player.Nickname} [{message}({code})]");
-		}
-	}
-
-	//Pink
-	[HarmonyPatch(typeof(SCPSL.Halloween.Scp330), MethodType.Constructor)]
-	public static class PinkRipPatch
-	{
-		public static void Postfix(SCPSL.Halloween.Scp330 __instance)
-		{
-			__instance._candyHints.Remove(ItemType.PinkCandy);
 		}
 	}
 

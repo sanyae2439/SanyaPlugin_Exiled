@@ -57,27 +57,6 @@ namespace SanyaPlugin.Commands
 						response += $"{comp.DisableHud}";
 						return true;
 					}
-				case "hand":
-					{
-						if(arguments.Count > 1)
-						{
-							var hub = ReferenceHub.GetHub(int.Parse(arguments.At(1)));
-							UnityEngine.Object.FindObjectOfType<SCPSL.Halloween.Scp330>()?.SpawnHands(hub);
-							response = "ok.";
-							return true;
-						}
-						else if(player != null)
-						{
-							UnityEngine.Object.FindObjectOfType<SCPSL.Halloween.Scp330>()?.SpawnHands(player.ReferenceHub);
-							response = "ok.";
-							return true;
-						}
-						else
-						{
-							response = "this command cant use on server console.";
-							return false;
-						}
-					}
 				case "ping":
 					{
 						response = "Pings:\n";
