@@ -136,7 +136,7 @@ namespace SanyaPlugin
 			try
 			{
 				Harmony = new Harmony(Author + "." + Name + ++patchCounter);
-				Harmony.DEBUG = true;
+				Harmony.DEBUG = false;
 				Harmony.PatchAll();
 			}
 			catch(Exception ex)
