@@ -182,8 +182,8 @@ namespace SanyaPlugin
 		[Description("SCP-049の治療成功時回復量")]
 		public int Scp049RecoveryAmount { get; set; } = 0;
 
-		[Description("SCP-049が攻撃を行うと治療が成功するようになる")]
-		public bool Scp049ExtendCure { get; set; } = false;
+		[Description("SCP-049の治療成功時追加AHP量")]
+		public int Scp049CureAhpAmount { get; set; } = 0;
 
 		[Description("SCP-049-2の最大HP")]
 		public int Scp0492MaxHp { get; set; } = 300;

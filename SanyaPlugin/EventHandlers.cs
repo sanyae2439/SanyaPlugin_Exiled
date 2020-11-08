@@ -622,14 +622,14 @@ namespace SanyaPlugin
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 
-			//Scp939Extend
+			//ScpAhp
 			if(ev.NewRole.GetTeam() != Team.SCP)
 			{
 				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 75;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0.75f;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 0.7f;
 			}
-			else if(ev.NewRole.Is939() || ev.NewRole == RoleType.Scp173)
+			else if(ev.NewRole.Is939() || ev.NewRole == RoleType.Scp173 || ev.NewRole == RoleType.Scp049)
 			{
 				ev.Player.ReferenceHub.playerStats.NetworkmaxArtificialHealth = 0;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = 0f;
@@ -699,26 +699,6 @@ namespace SanyaPlugin
 			//SCP-106 AHP
 			if(plugin.Config.Scp106SendPocketAhpAmount > 0 && ev.DamageType == DamageTypes.Scp106)
 				ev.Attacker.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
-
-			//SCP-049 ReCure
-			if(plugin.Config.Scp049ExtendCure && ev.DamageType == DamageTypes.Scp049)
-			{
-				ev.Target.Inventory.ServerDropAll();
-				ev.Attacker.Health = Mathf.Clamp(ev.Attacker.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Attacker.MaxHealth);
-				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(3f);
-				ev.Attacker.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(3f);
-				ev.Target.SetRole(RoleType.Scp0492, true);
-				roundCoroutines.Add(Timing.CallDelayed(0.1f, () =>
-				{
-					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Ensnared>(5f);
-					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
-					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(5f);
-					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Amnesia>(5f);
-					ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Flashed>(1f);
-				}));
-				ev.IsAllowed = false;
-				return;
-			}
 
 			//CuffedMultiplier
 			if(ev.Target.IsCuffed && ev.Attacker.ReferenceHub.characterClassManager.IsHuman())
@@ -928,6 +908,16 @@ namespace SanyaPlugin
 			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			ev.Scp049.Health = Mathf.Clamp(ev.Scp049.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Scp049.MaxHealth);
+
+			if(plugin.Config.Scp049CureAhpAmount > 0)
+			{
+				ev.Scp049.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp049CureAhpAmount;
+				ev.Scp049.ReferenceHub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(
+					ev.Scp049.ReferenceHub.playerStats.unsyncedArtificialHealth + SanyaPlugin.Instance.Config.Scp049CureAhpAmount,
+					0,
+					ev.Scp049.ReferenceHub.playerStats.maxArtificialHealth
+				);
+			}
 		}
 
 		//Scp079
