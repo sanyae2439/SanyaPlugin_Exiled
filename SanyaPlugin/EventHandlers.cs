@@ -658,6 +658,11 @@ namespace SanyaPlugin
 				ev.Position = pos;
 			}
 
+			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
+			{
+				ev.Position = Map.GetRandomSpawnPoint(RoleType.FacilityGuard);
+			}
+
 			//EXILED fix
 			ev.Player.ReferenceHub.playerMovementSync.IsAFK = true;
 		}

@@ -69,6 +69,9 @@ namespace SanyaPlugin
 		[Description("施設警備員のスポーン位置を変更する")]
 		public bool FacilityGuardChangeSpawnPos { get; set; } = false;
 
+		[Description("研究員のスポーン位置を変更する")]
+		public bool ScientistsChangeSpawnPos { get; set; } = false;
+
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 
