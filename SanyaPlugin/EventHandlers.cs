@@ -251,6 +251,24 @@ namespace SanyaPlugin
 			last079cam = null;
 			last106walkthrough.Restart();
 
+			if(plugin.Config.WarheadInitCountdown > 0)
+			{
+				int realtime = Mathf.RoundToInt(Mathf.Clamp(plugin.Config.WarheadInitCountdown, 30, 120) / 10f) * 10;
+
+				if(realtime >= 80)
+				{
+					byte index = (byte)AlphaWarheadController.Host.scenarios_start.ToList().FindIndex(x => x.tMinusTime == realtime);
+					AlphaWarheadController.Host.NetworksyncStartScenario = index;
+					AlphaWarheadController.Host.NetworktimeToDetonation = AlphaWarheadController.Host.scenarios_start[index].tMinusTime + AlphaWarheadController.Host.scenarios_start[index].additionalTime;
+				}
+				else if(realtime < 80)
+				{
+					sbyte index = (sbyte)AlphaWarheadController.Host.scenarios_resume.ToList().FindIndex(x => x.tMinusTime == realtime);
+					AlphaWarheadController.Host.NetworksyncResumeScenario = index;
+					AlphaWarheadController.Host.NetworktimeToDetonation = AlphaWarheadController.Host.scenarios_resume[index].tMinusTime + AlphaWarheadController.Host.scenarios_resume[index].additionalTime;
+				}
+			}
+
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
@@ -874,6 +892,10 @@ namespace SanyaPlugin
 					foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
 						if(Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
 							ev.IsAllowed = true;
+
+			var door = UnityEngine.Object.Instantiate<GameObject>(ev.Door.destroyedPrefab, ev.Player.Position, ev.Player.GameObject.transform.rotation);
+			door.AddComponent<NetworkIdentity>();
+			NetworkServer.Spawn(door);
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{

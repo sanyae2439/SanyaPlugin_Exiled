@@ -112,6 +112,9 @@ namespace SanyaPlugin
 		[Description("発電機の終了時にドアを閉じてロックする")]
 		public bool GeneratorFinishLock { get; set; } = false;
 
+		[Description("核の初期カウントダウン時間(30-120)")]
+		public int WarheadInitCountdown { get; set; } = -1;
+
 		[Description("核起爆後に地上エリアの空爆が開始するまでの秒数")]
 		public int OutsidezoneTerminationTimeAfterNuke { get; set; } = -1;
 
