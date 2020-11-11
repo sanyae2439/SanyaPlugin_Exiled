@@ -892,10 +892,6 @@ namespace SanyaPlugin
 					foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
 						if(Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
 							ev.IsAllowed = true;
-
-			var door = UnityEngine.Object.Instantiate<GameObject>(ev.Door.destroyedPrefab, ev.Player.Position, ev.Player.GameObject.transform.rotation);
-			door.AddComponent<NetworkIdentity>();
-			NetworkServer.Spawn(door);
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{
