@@ -152,7 +152,7 @@ namespace SanyaPlugin
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
 			if(!(_timer > 1f)) return;
 
-			string curText = _hudTemplate.Replace("[STATS]", $"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping}ms Vc:{(_player.IsMuted ? "D" : "E")}");
+			string curText = _hudTemplate.Replace("[STATS]", $"St:{DateTime.Now:HH:mm:ss} Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping}ms Vc:{(_player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
 			if(_player.Team == Team.SCP)
@@ -208,7 +208,10 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(string.Empty, 6));
 
 			//[BOTTOM]
-			curText = curText.Replace("[BOTTOM]", FormatStringForHud(string.Empty, 6));
+			if(Intercom.host.speaking && Intercom.host.speaker != null)
+				curText = curText.Replace("[BOTTOM]", $"{Player.Get(Intercom.host.speaker)?.Nickname}が放送中...");
+			else
+				curText = curText.Replace("[BOTTOM]", string.Empty);
 
 			if(_timer > 1f)
 			{

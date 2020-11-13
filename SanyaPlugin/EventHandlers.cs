@@ -670,12 +670,6 @@ namespace SanyaPlugin
 				&& nextRespawnPos != Vector3.zero)
 				ev.Position = nextRespawnPos;
 
-			if(plugin.Config.FacilityGuardChangeSpawnPos && ev.RoleType == RoleType.FacilityGuard)
-			{
-				PlayerMovementSync.FindSafePosition(Map.Doors.First(x => x.DoorName.ToUpper() == "CHECKPOINT_ENT").transform.position, out var pos, true);
-				ev.Position = pos;
-			}
-
 			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
 			{
 				ev.Position = Map.GetRandomSpawnPoint(RoleType.FacilityGuard);

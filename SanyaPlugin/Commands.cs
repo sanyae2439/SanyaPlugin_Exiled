@@ -62,7 +62,7 @@ namespace SanyaPlugin.Commands
 					}
 				case "htest":
 					{
-						player.SendTextHintNotEffect(arguments.Skip(1).Join(delimiter: " ").Replace("\\n","\n"), 5);
+						player.SendTextHintNotEffect(arguments.Skip(1).Join(delimiter: " ").Replace("\\n", "\n"), 5);
 						response = "ok.";
 						return true;
 					}

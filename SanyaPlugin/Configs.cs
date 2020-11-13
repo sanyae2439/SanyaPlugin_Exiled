@@ -66,9 +66,6 @@ namespace SanyaPlugin
 		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
 		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
 
-		[Description("施設警備員のスポーン位置を変更する")]
-		public bool FacilityGuardChangeSpawnPos { get; set; } = false;
-
 		[Description("研究員のスポーン位置を変更する")]
 		public bool ScientistsChangeSpawnPos { get; set; } = false;
 

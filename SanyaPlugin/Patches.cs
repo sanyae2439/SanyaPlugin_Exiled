@@ -811,8 +811,8 @@ namespace SanyaPlugin.Patches
 
 			newInst.InsertRange(index, new[] {
 				new CodeInstruction(OpCodes.Ldc_R4, 1.5f),
-				new CodeInstruction(OpCodes.Ldloc_0),			
-				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlayableScps.VisionInformation), nameof(PlayableScps.VisionInformation.Distance))),	
+				new CodeInstruction(OpCodes.Ldloc_0),
+				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlayableScps.VisionInformation), nameof(PlayableScps.VisionInformation.Distance))),
 				new CodeInstruction(OpCodes.Bge_Un_S, passlabel),
 			});
 
