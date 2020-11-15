@@ -223,6 +223,7 @@ namespace SanyaPlugin
 		private Vector3 nextRespawnPos = Vector3.zero;
 		private Camera079 last079cam = null;
 		internal Stopwatch last106walkthrough = new Stopwatch();
+		internal Player Overrided = null;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -268,6 +269,10 @@ namespace SanyaPlugin
 					AlphaWarheadController.Host.NetworktimeToDetonation = AlphaWarheadController.Host.scenarios_resume[index].tMinusTime + AlphaWarheadController.Host.scenarios_resume[index].additionalTime;
 				}
 			}
+
+			if(plugin.Config.WarheadDontOpenGates)
+				foreach(var door in Map.Doors.Where(x => x.DoorName.Contains("GATE_")))
+					door.dontOpenOnWarhead = true;
 
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
@@ -473,6 +478,10 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			if(plugin.Config.WarheadDontOpenGates && AlphaWarheadController.Host._autoDetonate && AlphaWarheadController.Host._autoDetonateTimer <= 0f)
+				foreach(var door in Map.Doors.Where(x => x.DoorName.Contains("GATE_")))
+					door.dontOpenOnWarhead = false;
+
 			if(plugin.Config.CassieSubtitle)
 			{
 				bool isresumed = AlphaWarheadController._resumeScenario != -1;
@@ -614,6 +623,16 @@ namespace SanyaPlugin
 		{
 			if(ev.Player.Nickname == null) return;
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.IsEscaped})", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(Overrided != null && Overrided == ev.Player) 
+			{ 
+				if(ev.NewRole.GetTeam() != Team.SCP)
+				{
+					ev.NewRole = (RoleType)ReferenceHub.HostHub.characterClassManager.FindRandomIdUsingDefinedTeam(Team.SCP);
+					RoundSummary.singleton.classlistStart.scps_except_zombies++;
+				}
+				Overrided = null;
+			}
 
 			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));

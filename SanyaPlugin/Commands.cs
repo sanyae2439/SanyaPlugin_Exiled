@@ -84,6 +84,18 @@ namespace SanyaPlugin.Commands
 						}
 						return true;
 					}
+				case "acwh":
+					{
+						response = "ok.";
+						player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
+						return true;
+					}
+				case "override":
+					{
+						response = "ok.";
+						SanyaPlugin.Instance.Handlers.Overrided = player;
+						return true;
+					}
 				case "actwatch":
 					{
 						if(player == null)

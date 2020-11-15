@@ -29,6 +29,7 @@ namespace SanyaPlugin
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
 		private float _hudCenterDownTimer = 0f;
+		private Player _targetedPlayer = null;
 
 		private void Start()
 		{
@@ -49,6 +50,7 @@ namespace SanyaPlugin
 			CheckHighPing();
 			CheckTraitor();
 			CheckVoiceChatting();
+			CheckTargetPlayer();
 			UpdateRespawnCounter();
 			UpdateScpLists();
 			UpdateExHud();
@@ -124,6 +126,18 @@ namespace SanyaPlugin
 				_player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
 		}
 
+		private void CheckTargetPlayer()
+		{
+			if(!(_timer > 1f)) return;
+			if(!_player.IsHuman()) return;
+			Vector3 forward = _player.CameraTransform.forward;
+			forward.Scale(new Vector3(0.1f, 0.1f, 0.1f));
+			if(Physics.Raycast(this._player.CameraTransform.position + forward, forward, out var hit, 2.5f, _player.ReferenceHub.characterClassManager.Scp939.attackMask))
+				_targetedPlayer = Player.Get(hit.transform.gameObject);
+			else
+				_targetedPlayer = null;
+		}
+
 		private void UpdateRespawnCounter()
 		{
 			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || _player.Role != RoleType.Spectator || _timer < 1f) return;
@@ -194,7 +208,19 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
-			curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
+			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated)
+				if(!AlphaWarheadController.Host.doorsOpen)
+					curText = curText.Replace("[CENTER]", FormatStringForHud(
+						(AlphaWarheadController._resumeScenario < 0
+						? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._startScenario].tMinusTime.ToString("\n00 : 00")
+						: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime.ToString("\n00 : 00")
+					), 6));
+				else
+					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>{AlphaWarheadController.Host.timeToDetonation.ToString("\n00 : 00")}</color>", 6));
+			else if(_targetedPlayer != null && !_targetedPlayer.IsEnemy(_player.Team))
+				curText = curText.Replace("[CENTER]", FormatStringForHud($"\n\n\n\nTarget HP:{_targetedPlayer.GetHealthAmountPercent()}%", 6));
+			else
+				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
 			if(_player.Team == Team.RIP)
@@ -213,11 +239,8 @@ namespace SanyaPlugin
 			else
 				curText = curText.Replace("[BOTTOM]", string.Empty);
 
-			if(_timer > 1f)
-			{
-				_hudText = curText;
-				_player.SendTextHintNotEffect(_hudText, 2);
-			}
+			_hudText = curText;
+			_player.SendTextHintNotEffect(_hudText, 2);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)
