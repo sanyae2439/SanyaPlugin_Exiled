@@ -129,6 +129,7 @@ namespace SanyaPlugin
 		private void CheckTargetPlayer()
 		{
 			if(!(_timer > 1f)) return;
+			if(_targetedPlayer != null && !_player.IsHuman()) _targetedPlayer = null;
 			if(!_player.IsHuman()) return;
 			Vector3 forward = _player.CameraTransform.forward;
 			forward.Scale(new Vector3(0.1f, 0.1f, 0.1f));
