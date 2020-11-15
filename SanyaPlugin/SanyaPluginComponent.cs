@@ -134,7 +134,10 @@ namespace SanyaPlugin
 			Vector3 forward = _player.CameraTransform.forward;
 			forward.Scale(new Vector3(0.1f, 0.1f, 0.1f));
 			if(Physics.Raycast(this._player.CameraTransform.position + forward, forward, out var hit, 2.5f, _player.ReferenceHub.characterClassManager.Scp939.attackMask))
+			{
 				_targetedPlayer = Player.Get(hit.transform.gameObject);
+				if(_targetedPlayer != null && _targetedPlayer == _player) _targetedPlayer = null;
+			}
 			else
 				_targetedPlayer = null;
 		}
