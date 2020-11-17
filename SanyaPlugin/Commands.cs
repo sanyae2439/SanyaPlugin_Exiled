@@ -39,7 +39,7 @@ namespace SanyaPlugin.Commands
 
 			if(arguments.Count == 0)
 			{
-				response = "sanya plugins command.";
+				response = "sanya plugins command. params: <hud/ping/override/actwatch/106/914/nukecap/nukelock/femur/blackout/addscps/ammo/forrcend/now/config>";
 				return true;
 			}
 
