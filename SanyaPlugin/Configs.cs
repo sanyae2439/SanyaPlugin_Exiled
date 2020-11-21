@@ -100,6 +100,12 @@ namespace SanyaPlugin
 		[Description("放送室のモニターの表示を拡張する")]
 		public bool IntercomInformation { get; set; } = false;
 
+		[Description("プレイヤー情報にHPを表示する")]
+		public bool PlayersInfoShowHp { get; set; } = false;
+
+		[Description("プレイヤー情報のMTF関係を無効にする")]
+		public bool PlayersInfoDisableFollow { get; set; } = false;
+
 		[Description("核カウントダウンキャンセル時に全ドアを閉じる")]
 		public bool CloseDoorsOnNukecancel { get; set; } = false;
 

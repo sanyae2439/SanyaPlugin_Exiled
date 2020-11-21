@@ -29,7 +29,7 @@ namespace SanyaPlugin
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
 		private float _hudCenterDownTimer = 0f;
-		private Player _targetedPlayer = null;
+		private int _prevHealth = -1;
 
 		private void Start()
 		{
@@ -50,7 +50,7 @@ namespace SanyaPlugin
 			CheckHighPing();
 			CheckTraitor();
 			CheckVoiceChatting();
-			CheckTargetPlayer();
+			UpdateMyCustomText();
 			UpdateRespawnCounter();
 			UpdateScpLists();
 			UpdateExHud();
@@ -126,20 +126,14 @@ namespace SanyaPlugin
 				_player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
 		}
 
-		private void CheckTargetPlayer()
+		private void UpdateMyCustomText()
 		{
-			if(!(_timer > 1f)) return;
-			if(_targetedPlayer != null && !_player.IsHuman()) _targetedPlayer = null;
-			if(!_player.IsHuman()) return;
-			Vector3 forward = _player.CameraTransform.forward;
-			forward.Scale(new Vector3(0.1f, 0.1f, 0.1f));
-			if(Physics.Raycast(this._player.CameraTransform.position + forward, forward, out var hit, 2f, _player.ReferenceHub.characterClassManager.Scp939.attackMask))
+			if(!(_timer > 1f) || !_player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
+			if(_prevHealth != _player.Health) 
 			{
-				_targetedPlayer = Player.Get(hit.transform.gameObject);
-				if(_targetedPlayer != null && _targetedPlayer == _player) _targetedPlayer = null;
+				_prevHealth = (int)_player.Health;
+				_player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth}/{_player.MaxHealth} HP";
 			}
-			else
-				_targetedPlayer = null;
 		}
 
 		private void UpdateRespawnCounter()
@@ -221,8 +215,6 @@ namespace SanyaPlugin
 					), 6));
 				else
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>{AlphaWarheadController.Host.timeToDetonation.ToString("\n00 : 00")}</color>", 6));
-			else if(_targetedPlayer != null && !_targetedPlayer.IsEnemy(_player.Team))
-				curText = curText.Replace("[CENTER]", FormatStringForHud($"\n\n\n\nTarget HP:{_targetedPlayer.GetHealthAmountPercent()}%", 6));
 			else
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 

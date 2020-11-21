@@ -599,6 +599,9 @@ namespace SanyaPlugin
 			else if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
 				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
 
+			if(plugin.Config.PlayersInfoDisableFollow)
+				ev.Player.ReferenceHub.nicknameSync.Network_playerInfoToShow = PlayerInfoArea.Nickname | PlayerInfoArea.Badge | PlayerInfoArea.CustomInfo | PlayerInfoArea.Role;
+
 			//MuteFixer
 			foreach(var player in Player.List)
 				if(player.IsMuted)
