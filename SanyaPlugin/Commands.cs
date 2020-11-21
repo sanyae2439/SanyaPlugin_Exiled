@@ -74,6 +74,27 @@ namespace SanyaPlugin.Commands
 						response += $"{comp.DisableHud}";
 						return true;
 					}
+				case "lightint":
+					{
+						if(arguments.Count < 2)
+						{
+							response = "need args. <float>";
+							return false;
+						}
+
+						if(float.TryParse(arguments.At(1), out float arg))
+						{
+							response = "ok.";
+							foreach(var cont in UnityEngine.Object.FindObjectsOfType<FlickerableLightController>())
+								cont.ServerSetLightIntensity(arg);
+							return true;
+						}
+						else
+						{
+							response = "invalid args.";
+							return false;
+						}
+					}
 				case "ping":
 					{
 						response = "Pings:\n";
