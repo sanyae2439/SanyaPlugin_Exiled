@@ -219,7 +219,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(_player.Team == Team.RIP)
+			if(_player.Team == Team.RIP && _respawnCounter != -1)
 				if(_respawnCounter == 0)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします", 6));
 				else

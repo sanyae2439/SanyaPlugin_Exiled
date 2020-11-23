@@ -50,6 +50,19 @@ namespace SanyaPlugin.Commands
 						response = $"test ok.";
 						return true;
 					}
+				case "scale":
+					{
+						var target = Player.Get(int.Parse(arguments.At(1)));
+
+						target.Scale = new UnityEngine.Vector3(
+							float.Parse(arguments.At(2)),
+							float.Parse(arguments.At(3)),
+							float.Parse(arguments.At(4))
+						);
+
+						response = $"{target.Nickname} ok.";
+						return true;
+					}
 				case "args":
 					{
 						response = "ok.\n";
