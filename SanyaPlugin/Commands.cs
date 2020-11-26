@@ -60,7 +60,7 @@ namespace SanyaPlugin.Commands
 							return false;
 						}
 
-						if(arguments.Count < 3)
+						if(arguments.Count < 2)
 						{
 							response = "need args. <play filename/volume float/stop>";
 							return false;
