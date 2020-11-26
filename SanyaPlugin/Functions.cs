@@ -518,14 +518,6 @@ namespace SanyaPlugin.Functions
 			return result.Trim();
 		}
 
-		public static void TargetShake(this ReferenceHub target, bool achieve)
-		{
-			NetworkWriter writer = NetworkWriterPool.GetWriter();
-			writer.WriteBoolean(achieve);
-			target.TargetSendRpc(AlphaWarheadController.Host, nameof(AlphaWarheadController.RpcShake), writer);
-			NetworkWriterPool.Recycle(writer);
-		}
-
 		public static void AddDeathTimeForScp049(this Player target)
 		{
 			PlayerManager.localPlayer.GetComponent<RagdollManager>().SpawnRagdoll(
@@ -600,45 +592,20 @@ namespace SanyaPlugin.Functions
 			return result;
 		}
 
-		public static void TargetSendRpc<T>(this ReferenceHub sendto, T target, string rpcName, NetworkWriter writer) where T : NetworkBehaviour
+		// Example:TargetRpc
+		public static void TargetShake(this Player target, bool achieve)
 		{
-			var msg = new RpcMessage
-			{
-				netId = target.netId,
-				componentIndex = target.ComponentIndex,
-				functionHash = target.GetType().FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
-				payload = writer.ToArraySegment()
-			};
-			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
+			target.SendCustomTargetRpc(AlphaWarheadController.Host.netIdentity, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), new object[] { achieve });
 		}
 
-		public static void SendCustomSyncObject(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject)
+		// Example:SyncVar
+		public static void SetTargetOnlyVisibleBadge(this Player target, string text)
 		{
-			/* 
- 
-			Example(SyncList) [EffectOnlySCP207]:
-			player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
-				writer.WritePackedUInt64(1ul);								// DirtyObjectsBit
-				writer.WritePackedUInt32((uint)1);							// DirtyIndexCount
-				writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);	// Operations
-				writer.WritePackedUInt32((uint)0);							// EditIndex
-				writer.WriteByte((byte)1);									// Item
-			});
-
-			*/
-			NetworkWriter writer = NetworkWriterPool.GetWriter();
-			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
-			MakeCustomSyncWriter(behaviorOwner, targetType, customSyncObject, null, writer, writer2);
-			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
-			NetworkWriterPool.Recycle(writer);
-			NetworkWriterPool.Recycle(writer2);
+			target.SendCustomSyncVar(target.ReferenceHub.networkIdentity, typeof(ServerRoles), nameof(ServerRoles.NetworkMyText), text);
 		}
 
-		public static void SendCustomSyncVar(this Player player, NetworkIdentity behaviorOwner, Type targetType, string PropertyName, object value)
-		{			
-			// Example [TargetOnlyBadge]:
-			// player.SendCustomSyncVar(player.ReferenceHub.serverRoles.netIdentity, typeof(ServerRoles), nameof(ServerRoles.NetworkMyText), "test");
-
+		public static void SendCustomSyncVar(this Player target, NetworkIdentity behaviorOwner, Type targetType, string PropertyName, object value)
+		{
 			Action<NetworkWriter> customSyncVarGenerator = (targetWriter) => {
 				targetWriter.WritePackedUInt64(GetDirtyBit(targetType, PropertyName));
 				GetWriteExtension(value)?.Invoke(null, new object[] { targetWriter, value });
@@ -647,9 +614,53 @@ namespace SanyaPlugin.Functions
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
 			MakeCustomSyncWriter(behaviorOwner, targetType, null, customSyncVarGenerator, writer, writer2);
-			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
+			NetworkServer.SendToClientOfPlayer(target.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
 			NetworkWriterPool.Recycle(writer);
 			NetworkWriterPool.Recycle(writer2);
+		}
+
+		public static void SendCustomTargetRpc(this Player target, NetworkIdentity behaviorOwner, Type targetType, string rpcName, object[] values)
+		{
+			NetworkWriter writer = NetworkWriterPool.GetWriter();
+
+			foreach(var value in values)
+				GetWriteExtension(value)?.Invoke(null, new object[] { writer, value});
+
+			var msg = new RpcMessage
+			{
+				netId = behaviorOwner.netId,
+				componentIndex = GetComponentIndex(behaviorOwner, targetType),
+				functionHash = targetType.FullName.GetStableHashCode() * 503 + rpcName.GetStableHashCode(),
+				payload = writer.ToArraySegment()
+			};
+			target.Connection.Send(msg, 0);
+			NetworkWriterPool.Recycle(writer);
+		}
+
+		public static void SendCustomSyncObject(this Player target, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customAction)
+		{
+			/* 
+			Cant be use if you dont understand(ill make more use easily soonTM)
+			Example(SyncList) [EffectOnlySCP207]:
+			player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
+				writer.WritePackedUInt64(1ul);								// DirtyObjectsBit
+				writer.WritePackedUInt32((uint)1);							// DirtyIndexCount
+				writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);	// Operations
+				writer.WritePackedUInt32((uint)0);							// EditIndex
+				writer.WriteByte((byte)1);									// Item
+			});
+			*/
+			NetworkWriter writer = NetworkWriterPool.GetWriter();
+			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
+			MakeCustomSyncWriter(behaviorOwner, targetType, customAction, null, writer, writer2);
+			NetworkServer.SendToClientOfPlayer(target.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
+			NetworkWriterPool.Recycle(writer);
+			NetworkWriterPool.Recycle(writer2);
+		}
+	
+		public static int GetComponentIndex(NetworkIdentity identity, Type type)
+		{
+			return Array.FindIndex(identity.NetworkBehaviours, (x) => x.GetType() == type);
 		}
 
 		public static ulong GetDirtyBit(Type targetType, string PropertyName)
