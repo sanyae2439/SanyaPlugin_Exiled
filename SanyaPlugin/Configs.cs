@@ -17,6 +17,7 @@ namespace SanyaPlugin
 		public Configs()
 		{
 			DataDirectory = Path.Combine(Paths.Configs, "SanyaPlugin");
+			DissonanceDataDirectory = Path.Combine(DataDirectory, "Dissonance");
 		}
 
 		[Description("さにゃぷらぐいんの有効化")]
@@ -30,6 +31,12 @@ namespace SanyaPlugin
 
 		[Description("プレイヤーデータの場所")]
 		public string DataDirectory { get; private set; } = string.Empty;
+
+		[Description("Dissonanceデータファイルの場所")]
+		public string DissonanceDataDirectory { get; private set; } = string.Empty;
+
+		[Description("Dissonanceデータ再生時の音量")]
+		public float DissonanceVolume { get; set; } = 0.1f;
 
 		[Description("プレイヤーレベルの有効化")]
 		public bool LevelEnabled { get; set; } = false;

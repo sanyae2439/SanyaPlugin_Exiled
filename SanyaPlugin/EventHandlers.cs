@@ -7,22 +7,21 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using Mirror;
-using Mirror.LiteNetLib4Mirror;
+using Dissonance.Networking.Client;
 using LiteNetLib.Utils;
 using MEC;
 using Utf8Json;
 using CustomPlayerEffects;
-using Respawning;
-using Respawning.NamingRules;
 using LightContainmentZoneDecontamination;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Exiled.API.Features;
 using Exiled.API.Extensions;
+
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
-
+using SanyaPlugin.DissonanceControl;
 
 namespace SanyaPlugin
 {
@@ -204,6 +203,11 @@ namespace SanyaPlugin
 						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.Instance.Config.IsDebugged);
 						Generator079.mainGenerator.ServerOvercharge(10f, false);
 					}
+
+					//DissonanceUpdater
+					if(DissonanceCommsControl.mirrorClient != null && !DissonanceCommsControl.mirrorClient._disconnected)
+						if(DissonanceCommsControl.mirrorClient.Update() == ClientStatus.Error)
+							Log.Error($"[FixedUpdate] mirrorClient error detect.");
 				}
 				catch(Exception e)
 				{
@@ -243,6 +247,8 @@ namespace SanyaPlugin
 			PlayerDataManager.playersData.Clear();
 			ItemCleanupPatch.items.Clear();
 			Coroutines.isAirBombGoing = false;
+
+			DissonanceCommsControl.Init();
 
 			detonatedDuration = -1;
 			IsEnableBlackout = false;
@@ -347,6 +353,7 @@ namespace SanyaPlugin
 			//CoroutineRemover
 			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
 
+			DissonanceCommsControl.Dispose();
 			RoundSummary.singleton._roundEnded = true;
 		}
 		public void OnReloadConfigs()

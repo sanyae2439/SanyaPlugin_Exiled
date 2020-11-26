@@ -52,6 +52,11 @@
       <HintPath>References\CommandSystem.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="DissonanceVoip_publicized">
+      <HintPath>References\DissonanceVoip_publicized.dll</HintPath>
+      <Private>False</Private>
+      <Aliases>global</Aliases>
+    </Reference>
     <Reference Include="Exiled.API">
       <HintPath>References\Exiled.API.dll</HintPath>
       <Private>False</Private>
@@ -124,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
+    <Compile Include="DissonanceControl.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Configs.cs" />

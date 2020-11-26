@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
@@ -8,6 +9,7 @@ using HarmonyLib;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
+using SanyaPlugin.DissonanceControl;
 using SanyaPlugin.Functions;
 
 namespace SanyaPlugin.Commands
@@ -49,6 +51,38 @@ namespace SanyaPlugin.Commands
 					{
 						response = $"test ok.";
 						return true;
+					}
+				case "audio":
+					{
+						if(arguments.Count < 3)
+						{
+							response = "need args. <play/volume>";
+							return false;
+						}
+
+						switch(arguments.At(1).ToLower())
+						{
+							case "play":
+								{
+									response = $"Play file:{Path.Combine(SanyaPlugin.Instance.Config.DissonanceDataDirectory, arguments.At(2))}";
+
+									if(DissonanceCommsControl.dissonanceComms._capture.MicrophoneName == arguments.At(2))
+										DissonanceCommsControl.dissonanceComms._capture.RestartTransmissionPipeline("Command");
+									else
+										DissonanceCommsControl.dissonanceComms._capture.MicrophoneName = arguments.At(2);
+
+									return true;
+								}
+							case "volume":
+								{
+									response = "ok.";
+									DissonanceCommsControl.ChangeVolume(float.Parse(arguments.At(2)));
+									return true;
+								}
+						}
+
+						response = "invalid args.";
+						return false;
 					}
 				case "scale":
 					{
