@@ -592,22 +592,30 @@ namespace SanyaPlugin.Functions
 			return result;
 		}
 
-		// Example:TargetRpc
-		public static void TargetShake(this Player target, bool achieve)
-		{
-			target.SendCustomTargetRpc(AlphaWarheadController.Host.netIdentity, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), new object[] { achieve });
-		}
-
 		// Example:SyncVar
 		public static void SetTargetOnlyVisibleBadge(this Player target, string text)
 		{
 			target.SendCustomSyncVar(target.ReferenceHub.networkIdentity, typeof(ServerRoles), nameof(ServerRoles.NetworkMyText), text);
 		}
 
-		public static void SendCustomSyncVar(this Player target, NetworkIdentity behaviorOwner, Type targetType, string PropertyName, object value)
+		// Example:TargetRpc
+		public static void TargetShake(this Player target, bool achieve)
+		{
+			target.SendCustomTargetRpc(AlphaWarheadController.Host.netIdentity, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), new object[] { achieve });
+		}
+
+		/// <summary>
+		/// Send custom values to client's <see cref="Mirror.SyncVarAttribute"/>.
+		/// </summary>
+		/// <param name="target">Target to send.</param>
+		/// <param name="behaviorOwner"><see cref="Mirror.NetworkIdentity"/> of object that owns <see cref="Mirror.NetworkBehaviour"/>.</param>
+		/// <param name="targetType"><see cref="Mirror.NetworkBehaviour"/>'s type.</param>
+		/// <param name="propertyName">Property name starting with Network.</param>
+		/// <param name="value">Value of send to target.</param>
+		public static void SendCustomSyncVar(this Player target, NetworkIdentity behaviorOwner, Type targetType, string propertyName, object value)
 		{
 			Action<NetworkWriter> customSyncVarGenerator = (targetWriter) => {
-				targetWriter.WritePackedUInt64(GetDirtyBit(targetType, PropertyName));
+				targetWriter.WritePackedUInt64(GetDirtyBit(targetType, propertyName));
 				GetWriteExtension(value)?.Invoke(null, new object[] { targetWriter, value });
 			};
 
@@ -619,12 +627,20 @@ namespace SanyaPlugin.Functions
 			NetworkWriterPool.Recycle(writer2);
 		}
 
+		/// <summary>
+		/// Send custom values to client's <see cref="Mirror.ClientRpcAttribute"/>.
+		/// </summary>
+		/// <param name="target">Target to send.</param>
+		/// <param name="behaviorOwner"><see cref="Mirror.NetworkIdentity"/> of object that owns <see cref="Mirror.NetworkBehaviour"/>.</param>
+		/// <param name="targetType"><see cref="Mirror.NetworkBehaviour"/>'s type.</param>
+		/// <param name="rpcName">Property name starting with Rpc.</param>
+		/// <param name="values">Values of send to target.</param>
 		public static void SendCustomTargetRpc(this Player target, NetworkIdentity behaviorOwner, Type targetType, string rpcName, object[] values)
 		{
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 
 			foreach(var value in values)
-				GetWriteExtension(value)?.Invoke(null, new object[] { writer, value});
+				GetWriteExtension(value)?.Invoke(null, new object[] { writer, value });
 
 			var msg = new RpcMessage
 			{
@@ -637,6 +653,13 @@ namespace SanyaPlugin.Functions
 			NetworkWriterPool.Recycle(writer);
 		}
 
+		/// <summary>
+		/// Send custom values to client's SyncObject.
+		/// </summary>
+		/// <param name="target">Target to send.</param>
+		/// <param name="behaviorOwner"><see cref="Mirror.NetworkIdentity"/> of object that owns <see cref="Mirror.NetworkBehaviour"/>.</param>
+		/// <param name="targetType"><see cref="Mirror.NetworkBehaviour"/>'s type.</param>
+		/// <param name="customAction">Custom writing action.</param>
 		public static void SendCustomSyncObject(this Player target, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customAction)
 		{
 			/* 
@@ -657,18 +680,21 @@ namespace SanyaPlugin.Functions
 			NetworkWriterPool.Recycle(writer);
 			NetworkWriterPool.Recycle(writer2);
 		}
-	
+
+		// API, dont change
 		public static int GetComponentIndex(NetworkIdentity identity, Type type)
 		{
 			return Array.FindIndex(identity.NetworkBehaviours, (x) => x.GetType() == type);
 		}
 
+		// API, dont change
 		public static ulong GetDirtyBit(Type targetType, string PropertyName)
 		{
 			var bytecodes = targetType.GetProperty(PropertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)?.GetSetMethod().GetMethodBody().GetILAsByteArray();
 			return bytecodes[Array.FindLastIndex(bytecodes, x => x == System.Reflection.Emit.OpCodes.Ldc_I8.Value) + 1];
 		}
 
+		// API, dont change
 		public static System.Reflection.MethodInfo GetWriteExtension(object value)
 		{
 			Type type = value.GetType();
@@ -717,6 +743,7 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
+		// API, dont change
 		public static void MakeCustomSyncWriter(NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject, Action<NetworkWriter> customSyncVar, NetworkWriter owner, NetworkWriter observer)
 		{
 			ulong dirty = 0ul;
