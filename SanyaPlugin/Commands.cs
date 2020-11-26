@@ -62,7 +62,7 @@ namespace SanyaPlugin.Commands
 
 						if(arguments.Count < 3)
 						{
-							response = "need args. <play filename/volume float>";
+							response = "need args. <play filename/volume float/stop>";
 							return false;
 						}
 
@@ -83,6 +83,12 @@ namespace SanyaPlugin.Commands
 								{
 									response = "ok.";
 									DissonanceCommsControl.ChangeVolume(float.Parse(arguments.At(2)));
+									return true;
+								}
+							case "stop":
+								{
+									response = "ok.";
+									DissonanceCommsControl.streamCapture.StopCapture();
 									return true;
 								}
 						}
