@@ -248,7 +248,8 @@ namespace SanyaPlugin
 			ItemCleanupPatch.items.Clear();
 			Coroutines.isAirBombGoing = false;
 
-			DissonanceCommsControl.Init();
+			if(plugin.Config.DissonanceEnabled)
+				DissonanceCommsControl.Init();
 
 			detonatedDuration = -1;
 			IsEnableBlackout = false;
@@ -353,7 +354,9 @@ namespace SanyaPlugin
 			//CoroutineRemover
 			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
 
-			DissonanceCommsControl.Dispose();
+			if(plugin.Config.DissonanceEnabled && DissonanceCommsControl.isReady)
+				DissonanceCommsControl.Dispose();
+
 			RoundSummary.singleton._roundEnded = true;
 		}
 		public void OnReloadConfigs()

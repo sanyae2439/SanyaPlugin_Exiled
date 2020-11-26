@@ -18,6 +18,7 @@ namespace SanyaPlugin.DissonanceControl
 {
 	internal static class DissonanceCommsControl
 	{
+		public static bool isReady { get; private set; } = false;
 		public static DissonanceComms dissonanceComms = null;
 		public static MirrorIgnoranceCommsNetwork mirrorComms = null;
 		public static MirrorIgnoranceClient mirrorClient = null;
@@ -49,6 +50,8 @@ namespace SanyaPlugin.DissonanceControl
 				mirrorComms.Server._clients.LeaveRoom(TriggerType.Intercom.ToString(), mirrorClientInfo);
 				mirrorComms.Server._clients.JoinRoom(TriggerType.Intercom.ToString(), mirrorClientInfo);
 				dissonanceComms.RoomChannels.Open(TriggerType.Intercom.ToString(), false, ChannelPriority.None, SanyaPlugin.Instance.Config.DissonanceVolume);
+
+				isReady = true;
 			}
 			catch(Exception e)
 			{
@@ -69,12 +72,14 @@ namespace SanyaPlugin.DissonanceControl
 
 		public static void Dispose()
 		{
+			streamCapture.StopCapture();
 			streamCapture = null;
 			mirrorClientInfo = null;
 			mirrorComms.StopClient();
 			mirrorClient = null;
 			mirrorComms = null;
 			dissonanceComms = null;
+			isReady = false;
 		}
 	}
 
@@ -87,6 +92,7 @@ namespace SanyaPlugin.DissonanceControl
 		public bool Unsubscribe(IMicrophoneSubscriber listener) => this._subscribers.Remove(listener);
 		private readonly WaveFormat waveFormat = new WaveFormat(48000, 1);
 		private string _name = string.Empty;
+		private string _fullpath = string.Empty;
 		private FileStream _stream = null;
 		private float[] _frame = new float[960];
 		private byte[] _frameByte = new byte[960 * 4];
@@ -105,11 +111,17 @@ namespace SanyaPlugin.DissonanceControl
 				else
 				{
 					Exiled.API.Features.Log.Info($"[StreamCapture] Loading:{name}");
-					_stream = File.OpenRead(Path.Combine(SanyaPlugin.Instance.Config.DissonanceDataDirectory, name));
+					_fullpath = Path.Combine(SanyaPlugin.Instance.Config.DissonanceDataDirectory, name);
+					_stream = File.OpenRead(_fullpath);
 
 					if(_stream == null || !_stream.CanRead)
 						Exiled.API.Features.Log.Error($"[StreamCapture] Failed:{name} IsStreamNull:{_stream == null} CanRead:{_stream?.CanRead}");
 				}
+			}
+			catch(FileNotFoundException e)
+			{
+				Exiled.API.Features.Log.Error($"[StartCapture] {e.Message}");
+				_stream = null;
 			}
 			catch(Exception e)
 			{

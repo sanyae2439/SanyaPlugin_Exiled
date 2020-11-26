@@ -54,9 +54,15 @@ namespace SanyaPlugin.Commands
 					}
 				case "audio":
 					{
+						if(!SanyaPlugin.Instance.Config.DissonanceEnabled || !DissonanceCommsControl.isReady)
+						{
+							response = "DissonanceAudio is Disabled.";
+							return false;
+						}
+
 						if(arguments.Count < 3)
 						{
-							response = "need args. <play/volume>";
+							response = "need args. <play filename/volume float>";
 							return false;
 						}
 

@@ -32,10 +32,13 @@ namespace SanyaPlugin
 		[Description("プレイヤーデータの場所")]
 		public string DataDirectory { get; private set; } = string.Empty;
 
-		[Description("Dissonanceデータファイルの場所")]
+		[Description("DissonanceAudioデータファイルの場所")]
 		public string DissonanceDataDirectory { get; private set; } = string.Empty;
 
-		[Description("Dissonanceデータ再生時の音量")]
+		[Description("DissonanceAudioを有効にする")]
+		public bool DissonanceEnabled { get; set; } = false;
+
+		[Description("DissonanceAudio再生時の音量")]
 		public float DissonanceVolume { get; set; } = 0.1f;
 
 		[Description("プレイヤーレベルの有効化")]
