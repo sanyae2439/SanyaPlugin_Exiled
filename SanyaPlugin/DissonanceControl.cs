@@ -70,10 +70,9 @@ namespace SanyaPlugin.DissonanceControl
 
 		public static void Dispose()
 		{
-			streamCapture.StopCapture();
+			streamCapture?.StopCapture();
 			streamCapture = null;
 			mirrorClientInfo = null;
-			mirrorComms.StopClient();
 			mirrorClient = null;
 			mirrorComms = null;
 			dissonanceComms = null;
