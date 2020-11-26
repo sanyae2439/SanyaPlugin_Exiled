@@ -186,26 +186,26 @@ namespace SanyaPlugin.Commands
 
 						if(!isActwatchEnabled)
 						{
-							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							player.SendCustomSyncObject(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
 								writer.WritePackedUInt32((uint)3);
 								writer.WriteByte((byte)1);
-							}, null);
+							});
 							isActwatchEnabled = true;
 						}
 						else
 						{
-							player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							player.SendCustomSyncObject(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
 								writer.WritePackedUInt32((uint)3);
 								writer.WriteByte((byte)0);
-							}, null);
+							});
 							isActwatchEnabled = false;
 						}
 

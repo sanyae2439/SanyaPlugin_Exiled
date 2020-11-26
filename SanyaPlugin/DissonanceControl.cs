@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using Dissonance;
 using Dissonance.Audio.Capture;
@@ -9,10 +10,7 @@ using Dissonance.Networking;
 using Dissonance.Integrations.MirrorIgnorance;
 using NAudio.Wave;
 using Mirror;
-using MEC;
-using Dissonance.Config;
-using Dissonance.Networking.Client;
-using System.Linq;
+
 
 namespace SanyaPlugin.DissonanceControl
 {

@@ -612,17 +612,10 @@ namespace SanyaPlugin.Functions
 			sendto?.characterClassManager.connectionToClient.Send(msg, 0);
 		}
 
-		public static void SendCustomSync(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject, Action<NetworkWriter> customSyncVar)
+		public static void SendCustomSyncObject(this Player player, NetworkIdentity behaviorOwner, Type targetType, Action<NetworkWriter> customSyncObject)
 		{
 			/* 
-			
-			Example(SyncVar) [TargetOnlyBadge]:
-			player.SendCustomSync(player.networkIdentity, typeof(ServerRoles), null, (targetwriter) =>
-			{
-				targetwriter.WritePackedUInt64(2UL);
-				targetwriter.WriteString("test");
-			});
-
+ 
 			Example(SyncList) [EffectOnlySCP207]:
 			player.SendCustomSync(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) => {
 				writer.WritePackedUInt64(1ul);								// DirtyObjectsBit
@@ -630,12 +623,12 @@ namespace SanyaPlugin.Functions
 				writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);	// Operations
 				writer.WritePackedUInt32((uint)0);							// EditIndex
 				writer.WriteByte((byte)1);									// Item
-			}, null);
+			});
 
 			*/
 			NetworkWriter writer = NetworkWriterPool.GetWriter();
 			NetworkWriter writer2 = NetworkWriterPool.GetWriter();
-			MakeCustomSyncWriter(behaviorOwner, targetType, customSyncObject, customSyncVar, writer, writer2);
+			MakeCustomSyncWriter(behaviorOwner, targetType, customSyncObject, null, writer, writer2);
 			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new UpdateVarsMessage() { netId = behaviorOwner.netId, payload = writer.ToArraySegment() });
 			NetworkWriterPool.Recycle(writer);
 			NetworkWriterPool.Recycle(writer2);
