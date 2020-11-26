@@ -17,7 +17,7 @@ namespace SanyaPlugin
 		public Configs()
 		{
 			DataDirectory = Path.Combine(Paths.Configs, "SanyaPlugin");
-			DissonanceDataDirectory = Path.Combine(DataDirectory, "Dissonance");
+			DissonanceDataDirectory = Path.Combine(Paths.Configs, "Dissonance");
 		}
 
 		[Description("さにゃぷらぐいんの有効化")]
