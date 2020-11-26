@@ -106,7 +106,7 @@ namespace SanyaPlugin.DissonanceControl
 			{
 				if(name == "StreamingMic")
 				{
-					Exiled.API.Features.Log.Debug($"[StreamCapture] Init");
+					Exiled.API.Features.Log.Debug($"[StreamCapture] Init", SanyaPlugin.Instance.Config.IsDebugged);
 				}
 				else
 				{
