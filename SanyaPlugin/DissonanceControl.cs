@@ -71,6 +71,7 @@ namespace SanyaPlugin.DissonanceControl
 		public static void Dispose()
 		{
 			streamCapture?.StopCapture();
+			if(streamCapture != null) UnityEngine.Object.Destroy(streamCapture);
 			streamCapture = null;
 			mirrorClientInfo = null;
 			mirrorClient = null;

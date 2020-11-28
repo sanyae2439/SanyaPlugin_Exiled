@@ -54,7 +54,7 @@ namespace SanyaPlugin.Commands
 					}
 				case "audio":
 					{
-						if(!SanyaPlugin.Instance.Config.DissonanceEnabled || !DissonanceCommsControl.isReady)
+						if(!SanyaPlugin.Instance.Config.DissonanceEnabled)
 						{
 							response = "DissonanceAudio is Disabled.";
 							return false;
@@ -71,6 +71,9 @@ namespace SanyaPlugin.Commands
 							case "play":
 								{
 									response = $"Play file:{Path.Combine(SanyaPlugin.Instance.Config.DissonanceDataDirectory, arguments.At(2))}";
+
+									if(!DissonanceCommsControl.isReady)
+										DissonanceCommsControl.Init();
 
 									if(DissonanceCommsControl.dissonanceComms._capture.MicrophoneName == arguments.At(2))
 										DissonanceCommsControl.dissonanceComms._capture.RestartTransmissionPipeline("Command");

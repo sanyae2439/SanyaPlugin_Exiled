@@ -206,8 +206,13 @@ namespace SanyaPlugin
 
 					//DissonanceUpdater
 					if(DissonanceCommsControl.mirrorClient != null && !DissonanceCommsControl.mirrorClient._disconnected)
+					{
+						for(int i = 0; i < Dissonance.Config.DebugSettings.Instance._levels.Count; i++)
+							Dissonance.Config.DebugSettings.Instance._levels[i] = Dissonance.LogLevel.Trace;
+
 						if(DissonanceCommsControl.mirrorClient.Update() == ClientStatus.Error)
 							Log.Error($"[FixedUpdate] mirrorClient error detect.");
+					}
 				}
 				catch(Exception e)
 				{
@@ -247,9 +252,6 @@ namespace SanyaPlugin
 			PlayerDataManager.playersData.Clear();
 			ItemCleanupPatch.items.Clear();
 			Coroutines.isAirBombGoing = false;
-
-			if(plugin.Config.DissonanceEnabled)
-				DissonanceCommsControl.Init();
 
 			detonatedDuration = -1;
 			IsEnableBlackout = false;
@@ -347,15 +349,12 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRestartingRound] Restarting...");
 
+			if(plugin.Config.DissonanceEnabled && DissonanceCommsControl.isReady)
+				DissonanceCommsControl.Dispose();
+
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
 			roundCoroutines.Clear();
-
-			//CoroutineRemover
-			Log.Info($"Removed {Timing.KillCoroutines()} Coroutines.");
-
-			if(plugin.Config.DissonanceEnabled && DissonanceCommsControl.isReady)
-				DissonanceCommsControl.Dispose();
 
 			RoundSummary.singleton._roundEnded = true;
 		}
