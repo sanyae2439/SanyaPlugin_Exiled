@@ -634,6 +634,72 @@ namespace SanyaPlugin.Functions
 			return result;
 		}
 
+		public static void Add914RecipeCoin()
+		{
+			Scp914.Scp914Machine.singleton.recipesDict.Add(ItemType.Coin, new System.Collections.Generic.Dictionary<Scp914.Scp914Knob, ItemType[]>()
+						{
+							{ Scp914.Scp914Knob.Rough, new[]{ItemType.None } },
+							{ Scp914.Scp914Knob.Coarse, new[]{ItemType.None } },
+							{ Scp914.Scp914Knob.OneToOne, new[]{ItemType.Coin } },
+							{ Scp914.Scp914Knob.Fine, new[]{
+								ItemType.KeycardJanitor,
+								ItemType.KeycardScientist,
+								ItemType.KeycardScientistMajor,
+								ItemType.KeycardZoneManager,
+								ItemType.KeycardGuard,
+								ItemType.KeycardSeniorGuard,
+								ItemType.KeycardContainmentEngineer,
+								ItemType.KeycardNTFLieutenant,
+								ItemType.KeycardNTFCommander,
+								ItemType.KeycardFacilityManager,
+								ItemType.KeycardChaosInsurgency,
+								ItemType.KeycardO5,
+								ItemType.GunCOM15,
+								ItemType.MicroHID,
+								ItemType.SCP207,
+								ItemType.WeaponManagerTablet,
+								ItemType.GunE11SR,
+								ItemType.GunProject90,
+								ItemType.GunMP7,
+								ItemType.GunLogicer,
+								ItemType.GrenadeFrag,
+								ItemType.GrenadeFlash,
+								ItemType.GunUSP,
+								ItemType.SCP018,
+								ItemType.SCP268,
+								ItemType.Ammo556,
+								ItemType.Ammo762,
+								ItemType.Ammo9mm,
+								ItemType.Medkit,
+								ItemType.Adrenaline,
+								ItemType.Painkillers,
+								ItemType.SCP500,
+								ItemType.Flashlight,
+								ItemType.Radio,
+								ItemType.Disarmer
+							} },
+							{ Scp914.Scp914Knob.VeryFine, new[]{
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.None,
+								ItemType.KeycardFacilityManager,
+								ItemType.KeycardContainmentEngineer,
+								ItemType.KeycardO5,
+								ItemType.MicroHID,
+								ItemType.GunE11SR,
+								ItemType.SCP500,
+								ItemType.SCP018
+							} }
+						});
+		}
+
 		// Example:SyncVar
 		public static void SetTargetOnlyVisibleBadge(this Player target, string text)
 		{

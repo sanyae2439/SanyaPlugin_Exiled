@@ -260,6 +260,8 @@ namespace SanyaPlugin
 			last079cam = null;
 			scp049stackAmount = 0;
 
+			Methods.Add914RecipeCoin();
+
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{
 				int realtime = Mathf.RoundToInt(Mathf.Clamp(plugin.Config.WarheadInitCountdown, 30, 120) / 10f) * 10;
