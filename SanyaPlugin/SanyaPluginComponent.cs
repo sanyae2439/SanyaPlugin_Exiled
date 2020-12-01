@@ -154,7 +154,7 @@ namespace SanyaPlugin
 			if(_prevHealth != _player.Health) 
 			{
 				_prevHealth = (int)_player.Health;
-				_player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth}/{_player.MaxHealth} HP";
+				_player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP";
 			}
 		}
 
