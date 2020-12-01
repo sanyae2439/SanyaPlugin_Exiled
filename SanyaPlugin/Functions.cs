@@ -7,19 +7,19 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using CustomPlayerEffects;
+using Dissonance.Integrations.MirrorIgnorance;
+using Exiled.API.Features;
+using Exiled.Events.EventArgs;
+using Hints;
+using MEC;
+using Mirror;
+using RemoteAdmin;
+using Respawning;
+using SanyaPlugin.Data;
 using UnityEngine;
 using UnityEngine.Networking;
-using Mirror;
-using Dissonance.Integrations.MirrorIgnorance;
-using MEC;
 using Utf8Json;
-using RemoteAdmin;
-using Hints;
-using Respawning;
-using CustomPlayerEffects;
-using Exiled.Events.EventArgs;
-using Exiled.API.Features;
-using SanyaPlugin.Data;
 
 namespace SanyaPlugin.Functions
 {
@@ -390,6 +390,33 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
+		public static IEnumerator<float> Scp049CureFromStack(Player player)
+		{
+			yield return Timing.WaitForOneFrame;
+
+			if(player.Role != RoleType.Scp049 || SanyaPlugin.Instance.Handlers.scp049stackAmount <= 0 || player.ReferenceHub.fpc.forceStopInputs) yield break;
+
+			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+			player.EnableEffect<Amnesia>();
+			yield return Timing.WaitForSeconds(5f);
+
+			var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
+			var target = Player.List.Where(x => x.IsDead).Random();
+			if(target != null)
+			{
+				target.SetRole(RoleType.Scp0492, true);
+				target.Position = player.Position;
+				SanyaPlugin.Instance.Handlers.scp049stackAmount--;
+				comp?.AddHudCenterDownText("Success!", 3);
+			}
+			else
+			{
+				comp?.AddHudCenterDownText("Failed...", 3);
+			}
+			player.DisableEffect<Amnesia>();
+			player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+		}
+
 		public static IEnumerator<float> Scp106WalkingThrough(Player player)
 		{
 			yield return Timing.WaitForOneFrame;
@@ -417,7 +444,7 @@ namespace SanyaPlugin.Functions
 			player.ReferenceHub.playerEffectsController.EnableEffect<Scp268>();
 			player.ReferenceHub.playerEffectsController.EnableEffect<Deafened>();
 			player.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Visuals939>(1);
-			SanyaPlugin.Instance.Handlers.last106walkthrough.Restart();
+			//SanyaPlugin.Instance.Handlers.last106walkthrough.Restart();
 
 			while(true)
 			{
@@ -433,6 +460,21 @@ namespace SanyaPlugin.Functions
 				}
 				player.Position = Vector3.MoveTowards(player.Position, pos, 0.25f);
 				yield return Timing.WaitForOneFrame;
+			}
+		}
+
+		public static IEnumerator<float> Scp106CustomTeleport(Scp106PlayerScript scp106PlayerScript, Vector3 position)
+		{
+			if(!scp106PlayerScript.goingViaThePortal)
+			{
+				scp106PlayerScript.RpcTeleportAnimation();
+				scp106PlayerScript.goingViaThePortal = true;
+				yield return Timing.WaitForSeconds(3.5f);
+				scp106PlayerScript._hub.playerMovementSync.OverridePosition(position, 0f, false);
+				yield return Timing.WaitForSeconds(3.5f);
+				if(AlphaWarheadController.Host.detonated && scp106PlayerScript.transform.position.y < 800f)
+					scp106PlayerScript._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(9000f, "WORLD", DamageTypes.Nuke, 0), scp106PlayerScript.gameObject, true);
+				scp106PlayerScript.goingViaThePortal = false;
 			}
 		}
 	}
@@ -817,6 +859,11 @@ namespace SanyaPlugin.Functions
 		public static void ShowHitmarker(this Player player)
 		{
 			player.ReferenceHub.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.Connection);
+		}
+
+		public static void SendToTargetSound(this Player player)
+		{
+			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new PlayableScps.Messages.Scp096ToTargetMessage(player.ReferenceHub));
 		}
 
 		public static void SendTextHint(this Player player, string text, float time)

@@ -1,24 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Linq;
-using UnityEngine;
-using Mirror;
-using MEC;
-using HarmonyLib;
+using Assets._Scripts.Dissonance;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
-using NorthwoodLib.Pools;
 using Grenades;
+using HarmonyLib;
 using Hints;
-using PlayableScps;
+using LightContainmentZoneDecontamination;
+using MEC;
+using Mirror;
+using NorthwoodLib.Pools;
 using Respawning;
 using Respawning.NamingRules;
-using Assets._Scripts.Dissonance;
-using LightContainmentZoneDecontamination;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
+using UnityEngine;
 
 namespace SanyaPlugin.Patches
 {
@@ -682,6 +681,7 @@ namespace SanyaPlugin.Patches
 		{
 			if(SanyaPlugin.Instance.Config.TeslaDeleteObjects && ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
 			else if(SanyaPlugin.Instance.Config.Scp939RemoveRagdoll && ragdollInfo.GetDamageType() == DamageTypes.Scp939) return false;
+			else if(SanyaPlugin.Instance.Config.Scp049StackBody && ragdollInfo.GetDamageType() == DamageTypes.Scp049) return false;
 			else return true;
 		}
 	}
@@ -774,20 +774,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//transpiler
-	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.MaxShield), MethodType.Getter)]
-	public static class Scp096InitPatch
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-		{
-			foreach(var code in instructions)
-			{
-				if(code.opcode == OpCodes.Ldc_R4) code.operand = (float)SanyaPlugin.Instance.Config.Scp096InitialShield;
-				yield return code;
-			}
-		}
-	}
-
 	//not override
 	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.AdjustShield))]
 	public static class Scp096ShieldPatch
@@ -795,40 +781,6 @@ namespace SanyaPlugin.Patches
 		public static void Prefix(PlayableScps.Scp096 __instance, ref int amt)
 		{
 			amt = SanyaPlugin.Instance.Config.Scp096ShieldPerTargets;
-		}
-	}
-
-	//not override
-	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.Start))]
-	public static class InitHPPatch
-	{
-		public static void Prefix(CharacterClassManager __instance)
-		{
-			foreach(var role in __instance.Classes)
-			{
-				switch(role.roleId)
-				{
-					case RoleType.Scp173:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp173MaxHp;
-						break;
-					case RoleType.Scp106:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp106MaxHp;
-						break;
-					case RoleType.Scp049:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp049MaxHp;
-						break;
-					case RoleType.Scp0492:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp0492MaxHp;
-						break;
-					case RoleType.Scp096:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp096MaxHp;
-						break;
-					case RoleType.Scp93953:
-					case RoleType.Scp93989:
-						role.maxHP = SanyaPlugin.Instance.Config.Scp939MaxHp;
-						break;
-				}
-			}
 		}
 	}
 
@@ -894,6 +846,65 @@ namespace SanyaPlugin.Patches
 					scp106PlayerScript._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(9000f, "WORLD", DamageTypes.Nuke, 0), scp106PlayerScript.gameObject, true);
 				scp106PlayerScript.goingViaThePortal = false;
 			}
+		}
+	}
+
+	//transpiler
+	[HarmonyPatch(typeof(PlayableScps.VisionInformation), nameof(PlayableScps.VisionInformation.GetVisionInformation))]
+	public static class Scp096TouchRagePatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			if(SanyaPlugin.Instance.Config.Scp096TouchEnrageDistance < 0f)
+			{
+				foreach(var vanillaInst in instructions.ToList())
+					yield return vanillaInst;
+				yield break;
+			}
+
+			var newInst = instructions.ToList();
+
+			var forceLoSindex = newInst.FindIndex(x => x.opcode == OpCodes.And);
+			newInst.RemoveAt(forceLoSindex);
+			newInst.RemoveAt(forceLoSindex - 2);
+
+			var fixLoSindex = newInst.FindIndex(x => x.opcode == OpCodes.Ceq) + 2;
+			var fixLoSlabel = newInst[fixLoSindex + 2].labels[0];
+			newInst.InsertRange(fixLoSindex, new[] {
+				new CodeInstruction(OpCodes.Ldloc_2),
+				new CodeInstruction(OpCodes.Brfalse_S, fixLoSlabel)
+			});
+
+			var index = newInst.FindLastIndex(x => x.opcode == OpCodes.Ceq) + 2;
+			var label = newInst[index].labels[0];
+			var label2 = newInst[index].labels[1];
+			newInst[index].labels.RemoveAt(1);
+			
+
+			newInst.InsertRange(index, new[]{
+				new CodeInstruction(OpCodes.Ldloca_S, 6),
+				new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(UnityEngine.Vector3), nameof(UnityEngine.Vector3.magnitude))),
+				new CodeInstruction(OpCodes.Stloc_S, 5),
+
+				new CodeInstruction(OpCodes.Ldloc_S, 7),
+				new CodeInstruction(OpCodes.Brfalse_S, label),
+				new CodeInstruction(OpCodes.Ldloc_S, 5),
+				new CodeInstruction(OpCodes.Ldc_R4, 1.5f),
+				new CodeInstruction(OpCodes.Bge_Un_S, label),
+				new CodeInstruction(OpCodes.Ldc_I4_1),
+				new CodeInstruction(OpCodes.Stloc_2),
+				new CodeInstruction(OpCodes.Ldc_R4, 0.1f),
+				new CodeInstruction(OpCodes.Stloc_3),
+			});
+			newInst[index].labels.Add(label2);
+
+			var labelindex = newInst.FindLastIndex(x => x.opcode == OpCodes.Ldnull) - 2;
+			var labelindex2 = newInst.FindLastIndex(x => x.opcode == OpCodes.Ldarg_S) - 1;
+			newInst[labelindex].operand = label2;
+			newInst[labelindex2].operand = label2;
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
 		}
 	}
 }

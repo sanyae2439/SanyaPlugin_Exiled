@@ -1,10 +1,10 @@
 ﻿using System;
-using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using System.Collections;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Exiled.API.Features;
 using Exiled.API.Interfaces;
 using SanyaPlugin.Functions;
@@ -195,9 +195,6 @@ namespace SanyaPlugin
 		[Description("SCP-018のダメージ乗数")]
 		public float Scp018DamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-049の最大HP")]
-		public int Scp049MaxHp { get; set; } = 1700;
-
 		[Description("SCP-049の被ダメージ乗数")]
 		public float Scp049DamageMultiplier { get; set; } = 1f;
 
@@ -207,8 +204,8 @@ namespace SanyaPlugin
 		[Description("SCP-049の治療成功時追加AHP量")]
 		public int Scp049CureAhpAmount { get; set; } = 0;
 
-		[Description("SCP-049-2の最大HP")]
-		public int Scp0492MaxHp { get; set; } = 300;
+		[Description("SCP-049が殺害時に死体をスタックできるように")]
+		public bool Scp049StackBody { get; set; } = false;
 
 		[Description("SCP-049-2の被ダメージ乗数")]
 		public float Scp0492DamageMultiplier { get; set; } = 1f;
@@ -219,23 +216,17 @@ namespace SanyaPlugin
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
 
-		[Description("SCP-096の最大HP")]
-		public int Scp096MaxHp { get; set; } = 1500;
-
 		[Description("SCP-096の被ダメージ乗数")]
 		public float Scp096DamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-096のキル時回復量")]
 		public int Scp096RecoveryAmount { get; set; } = 0;
 
-		[Description("SCP-096の初期AHP")]
-		public int Scp096InitialShield { get; set; } = 350;
-
 		[Description("SCP-096の一人当たりの増加AHP量")]
 		public int Scp096ShieldPerTargets { get; set; } = 70;
 
-		[Description("SCP-106の最大HP")]
-		public int Scp106MaxHp { get; set; } = 650;
+		[Description("SCP-096に触れると発狂するようになる距離")]
+		public float Scp096TouchEnrageDistance { get; set; } = -1f;
 
 		[Description("SCP-106の被ダメージ乗数")]
 		public float Scp106DamageMultiplier { get; set; } = 1f;
@@ -252,11 +243,11 @@ namespace SanyaPlugin
 		[Description("SCP-106のポケットディメンションで死亡時に回復するAHPの自然回復増加量")]
 		public float Scp106SendPocketAhpDecayAmount { get; set; } = 0;
 
-		[Description("SCP-106の壁抜け移動が使用可能になるまでの秒数")]
-		public int Scp106WalkthroughCooldown { get; set; } = -1;
+		[Description("SCP-106のExモードで収容室に帰還できるように")]
+		public bool Scp106Exmode { get; set; } = false;
 
-		[Description("SCP-173の最大HP")]
-		public int Scp173MaxHp { get; set; } = 3200;
+		[Description("SCP-106のポータルを踏むとポケットディメンションへ飛ばされる")]
+		public bool Scp106PocketTrap { get; set; } = false;
 
 		[Description("SCP-173の被ダメージ乗数")]
 		public float Scp173DamageMultiplier { get; set; } = 1f;
@@ -272,9 +263,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXのキル時回復量")]
 		public int Scp939RecoveryAmount { get; set; } = 0;
-
-		[Description("SCP-939-XXの最大HP")]
-		public int Scp939MaxHp { get; set; } = 2200;
 
 		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
 		public bool Scp939AttackBleeding { get; set; } = false;

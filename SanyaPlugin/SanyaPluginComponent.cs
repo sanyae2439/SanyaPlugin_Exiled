@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using CustomPlayerEffects;
+using Exiled.API.Features;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
-using Exiled.API.Features;
-
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace SanyaPlugin
 {
@@ -15,12 +15,13 @@ namespace SanyaPlugin
 	{
 
 		public static readonly HashSet<Player> _scplists = new HashSet<Player>();
+		private static Vector3 _espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
+		private static GameObject _portalPrefab;
 
 		public bool DisableHud = false;
 
 		private SanyaPlugin _plugin;
 		private Player _player;
-		private Vector3 _espaceArea;
 		private string _hudTemplate = "<align=left><voffset=38em><size=50%><alpha=#44>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n<alpha=#ff></size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
@@ -33,9 +34,9 @@ namespace SanyaPlugin
 
 		private void Start()
 		{
+			if(_portalPrefab == null) _portalPrefab = GameObject.Find("SCP106_PORTAL");
 			_plugin = SanyaPlugin.Instance;
 			_player = Player.Get(gameObject);
-			_espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
 		}
 
@@ -50,6 +51,7 @@ namespace SanyaPlugin
 			CheckHighPing();
 			CheckTraitor();
 			CheckVoiceChatting();
+			CheckOnPortal();
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
 			UpdateScpLists();
@@ -126,6 +128,26 @@ namespace SanyaPlugin
 				_player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
 		}
 
+		private void CheckOnPortal()
+		{
+			if(_portalPrefab == null || !SanyaPlugin.Instance.Config.Scp106PocketTrap ||  !_player.IsHuman()) return;
+
+			if(Vector3.Distance(_portalPrefab.transform.position + Vector3.up * 1.5f, _player.Position) < 1.5f)
+			{
+				foreach(var scp106 in Player.Get(RoleType.Scp106))
+				{
+					scp106.ShowHitmarker();
+					if(SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount > 0)
+						scp106.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
+				}
+
+				_player.Position = Vector3.down * 1998.5f;
+				_player.ReferenceHub.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
+				_player.EnableEffect<Corroding>();
+				Log.Debug($"[PortalTrap]");
+			}
+		}
+
 		private void UpdateMyCustomText()
 		{
 			if(!(_timer > 1f) || !_player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
@@ -197,11 +219,11 @@ namespace SanyaPlugin
 			//[CENTER_UP]
 			if(_player.Role == RoleType.Scp079)
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(_player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled", 6));
-			else if(_player.Role == RoleType.Scp106)
-				if(SanyaPlugin.Instance.Handlers.last106walkthrough.Elapsed.TotalSeconds > _plugin.Config.Scp106WalkthroughCooldown || _player.IsBypassModeEnabled)
-					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Extend:Ready", 6));
+			else if(_player.Role == RoleType.Scp049)
+				if(!_player.ReferenceHub.fpc.NetworkforceStopInputs)
+					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
 				else
-					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Extend:Charging({_plugin.Config.Scp106WalkthroughCooldown - (int)SanyaPlugin.Instance.Handlers.last106walkthrough.Elapsed.TotalSeconds}s left)", 6));
+					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 

@@ -257,7 +257,24 @@
 			"</size></color>"
 		);
 
+		internal static readonly string Extend049First = string.Concat(
+			"<color=#bbee00><size=25>",
+			"人間を殺害時に死体は収納され、スプリントキーで治療することができます。\n",
+			"</size><size=20>",
+			"When you killed humans, Corpse is stocked and can be cure with sprint key.\n",
+			"</size></color>"
+		);
+
 		internal static readonly string Extend106First = string.Concat(
+			"<color=#bbee00><size=25>",
+			"拡張モードを使用可能です. スプリントキーで使用可能です.\n収容室の前に戻ることができます。\n",
+			"</size><size=20>",
+			"You can use Extend mode. Use by sprint keys.\nYou can return to containment room.\n",
+			"</size></color>"
+		);
+
+
+		internal static readonly string Extend106First_Obsoleted = string.Concat(
 			"<color=#bbee00><size=25>",
 			"拡張モードを使用可能です. スプリントキーで使用可能です.\n壁を通り抜けて移動することができます。\n",
 			"</size><size=20>",

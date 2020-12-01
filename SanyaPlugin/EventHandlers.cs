@@ -5,23 +5,22 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
-using Mirror;
-using Dissonance.Networking.Client;
-using LiteNetLib.Utils;
-using MEC;
-using Utf8Json;
 using CustomPlayerEffects;
-using LightContainmentZoneDecontamination;
+using Dissonance.Networking.Client;
+using Exiled.API.Extensions;
+using Exiled.API.Features;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
-using Exiled.API.Features;
-using Exiled.API.Extensions;
-
+using LightContainmentZoneDecontamination;
+using LiteNetLib.Utils;
+using MEC;
+using Mirror;
 using SanyaPlugin.Data;
+using SanyaPlugin.DissonanceControl;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
-using SanyaPlugin.DissonanceControl;
+using UnityEngine;
+using Utf8Json;
 
 namespace SanyaPlugin
 {
@@ -231,7 +230,7 @@ namespace SanyaPlugin
 		internal bool IsEnableBlackout = false;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		private Camera079 last079cam = null;
-		internal Stopwatch last106walkthrough = new Stopwatch();
+		internal int scp049stackAmount = 0;
 		internal Player Overrided = null;
 
 		/** EventModeVar **/
@@ -254,12 +253,12 @@ namespace SanyaPlugin
 			Coroutines.isAirBombGoing = false;
 
 			detonatedDuration = -1;
-			IsEnableBlackout = false;
+			IsEnableBlackout = false;		
 
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
 			last079cam = null;
-			last106walkthrough.Restart();
+			scp049stackAmount = 0;
 
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{
@@ -646,10 +645,13 @@ namespace SanyaPlugin
 				Overrided = null;
 			}
 
-			if(plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
+			if(plugin.Config.ExHudEnabled && plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
 				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
 
-			if(plugin.Config.Scp106WalkthroughCooldown > 0 && ev.NewRole == RoleType.Scp106)
+			if(plugin.Config.ExHudEnabled && plugin.Config.Scp049StackBody && ev.NewRole == RoleType.Scp049)
+				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend049First, 10)));
+
+			if(plugin.Config.ExHudEnabled && plugin.Config.Scp106Exmode && ev.NewRole == RoleType.Scp106)
 				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
 
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
@@ -802,6 +804,20 @@ namespace SanyaPlugin
 			if(plugin.Config.HitmarkKilled && ev.Killer != ev.Target)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GameObject.GetComponent<MicroHID>())));
 
+			if(plugin.Config.Scp049StackBody && ev.HitInformations.GetDamageType() == DamageTypes.Scp049)
+			{
+				if(plugin.Config.Scp049CureAhpAmount > 0)
+				{
+					ev.Killer.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp049CureAhpAmount;
+					ev.Killer.ReferenceHub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(
+						ev.Killer.ReferenceHub.playerStats.unsyncedArtificialHealth + SanyaPlugin.Instance.Config.Scp049CureAhpAmount,
+						0,
+						ev.Killer.ReferenceHub.playerStats.maxArtificialHealth
+					);
+				}
+				scp049stackAmount++;
+			}
+
 			//SCPsRecovery
 			switch(ev.Killer.Role)
 			{
@@ -875,7 +891,7 @@ namespace SanyaPlugin
 			foreach(var player in Player.List.Where(x => x.Role == RoleType.Scp106))
 			{
 				player.Health = Mathf.Clamp(player.Health + plugin.Config.Scp106RecoveryAmount, 0, player.MaxHealth);
-				player.ShowHitmarker();
+				player.GameObject.GetComponent<MicroHID>()?.TargetSendHitmarker(false);
 				if(plugin.Config.Scp106SendPocketAhpDecayAmount > 0) player.ReferenceHub.playerStats.NetworkartificialHpDecay -= plugin.Config.Scp106SendPocketAhpDecayAmount;
 			}
 		}
@@ -883,12 +899,20 @@ namespace SanyaPlugin
 		{
 			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
 
-			if(plugin.Config.Scp106WalkthroughCooldown > 0
-				&& ev.Player.Role == RoleType.Scp106
+			if(plugin.Config.Scp049StackBody
+				&& ev.Player.Role == RoleType.Scp049
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
 				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
-				if(last106walkthrough.Elapsed.TotalSeconds > plugin.Config.Scp106WalkthroughCooldown || ev.Player.IsBypassModeEnabled)
-					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106WalkingThrough(ev.Player)));
+				if(scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled)
+					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player)));
+
+			if(plugin.Config.Scp106Exmode
+				&& ev.Player.Role == RoleType.Scp106
+				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
+				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal)
+				roundCoroutines.Add(Timing.RunCoroutine(
+					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, Map.Doors.First(x => x.DoorName == "106_PRIMARY").transform.position + Vector3.up * 1.5f)
+					));
 
 			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
 				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
