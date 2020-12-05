@@ -477,6 +477,15 @@ namespace SanyaPlugin.Functions
 				scp106PlayerScript.goingViaThePortal = false;
 			}
 		}
+
+		public static IEnumerator<float> Scp939SetFake(ReferenceHub human, ReferenceHub scp939, RoleType targetRole, ItemType targetItem)
+		{
+			var Phuman = Player.Get(human);
+			Phuman.SendCustomSyncVar(scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), targetRole);
+			yield return Timing.WaitForSeconds(0.25f);
+			Phuman.SendCustomSyncVar(scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), targetItem);
+			yield break;
+		}
 	}
 
 	internal static class Methods
