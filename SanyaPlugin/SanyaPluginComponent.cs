@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Features;
+using MEC;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
 using SanyaPlugin.Data;
@@ -18,10 +19,12 @@ namespace SanyaPlugin
 		private static Vector3 _espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 		private static GameObject _portalPrefab;
 
+		public Player Player { get; private set; }
 		public bool DisableHud = false;
+		public readonly HashSet<Scp939PlayerScript> Faked939s = new HashSet<Scp939PlayerScript>();
 
 		private SanyaPlugin _plugin;
-		private Player _player;
+
 		private string _hudTemplate = "<align=left><voffset=38em><size=50%><alpha=#44>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n<alpha=#ff></size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
@@ -31,12 +34,13 @@ namespace SanyaPlugin
 		private float _hudCenterDownTime = -1f;
 		private float _hudCenterDownTimer = 0f;
 		private int _prevHealth = -1;
+		
 
 		private void Start()
 		{
 			if(_portalPrefab == null) _portalPrefab = GameObject.Find("SCP106_PORTAL");
 			_plugin = SanyaPlugin.Instance;
-			_player = Player.Get(gameObject);
+			Player = Player.Get(gameObject);
 			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
 		}
 
@@ -52,6 +56,7 @@ namespace SanyaPlugin
 			CheckTraitor();
 			CheckVoiceChatting();
 			CheckOnPortal();
+			CheckFake939();
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
 			UpdateScpLists();
@@ -85,24 +90,24 @@ namespace SanyaPlugin
 		{
 			if(_plugin.Config.TraitorChancePercent <= 0) return;
 
-			if(_player.Team != Team.MTF && _player.Team != Team.CHI) return;
-			if(!_player.IsCuffed) return;
-			if(Vector3.Distance(_player.Position, _espaceArea) > Escape.radius) return;
+			if(Player.Team != Team.MTF && Player.Team != Team.CHI) return;
+			if(!Player.IsCuffed) return;
+			if(Vector3.Distance(Player.Position, _espaceArea) > Escape.radius) return;
 
 			if(UnityEngine.Random.Range(0, 100) >= _plugin.Config.TraitorChancePercent)
 			{
-				switch(_player.Team)
+				switch(Player.Team)
 				{
 					case Team.MTF:
-						_player.SetRole(RoleType.ChaosInsurgency);
+						Player.SetRole(RoleType.ChaosInsurgency);
 						break;
 					case Team.CHI:
-						_player.SetRole(RoleType.NtfCadet);
+						Player.SetRole(RoleType.NtfCadet);
 						break;
 				}
 			}
 			else
-				_player.SetRole(RoleType.Spectator);
+				Player.SetRole(RoleType.Spectator);
 		}
 
 		private void CheckHighPing()
@@ -110,11 +115,11 @@ namespace SanyaPlugin
 			if(_detectHighPing) return;
 			if(_plugin.Config.PingLimit <= 0) return;
 
-			if(LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping > _plugin.Config.PingLimit)
+			if(LiteNetLib4MirrorServer.Peers[Player.Connection.connectionId].Ping > _plugin.Config.PingLimit)
 			{
 				_detectHighPing = true;
-				_player.Kick(Subtitles.PingLimittedMessage, "SanyaPlugin_Exiled");
-				Log.Warn($"[PingChecker] Kicked:{_player.Nickname}({_player.UserId}) Ping:{LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping}");
+				Player.Kick(Subtitles.PingLimittedMessage, "SanyaPlugin_Exiled");
+				Log.Warn($"[PingChecker] Kicked:{Player.Nickname}({Player.UserId}) Ping:{LiteNetLib4MirrorServer.Peers[Player.Connection.connectionId].Ping}");
 			}
 		}
 
@@ -122,17 +127,17 @@ namespace SanyaPlugin
 		{
 			if(!_plugin.Config.Scp939CanSeeVoiceChatting) return;
 
-			if(_player.IsHuman()
-				&& _player.GameObject.TryGetComponent(out Radio radio)
+			if(Player.IsHuman()
+				&& Player.GameObject.TryGetComponent(out Radio radio)
 				&& (radio.isVoiceChatting || radio.isTransmitting))
-				_player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
+				Player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
 		}
 
 		private void CheckOnPortal()
 		{
-			if(_portalPrefab == null || !SanyaPlugin.Instance.Config.Scp106PocketTrap ||  !_player.IsHuman()) return;
+			if(_portalPrefab == null || !SanyaPlugin.Instance.Config.Scp106PocketTrap ||  !Player.IsHuman()) return;
 
-			if(Vector3.Distance(_portalPrefab.transform.position + Vector3.up * 1.5f, _player.Position) < 1.5f)
+			if(Vector3.Distance(_portalPrefab.transform.position + Vector3.up * 1.5f, Player.Position) < 1.5f)
 			{
 				foreach(var scp106 in Player.Get(RoleType.Scp106))
 				{
@@ -141,41 +146,69 @@ namespace SanyaPlugin
 						scp106.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
 				}
 
-				_player.Position = Vector3.down * 1998.5f;
-				_player.ReferenceHub.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
-				_player.EnableEffect<Corroding>();
+				Player.Position = Vector3.down * 1998.5f;
+				Player.ReferenceHub.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
+				Player.EnableEffect<Corroding>();
 				Log.Debug($"[PortalTrap]");
+			}
+		}
+
+		private void CheckFake939()
+		{
+			if(SanyaPlugin.Instance.Config.Scp939FakeHumansRange < 0) return;
+
+			foreach(var scp939 in Scp939PlayerScript.instances)
+			{
+				bool isNear = false;
+				if(Vector3.Distance(scp939._hub.playerMovementSync.RealModelPosition, Player.Position) < 2f) isNear = true;
+
+				if(!Faked939s.Contains(scp939))
+				{
+					if(!isNear && Player.IsHuman()) 
+					{
+						Faked939s.Add(scp939);
+						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(Player.ReferenceHub, scp939._hub, Player.Role, (ItemType)UnityEngine.Random.Range((int)ItemType.KeycardJanitor, (int)ItemType.Coin))));
+					}
+				}
+				else
+				{
+					if(isNear || !Player.IsHuman())
+					{
+						Faked939s.Remove(scp939);
+						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(Player.ReferenceHub, scp939._hub, scp939._hub.characterClassManager.CurClass, ItemType.None)));
+					}
+				}
 			}
 		}
 
 		private void UpdateMyCustomText()
 		{
-			if(!(_timer > 1f) || !_player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
-			if(_prevHealth != _player.Health) 
+			if(!(_timer > 1f) || !Player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
+			if(_prevHealth != Player.Health) 
 			{
-				_prevHealth = (int)_player.Health;
-				_player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP";
+				_prevHealth = (int)Player.Health;
+				Player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP";
 			}
 		}
 
 		private void UpdateRespawnCounter()
 		{
-			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || _player.Role != RoleType.Spectator || _timer < 1f) return;
+			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || Player.Role != RoleType.Spectator || _timer < 1f) return;
 
 			_respawnCounter = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
 		}
 
 		private void UpdateScpLists()
 		{
-			if((_player.Team != Team.SCP || _player.Role == RoleType.Scp0492) && _scplists.Contains(_player))
+			if((Player.Team != Team.SCP || Player.Role == RoleType.Scp0492) && _scplists.Contains(Player))
 			{
-				_scplists.Remove(_player);
+				_scplists.Remove(Player);
 				return;
 			}
 
-			if(_player.Team == Team.SCP && _player.Role != RoleType.Scp0492 && !_scplists.Contains(_player))
+			if(Player.Team == Team.SCP && Player.Role != RoleType.Scp0492 && !_scplists.Contains(Player))
 			{
-				_scplists.Add(_player);
+				_scplists.Add(Player);
 				return;
 			}
 
@@ -186,10 +219,10 @@ namespace SanyaPlugin
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
 			if(!(_timer > 1f)) return;
 
-			string curText = _hudTemplate.Replace("[STATS]", $"St:{DateTime.Now:HH:mm:ss} Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[_player.Connection.connectionId].Ping}ms Vc:{(_player.IsMuted ? "D" : "E")}");
+			string curText = _hudTemplate.Replace("[STATS]", $"St:{DateTime.Now:HH:mm:ss} Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[Player.Connection.connectionId].Ping}ms Vc:{(Player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
-			if(_player.Team == Team.SCP)
+			if(Player.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
 				foreach(var scp in _scplists)
@@ -201,7 +234,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 6));
 			}
-			else if(_player.Team == Team.MTF)
+			else if(Player.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
 				MtfList += $"FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}\n";
@@ -217,10 +250,10 @@ namespace SanyaPlugin
 				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_UP]
-			if(_player.Role == RoleType.Scp079)
-				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(_player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled", 6));
-			else if(_player.Role == RoleType.Scp049)
-				if(!_player.ReferenceHub.fpc.NetworkforceStopInputs)
+			if(Player.Role == RoleType.Scp079)
+				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(Player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled", 6));
+			else if(Player.Role == RoleType.Scp049)
+				if(!Player.ReferenceHub.fpc.NetworkforceStopInputs)
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
 				else
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
@@ -241,7 +274,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(_player.Team == Team.RIP && _respawnCounter != -1)
+			if(Player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated)
 				if(_respawnCounter == 0)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします", 6));
 				else
@@ -258,7 +291,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[BOTTOM]", string.Empty);
 
 			_hudText = curText;
-			_player.SendTextHintNotEffect(_hudText, 2);
+			Player.SendTextHintNotEffect(_hudText, 2);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)

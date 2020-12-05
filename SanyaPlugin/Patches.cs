@@ -707,8 +707,6 @@ namespace SanyaPlugin.Patches
 				Log.Debug($"[Scp939VisionShieldPatch] {scp939._hub.nicknameSync.MyNick}({scp939._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);
 				scp939._hub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount;
 				scp939._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(scp939._hub.playerStats.unsyncedArtificialHealth + SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, scp939._hub.playerStats.maxArtificialHealth);
-				if(SanyaPlugin.Instance.Config.Scp939FakeHumans)
-					SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(__instance._ccm._hub, scp939._hub, scp939._hub.characterClassManager.CurClass, ItemType.None)));
 			}
 
 		}
@@ -732,12 +730,6 @@ namespace SanyaPlugin.Patches
 						Log.Debug($"[Scp939VisionShieldRemovePatch] {__instance.seeingSCPs[i].scp._hub.nicknameSync.MyNick}({__instance.seeingSCPs[i].scp._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);
 						__instance.seeingSCPs[i].scp._hub.playerStats.NetworkmaxArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth - SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
 						__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth - SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
-						if(SanyaPlugin.Instance.Config.Scp939FakeHumans)
-							SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(
-								Coroutines.Scp939SetFake(__instance._ccm._hub, 
-								__instance.seeingSCPs[i].scp._hub, 
-								__instance._ccm.CurClass == RoleType.Spectator ? __instance.seeingSCPs[i].scp._hub.characterClassManager.CurClass : __instance._ccm.CurClass,
-								__instance._ccm.CurClass == RoleType.Spectator ? ItemType.None : ItemType.Flashlight)));
 					}
 					__instance.seeingSCPs.RemoveAt(i);
 					return false;
@@ -887,7 +879,7 @@ namespace SanyaPlugin.Patches
 			var label = newInst[index].labels[0];
 			var label2 = newInst[index].labels[1];
 			newInst[index].labels.RemoveAt(1);
-			
+
 
 			newInst.InsertRange(index, new[]{
 				new CodeInstruction(OpCodes.Ldloca_S, 6),
@@ -922,12 +914,15 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Scp939PlayerScript __instance)
 		{
-			if(!SanyaPlugin.Instance.Config.Scp939FakeHumans) return true;
+			if(SanyaPlugin.Instance.Config.Scp939FakeHumansRange < 0) return true;
 
 			Player.Get(__instance.gameObject)?.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
-			foreach(var target in Player.List)
-				if(target.ReferenceHub.footstepSync._visionController.CanSee(__instance) || target.Team == Team.SCP || target.Team == Team.RIP)
+			foreach(var target in Player.List.Where(x => x.Team == Team.SCP || x.Team == Team.RIP))
 					target.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+
+			foreach(var sanyacomp in UnityEngine.GameObject.FindObjectsOfType<SanyaPluginComponent>())
+				if(!sanyacomp.Faked939s.Contains(__instance))
+					sanyacomp.Player.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 
 			return false;
 		}

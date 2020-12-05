@@ -282,8 +282,8 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
 
-		[Description("SCP-939-XXが視認できていない人間に対しては人間に見えるように")]
-		public bool Scp939FakeHumans { get; set; } = false;
+		[Description("SCP-939-XXが擬態される距離")]
+		public float Scp939FakeHumansRange { get; set; } = -1;
 
 		[Description("SCP-079がゲートと914操作に必要なTier")]
 		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;

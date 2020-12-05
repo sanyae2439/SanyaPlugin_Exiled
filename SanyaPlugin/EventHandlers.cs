@@ -675,24 +675,6 @@ namespace SanyaPlugin
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 
-			//939fake
-			if(plugin.Config.Scp939FakeHumans) 
-			{ 
-				if(ev.NewRole == RoleType.Spectator || ev.Player.ReferenceHub.characterClassManager._prevId != RoleType.Spectator)
-				{
-					foreach(var scp939 in Player.List.Where(x => x.Role.Is939()))
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(ev.Player.ReferenceHub, scp939.ReferenceHub, scp939.Role, ItemType.None)));
-				}
-
-				if(ev.NewRole == RoleType.Scp93953 || ev.NewRole == RoleType.Scp93989)
-				{
-					foreach(var human in Player.List.Where(x => x.IsHuman()))
-						roundCoroutines.Add(Timing.CallDelayed(1f, () => {
-							roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(human.ReferenceHub, ev.Player.ReferenceHub, human.Role, ItemType.Flashlight)));
-						}));
-				}
-			}
-
 			//ScpAhp
 			if(ev.NewRole.GetTeam() != Team.SCP)
 			{
