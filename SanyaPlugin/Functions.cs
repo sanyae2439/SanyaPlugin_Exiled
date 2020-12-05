@@ -401,7 +401,7 @@ namespace SanyaPlugin.Functions
 			yield return Timing.WaitForSeconds(5f);
 
 			var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
-			var target = Player.List.Where(x => x.IsDead && x.ReferenceHub.characterClassManager._prevId != RoleType.Spectator).Random();
+			var target = Player.List.Where(x => x.IsDead && x.MaxHealth != 0).Random();
 			if(target != null)
 			{
 				target.SetRole(RoleType.Scp0492, true);
