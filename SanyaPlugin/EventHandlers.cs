@@ -675,6 +675,11 @@ namespace SanyaPlugin
 			//Fix Maingame
 			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 
+			//939fake
+			if(plugin.Config.Scp939FakeHumans && (ev.NewRole == RoleType.Spectator || ev.Player.ReferenceHub.characterClassManager._prevId != RoleType.Spectator))
+				foreach(var scp939 in Player.List.Where(x => x.Role.Is939()))
+					ev.Player.SendCustomSyncVar(scp939.ReferenceHub.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), scp939.Role);
+
 			//ScpAhp
 			if(ev.NewRole.GetTeam() != Team.SCP)
 			{

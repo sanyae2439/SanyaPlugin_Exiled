@@ -258,6 +258,12 @@ namespace SanyaPlugin
 		[Description("SCP-173の被視認者に応じて増加するAHPの一人当たりの量")]
 		public int Scp173SeeingByHumansAhpAmount { get; set; } = 0;
 
+		[Description("SCP-173のまばたきのの最小間隔")]
+		public float Scp173MinBlinktime { get; set; } = 2.5f;
+
+		[Description("SCP-173のまばたきのの最大間隔")]
+		public float Scp173MaxBlinktime { get; set; } = 3.5f;
+
 		[Description("SCP-939-XXの被ダメージ乗数")]
 		public float Scp939DamageMultiplier { get; set; } = 1f;
 
@@ -275,6 +281,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
+
+		[Description("SCP-939-XXが視認できていない人間に対しては人間に見えるように")]
+		public bool Scp939FakeHumans { get; set; } = false;
 
 		[Description("SCP-079がゲートと914操作に必要なTier")]
 		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;

@@ -693,6 +693,7 @@ namespace SanyaPlugin.Patches
 		public static void Prefix(Scp939_VisionController __instance, Scp939PlayerScript scp939)
 		{
 			if(SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount <= 0 || __instance._ccm.CurRole.team == Team.SCP) return;
+			var human = Player.Get(__instance.gameObject);
 			bool isFound = false;
 			for(int i = 0; i < __instance.seeingSCPs.Count; i++)
 			{
@@ -707,6 +708,8 @@ namespace SanyaPlugin.Patches
 				Log.Debug($"[Scp939VisionShieldPatch] {scp939._hub.nicknameSync.MyNick}({scp939._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);
 				scp939._hub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount;
 				scp939._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(scp939._hub.playerStats.unsyncedArtificialHealth + SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, scp939._hub.playerStats.maxArtificialHealth);
+				if(SanyaPlugin.Instance.Config.Scp939FakeHumans)
+					human?.SendCustomSyncVar(scp939.netIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), scp939._hub.characterClassManager.CurClass);
 			}
 
 		}
@@ -725,11 +728,14 @@ namespace SanyaPlugin.Patches
 				__instance.seeingSCPs[i].remainingTime -= 0.02f;
 				if(__instance.seeingSCPs[i].scp == null || !__instance.seeingSCPs[i].scp.iAm939 || __instance.seeingSCPs[i].remainingTime <= 0f)
 				{
-					if(__instance.seeingSCPs[i].scp != null && __instance.seeingSCPs[i].scp.iAm939)
+					if(__instance.seeingSCPs[i].scp != null && __instance.seeingSCPs[i].scp.iAm939 && __instance._ccm.CurRole.team != Team.SCP)
 					{
-						Log.Debug($"[Scp939VisionShieldRemovePatch] {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);
+						var human = Player.Get(__instance.gameObject);
+						Log.Debug($"[Scp939VisionShieldRemovePatch] {__instance.seeingSCPs[i].scp._hub.nicknameSync.MyNick}({__instance.seeingSCPs[i].scp._hub.characterClassManager.CurClass}) -> {__instance._ccm._hub.nicknameSync.MyNick}({__instance._ccm.CurClass})", SanyaPlugin.Instance.Config.IsDebugged);
 						__instance.seeingSCPs[i].scp._hub.playerStats.NetworkmaxArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth - SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
 						__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth = Mathf.Clamp(__instance.seeingSCPs[i].scp._hub.playerStats.unsyncedArtificialHealth - SanyaPlugin.Instance.Config.Scp939SeeingAhpAmount, 0, __instance.seeingSCPs[i].scp._hub.playerStats.maxArtificialHealth);
+						if(SanyaPlugin.Instance.Config.Scp939FakeHumans)
+							human?.SendCustomSyncVar(__instance.seeingSCPs[i].scp.netIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), human.Role == RoleType.Spectator ? __instance.seeingSCPs[i].scp._hub.characterClassManager.CurClass : human.Role);
 					}
 					__instance.seeingSCPs.RemoveAt(i);
 					return false;
@@ -905,6 +911,37 @@ namespace SanyaPlugin.Patches
 
 			for(int i = 0; i < newInst.Count; i++)
 				yield return newInst[i];
+		}
+	}
+
+	//prevent
+	[HarmonyPatch(typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot))]
+	public static class Scp939PreventRpc
+	{
+		public static bool Prefix(Scp939PlayerScript __instance)
+		{
+			if(!SanyaPlugin.Instance.Config.Scp939FakeHumans) return true;
+
+			Player.Get(__instance.gameObject)?.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+			foreach(var target in Player.List)
+				if(target.ReferenceHub.footstepSync._visionController.CanSee(__instance) || target.Team == Team.SCP || target.Team == Team.RIP)
+					target.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+
+			return false;
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(Scp173PlayerScript), nameof(Scp173PlayerScript.Start))]
+	public static class Scp173BlinktimePatch
+	{
+		public static void Postfix(Scp173PlayerScript __instance)
+		{
+			if(__instance.isLocalPlayer)
+			{
+				__instance.minBlinkTime = SanyaPlugin.Instance.Config.Scp173MinBlinktime;
+				__instance.maxBlinkTime = SanyaPlugin.Instance.Config.Scp173MaxBlinktime;
+			}
 		}
 	}
 }
