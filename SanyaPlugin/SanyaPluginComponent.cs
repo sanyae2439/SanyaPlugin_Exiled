@@ -149,7 +149,6 @@ namespace SanyaPlugin
 				Player.Position = Vector3.down * 1998.5f;
 				Player.ReferenceHub.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
 				Player.EnableEffect<Corroding>();
-				Log.Debug($"[PortalTrap]");
 			}
 		}
 
@@ -160,7 +159,7 @@ namespace SanyaPlugin
 			foreach(var scp939 in Scp939PlayerScript.instances)
 			{
 				bool isNear = false;
-				if(Vector3.Distance(scp939._hub.playerMovementSync.RealModelPosition, Player.Position) < 2f) isNear = true;
+				if(Vector3.Distance(scp939._hub.playerMovementSync.RealModelPosition, Player.Position) < SanyaPlugin.Instance.Config.Scp939FakeHumansRange) isNear = true;
 
 				if(!Faked939s.Contains(scp939))
 				{
