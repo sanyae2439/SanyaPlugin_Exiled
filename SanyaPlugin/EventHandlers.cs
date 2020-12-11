@@ -16,7 +16,6 @@ using LiteNetLib.Utils;
 using MEC;
 using Mirror;
 using SanyaPlugin.Data;
-using SanyaPlugin.DissonanceControl;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
 using UnityEngine;
@@ -202,16 +201,6 @@ namespace SanyaPlugin
 						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.Instance.Config.IsDebugged);
 						Generator079.mainGenerator.ServerOvercharge(10f, false);
 					}
-
-					//DissonanceUpdater
-					if(DissonanceCommsControl.mirrorClient != null && !DissonanceCommsControl.mirrorClient._disconnected)
-					{
-						for(int i = 0; i < Dissonance.Config.DebugSettings.Instance._levels.Count; i++)
-							Dissonance.Config.DebugSettings.Instance._levels[i] = Dissonance.LogLevel.Trace;
-
-						if(DissonanceCommsControl.mirrorClient.Update() == ClientStatus.Error)
-							Log.Error($"[FixedUpdate] mirrorClient error detect.");
-					}
 				}
 				catch(Exception e)
 				{
@@ -349,9 +338,6 @@ namespace SanyaPlugin
 		public void OnRestartingRound()
 		{
 			Log.Info($"[OnRestartingRound] Restarting...");
-
-			if(plugin.Config.DissonanceEnabled && DissonanceCommsControl.isReady)
-				DissonanceCommsControl.Dispose();
 
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
