@@ -91,7 +91,7 @@ namespace SanyaPlugin.Commands
 							case "stop":
 								{
 									response = "ok.";
-									DissonanceCommsControl.streamCapture.StopCapture();
+									if(DissonanceCommsControl.isReady) DissonanceCommsControl.Dispose();
 									return true;
 								}
 						}

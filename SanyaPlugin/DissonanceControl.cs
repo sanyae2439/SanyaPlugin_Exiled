@@ -73,8 +73,11 @@ namespace SanyaPlugin.DissonanceControl
 			streamCapture?.StopCapture();
 			if(streamCapture != null) UnityEngine.Object.Destroy(streamCapture);
 			streamCapture = null;
+
+			mirrorComms?.StopClient();
 			mirrorClientInfo = null;
 			mirrorClient = null;
+			mirrorComms.Mode = NetworkMode.DedicatedServer;
 			mirrorComms = null;
 			dissonanceComms = null;
 			isReady = false;
