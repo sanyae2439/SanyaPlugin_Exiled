@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using CustomPlayerEffects;
-using Dissonance.Networking.Client;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events;
@@ -224,6 +222,7 @@ namespace SanyaPlugin
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
+		private Room lczarmony = null;
 
 		//ServerEvents
 		public void OnWaintingForPlayers()
@@ -280,6 +279,11 @@ namespace SanyaPlugin
 					{
 						break;
 					}
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+					{
+						lczarmony = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory);
+						break;
+					}
 				default:
 					{
 						eventmode = SANYA_GAME_MODE.NORMAL;
@@ -298,6 +302,11 @@ namespace SanyaPlugin
 				case SANYA_GAME_MODE.NIGHT:
 					{
 						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
+						break;
+					}
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+					{
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.ClassDInsurgencyInit()));
 						break;
 					}
 			}
@@ -680,6 +689,27 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerStats.NetworkartificialHpDecay = -0.25f;
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
 			}
+
+			switch(eventmode)
+			{
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+					{
+						if(ev.NewRole == RoleType.ClassD)
+						{
+							if(plugin.Config.DefaultitemsParsed.TryGetValue(RoleType.ChaosInsurgency, out List<ItemType> classDInsurgencyitems))
+							{
+								if(classDInsurgencyitems.Contains(ItemType.None)) ev.Items.Clear();
+								else
+								{
+									ev.Items.Clear();
+									ev.Items.AddRange(classDInsurgencyitems);
+								}
+							}
+						}					
+						break;
+					}
+
+			}
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
@@ -694,6 +724,21 @@ namespace SanyaPlugin
 			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
 			{
 				ev.Position = Map.GetRandomSpawnPoint(RoleType.FacilityGuard);
+			}
+
+			switch(eventmode)
+			{
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+					{
+						if(ev.RoleType == RoleType.ClassD)
+						{
+							ev.Position = lczarmony.Position + Vector3.up;
+							ev.Player.Ammo.amount.Clear();
+							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.ChaosInsurgency).ammoTypes)
+								ev.Player.Ammo.amount.Add(ammo);
+						}							
+						break;
+					}
 			}
 
 			//EXILED fix

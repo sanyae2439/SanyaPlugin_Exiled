@@ -9,7 +9,8 @@ namespace SanyaPlugin.Data
 	{
 		NULL = -1,
 		NORMAL = 0,
-		NIGHT
+		NIGHT,
+		CLASSD_INSURGENCY
 	}
 
 	public enum GRENADE_ID

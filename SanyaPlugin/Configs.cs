@@ -53,7 +53,7 @@ namespace SanyaPlugin
 		public int InfosenderPort { get; set; } = -1;
 
 		[Description("イベントモードのウェイト設定")]
-		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0 };
+		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0, 0 };
 
 		[Description("各ロールの初期装備")]
 		public Dictionary<string, string> Defaultitems { get; set; } = new Dictionary<string, string>()

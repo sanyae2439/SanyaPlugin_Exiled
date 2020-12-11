@@ -486,6 +486,17 @@ namespace SanyaPlugin.Functions
 			Phuman.SendCustomSyncVar(scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), targetItem);
 			yield break;
 		}
+
+		public static IEnumerator<float> ClassDInsurgencyInit()
+		{
+			var armorydoor = Map.Doors.First(x => x.DoorName == "LCZ_ARMORY");
+			armorydoor.SetLock(true);
+			yield return Timing.WaitForSeconds(10f);
+			Methods.SendSubtitle(Subtitles.ClassDInsurgencyFirst, 10);
+			RespawnEffectsController.PlayCassieAnnouncement("danger . Detected security warning in light containment zones armory", false, true);
+			armorydoor.SetLock(false);
+			armorydoor.SetStateWithSound(true);
+		}
 	}
 
 	internal static class Methods
