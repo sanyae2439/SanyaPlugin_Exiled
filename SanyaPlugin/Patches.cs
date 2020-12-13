@@ -174,8 +174,8 @@ namespace SanyaPlugin.Patches
 				$"残存研究員 : {RoundSummary.singleton.CountTeam(Team.RSC):00}/{RoundSummary.singleton.classlistStart.scientists:00}\n",
 				$"施設内余剰電力 : {totalvoltagefloat:0000}kVA\n",
 				$"AlphaWarheadのステータス : {(AlphaWarheadOutsitePanel.nukeside.enabled ? "READY" : "DISABLED")}\n",
-				$"SCP-106再収用設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
-				$"軽度収用区画閉鎖まで : {leftdecont / 60:00}:{leftdecont % 60:00}\n",
+				$"SCP-106再収容設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
+				$"軽度収容区画閉鎖まで : {leftdecont / 60:00}:{leftdecont % 60:00}\n",
 				$"自動施設爆破開始まで : {leftautowarhead / 60:00}:{leftautowarhead % 60:00}\n",
 				$"接近中の部隊突入まで : {nextRespawn / 60:00}:{nextRespawn % 60:00}\n\n"
 				);

@@ -144,7 +144,7 @@ namespace SanyaPlugin
 						}
 					}
 
-					//停電時強制再収用の際復電
+					//停電時強制再収容の際復電
 					if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
 					{
 						IsEnableBlackout = false;
@@ -904,7 +904,7 @@ namespace SanyaPlugin
 				if(Player.List.Any(x => x.Role == RoleType.Scp079) && Player.List.Count(x => x.Team == Team.SCP && x != ev.Target) == 1
 					&& Generator079.mainGenerator.totalVoltage < 4 && !Generator079.mainGenerator.forcedOvercharge && damageTypes != DamageTypes.Nuke)
 					str = str
-						.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収用手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。")
+						.Replace("{-1}", "\n全てのSCPオブジェクトの安全が確保されました。SCP-079の再収容手順を開始します。\n重度収容区画は約一分後にオーバーチャージされます。")
 						.Replace("{-2}", "\nAll SCP subject has been secured. SCP-079 recontainment sequence commencing.\nHeavy containment zone will overcharge in t-minus 1 minutes.");
 				else
 					str = str

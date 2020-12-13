@@ -98,7 +98,7 @@
 
 		internal static readonly string DecontaminationInit = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《全ての職員へ通達。軽度収用区画の「除染」プロトコルが15分以内に実施されます。\n対象区画の生体物質は、破滅を避けるためにすべて除去されます。》\n",
+			"《全ての職員へ通達。軽度収容区画の「除染」プロトコルが15分以内に実施されます。\n対象区画の生体物質は、破滅を避けるためにすべて除去されます。》\n",
 			"</size><size=20>",
 			"《Attention, all personnel, the Light Containment Zone decontamination process will occur in t-minus 15 minutes. \nAll biological substances must be removed in order to avoid destruction.》\n",
 			"</size></color>"
@@ -106,21 +106,21 @@
 
 		internal static readonly string DecontaminationMinutesCount = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《警告。軽度収用区画の「除染」プロトコルが{0}分以内に実施されます。》\n",
+			"《警告。軽度収容区画の「除染」プロトコルが{0}分以内に実施されます。》\n",
 			"</size><size=20>",
 			"《Danger, Light Containment zone overall decontamination in T-minus {0} Minutes.》\n",
 			"</size></color>"
 		);
 		internal static readonly string Decontamination30s = string.Concat(
 			"<color=#ff0000><size=25>",
-			"《警告。軽度収用区画の「除染」プロトコルが30秒以内に実施されます。\n軽度収用区画のチェックポイントが完全に開放されます。すぐに避難してください。》\n",
+			"《警告。軽度収容区画の「除染」プロトコルが30秒以内に実施されます。\n軽度収容区画のチェックポイントが完全に開放されます。すぐに避難してください。》\n",
 			"</size><size=20>",
 			"《Danger, Light Containment Zone overall decontamination in T-minus 30 seconds.\nAll checkpoint doors have been permanently opened. Please evacuate immediately.》\n",
 			"</size></color>"
 		);
 		internal static readonly string DecontaminationLockdown = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《軽度収用区画が「除染」プロトコルのために封鎖されました。生体反応の除去が開始されます。》\n",
+			"《軽度収容区画が「除染」プロトコルのために封鎖されました。生体反応の除去が開始されます。》\n",
 			"</size><size=20>",
 			"《Light Containment Zone is locked down and ready for decontamination. The removal of organic substances has now begun.》\n",
 			"</size></color>"
@@ -136,7 +136,7 @@
 
 		internal static readonly string GeneratorComplete = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《5つ中5つ目の発電機の起動が完了しました。\n全ての発電機が起動されました。最終再収容手順を開始します。\n重度収用区画は約一分後にオーバーチャージされます。》\n",
+			"《5つ中5つ目の発電機の起動が完了しました。\n全ての発電機が起動されました。最終再収容手順を開始します。\n重度収容区画は約一分後にオーバーチャージされます。》\n",
 			"</size><size=20>",
 			"《5 out of 5 generators activated.\nAll generators has been sucessfully engaged.\nFinalizing recontainment sequence.\nHeavy containment zone will overcharge in t-minus 1 minutes.》\n",
 			"</size></color>"
@@ -184,7 +184,7 @@
 
 		internal static readonly string DecontEvent = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《軽度収用区画の「除染」プロトコルが開始されました。対象区画のSCPオブジェクトは破壊されます。》\n",
+			"《軽度収容区画の「除染」プロトコルが開始されました。対象区画のSCPオブジェクトは破壊されます。》\n",
 			"</size><size=20>",
 			"《Decontamination process for Light Containment Zone has been started. SCP subject in zone will be destroyed.》\n",
 			"</size></color>"
