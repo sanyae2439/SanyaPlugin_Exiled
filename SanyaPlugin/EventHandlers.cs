@@ -219,6 +219,7 @@ namespace SanyaPlugin
 		private Camera079 last079cam = null;
 		internal int scp049stackAmount = 0;
 		internal Player Overrided = null;
+		public bool FriendlyFlashEnabled = false;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -249,6 +250,7 @@ namespace SanyaPlugin
 			scp049stackAmount = 0;
 
 			Methods.Add914RecipeCoin();
+			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{

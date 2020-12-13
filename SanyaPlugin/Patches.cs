@@ -953,4 +953,36 @@ namespace SanyaPlugin.Patches
 				__instance.NetworkfuseTime -= __instance.fuseDuration;
 		}
 	}
+
+	//not override
+	[HarmonyPatch(typeof(FlashGrenade), nameof(FlashGrenade.ServersideExplosion))]
+	public static class FriendlyFlashRemovePatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var friendlyflashindex = newInst.FindIndex(x => 
+			x.opcode == OpCodes.Ldfld
+			&& x.operand is FieldInfo fieldInfo
+			&& fieldInfo?.Name == nameof(FlashGrenade._friendlyFlash)) - 1;
+
+			newInst.RemoveRange(friendlyflashindex, 3);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//override
+	[HarmonyPatch(typeof(CustomPlayerEffects.Flashed), nameof(CustomPlayerEffects.Flashed.Flashable))]
+	public static class FriendlyFlashAddPatch
+	{
+		public static bool Prefix(CustomPlayerEffects.Flashed __instance, ref bool __result, ReferenceHub throwerPlayerHub, Vector3 sourcePosition, int ignoreMask)
+		{
+			__result = ((__instance.Hub != throwerPlayerHub && throwerPlayerHub.weaponManager.GetShootPermission(__instance.Hub.characterClassManager.CurRole.team, false)) || SanyaPlugin.Instance.Handlers.FriendlyFlashEnabled)
+				&& !Physics.Linecast(sourcePosition, __instance.Hub.PlayerCameraReference.position, ignoreMask);
+			return false;
+		}
+	}
 }

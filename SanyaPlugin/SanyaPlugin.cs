@@ -1,6 +1,8 @@
 ﻿using System;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Exiled.Events;
+using Grenades;
 using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
@@ -39,12 +41,16 @@ namespace SanyaPlugin
 
 			base.OnEnabled();
 
+			Log.Info("[OnEnabled] Registing events...");
 			RegistEvents();
+
+			Log.Info("[OnEnabled] Parse configs...");
 			Config.ParseConfig();
 
 			if(!string.IsNullOrEmpty(Config.KickVpnApikey)) ShitChecker.LoadLists();
 			if(Config.InfosenderIp != "none" && Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
 
+			Log.Info("[OnEnabled] Regist patches...");
 			RegistPatch();
 
 			Log.Info($"[OnEnabled] SanyaPlugin(Ver{Version}) Enabled Complete.");
@@ -66,6 +72,9 @@ namespace SanyaPlugin
 
 		private void RegistEvents()
 		{
+			Events.DisabledPatchesHashSet.Add(typeof(FlashGrenade).GetMethod(nameof(FlashGrenade.ServersideExplosion)));
+			Events.Instance.ReloadDisabledPatches();
+
 			Handlers = new EventHandlers(this);
 			ServerEvents.WaitingForPlayers += Handlers.OnWaintingForPlayers;
 			ServerEvents.RoundStarted += Handlers.OnRoundStarted;
