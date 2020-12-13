@@ -155,6 +155,9 @@ namespace SanyaPlugin
 		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
 		public bool InventoryKeycardActivation { get; set; } = false;
 
+		[Description("フラッシュバンが壁にぶつかると起爆する")]
+		public bool FlashbangFuseWithCollision { get; set; } = false;
+
 		[Description("グレネードが命中するとヒットマークが出るように")]
 		public bool HitmarkGrenade { get; set; } = false;
 

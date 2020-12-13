@@ -918,7 +918,7 @@ namespace SanyaPlugin.Patches
 
 			Player.Get(__instance.gameObject)?.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 			foreach(var target in Player.List.Where(x => x.Team == Team.SCP || x.Team == Team.RIP))
-					target.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+				target.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 
 			foreach(var sanyacomp in UnityEngine.GameObject.FindObjectsOfType<SanyaPluginComponent>())
 				if(!sanyacomp.Faked939s.Contains(__instance))
@@ -939,6 +939,18 @@ namespace SanyaPlugin.Patches
 				__instance.minBlinkTime = SanyaPlugin.Instance.Config.Scp173MinBlinktime;
 				__instance.maxBlinkTime = SanyaPlugin.Instance.Config.Scp173MaxBlinktime;
 			}
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(Grenade), nameof(Grenade.OnCollisionEnter))]
+	public static class FlashGrenadePatch
+	{
+		public static void Prefix(Grenade __instance)
+		{
+			if(!SanyaPlugin.Instance.Config.FlashbangFuseWithCollision) return;
+			if(__instance is FlashGrenade)
+				__instance.NetworkfuseTime -= __instance.fuseDuration;
 		}
 	}
 }
