@@ -55,7 +55,6 @@ namespace SanyaPlugin
 			CheckHighPing();
 			CheckTraitor();
 			CheckVoiceChatting();
-			CheckOnPortal();
 			CheckFake939();
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
@@ -131,25 +130,6 @@ namespace SanyaPlugin
 				&& Player.GameObject.TryGetComponent(out Radio radio)
 				&& (radio.isVoiceChatting || radio.isTransmitting))
 				Player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
-		}
-
-		private void CheckOnPortal()
-		{
-			if(_portalPrefab == null || !SanyaPlugin.Instance.Config.Scp106PocketTrap ||  !Player.IsHuman()) return;
-
-			if(Vector3.Distance(_portalPrefab.transform.position + Vector3.up * 1.5f, Player.Position) < 1.5f)
-			{
-				foreach(var scp106 in Player.Get(RoleType.Scp106))
-				{
-					scp106.ShowHitmarker();
-					if(SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount > 0)
-						scp106.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
-				}
-
-				Player.Position = Vector3.down * 1998.5f;
-				Player.ReferenceHub.playerEffectsController.GetEffect<Corroding>().IsInPd = true;
-				Player.EnableEffect<Corroding>();
-			}
 		}
 
 		private void CheckFake939()

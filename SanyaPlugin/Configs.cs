@@ -239,9 +239,6 @@ namespace SanyaPlugin
 		[Description("SCP-106のExモードで収容室に帰還できるように")]
 		public bool Scp106Exmode { get; set; } = false;
 
-		[Description("SCP-106のポータルを踏むとポケットディメンションへ飛ばされる")]
-		public bool Scp106PocketTrap { get; set; } = false;
-
 		[Description("SCP-173の被ダメージ乗数")]
 		public float Scp173DamageMultiplier { get; set; } = 1f;
 
