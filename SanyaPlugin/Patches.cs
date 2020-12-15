@@ -15,6 +15,7 @@ using Mirror;
 using NorthwoodLib.Pools;
 using Respawning;
 using Respawning.NamingRules;
+using sanyae2439.SyncVarHackExtensions;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using UnityEngine;

@@ -129,6 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
+    <Compile Include="SyncVarHackExtensions.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Configs.cs" />
