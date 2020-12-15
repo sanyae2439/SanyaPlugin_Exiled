@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using CommandSystem;
-using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
