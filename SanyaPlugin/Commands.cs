@@ -50,35 +50,6 @@ namespace SanyaPlugin.Commands
 			{
 				case "test":
 					{
-						if(!isDesync)
-							player.EnableEffect<Amnesia>();
-						else
-							player.DisableEffect<Amnesia>();
-
-						foreach(var ply in Player.List.Where(x => x != player))
-						{
-							if(!isDesync)
-								player.SendCustomSyncObject(ply.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-								{
-									writer.WritePackedUInt64(1ul);
-									writer.WritePackedUInt32(1);
-									writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-									writer.WritePackedUInt32(6);
-									writer.WriteByte(1);
-								});
-							else
-								player.SendCustomSyncObject(ply.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-								{
-									writer.WritePackedUInt64(1ul);
-									writer.WritePackedUInt32(1);
-									writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-									writer.WritePackedUInt32(6);
-									writer.WriteByte(ply.ReferenceHub.playerEffectsController.syncEffectsIntensity[6]);
-								});
-						}
-
-						isDesync = !isDesync;
-
 						response = $"test ok.";
 						return true;
 					}
