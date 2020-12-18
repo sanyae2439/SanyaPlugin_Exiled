@@ -24,7 +24,6 @@ namespace SanyaPlugin.Commands
 		public string Description { get; } = "SanyaPlugin Commands";
 
 		private bool isActwatchEnabled = false;
-		private bool isDesync = false;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{

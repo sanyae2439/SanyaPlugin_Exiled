@@ -505,6 +505,7 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(Scp079PlayerScript), nameof(Scp079PlayerScript.CallCmdSwitchCamera))]
 	public static class Scp079CameraPatch
 	{
+		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static bool Prefix(Scp079PlayerScript __instance, ref ushort cameraId, bool lookatRotation)
 		{
 			if(!SanyaPlugin.Instance.Config.Scp079ExtendEnabled) return true;
@@ -923,7 +924,7 @@ namespace SanyaPlugin.Patches
 
 			foreach(var sanyacomp in UnityEngine.GameObject.FindObjectsOfType<SanyaPluginComponent>())
 				if(!sanyacomp.Faked939s.Contains(__instance))
-					sanyacomp.Player.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+					sanyacomp.player.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 
 			return false;
 		}
