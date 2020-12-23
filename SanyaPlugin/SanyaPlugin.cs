@@ -25,7 +25,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(2, 1, 19);
+		public override Version RequiredExiledVersion => new Version(2, 1, 21);
 
 		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
@@ -102,6 +102,7 @@ namespace SanyaPlugin
 			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
+			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
@@ -134,6 +135,7 @@ namespace SanyaPlugin
 			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
+			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;

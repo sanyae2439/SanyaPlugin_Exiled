@@ -158,6 +158,9 @@ namespace SanyaPlugin
 		[Description("フラッシュバンが壁にぶつかると起爆する")]
 		public bool FlashbangFuseWithCollision { get; set; } = false;
 
+		[Description("武器管理端末を持っているときはテスラが反応しなくなる")]
+		public bool TeslaTabletDisable { get; set; } = false;
+
 		[Description("グレネードが命中するとヒットマークが出るように")]
 		public bool HitmarkGrenade { get; set; } = false;
 

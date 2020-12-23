@@ -55,7 +55,7 @@ namespace SanyaPlugin
 
 					DateTime dt = DateTime.Now;
 					cinfo.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
-					cinfo.gameversion = CustomNetworkManager.CompatibleVersions[0];
+					cinfo.gameversion = $"{GameCore.Version.Major}.{GameCore.Version.Minor}.{GameCore.Version.Revision}";
 					cinfo.modversion = $"{Events.Instance.Version.Major}.{Events.Instance.Version.Minor}.{Events.Instance.Version.Build}";
 					cinfo.sanyaversion = SanyaPlugin.Instance.Version.ToString();
 					cinfo.gamemode = eventmode.ToString();
@@ -242,7 +242,7 @@ namespace SanyaPlugin
 			Coroutines.isAirBombGoing = false;
 
 			detonatedDuration = -1;
-			IsEnableBlackout = false;		
+			IsEnableBlackout = false;
 
 			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
 
@@ -634,8 +634,8 @@ namespace SanyaPlugin
 			if(ev.Player.Nickname == null) return;
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.IsEscaped})", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(Overrided != null && Overrided == ev.Player) 
-			{ 
+			if(Overrided != null && Overrided == ev.Player)
+			{
 				if(ev.NewRole.GetTeam() != Team.SCP)
 				{
 					ev.NewRole = (RoleType)ReferenceHub.HostHub.characterClassManager.FindRandomIdUsingDefinedTeam(Team.SCP);
@@ -707,7 +707,7 @@ namespace SanyaPlugin
 									ev.Items.AddRange(classDInsurgencyitems);
 								}
 							}
-						}					
+						}
 						break;
 					}
 
@@ -738,7 +738,7 @@ namespace SanyaPlugin
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.ChaosInsurgency).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);
-						}							
+						}
 						break;
 					}
 			}
@@ -748,7 +748,7 @@ namespace SanyaPlugin
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
-			if(ev.Target.Role == RoleType.Spectator || ev.Attacker.Role == RoleType.Spectator) return;
+			if(ev.Target.Role == RoleType.Spectator || ev.Attacker.Role == RoleType.Spectator || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//GrenadeHitmark
@@ -1007,6 +1007,11 @@ namespace SanyaPlugin
 
 			if(ev.Generator.prevFinish && plugin.Config.GeneratorFinishLock)
 				ev.IsAllowed = false;
+		}
+		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
+		{
+			if(plugin.Config.TeslaTabletDisable && ev.Player.IsHuman() && ev.Player.Inventory.items.Any(x => x.id == ItemType.WeaponManagerTablet))
+				ev.IsTriggerable = false;
 		}
 
 		//Scp049
