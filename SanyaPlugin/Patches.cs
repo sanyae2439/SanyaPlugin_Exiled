@@ -987,4 +987,60 @@ namespace SanyaPlugin.Patches
 			return false;
 		}
 	}
+
+	//override
+	[HarmonyPatch(typeof(LumpOfCoalGrenade), nameof(LumpOfCoalGrenade.OnSpeedCollisionEnter))]
+	public static class CoalPatch
+	{
+		public static bool Prefix(LumpOfCoalGrenade __instance, Collision collision)
+		{
+			ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub);
+			Log.Debug($"{__instance.GetType()} -> {__instance.thrower.hub.nicknameSync.MyNick} => {referenceHub?.nicknameSync.MyNick}");
+			if(referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject)
+				return false;
+
+			if(referenceHub != null && __instance.thrower.hub.weaponManager.GetShootPermission(referenceHub.characterClassManager.CurRole.team))
+				__instance.thrower?.hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(232600, __instance.thrower.hub.LoggedNameFromRefHub(), DamageTypes.Grenade, __instance.thrower.hub.queryProcessor.PlayerId), referenceHub.gameObject);
+
+			Timing.RunCoroutine(__instance.DelayKill(collision).CancelWith(__instance.gameObject));
+			__instance.GetComponent<MeshCollider>().enabled = false;
+			__instance.GetComponent<Rigidbody>().isKinematic = true;
+			return false;
+		}
+	}
+
+	//override
+	[HarmonyPatch(typeof(LumpOfSCPCoalGrenade), nameof(LumpOfSCPCoalGrenade.OnSpeedCollisionEnter))]
+	public static class CoalScpPatch
+	{
+		public static bool Prefix(LumpOfSCPCoalGrenade __instance, Collision collision)
+		{
+			ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub);
+			Log.Debug($"{__instance.GetType()} -> {__instance.thrower.hub.nicknameSync.MyNick} => {referenceHub?.nicknameSync.MyNick}");
+			if(referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject)
+				return false;
+
+			if(referenceHub != null)
+			{
+				List<ReferenceHub> list = new List<ReferenceHub>();
+				foreach(KeyValuePair<GameObject, ReferenceHub> keyValuePair in ReferenceHub.GetAllHubs())
+				{
+					if(keyValuePair.Value.characterClassManager.CurRole.team != Team.RIP && keyValuePair.Value.characterClassManager.CurClass != RoleType.Scp079 && keyValuePair.Value.gameObject != referenceHub.gameObject)
+					{
+						list.Add(keyValuePair.Value);
+					}
+				}
+				if(list.Count > 0)
+				{
+					referenceHub.playerMovementSync.OverridePosition(list[UnityEngine.Random.Range(0, list.Count)].playerMovementSync.RealModelPosition, 0f, false);
+				}
+			}
+
+			Timing.RunCoroutine(__instance.DelayKill(collision).CancelWith(__instance.gameObject));
+			__instance.GetComponent<MeshCollider>().enabled = false;
+			__instance.GetComponent<Rigidbody>().isKinematic = true;
+
+			return false;
+		}
+	}
 }
