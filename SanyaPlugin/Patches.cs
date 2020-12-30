@@ -999,7 +999,7 @@ namespace SanyaPlugin.Patches
 			if(referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject)
 				return false;
 
-			if(referenceHub != null && __instance.thrower.hub.weaponManager.GetShootPermission(referenceHub.characterClassManager.CurRole.team))
+			if(referenceHub != null)
 				__instance.thrower?.hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(232600, __instance.thrower.hub.LoggedNameFromRefHub(), DamageTypes.Grenade, __instance.thrower.hub.queryProcessor.PlayerId), referenceHub.gameObject);
 
 			Timing.RunCoroutine(__instance.DelayKill(collision).CancelWith(__instance.gameObject));
