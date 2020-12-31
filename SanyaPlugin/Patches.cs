@@ -994,9 +994,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(LumpOfCoalGrenade __instance, Collision collision)
 		{
-			ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub);
-			Log.Debug($"{__instance.GetType()} -> {__instance.thrower.hub.nicknameSync.MyNick} => {referenceHub?.nicknameSync.MyNick}");
-			if(referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject)
+			if((!ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub)) || (referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject))
 				return false;
 
 			if(referenceHub != null)
@@ -1015,9 +1013,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(LumpOfSCPCoalGrenade __instance, Collision collision)
 		{
-			ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub);
-			Log.Debug($"{__instance.GetType()} -> {__instance.thrower.hub.nicknameSync.MyNick} => {referenceHub?.nicknameSync.MyNick}");
-			if(referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject)
+			if((!ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub)) || (referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject))
 				return false;
 
 			if(referenceHub != null)
