@@ -655,6 +655,15 @@ namespace SanyaPlugin.Functions
 			return result;
 		}
 
+		public static void Remove914Item(ItemType type)
+		{
+			foreach(var i in Scp914.Scp914Machine.singleton.recipesDict)
+				foreach(var j in i.Value)
+					for(int k = 0; k < j.Value.Length; k++)
+						if(j.Value[k] == type)
+							j.Value[k] = i.Key;
+		}
+
 		public static void Add914RecipeCoin()
 		{
 			Scp914.Scp914Machine.singleton.recipesDict.Add(ItemType.Coin, new System.Collections.Generic.Dictionary<Scp914.Scp914Knob, ItemType[]>()

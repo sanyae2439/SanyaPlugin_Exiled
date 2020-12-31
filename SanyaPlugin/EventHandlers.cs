@@ -249,6 +249,8 @@ namespace SanyaPlugin
 			last079cam = null;
 			scp049stackAmount = 0;
 
+			foreach(var i in plugin.Config.RemoveScp914RecipeParsed)
+				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 

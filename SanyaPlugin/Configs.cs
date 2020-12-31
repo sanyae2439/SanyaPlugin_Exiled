@@ -79,6 +79,10 @@ namespace SanyaPlugin
 		public List<string> ItemCleanupIgnore { get; set; } = new List<string>();
 		public List<ItemType> ItemCleanupIgnoreParsed = new List<ItemType>();
 
+		[Description("SCP-914からレシピを削除するアイテム")]
+		public List<string> RemoveScp914Recipe { get; set; } = new List<string>();
+		public List<ItemType> RemoveScp914RecipeParsed = new List<ItemType>();
+
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
@@ -471,6 +475,7 @@ namespace SanyaPlugin
 				DefaultitemsParsed.Clear();
 				DefaultitemsEscapeClassdParsed.Clear();
 				ItemCleanupIgnoreParsed.Clear();
+				RemoveScp914RecipeParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 
 				foreach(var key in Defaultitems)
@@ -484,6 +489,10 @@ namespace SanyaPlugin
 				foreach(var item in ItemCleanupIgnore)
 					if(Enum.TryParse(item, out ItemType type))
 						ItemCleanupIgnoreParsed.Add(type);
+
+				foreach(var item in RemoveScp914Recipe)
+					if(Enum.TryParse(item, out ItemType type))
+						RemoveScp914RecipeParsed.Add(type);
 
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))
