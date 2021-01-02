@@ -946,7 +946,8 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp106Exmode
 				&& ev.Player.Role == RoleType.Scp106
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal)
+				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
+				&& !Warhead.IsDetonated)
 				roundCoroutines.Add(Timing.RunCoroutine(
 					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, Map.Doors.First(x => x.DoorName == "106_PRIMARY").transform.position + Vector3.up * 1.5f)
 					));
