@@ -1003,4 +1003,14 @@ namespace SanyaPlugin.Patches
 			return false;
 		}
 	}
+
+	//check
+	[HarmonyPatch(typeof(SCP_2536_Controller), nameof(SCP_2536_Controller.Apply2536Scenario))]
+	public static class Scp2536LogPatch
+	{
+		public static void Postfix(ReferenceHub Player, SCP_2536_Controller.Valid2536Scenario scenario)
+		{
+			Log.Info($"[Scp2536LogPatch] {Player.nicknameSync.MyNick} -> {scenario}");
+		}
+	}
 }
