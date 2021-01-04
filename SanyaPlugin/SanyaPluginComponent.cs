@@ -34,6 +34,7 @@ namespace SanyaPlugin
 		private float _hudCenterDownTime = -1f;
 		private float _hudCenterDownTimer = 0f;
 		private int _prevHealth = -1;
+		private byte _prevPreset = 0;
 		
 
 		private void Start()
@@ -168,23 +169,29 @@ namespace SanyaPlugin
 
 			if(player.CurrentItem != null && player.CurrentItem.id == ItemType.Radio && player.ReferenceHub.TryGetComponent<Radio>(out var radio) && radio.CheckRadio())
 			{
+				if(radio.curPreset != _prevPreset)
+				{
+					_prevPreset = radio.curPreset;
+					return;
+				}
+
 				switch(radio.curPreset)
 				{
 					case 2:
 						{
-							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone radiowave:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone && x.Inventory.items.Any(y => y.id == ItemType.Radio))}</color>", 2);
+							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone radiowave:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone && x.Inventory.items.Any(y => y.id == ItemType.Radio))}</color>", 5);
 							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 5f, 0, 100));
 							break;
 						}
 					case 3:
 						{
-							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone bio-signal:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone)}</color>", 2);
+							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone bio-signal:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone)}</color>", 5);
 							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 10f, 0, 100));
 							break;
 						}
 					case 4:
 						{
-							AddHudCenterDownText($"<color=#bbee00>Detected facility's bio-signal:{Player.List.Count(x => x.IsAlive)}</color>", 2);
+							AddHudCenterDownText($"<color=#bbee00>Detected facility's bio-signal:{Player.List.Count(x => x.IsAlive)}</color>", 5);
 							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 20f, 0, 100));
 							break;
 						}
