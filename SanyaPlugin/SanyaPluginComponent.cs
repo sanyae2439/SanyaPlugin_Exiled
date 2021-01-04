@@ -55,7 +55,9 @@ namespace SanyaPlugin
 			CheckHighPing();
 			CheckTraitor();
 			CheckVoiceChatting();
+			CheckRadioRader();
 			CheckFake939();
+			
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
 			UpdateScpLists();
@@ -160,6 +162,36 @@ namespace SanyaPlugin
 			}
 		}
 
+		private void CheckRadioRader()
+		{
+			if(!(_timer > 1f) || !player.IsAlive || !player.IsHuman) return;
+
+			if(player.CurrentItem != null && player.CurrentItem.id == ItemType.Radio && player.ReferenceHub.TryGetComponent<Radio>(out var radio) && radio.CheckRadio())
+			{
+				switch(radio.curPreset)
+				{
+					case 2:
+						{
+							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone radiowave:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone && x.Inventory.items.Any(y => y.id == ItemType.Radio))}</color>", 2);
+							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 5f, 0, 100));
+							break;
+						}
+					case 3:
+						{
+							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone bio-signal:{Player.List.Count(x => x.CurrentRoom?.Zone == player.CurrentRoom?.Zone)}</color>", 2);
+							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 10f, 0, 100));
+							break;
+						}
+					case 4:
+						{
+							AddHudCenterDownText($"<color=#bbee00>Detected facility's bio-signal:{Player.List.Count(x => x.IsAlive)}</color>", 2);
+							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 20f, 0, 100));
+							break;
+						}
+				}
+			}
+		}
+
 		private void UpdateMyCustomText()
 		{
 			if(!(_timer > 1f) || !player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
@@ -216,11 +248,12 @@ namespace SanyaPlugin
 			else if(player.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
-				MtfList += $"FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}\n";
-				MtfList += $"Commander:{RoundSummary.singleton.CountRole(RoleType.NtfCommander)}\n";
-				MtfList += $"Lieutenant:{RoundSummary.singleton.CountRole(RoleType.NtfLieutenant)}\n";
-				MtfList += $"Cadet:{RoundSummary.singleton.CountRole(RoleType.NtfCadet)}\n";
-				MtfList += $"NTFScientist:{RoundSummary.singleton.CountRole(RoleType.NtfScientist)}";
+				MtfList += $"<color=#5b6370>FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}</color>\n";
+				MtfList += $"<color=#003eca>Commander:{RoundSummary.singleton.CountRole(RoleType.NtfCommander)}</color>\n";
+				MtfList += $"<color=#0096ff>Lieutenant:{RoundSummary.singleton.CountRole(RoleType.NtfLieutenant)}</color>\n";
+				MtfList += $"<color=#6fc3ff>Cadet:{RoundSummary.singleton.CountRole(RoleType.NtfCadet)}</color>\n";
+				MtfList += $"<color=#0096ff>NTFScientist:{RoundSummary.singleton.CountRole(RoleType.NtfScientist)}</color>\n";
+				MtfList += $"<color=#ffff7c>Scientist:{RoundSummary.singleton.CountRole(RoleType.Scientist)}</color>\n";
 				MtfList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 6));
@@ -228,8 +261,8 @@ namespace SanyaPlugin
 			else if(player.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
-				CiList += $"ChaosInsurgency:{RoundSummary.singleton.CountRole(RoleType.ChaosInsurgency)}\n";
-				CiList += $"ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}\n";
+				CiList += $"<color=#008f1e>ChaosInsurgency:{RoundSummary.singleton.CountRole(RoleType.ChaosInsurgency)}</color>\n";
+				CiList += $"<color=#ff8e00>ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}</color>\n";
 				CiList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 6));

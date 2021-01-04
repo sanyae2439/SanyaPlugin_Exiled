@@ -969,6 +969,12 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Hemorrhage>();
 				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Bleeding>();
 			}
+
+			if(ev.Item == ItemType.SCP500)
+			{
+				ev.Player.ReferenceHub.playerStats.unsyncedArtificialHealth = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
+				ev.Player.ReferenceHub.fpc.ResetStamina();
+			}
 		}
 		public void OnInteractingDoor(InteractingDoorEventArgs ev)
 		{
