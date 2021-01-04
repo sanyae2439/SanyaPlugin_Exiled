@@ -253,6 +253,7 @@ namespace SanyaPlugin
 				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
+			Map.Doors.First(x => x.DoorName == "NUKE_SURFACE").GrenadesResistant = false;
 
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{
