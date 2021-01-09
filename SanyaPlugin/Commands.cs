@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
@@ -50,34 +49,6 @@ namespace SanyaPlugin.Commands
 				case "test":
 					{
 						response = $"test ok.";
-						return true;
-					}
-				case "alltree":
-					{
-						foreach(var i in UnityEngine.Object.FindObjectsOfType<SCP2536_Spawn_Location>())
-						{
-							i.IsTreeActive = true;
-							i.RpcSetTreeState(true);
-							SCP2536_Present[] componentsInChildren2 = i.GetComponentsInChildren<SCP2536_Present>();
-							List<SCP_2536_Controller.Valid2536Scenario> allValid2536Scenarios = new List<SCP_2536_Controller.Valid2536Scenario>() { SCP_2536_Controller.Valid2536Scenario.IsChaos };
-							for(int j = 0; j < 3; j++)
-							{
-								componentsInChildren2[j].RpcResetPresent();
-								componentsInChildren2[j].ThisPresentsScenario = allValid2536Scenarios[UnityEngine.Random.Range(0, allValid2536Scenarios.Count)];
-								if(allValid2536Scenarios.Count > 1)
-								{
-									allValid2536Scenarios.Remove(componentsInChildren2[j].ThisPresentsScenario);
-								}
-							}
-						}
-						response = "ok.";
-						return true;
-					}
-				case "tree":
-					{
-						if(player.IsAlive)
-							Map.ForceSpawn2536(player);
-						response = "ok.";
 						return true;
 					}
 				case "scale":

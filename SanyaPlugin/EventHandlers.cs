@@ -9,6 +9,8 @@ using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
+using Interactables.Interobjects;
+using Interactables.Interobjects.DoorUtils;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MEC;
@@ -253,7 +255,8 @@ namespace SanyaPlugin
 				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
-			Map.Doors.First(x => x.DoorName == "NUKE_SURFACE").GrenadesResistant = false;
+
+			(DoorNametagExtension.NamedDoors.First(x => x.Key == "SURFACE_NUKE").Value.TargetDoor as BreakableDoor)._ignoredDamageSources &= ~DoorDamageType.Grenade;
 
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{
@@ -272,10 +275,6 @@ namespace SanyaPlugin
 					AlphaWarheadController.Host.NetworktimeToDetonation = AlphaWarheadController.Host.scenarios_resume[index].tMinusTime + AlphaWarheadController.Host.scenarios_resume[index].additionalTime;
 				}
 			}
-
-			if(plugin.Config.WarheadDontOpenGates)
-				foreach(var door in Map.Doors.Where(x => x.DoorName.Contains("GATE_")))
-					door.dontOpenOnWarhead = true;
 
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
@@ -353,11 +352,17 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRestartingRound] Restarting...");
 
+			foreach(var player in Player.List)
+				if(player.GameObject.TryGetComponent<SanyaPluginComponent>(out var comp))
+					UnityEngine.Object.Destroy(comp);
+
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
 			roundCoroutines.Clear();
 
 			RoundSummary.singleton._roundEnded = true;
+
+			SanyaPluginComponent.scplists.Clear();
 		}
 		public void OnReloadConfigs()
 		{
@@ -488,10 +493,6 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.WarheadDontOpenGates && AlphaWarheadController.Host._autoDetonate && AlphaWarheadController.Host._autoDetonateTimer <= 0f)
-				foreach(var door in Map.Doors.Where(x => x.DoorName.Contains("GATE_")))
-					door.dontOpenOnWarhead = false;
-
 			if(plugin.Config.CassieSubtitle)
 			{
 				bool isresumed = AlphaWarheadController._resumeScenario != -1;
@@ -512,11 +513,6 @@ namespace SanyaPlugin
 
 			if(plugin.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
-
-			if(plugin.Config.CloseDoorsOnNukecancel)
-				foreach(var door in Map.Doors)
-					if(door.warheadlock)
-						door.SetStateWithSound(false);
 		}
 		public void OnDetonated()
 		{
@@ -567,6 +563,9 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnJoined] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
+			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
+				PlayerDataManager.playersData.Add(ev.Player.UserId, PlayerDataManager.LoadPlayerData(ev.Player.UserId));
+
 			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
 			{
 				string reasonMessage = string.Empty;
@@ -582,7 +581,7 @@ namespace SanyaPlugin
 
 			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
 				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
-				Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate);
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data)));
 
 			if(plugin.Config.DisableAllChat)
 				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
@@ -618,7 +617,8 @@ namespace SanyaPlugin
 					player.ReferenceHub.characterClassManager.SetDirtyBit(2uL);
 
 			//Component
-			ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
+			if(!ev.Player.GameObject.TryGetComponent<SanyaPluginComponent>(out _))
+				ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
 
 		}
 		public void OnLeft(LeftEventArgs ev)
@@ -628,9 +628,6 @@ namespace SanyaPlugin
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
 				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
 					PlayerDataManager.playersData.Remove(ev.Player.UserId);
-
-			if(SanyaPluginComponent._scplists.Contains(ev.Player))
-				SanyaPluginComponent._scplists.Remove(ev.Player);
 		}
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
@@ -950,7 +947,7 @@ namespace SanyaPlugin
 				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
 				&& !Warhead.IsDetonated)
 				roundCoroutines.Add(Timing.RunCoroutine(
-					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, Map.Doors.First(x => x.DoorName == "106_PRIMARY").transform.position + Vector3.up * 1.5f)
+					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, DoorNametagExtension.NamedDoors.First(x => x.Key == "106_PRIMARY").Value.TargetDoor.transform.position + Vector3.up * 1.5f)
 					));
 
 			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
@@ -979,13 +976,12 @@ namespace SanyaPlugin
 		}
 		public void OnInteractingDoor(InteractingDoorEventArgs ev)
 		{
-			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.DoorName}:{ev.Door.PermissionLevels}", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.name}:{ev.Door.RequiredPermissions.RequiredPermissions}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && !ev.Door.locked)
+			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && ev.Door.ActiveLocks == 0)
 				foreach(var item in ev.Player.Inventory.items)
-					foreach(var permission in ev.Player.Inventory.GetItemByID(item.id).permissions)
-						if(Door.backwardsCompatPermissions.TryGetValue(permission, out var flag) && ev.Door.PermissionLevels.HasPermission(flag))
-							ev.IsAllowed = true;
+					if(ev.Door.RequiredPermissions.CheckPermissions(item.id, ev.Player.ReferenceHub))
+						ev.IsAllowed = true;
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{

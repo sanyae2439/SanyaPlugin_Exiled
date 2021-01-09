@@ -15,9 +15,8 @@ namespace SanyaPlugin
 	public class SanyaPluginComponent : MonoBehaviour
 	{
 
-		public static readonly HashSet<Player> _scplists = new HashSet<Player>();
+		public static readonly HashSet<Player> scplists = new HashSet<Player>();
 		private static Vector3 _espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
-		private static GameObject _portalPrefab;
 
 		public Player player { get; private set; }
 		public bool DisableHud = false;
@@ -39,10 +38,15 @@ namespace SanyaPlugin
 
 		private void Start()
 		{
-			if(_portalPrefab == null) _portalPrefab = GameObject.Find("SCP106_PORTAL");
 			_plugin = SanyaPlugin.Instance;
 			player = Player.Get(gameObject);
-			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
+			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}/{Exiled.Loader.Loader.Version.ToString(3)}");
+		}
+
+		private void OnDestroy()
+		{
+			if(scplists.Contains(player)) 
+				scplists.Remove(player);
 		}
 
 		private void FixedUpdate()
@@ -218,15 +222,15 @@ namespace SanyaPlugin
 
 		private void UpdateScpLists()
 		{
-			if((player.Team != Team.SCP || player.Role == RoleType.Scp0492) && _scplists.Contains(player))
+			if((player.Team != Team.SCP || player.Role == RoleType.Scp0492) && scplists.Contains(player))
 			{
-				_scplists.Remove(player);
+				scplists.Remove(player);
 				return;
 			}
 
-			if(player.Team == Team.SCP && player.Role != RoleType.Scp0492 && !_scplists.Contains(player))
+			if(player.Team == Team.SCP && player.Role != RoleType.Scp0492 && !scplists.Contains(player))
 			{
-				_scplists.Add(player);
+				scplists.Add(player);
 				return;
 			}
 
@@ -243,7 +247,7 @@ namespace SanyaPlugin
 			if(player.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
-				foreach(var scp in _scplists)
+				foreach(var scp in scplists)
 					if(scp.Role == RoleType.Scp079)
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}\n";
 					else

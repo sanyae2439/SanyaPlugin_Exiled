@@ -12,6 +12,7 @@ using Dissonance.Integrations.MirrorIgnorance;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using Hints;
+using Interactables.Interobjects.DoorUtils;
 using MEC;
 using Mirror;
 using RemoteAdmin;
@@ -490,13 +491,14 @@ namespace SanyaPlugin.Functions
 
 		public static IEnumerator<float> ClassDInsurgencyInit()
 		{
-			var armorydoor = Map.Doors.First(x => x.DoorName == "LCZ_ARMORY");
-			armorydoor.SetLock(true);
+			var armorydoor = DoorNametagExtension.NamedDoors.First(x => x.Key == "LCZ_ARMORY").Value.TargetDoor;
+			armorydoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
 			yield return Timing.WaitForSeconds(10f);
 			Methods.SendSubtitle(Subtitles.ClassDInsurgencyFirst, 10);
 			RespawnEffectsController.PlayCassieAnnouncement("danger . Detected security warning in light containment zones armory", false, true);
-			armorydoor.SetLock(false);
-			armorydoor.SetStateWithSound(true);
+			armorydoor.ServerChangeLock(DoorLockReason.AdminCommand, false);
+			armorydoor.NetworkTargetState = true;
+			yield break;
 		}
 	}
 
@@ -805,11 +807,6 @@ namespace SanyaPlugin.Functions
 		}
 
 		public static bool IsExmode(this Player player) => player.ReferenceHub.animationController.curAnim == 1;
-
-		public static bool HasPermission(this Door.AccessRequirements value, Door.AccessRequirements flag)
-		{
-			return (value & flag) == flag;
-		}
 
 		public static bool IsList(this Type type)
 		{

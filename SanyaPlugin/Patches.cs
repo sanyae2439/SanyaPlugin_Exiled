@@ -9,8 +9,9 @@ using Exiled.Permissions.Extensions;
 using Grenades;
 using HarmonyLib;
 using Hints;
+using Interactables.Interobjects.DoorUtils;
 using LightContainmentZoneDecontamination;
-using MEC;
+using MapGeneration;
 using Mirror;
 using NorthwoodLib.Pools;
 using Respawning;
@@ -217,7 +218,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Postfix(ref string regular)
 		{
-			if(PlayerManager.localPlayer == null || PlayerManager.localPlayer?.GetComponent<RandomSeedSync>().seed == 0) return;
+			if(PlayerManager.localPlayer == null || SeedSynchronizer.Seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{regular}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(SanyaPlugin.Instance.Config.CassieSubtitle)
@@ -254,9 +255,9 @@ namespace SanyaPlugin.Patches
 	{
 		public static Dictionary<GameObject, float> items = new Dictionary<GameObject, float>();
 
-		public static bool Prefix(Inventory __instance, ref Pickup __result, ItemType droppedItemId, float dur, Vector3 pos, Quaternion rot, int s, int b, int o)
+		public static bool Prefix(Inventory __instance, ref Pickup __result, ItemType droppedItemId, float dur, Vector3 pos, Quaternion rot, int s, int b, int o, bool spawnAutomatically = true)
 		{
-			if(SanyaPlugin.Instance.Config.ItemCleanup < 0 || __instance.name == "Host") return true;
+			if(SanyaPlugin.Instance.Config.ItemCleanup < 0 || __instance.isLocalPlayer) return true;
 
 			if(SanyaPlugin.Instance.Config.ItemCleanupIgnoreParsed.Contains(droppedItemId))
 			{
@@ -272,7 +273,10 @@ namespace SanyaPlugin.Patches
 				return false;
 			}
 			GameObject gameObject = UnityEngine.Object.Instantiate(__instance.pickupPrefab);
-			NetworkServer.Spawn(gameObject);
+
+			if(spawnAutomatically)
+				NetworkServer.Spawn(gameObject);
+
 			items.Add(gameObject, Time.time);
 			gameObject.GetComponent<Pickup>().SetupPickup(droppedItemId, dur, __instance.gameObject, new Pickup.WeaponModifiers(true, s, b, o), pos, rot);
 			__result = gameObject.GetComponent<Pickup>();
@@ -349,10 +353,10 @@ namespace SanyaPlugin.Patches
 					if(relativeSpeed >= __instance.breakpointDoor)
 					{
 						__instance.cooldown = __instance.cooldownDoor;
-						Door componentInParent = collider.GetComponentInParent<Door>();
-						if(componentInParent != null && !componentInParent.GrenadesResistant)
+						IDamageableDoor damageableDoor;
+						if((damageableDoor = (collider.GetComponentInParent<DoorVariant>() as IDamageableDoor)) != null)
 						{
-							componentInParent.DestroyDoor(true);
+							damageableDoor.ServerDamage(100f, DoorDamageType.Grenade);
 						}
 					}
 				}
@@ -556,14 +560,14 @@ namespace SanyaPlugin.Patches
 			var player = Player.Get(__instance.gameObject);
 			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(command.Contains("DOOR:")
-				&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1
-				&& target.TryGetComponent<Door>(out var targetdoor)
-				&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
-			{
-				player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
-				return false;
-			}
+			//if(command.Contains("DOOR:")
+			//	&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1
+			//	&& target.TryGetComponent<Door>(out var targetdoor)
+			//	&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
+			//{
+			//	player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
+			//	return false;
+			//}
 
 			if(!player.IsExmode()) return true;
 
@@ -616,31 +620,31 @@ namespace SanyaPlugin.Patches
 					return false;
 				}
 			}
-			else if(command.Contains("DOOR:"))
-			{
-				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
-				{
-					var door = target.GetComponent<Door>();
-					if(door != null && door.DoorName == "SURFACE_GATE")
-					{
-						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
-						{
-							__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
-							return false;
-						}
+			//else if(command.Contains("DOOR:"))
+			//{
+			//	if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
+			//	{
+			//		var door = target.GetComponent<Door>();
+			//		if(door != null && door.DoorName == "SURFACE_GATE")
+			//		{
+			//			if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
+			//			{
+			//				__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
+			//				return false;
+			//			}
 
 
-						var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
-						if(bombtarget != null)
-						{
-							Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
-							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
-						}
+			//			var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
+			//			if(bombtarget != null)
+			//			{
+			//				Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
+			//				__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
+			//			}
 
-						return false;
-					}
-				}
-			}
+			//			return false;
+			//		}
+			//	}
+			//}
 			return true;
 		}
 	}
@@ -951,66 +955,15 @@ namespace SanyaPlugin.Patches
 			return false;
 		}
 	}
-
-	//override
-	[HarmonyPatch(typeof(LumpOfCoalGrenade), nameof(LumpOfCoalGrenade.OnSpeedCollisionEnter))]
-	public static class CoalPatch
-	{
-		public static bool Prefix(LumpOfCoalGrenade __instance, Collision collision)
-		{
-			if((!ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub)) || (referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject))
-				return false;
-
-			if(referenceHub != null)
-				__instance.thrower?.hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(232600, __instance.thrower.hub.LoggedNameFromRefHub(), DamageTypes.Grenade, __instance.thrower.hub.queryProcessor.PlayerId), referenceHub.gameObject);
-
-			Timing.RunCoroutine(__instance.DelayKill(collision).CancelWith(__instance.gameObject));
-			__instance.GetComponent<MeshCollider>().enabled = false;
-			__instance.GetComponent<Rigidbody>().isKinematic = true;
-			return false;
-		}
-	}
-
-	//override
-	[HarmonyPatch(typeof(LumpOfSCPCoalGrenade), nameof(LumpOfSCPCoalGrenade.OnSpeedCollisionEnter))]
-	public static class CoalScpPatch
-	{
-		public static bool Prefix(LumpOfSCPCoalGrenade __instance, Collision collision)
-		{
-			if((!ReferenceHub.TryGetHub(collision.collider.gameObject, out var referenceHub)) || (referenceHub != null && __instance.NetworkthrowerGameObject == referenceHub.gameObject))
-				return false;
-
-			if(referenceHub != null)
-			{
-				List<ReferenceHub> list = new List<ReferenceHub>();
-				foreach(KeyValuePair<GameObject, ReferenceHub> keyValuePair in ReferenceHub.GetAllHubs())
-				{
-					if(keyValuePair.Value.characterClassManager.CurRole.team != Team.RIP && keyValuePair.Value.characterClassManager.CurClass != RoleType.Scp079 && keyValuePair.Value.gameObject != referenceHub.gameObject)
-					{
-						list.Add(keyValuePair.Value);
-					}
-				}
-				if(list.Count > 0)
-				{
-					referenceHub.playerMovementSync.OverridePosition(list[UnityEngine.Random.Range(0, list.Count)].playerMovementSync.RealModelPosition, 0f, false);
-				}
-			}
-
-			Timing.RunCoroutine(__instance.DelayKill(collision).CancelWith(__instance.gameObject));
-			__instance.GetComponent<MeshCollider>().enabled = false;
-			__instance.GetComponent<Rigidbody>().isKinematic = true;
-
-			return false;
-		}
-	}
-
-	//check
-	[HarmonyPatch(typeof(SCP_2536_Controller), nameof(SCP_2536_Controller.Apply2536Scenario))]
-	public static class Scp2536LogPatch
-	{
-		public static void Postfix(ReferenceHub Player, SCP_2536_Controller.Valid2536Scenario scenario)
-		{
-			Log.Info($"[Scp2536LogPatch] {Player.nicknameSync.MyNick} -> {scenario}");
-		}
-	}
+	
+	// [HarmonyPatch(typeof(NetworkBehaviour), "GetInvokerForHash")]
+	//public static class Patch1
+	//{
+	//	public static void Postfix(ref NetworkBehaviour.Invoker invoker)
+	//	{
+	//		var methodname = invoker.invokeFunction.GetMethodName();
+	//		if(methodname == "InvokeCmdCmdAltIsActive" || methodname == "InvokeCmdCmdSyncItem" || methodname == "InvokeRpcRpcBlinkTime" || methodname == "InvokeRpcRpcPlaySound") return;
+	//		ServerConsole.AddLog($"[{invoker.invokeType}] {invoker.invokeClass.Name}::{methodname.Replace("InvokeCmd", "Call").Replace("InvokeRpc", "Call")}()");
+	//	}
+	//}
 }
