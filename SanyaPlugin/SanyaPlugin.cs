@@ -10,6 +10,7 @@ using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp049Events = Exiled.Events.Handlers.Scp049;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
+using Scp106Events = Exiled.Events.Handlers.Scp106;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
@@ -105,6 +106,7 @@ namespace SanyaPlugin
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
+			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
 		}
 
@@ -136,7 +138,9 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			Scp049Events.FinishingRecall -= Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
+			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;
 		}

@@ -222,6 +222,7 @@ namespace SanyaPlugin
 		internal int scp049stackAmount = 0;
 		internal Player Overrided = null;
 		public bool FriendlyFlashEnabled = false;
+		internal NetworkIdentity Sinkhole = null;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -255,6 +256,8 @@ namespace SanyaPlugin
 				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
+			Sinkhole = Methods.GetSinkHoleHazard();
+			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, Map.GetRandomSpawnPoint(RoleType.Scp106) - (-Vector3.down * 4));
 
 			(DoorNametagExtension.NamedDoors.First(x => x.Key == "SURFACE_NUKE").Value.TargetDoor as BreakableDoor)._ignoredDamageSources &= ~DoorDamageType.Grenade;
 
@@ -1059,6 +1062,17 @@ namespace SanyaPlugin
 						ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079Lv5, 10);
 						break;
 				}
+		}
+
+		//Scp106
+		public void OnCreatingPortal(CreatingPortalEventArgs ev)
+		{
+			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}");
+
+			if(plugin.Config.Scp106PortalWithSinkhole && Sinkhole != null)
+			{
+				Methods.MoveNetworkIdentityObject(Sinkhole, ev.Position);
+			}
 		}
 
 		//Scp914

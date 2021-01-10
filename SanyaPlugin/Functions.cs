@@ -732,6 +732,26 @@ namespace SanyaPlugin.Functions
 						});
 		}
 
+		public static void MoveNetworkIdentityObject(NetworkIdentity identity, Vector3 pos)
+		{
+			identity.gameObject.transform.position = pos;
+			ObjectDestroyMessage objectDestroyMessage = new ObjectDestroyMessage();
+			objectDestroyMessage.netId = identity.netId;
+			foreach(var ply in Player.List)
+			{
+				ply.Connection.Send(objectDestroyMessage, 0);
+				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identity, ply.Connection });
+			}
+		}
+
+		public static NetworkIdentity GetSinkHoleHazard()
+		{
+			foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
+				if(identity.name == "Sinkhole")
+					return identity;
+			return null;
+		}
+
 		// Example:SyncVar
 		public static void SetTargetOnlyVisibleBadge(this Player target, string text)
 		{

@@ -241,7 +241,13 @@ namespace SanyaPlugin
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
 			if(!(_timer > 1f)) return;
 
-			string curText = _hudTemplate.Replace("[STATS]", $"St:{DateTime.Now:HH:mm:ss} Em:{(int)EventHandlers.eventmode} Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms Vc:{(player.IsMuted ? "D" : "E")}");
+			string curText = _hudTemplate.Replace("[STATS]", 
+				$"St:{DateTime.Now:HH:mm:ss} " +
+				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
+				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
+				$"Em:{(int)EventHandlers.eventmode} " +
+				$"Ti:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}/{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)} " +
+				$"Vc:{(player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
 			if(player.Team == Team.SCP)

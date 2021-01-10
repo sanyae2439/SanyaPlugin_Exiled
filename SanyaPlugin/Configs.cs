@@ -243,6 +243,9 @@ namespace SanyaPlugin
 		[Description("SCP-106のExモードで収容室に帰還できるように")]
 		public bool Scp106Exmode { get; set; } = false;
 
+		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
+		public bool Scp106PortalWithSinkhole { get; set; } = false;
+
 		[Description("SCP-173の被ダメージ乗数")]
 		public float Scp173DamageMultiplier { get; set; } = 1f;
 

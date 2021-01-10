@@ -51,6 +51,20 @@ namespace SanyaPlugin.Commands
 						response = $"test ok.";
 						return true;
 					}
+				case "sinkhole":
+					{
+						if(SanyaPlugin.Instance.Handlers.Sinkhole == null)
+						{
+							response = "Sinkhole is null.";
+							return false;
+						}
+						else
+						{
+							Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkhole, player.Position);
+							response = "ok.";
+							return true;
+						}
+					}
 				case "scale":
 					{
 						var target = Player.Get(int.Parse(arguments.At(1)));
