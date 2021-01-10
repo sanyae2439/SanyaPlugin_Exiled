@@ -1067,7 +1067,7 @@ namespace SanyaPlugin
 		//Scp106
 		public void OnCreatingPortal(CreatingPortalEventArgs ev)
 		{
-			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}");
+			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp106PortalWithSinkhole && Sinkhole != null)
 			{
