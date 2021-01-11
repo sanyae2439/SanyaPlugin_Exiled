@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Assets._Scripts.Dissonance;
+using CustomPlayerEffects;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using Grenades;
@@ -932,7 +933,7 @@ namespace SanyaPlugin.Patches
 		{
 			var newInst = instructions.ToList();
 
-			var friendlyflashindex = newInst.FindIndex(x => 
+			var friendlyflashindex = newInst.FindIndex(x =>
 			x.opcode == OpCodes.Ldfld
 			&& x.operand is FieldInfo fieldInfo
 			&& fieldInfo?.Name == nameof(FlashGrenade._friendlyFlash)) - 1;
@@ -955,7 +956,24 @@ namespace SanyaPlugin.Patches
 			return false;
 		}
 	}
-	
+
+	//transpiler
+	[HarmonyPatch(typeof(EnvironmentalHazard), nameof(EnvironmentalHazard.Update))]
+	public static class RangeRemovePatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldloc_1);
+
+			newInst.RemoveRange(index, 9);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
 	// [HarmonyPatch(typeof(NetworkBehaviour), "GetInvokerForHash")]
 	//public static class Patch1
 	//{

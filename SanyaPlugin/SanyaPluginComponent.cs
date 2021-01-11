@@ -40,7 +40,7 @@ namespace SanyaPlugin
 		{
 			_plugin = SanyaPlugin.Instance;
 			player = Player.Get(gameObject);
-			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}/{Exiled.Loader.Loader.Version.ToString(3)}");
+			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
 		}
 
 		private void OnDestroy()
