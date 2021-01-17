@@ -5,11 +5,14 @@ using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
+using Interactables.Interobjects.DoorUtils;
+using MapGeneration;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
 using sanyae2439.SyncVarHackExtensions;
 using SanyaPlugin.Functions;
+using UnityEngine;
 
 namespace SanyaPlugin.Commands
 {
@@ -24,6 +27,7 @@ namespace SanyaPlugin.Commands
 		public string Description { get; } = "SanyaPlugin Commands";
 
 		private bool isActwatchEnabled = false;
+		private DoorVariant targetdoor = null;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -49,6 +53,23 @@ namespace SanyaPlugin.Commands
 				case "test":
 					{
 						response = $"test ok.";
+						return true;
+					}
+				case "doortest":
+					{
+						if(targetdoor == null)
+						{
+							var prefab = UnityEngine.Object.FindObjectsOfType<DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("HCZ"));
+							var door = UnityEngine.Object.Instantiate(prefab.TargetPrefab, new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))), Quaternion.Euler(Vector3.up * 180f));
+							targetdoor = door;
+							NetworkServer.Spawn(door.gameObject);
+						}
+						else
+						{
+							NetworkServer.Destroy(targetdoor.gameObject);
+							targetdoor = null;
+						}
+						response = $"doortest.";
 						return true;
 					}
 				case "sinkhole":

@@ -259,6 +259,37 @@ namespace SanyaPlugin
 			Sinkhole = Methods.GetSinkHoleHazard();
 			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, Map.GetRandomSpawnPoint(RoleType.Scp106) - (-Vector3.down * 4));
 
+			if(plugin.Config.AddDoorsOnSurface)
+			{
+				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
+				var EZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("EZ"));
+				var HCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("HCZ"));
+
+				var door1 = UnityEngine.Object.Instantiate(LCZprefab.TargetPrefab, new UnityEngine.Vector3(14.425f, 995.2f, -43.525f), Quaternion.Euler(Vector3.zero));
+				(door1 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				var door2 = UnityEngine.Object.Instantiate(LCZprefab.TargetPrefab, new UnityEngine.Vector3(14.425f, 995.2f, -23.25f), Quaternion.Euler(Vector3.zero));
+				(door2 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				var door3 = UnityEngine.Object.Instantiate(EZprefab.TargetPrefab, new UnityEngine.Vector3(176.2f, 983.24f, 35.23f), Quaternion.Euler(Vector3.up * 180f));
+				(door3 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				var door4 = UnityEngine.Object.Instantiate(EZprefab.TargetPrefab, new UnityEngine.Vector3(174.4f, 983.24f, 29.1f), Quaternion.Euler(Vector3.up * 90f));
+				(door4 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+
+				var door5 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(1.15f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
+				(door5 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				var door6 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(-1.27f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
+				(door6 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+
+				door5.gameObject.AddComponent<DoorNametagExtension>().UpdateName("GATE_EX_R");
+				door6.gameObject.AddComponent<DoorNametagExtension>().UpdateName("GATE_EX_L");
+
+				NetworkServer.Spawn(door1.gameObject);
+				NetworkServer.Spawn(door2.gameObject);
+				NetworkServer.Spawn(door3.gameObject);
+				NetworkServer.Spawn(door4.gameObject);
+				NetworkServer.Spawn(door5.gameObject);
+				NetworkServer.Spawn(door6.gameObject);
+			}
+
 			(DoorNametagExtension.NamedDoors.First(x => x.Key == "SURFACE_NUKE").Value.TargetDoor as BreakableDoor)._ignoredDamageSources &= ~DoorDamageType.Grenade;
 
 			if(plugin.Config.WarheadInitCountdown > 0)
@@ -985,6 +1016,22 @@ namespace SanyaPlugin
 				foreach(var item in ev.Player.Inventory.items)
 					if(ev.Door.RequiredPermissions.CheckPermissions(item.id, ev.Player.ReferenceHub))
 						ev.IsAllowed = true;
+
+			if(plugin.Config.AddDoorsOnSurface && ev.Door.TryGetComponent<DoorNametagExtension>(out var nametag))
+			{
+				if(nametag._nametag.Contains("GATE_EX_"))
+				{
+					bool flagL = DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.AllowInteracting(ev.Player.ReferenceHub, 0);
+					bool flagR = DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.AllowInteracting(ev.Player.ReferenceHub, 0);
+					if(flagL && flagR)
+						if(nametag._nametag == "GATE_EX_L")
+							DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.NetworkTargetState = !DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.TargetState;
+						else
+							DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.NetworkTargetState = !DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.TargetState;
+					else
+						ev.IsAllowed = false;
+				}
+			}
 		}
 		public void OnInteractingLocker(InteractingLockerEventArgs ev)
 		{

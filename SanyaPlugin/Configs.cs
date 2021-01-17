@@ -153,6 +153,9 @@ namespace SanyaPlugin
 		[Description("核起爆後の増援を停止する")]
 		public bool StopRespawnAfterDetonated { get; set; } = false;
 
+		[Description("追加で地上にドアを設置する")]
+		public bool AddDoorsOnSurface { get; set; } = false;
+
 		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
 		public bool InventoryKeycardActivation { get; set; } = false;
 
