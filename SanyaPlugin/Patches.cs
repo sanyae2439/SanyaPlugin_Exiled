@@ -974,6 +974,23 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
+	//transpiler
+	[HarmonyPatch(typeof(Handcuffs), nameof(Handcuffs.CallCmdCuffTarget))]
+	public static class RemoveHandcuffsItemPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldc_I4_M1) - 4;
+
+			newInst.RemoveRange(index, 6);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
 	// [HarmonyPatch(typeof(NetworkBehaviour), "GetInvokerForHash")]
 	//public static class Patch1
 	//{
