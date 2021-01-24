@@ -561,14 +561,14 @@ namespace SanyaPlugin.Patches
 			var player = Player.Get(__instance.gameObject);
 			Log.Debug($"[Scp079InteractPatch] {player.Nickname}({player.IsExmode()}) -> {command}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			//if(command.Contains("DOOR:")
-			//	&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1
-			//	&& target.TryGetComponent<Door>(out var targetdoor)
-			//	&& (targetdoor.PermissionLevels == Door.AccessRequirements.Gates || targetdoor.DoorName == "914"))
-			//{
-			//	player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
-			//	return false;
-			//}
+			if(command.Contains("DOOR:")
+				&& SanyaPlugin.Instance.Config.Scp079NeedInteractTierGateand914 > __instance.curLvl + 1
+				&& target.TryGetComponent<DoorVariant>(out var targetdoor)
+				&& targetdoor is Interactables.Interobjects.PryableDoor)
+			{
+				player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
+				return false;
+			}
 
 			if(!player.IsExmode()) return true;
 
@@ -621,31 +621,31 @@ namespace SanyaPlugin.Patches
 					return false;
 				}
 			}
-			//else if(command.Contains("DOOR:"))
-			//{
-			//	if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
-			//	{
-			//		var door = target.GetComponent<Door>();
-			//		if(door != null && door.DoorName == "SURFACE_GATE")
-			//		{
-			//			if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
-			//			{
-			//				__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
-			//				return false;
-			//			}
+			else if(command.Contains("DOOR:"))
+			{
+				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
+				{
+					var door = target.GetComponent<DoorVariant>();
+					if(door != null && door.TryGetComponent<DoorNametagExtension>(out var nametag) && nametag.GetName == "SURFACE_GATE")
+					{
+						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
+						{
+							__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
+							return false;
+						}
 
 
-			//			var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
-			//			if(bombtarget != null)
-			//			{
-			//				Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
-			//				__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
-			//			}
+						var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
+						if(bombtarget != null)
+						{
+							Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
+							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
+						}
 
-			//			return false;
-			//		}
-			//	}
-			//}
+						return false;
+					}
+				}
+			}
 			return true;
 		}
 	}
