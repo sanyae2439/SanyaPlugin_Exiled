@@ -52,6 +52,7 @@ namespace SanyaPlugin.Commands
 			{
 				case "test":
 					{
+						EventHandlers.DamagesDict.Add(arguments.At(1), uint.Parse(arguments.At(2)));
 						response = $"test ok.";
 						return true;
 					}

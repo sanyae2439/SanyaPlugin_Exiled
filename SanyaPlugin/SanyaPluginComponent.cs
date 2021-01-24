@@ -250,7 +250,23 @@ namespace SanyaPlugin
 				$"Vc:{(player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
-			if(player.Team == Team.SCP)
+			if(RoundSummary.singleton._roundEnded)
+			{
+				int rankcounter = 1;
+				string damageList = string.Empty;
+				damageList += "Round Damage Ranking:\n";
+				foreach(var stats in EventHandlers.sortedDamages)
+				{
+					if(stats.Value == 0) continue;
+					damageList += $"[{rankcounter}]{stats.Key}({stats.Value}Damage)\n";
+					rankcounter++;
+					if(rankcounter > 5) break;
+				}
+				damageList.TrimEnd('\n');
+
+				curText = curText.Replace("[LIST]", FormatStringForHud(damageList, 6));
+			}
+			else if(player.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
 				foreach(var scp in scplists)

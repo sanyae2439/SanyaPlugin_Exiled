@@ -215,6 +215,8 @@ namespace SanyaPlugin
 		private int detonatedDuration = -1;
 
 		/** RoundVar **/
+		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
+		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
 		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
 		private Vector3 nextRespawnPos = Vector3.zero;
@@ -381,6 +383,8 @@ namespace SanyaPlugin
 					player.IsGodModeEnabled = true;
 
 			Coroutines.isAirBombGoing = false;
+
+			sortedDamages = DamagesDict.OrderByDescending(x => x.Value);
 		}
 		public void OnRestartingRound()
 		{
@@ -395,7 +399,8 @@ namespace SanyaPlugin
 			roundCoroutines.Clear();
 
 			RoundSummary.singleton._roundEnded = true;
-
+			sortedDamages = null;
+			DamagesDict.Clear();
 			SanyaPluginComponent.scplists.Clear();
 		}
 		public void OnReloadConfigs()
@@ -654,6 +659,9 @@ namespace SanyaPlugin
 			if(!ev.Player.GameObject.TryGetComponent<SanyaPluginComponent>(out _))
 				ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
 
+			//DamageDict
+			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
+				DamagesDict.Add(ev.Player.Nickname, 0);
 		}
 		public void OnLeft(LeftEventArgs ev)
 		{
@@ -850,6 +858,9 @@ namespace SanyaPlugin
 						ev.Amount *= plugin.Config.Scp939DamageMultiplier;
 						break;
 				}
+
+			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman)
+				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}
