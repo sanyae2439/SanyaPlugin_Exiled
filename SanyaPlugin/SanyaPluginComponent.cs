@@ -250,7 +250,7 @@ namespace SanyaPlugin
 				$"Vc:{(player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
-			if(RoundSummary.singleton._roundEnded)
+			if(RoundSummary.singleton._roundEnded && EventHandlers.sortedDamages != null)
 			{
 				int rankcounter = 1;
 				string damageList = string.Empty;
