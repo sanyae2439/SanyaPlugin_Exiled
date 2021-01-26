@@ -859,7 +859,7 @@ namespace SanyaPlugin
 						break;
 				}
 
-			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman)
+			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.Contain)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
