@@ -598,9 +598,9 @@ namespace SanyaPlugin
 			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam"))
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
 		}
-		public void OnJoined(JoinedEventArgs ev)
+		public void OnVerified(VerifiedEventArgs ev)
 		{
-			Log.Info($"[OnJoined] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
+			Log.Info($"[OnVerified] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
 			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
 				PlayerDataManager.playersData.Add(ev.Player.UserId, PlayerDataManager.LoadPlayerData(ev.Player.UserId));
@@ -663,9 +663,9 @@ namespace SanyaPlugin
 			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
 				DamagesDict.Add(ev.Player.Nickname, 0);
 		}
-		public void OnLeft(LeftEventArgs ev)
+		public void OnDestroying(DestroyingEventArgs ev)
 		{
-			Log.Debug($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnDestroying] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
 				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))

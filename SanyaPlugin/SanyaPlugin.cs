@@ -26,7 +26,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(2, 1, 28);
+		public override Version RequiredExiledVersion => new Version(2, 1, 29);
 
 		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
@@ -91,8 +91,8 @@ namespace SanyaPlugin
 			WarheadEvents.Stopping += Handlers.OnStopping;
 			WarheadEvents.Detonated += Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating += Handlers.OnPreAuthenticating;
-			PlayerEvents.Joined += Handlers.OnJoined;
-			PlayerEvents.Left += Handlers.OnLeft;
+			PlayerEvents.Verified += Handlers.OnVerified;
+			PlayerEvents.Destroying += Handlers.OnDestroying;
 			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
 			PlayerEvents.Spawning += Handlers.OnSpawning;
 			PlayerEvents.Hurting += Handlers.OnHurting;
@@ -125,8 +125,8 @@ namespace SanyaPlugin
 			WarheadEvents.Stopping -= Handlers.OnStopping;
 			WarheadEvents.Detonated -= Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating -= Handlers.OnPreAuthenticating;
-			PlayerEvents.Joined -= Handlers.OnJoined;
-			PlayerEvents.Left -= Handlers.OnLeft;
+			PlayerEvents.Verified -= Handlers.OnVerified;
+			PlayerEvents.Destroying -= Handlers.OnDestroying;
 			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
 			PlayerEvents.Spawning -= Handlers.OnSpawning;
 			PlayerEvents.Hurting -= Handlers.OnHurting;
