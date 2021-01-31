@@ -790,7 +790,7 @@ namespace SanyaPlugin
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
-			if(ev.Target.Role == RoleType.Spectator || ev.Attacker.Role == RoleType.Spectator || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
+			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Attacker.Role == RoleType.Spectator || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//GrenadeHitmark
@@ -866,7 +866,7 @@ namespace SanyaPlugin
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
-			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator || ev.Killer == null || ev.Target == null) return;
+			if(ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.Spectator || ev.Target.ReferenceHub.characterClassManager._prevId == RoleType.None || ev.Killer == null || ev.Target == null) return;
 			Log.Debug($"[OnDied] {ev.Killer.Nickname}[{ev.Killer.Role}] -{ev.HitInformations.GetDamageName()}-> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.Instance.Config.IsDebugged);
 			var targetteam = ev.Target.ReferenceHub.characterClassManager._prevId.GetTeam();
 			var targetrole = ev.Target.ReferenceHub.characterClassManager._prevId;
