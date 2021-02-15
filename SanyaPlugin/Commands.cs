@@ -3,6 +3,7 @@ using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Exiled.MirrorExtensions;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
@@ -10,7 +11,6 @@ using MapGeneration;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
-using sanyae2439.SyncVarHackExtensions;
 using SanyaPlugin.Functions;
 using UnityEngine;
 

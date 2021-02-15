@@ -64,6 +64,10 @@
       <HintPath>References\Exiled.Loader.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Exiled.MirrorExtensions">
+      <HintPath>References\Exiled.MirrorExtensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Exiled.Permissions">
       <HintPath>References\Exiled.Permissions.dll</HintPath>
       <Private>False</Private>
@@ -124,7 +128,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
-    <Compile Include="SyncVarHackExtensions.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Configs.cs" />
