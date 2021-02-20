@@ -1003,9 +1003,9 @@ namespace SanyaPlugin
 			}
 
 		}
-		public void OnUsedMedicalItem(UsedMedicalItemEventArgs ev)
+		public void OnDequippedMedicalItem(DequippedMedicalItemEventArgs ev)
 		{
-			Log.Debug($"[OnUsedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnDequippedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(ev.Item == ItemType.Medkit || ev.Item == ItemType.SCP500)
 			{

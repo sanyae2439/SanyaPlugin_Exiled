@@ -99,7 +99,7 @@ namespace SanyaPlugin
 			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
-			PlayerEvents.MedicalItemUsed += Handlers.OnUsedMedicalItem;
+			PlayerEvents.MedicalItemDequipped += Handlers.OnDequippedMedicalItem;
 			PlayerEvents.InteractingDoor += Handlers.OnInteractingDoor;
 			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
@@ -133,7 +133,7 @@ namespace SanyaPlugin
 			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
-			PlayerEvents.MedicalItemUsed -= Handlers.OnUsedMedicalItem;
+			PlayerEvents.MedicalItemDequipped -= Handlers.OnDequippedMedicalItem;
 			PlayerEvents.InteractingDoor -= Handlers.OnInteractingDoor;
 			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
