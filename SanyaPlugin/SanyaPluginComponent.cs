@@ -62,6 +62,7 @@ namespace SanyaPlugin
 			CheckVoiceChatting();
 			CheckRadioRader();
 			CheckFake939();
+			CheckSinkholeDistance();
 			
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
@@ -201,6 +202,19 @@ namespace SanyaPlugin
 						}
 				}
 			}
+		}
+
+		private void CheckSinkholeDistance()
+		{
+			if(!(_timer > 1f)) return;
+
+			bool inRange = false;
+			foreach(var sinkhole in UnityEngine.Object.FindObjectsOfType<SinkholeEnvironmentalHazard>())
+				if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 7f)
+					inRange = true;
+
+			if(!inRange && player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().Enabled)
+				player.DisableEffect<SinkHole>();
 		}
 
 		private void UpdateMyCustomText()

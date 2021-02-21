@@ -957,23 +957,6 @@ namespace SanyaPlugin.Patches
 	}
 
 	//transpiler
-	[HarmonyPatch(typeof(EnvironmentalHazard), nameof(EnvironmentalHazard.Update))]
-	public static class RangeRemovePatch
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-		{
-			var newInst = instructions.ToList();
-
-			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldloc_1);
-
-			newInst.RemoveRange(index, 9);
-
-			for(int i = 0; i < newInst.Count; i++)
-				yield return newInst[i];
-		}
-	}
-
-	//transpiler
 	[HarmonyPatch(typeof(Handcuffs), nameof(Handcuffs.CallCmdCuffTarget))]
 	public static class RemoveHandcuffsItemPatch
 	{
