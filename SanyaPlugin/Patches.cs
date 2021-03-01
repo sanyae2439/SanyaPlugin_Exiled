@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Assets._Scripts.Dissonance;
+using CustomPlayerEffects;
 using Exiled.API.Features;
 using Exiled.MirrorExtensions;
 using Exiled.Permissions.Extensions;
@@ -919,8 +920,11 @@ namespace SanyaPlugin.Patches
 		public static void Prefix(Grenade __instance)
 		{
 			if(!SanyaPlugin.Instance.Config.FlashbangFuseWithCollision) return;
-			if(__instance is FlashGrenade)
-				__instance.NetworkfuseTime -= __instance.fuseDuration;
+			if(__instance is FlashGrenade flashGrenade && flashGrenade.DisableGameObject)
+			{
+				__instance.NetworkfuseTime = NetworkTime.time + 1.0;
+				flashGrenade.DisableGameObject = false;
+			}
 		}
 	}
 
@@ -928,19 +932,34 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(FlashGrenade), nameof(FlashGrenade.ServersideExplosion))]
 	public static class FriendlyFlashRemovePatch
 	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		public static bool Prefix(FlashGrenade __instance, ref bool __result)
 		{
-			var newInst = instructions.ToList();
-
-			var friendlyflashindex = newInst.FindIndex(x =>
-			x.opcode == OpCodes.Ldfld
-			&& x.operand is FieldInfo fieldInfo
-			&& fieldInfo?.Name == nameof(FlashGrenade._friendlyFlash)) - 1;
-
-			newInst.RemoveRange(friendlyflashindex, 3);
-
-			for(int i = 0; i < newInst.Count; i++)
-				yield return newInst[i];
+			foreach(GameObject gameObject in PlayerManager.players)
+			{
+				Vector3 position = __instance.transform.position;
+				ReferenceHub hub = ReferenceHub.GetHub(gameObject);
+				Flashed effect = hub.playerEffectsController.GetEffect<Flashed>();
+				if(effect != null && !(__instance.thrower == null) && effect.Flashable(ReferenceHub.GetHub(__instance.thrower.gameObject), position, __instance._ignoredLayers))
+				{
+					float num = __instance.powerOverDistance.Evaluate(Vector3.Distance(gameObject.transform.position, position) / ((position.y > 900f) 
+						? __instance.distanceMultiplierSurface 
+						: __instance.distanceMultiplierFacility)) * __instance.powerOverDot.Evaluate(Vector3.Dot(hub.PlayerCameraReference.forward, (hub.PlayerCameraReference.position - position).normalized));
+					byte b = (byte)Mathf.Clamp(Mathf.RoundToInt(num * 10f * __instance.maximumDuration), 1, 255);
+					if(b >= effect.Intensity && num > 0f)
+					{
+						num *= 2f;
+						hub.playerEffectsController.EnableEffect<Amnesia>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Deafened>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Blinded>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Concussed>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Panic>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Exhausted>(num * __instance.maximumDuration, true);
+						hub.playerEffectsController.EnableEffect<Disabled>(num * __instance.maximumDuration, true);
+					}
+				}
+			}
+			__result = ((Func<bool>)Activator.CreateInstance(typeof(Func<bool>), __instance, typeof(EffectGrenade).GetMethod(nameof(EffectGrenade.ServersideExplosion)).MethodHandle.GetFunctionPointer()))();
+			return false;
 		}
 	}
 
