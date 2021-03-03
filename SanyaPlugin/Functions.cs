@@ -269,6 +269,12 @@ namespace SanyaPlugin.Functions
 		{
 			yield return Timing.WaitForSeconds(1f);
 
+			if(player.GlobalBadge != null)
+			{
+				Log.Debug($"[GrantedLevel] User has GlobalBadge {player.UserId}:{player.GlobalBadge?.Text}", SanyaPlugin.Instance.Config.IsDebugged);
+				yield break;
+			}
+
 			var group = player.Group?.Clone();
 			string level = data.level.ToString();
 			string rolestr = player.ReferenceHub.serverRoles.GetUncoloredRoleString();

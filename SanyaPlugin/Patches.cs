@@ -941,8 +941,8 @@ namespace SanyaPlugin.Patches
 				Flashed effect = hub.playerEffectsController.GetEffect<Flashed>();
 				if(effect != null && !(__instance.thrower == null) && effect.Flashable(ReferenceHub.GetHub(__instance.thrower.gameObject), position, __instance._ignoredLayers))
 				{
-					float num = __instance.powerOverDistance.Evaluate(Vector3.Distance(gameObject.transform.position, position) / ((position.y > 900f) 
-						? __instance.distanceMultiplierSurface 
+					float num = __instance.powerOverDistance.Evaluate(Vector3.Distance(gameObject.transform.position, position) / ((position.y > 900f)
+						? __instance.distanceMultiplierSurface
 						: __instance.distanceMultiplierFacility)) * __instance.powerOverDot.Evaluate(Vector3.Dot(hub.PlayerCameraReference.forward, (hub.PlayerCameraReference.position - position).normalized));
 					byte b = (byte)Mathf.Clamp(Mathf.RoundToInt(num * 10f * __instance.maximumDuration), 1, 255);
 					if(b >= effect.Intensity && num > 0f)
@@ -1000,8 +1000,8 @@ namespace SanyaPlugin.Patches
 		{
 			var newInst = instructions.ToList();
 
-			var cuffedClassDindex = newInst.FindIndex(x => x.opcode == OpCodes.Ldsfld 
-				&& x.operand is FieldInfo fieldInfo 
+			var cuffedClassDindex = newInst.FindIndex(x => x.opcode == OpCodes.Ldsfld
+				&& x.operand is FieldInfo fieldInfo
 				&& fieldInfo.Name == nameof(RoundSummary.escaped_scientists)
 			);
 			newInst.RemoveRange(cuffedClassDindex, 4);
@@ -1014,6 +1014,21 @@ namespace SanyaPlugin.Patches
 
 			for(int i = 0; i < newInst.Count; i++)
 				yield return newInst[i];
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(Lift), nameof(Lift.MovePlayers))]
+	public static class MoveSinkholePatch
+	{
+		public static void Postfix(Lift __instance, Transform target)
+		{
+			if(SanyaPlugin.Instance.Handlers.Sinkhole != null
+				&& __instance.InRange(SanyaPlugin.Instance.Handlers.Sinkhole.transform.position, out var gameObject, 1f, 2f, 1f)
+				&& gameObject.transform != target)
+			{
+				Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkhole, target.TransformPoint(gameObject.transform.InverseTransformPoint(SanyaPlugin.Instance.Handlers.Sinkhole.transform.position)));
+			}
 		}
 	}
 

@@ -568,18 +568,10 @@ namespace SanyaPlugin
 			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
 				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
 
-			if((plugin.Config.KickSteamLimited || !string.IsNullOrEmpty(plugin.Config.KickVpnApikey)) && !ev.UserId.Contains("@northwood"))
+			if(ev.UserId.Contains("@northwood") || (ev.Flags & BypassFlags) > 0)
 			{
-				reader.SetSource(ev.Request.Data.RawData, 20);
-				if(reader.TryGetBytesWithLength(out var b) && reader.TryGetString(out var s) &&
-					reader.TryGetULong(out var e) && reader.TryGetByte(out var flags))
-				{
-					if((flags & BypassFlags) > 0)
-					{
-						Log.Warn($"[OnPreAuthenticating] User have bypassflags. {ev.UserId}");
-						return;
-					}
-				}
+				Log.Warn($"[OnPreAuthenticating] User have bypassflags. {ev.UserId}");
+				return;
 			}
 
 			if(!string.IsNullOrEmpty(plugin.Config.KickVpnApikey))
@@ -602,7 +594,10 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnVerified] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
-			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
+			if(plugin.Config.DataEnabled && ev.Player.DoNotTrack && PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
+				PlayerDataManager.playersData.Remove(ev.Player.UserId);
+
+			if(plugin.Config.DataEnabled && !ev.Player.DoNotTrack && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
 				PlayerDataManager.playersData.Add(ev.Player.UserId, PlayerDataManager.LoadPlayerData(ev.Player.UserId));
 
 			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
