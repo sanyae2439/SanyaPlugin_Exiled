@@ -634,7 +634,7 @@ namespace SanyaPlugin
 				ev.Player.Connection.Send(objectDestroyMessage, 0);
 				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identitytarget, ev.Player.Connection });
 
-				roundCoroutines.Add(Timing.CallDelayed(0.1f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));
+				roundCoroutines.Add(Timing.CallDelayed(0.25f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));
 			}
 
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
