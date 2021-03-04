@@ -947,6 +947,9 @@ namespace SanyaPlugin.Patches
 					byte b = (byte)Mathf.Clamp(Mathf.RoundToInt(num * 10f * __instance.maximumDuration), 1, 255);
 					if(b >= effect.Intensity && num > 0f)
 					{
+						if(hub.characterClassManager.IsAnyScp())
+							hub.playerEffectsController.ChangeEffectIntensity<Flashed>(1);
+
 						num *= 2f;
 						hub.playerEffectsController.EnableEffect<Amnesia>(num * __instance.maximumDuration, true);
 						hub.playerEffectsController.EnableEffect<Deafened>(num * __instance.maximumDuration, true);
