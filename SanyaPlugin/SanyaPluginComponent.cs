@@ -119,8 +119,7 @@ namespace SanyaPlugin
 
 		private void CheckHighPing()
 		{
-			if(_detectHighPing) return;
-			if(_plugin.Config.PingLimit <= 0) return;
+			if(_plugin.Config.PingLimit <= 0 || !(_timer > 1f) || _detectHighPing) return;
 
 			if(LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping > _plugin.Config.PingLimit)
 			{

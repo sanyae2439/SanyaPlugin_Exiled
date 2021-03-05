@@ -160,14 +160,25 @@ namespace SanyaPlugin
 						string message = string.Empty;
 						if(scp079 != null && scp079.IsExmode() && last079cam != scp079.Camera)
 						{
-							foreach(var player in Player.List.Where(x => x.Team != Team.RIP && x.Team != Team.SCP))
+							bool generatordetected = false;
+							var generator = Generator079.Generators.Find(x => x.CurRoom.ToLower() == scp079.CurrentRoom.Name.ToLower());
+							if(generator != null && generator.isTabletConnected && !generator.prevFinish)
 							{
-								if(player.ReferenceHub.characterClassManager.IsHuman() && scp079.CurrentRoom != null && scp079.CurrentRoom.Players.Contains(player))
+								generatordetected = true;
+								message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{scp079.CurrentRoom.Type}</color></size>\n";
+							}
+
+							if(!generatordetected)
+							{
+								foreach(var player in Player.List.Where(x => x.Team != Team.RIP && x.Team != Team.SCP))
 								{
-									last079cam = scp079.Camera;
-									foundplayers.Add(player);
-									message = $"<color=#bbee00><size=25>SCP-079が{player.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
-									break;
+									if(player.ReferenceHub.characterClassManager.IsHuman() && scp079.CurrentRoom != null && scp079.CurrentRoom.Players.Contains(player))
+									{
+										last079cam = scp079.Camera;
+										foundplayers.Add(player);
+										message = $"<color=#bbee00><size=25>SCP-079が{player.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
+										break;
+									}
 								}
 							}
 						}

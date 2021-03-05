@@ -617,7 +617,12 @@ namespace SanyaPlugin.Patches
 						return false;
 					}
 					__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostBomb;
-					Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);
+
+					var players = player.CurrentRoom?.Players.Where(x => x.Team != Team.SCP);
+					if(players?.Count() > 0)
+						Methods.SpawnGrenade(players.Random().Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);
+					else
+						Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);	
 					return false;
 				}
 			}
