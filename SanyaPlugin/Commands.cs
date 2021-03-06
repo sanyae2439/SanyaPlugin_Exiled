@@ -86,6 +86,38 @@ namespace SanyaPlugin.Commands
 							return true;
 						}
 					}
+				case "frag":
+					{
+						var target = Player.Get(int.Parse(arguments.At(1)));
+
+						if(target != null)
+						{
+							Methods.SpawnGrenade(target.Position, false, -1, target.ReferenceHub);
+							response = $"{target.Nickname} ok.";
+							return true;
+						}
+						else
+						{
+							response = $"target is null.";
+							return false;
+						}
+					}
+				case "flash":
+					{
+						var target = Player.Get(int.Parse(arguments.At(1)));
+
+						if(target != null)
+						{
+							Methods.SpawnGrenade(target.Position, true, -1, target.ReferenceHub);
+							response = $"{target.Nickname} ok.";
+							return true;
+						}
+						else
+						{
+							response = $"target is null.";
+							return false;
+						}
+					}
 				case "scale":
 					{
 						var target = Player.Get(int.Parse(arguments.At(1)));
