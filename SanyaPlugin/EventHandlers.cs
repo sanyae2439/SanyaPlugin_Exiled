@@ -227,7 +227,9 @@ namespace SanyaPlugin
 
 		/** RoundVar **/
 		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
+		public readonly static Dictionary<string, uint> KillsDict = new Dictionary<string, uint>();
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
+		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
 		private Vector3 nextRespawnPos = Vector3.zero;
@@ -396,6 +398,7 @@ namespace SanyaPlugin
 			Coroutines.isAirBombGoing = false;
 
 			sortedDamages = DamagesDict.OrderByDescending(x => x.Value);
+			sortedKills = KillsDict.OrderByDescending(x => x.Value);
 		}
 		public void OnRestartingRound()
 		{
@@ -412,6 +415,8 @@ namespace SanyaPlugin
 			RoundSummary.singleton._roundEnded = true;
 			sortedDamages = null;
 			DamagesDict.Clear();
+			sortedKills = null;
+			KillsDict.Clear();
 			SanyaPluginComponent.scplists.Clear();
 		}
 		public void OnReloadConfigs()
@@ -668,6 +673,10 @@ namespace SanyaPlugin
 			//DamageDict
 			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
 				DamagesDict.Add(ev.Player.Nickname, 0);
+
+			//KillDict
+			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
+				KillsDict.Add(ev.Player.Nickname, 0);
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
@@ -964,6 +973,9 @@ namespace SanyaPlugin
 
 				Methods.SendSubtitle(str, (ushort)(str.Contains("t-minus") ? 30 : 10));
 			}
+
+			if(!RoundSummary.singleton._roundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Team))
+				KillsDict[ev.Killer.Nickname] += 1;
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{

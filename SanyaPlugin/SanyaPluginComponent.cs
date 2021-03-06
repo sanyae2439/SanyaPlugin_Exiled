@@ -266,18 +266,31 @@ namespace SanyaPlugin
 			if(RoundSummary.singleton._roundEnded && EventHandlers.sortedDamages != null)
 			{
 				int rankcounter = 1;
-				string damageList = string.Empty;
-				damageList += "Round Damage Ranking:\n";
+				string resultList = string.Empty;
+				resultList += "Round Damage Ranking:\n";
 				foreach(var stats in EventHandlers.sortedDamages)
 				{
 					if(stats.Value == 0) continue;
-					damageList += $"[{rankcounter}]{stats.Key}({stats.Value}Damage)\n";
+					resultList += $"[{rankcounter}]{stats.Key}({stats.Value}Damage)\n";
 					rankcounter++;
 					if(rankcounter > 5) break;
 				}
-				damageList.TrimEnd('\n');
+				resultList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(damageList, 6));
+				resultList += '\n';
+
+				resultList += "Round Kill Ranking:\n";
+				rankcounter = 1;
+				foreach(var stats in EventHandlers.sortedKills)
+				{
+					if(stats.Value == 0) continue;
+					resultList += $"[{rankcounter}]{stats.Key}({stats.Value}Kill)\n";
+					rankcounter++;
+					if(rankcounter > 5) break;
+				}
+				resultList.TrimEnd('\n');
+
+				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 12));
 			}
 			else if(player.Team == Team.SCP)
 			{
@@ -324,7 +337,7 @@ namespace SanyaPlugin
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
 				else
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
-			else
+			else if(!RoundSummary.singleton._roundEnded)
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
