@@ -138,7 +138,7 @@ namespace SanyaPlugin.Commands
 						{
 							response += $"[{i}]{arguments.At(i)}\n";
 						}
-						response.TrimEnd('\n');
+						response = response.TrimEnd('\n');
 						return true;
 					}
 				case "htest":

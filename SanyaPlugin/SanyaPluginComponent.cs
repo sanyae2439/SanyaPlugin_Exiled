@@ -300,7 +300,7 @@ namespace SanyaPlugin
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}\n";
 					else
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
-				scpList.TrimEnd('\n');
+				scpList = scpList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 6));
 			}
@@ -313,7 +313,7 @@ namespace SanyaPlugin
 				MtfList += $"<color=#6fc3ff>Cadet:{RoundSummary.singleton.CountRole(RoleType.NtfCadet)}</color>\n";
 				MtfList += $"<color=#0096ff>NTFScientist:{RoundSummary.singleton.CountRole(RoleType.NtfScientist)}</color>\n";
 				MtfList += $"<color=#ffff7c>Scientist:{RoundSummary.singleton.CountRole(RoleType.Scientist)}</color>\n";
-				MtfList.TrimEnd('\n');
+				MtfList = MtfList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 6));
 			}
@@ -322,7 +322,7 @@ namespace SanyaPlugin
 				string CiList = string.Empty;
 				CiList += $"<color=#008f1e>ChaosInsurgency:{RoundSummary.singleton.CountRole(RoleType.ChaosInsurgency)}</color>\n";
 				CiList += $"<color=#ff8e00>ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}</color>\n";
-				CiList.TrimEnd('\n');
+				CiList = CiList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 6));
 			}
