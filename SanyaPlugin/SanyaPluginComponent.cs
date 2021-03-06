@@ -235,13 +235,13 @@ namespace SanyaPlugin
 
 		private void UpdateScpLists()
 		{
-			if((player.Team != Team.SCP || player.Role == RoleType.Scp0492) && scplists.Contains(player))
+			if(player.Team != Team.SCP && scplists.Contains(player))
 			{
 				scplists.Remove(player);
 				return;
 			}
 
-			if(player.Team == Team.SCP && player.Role != RoleType.Scp0492 && !scplists.Contains(player))
+			if(player.Team == Team.SCP && !scplists.Contains(player))
 			{
 				scplists.Add(player);
 				return;
@@ -295,11 +295,16 @@ namespace SanyaPlugin
 			else if(player.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
+				int scp0492counter = 0;
 				foreach(var scp in scplists)
-					if(scp.Role == RoleType.Scp079)
+					if(scp.Role == RoleType.Scp0492)
+						scp0492counter++;
+					else if(scp.Role == RoleType.Scp079)
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}\n";
 					else
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
+				if(scp0492counter > 0)
+					scpList += $"SCP-049-2:({scp0492counter})\n";
 				scpList = scpList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 6));
