@@ -277,8 +277,6 @@ namespace SanyaPlugin
 				}
 				resultList.TrimEnd('\n');
 
-				resultList += '\n';
-
 				resultList += "Round Kill Ranking:\n";
 				rankcounter = 1;
 				foreach(var stats in EventHandlers.sortedKills)
@@ -337,7 +335,7 @@ namespace SanyaPlugin
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
 				else
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
-			else if(!RoundSummary.singleton._roundEnded)
+			else if(!RoundSummary.singleton._roundEnded && EventHandlers.sortedKills != null)
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
