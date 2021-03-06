@@ -338,6 +338,8 @@ namespace SanyaPlugin
 				else
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
 			else if(!RoundSummary.singleton._roundEnded && EventHandlers.sortedKills != null)
+				curText = curText.Replace("[CENTER_UP]", string.Empty);
+			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
