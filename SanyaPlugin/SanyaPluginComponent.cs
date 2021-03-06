@@ -275,7 +275,9 @@ namespace SanyaPlugin
 					rankcounter++;
 					if(rankcounter > 5) break;
 				}
-				resultList.TrimEnd('\n');
+				resultList = resultList.TrimEnd('\n');
+
+				resultList += '\n';
 
 				resultList += "Round Kill Ranking:\n";
 				rankcounter = 1;
@@ -286,7 +288,7 @@ namespace SanyaPlugin
 					rankcounter++;
 					if(rankcounter > 5) break;
 				}
-				resultList.TrimEnd('\n');
+				resultList = resultList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 12));
 			}
