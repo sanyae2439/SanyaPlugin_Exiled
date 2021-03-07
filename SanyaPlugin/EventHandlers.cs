@@ -845,6 +845,8 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)
 			{
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Poisoned>(3f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(3f);
 			}
 
 			//SCP-049-2 Effect

@@ -61,7 +61,7 @@ namespace SanyaPlugin
 			CheckVoiceChatting();
 			CheckRadioRader();
 			CheckSinkholeDistance();
-			
+
 			UpdateMyCustomText();
 			UpdateRespawnCounter();
 			UpdateScpLists();
@@ -312,6 +312,22 @@ namespace SanyaPlugin
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
 				else
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
+			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
+				switch(scp096.PlayerState)
+				{
+					case PlayableScps.Scp096PlayerState.Enraging:
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
+						break;
+					case PlayableScps.Scp096PlayerState.Enraged:
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s", 6));
+						break;
+					case PlayableScps.Scp096PlayerState.Calming:
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Calming:{Mathf.RoundToInt(scp096._calmingTime)}s", 6));
+						break;
+					default:
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
+						break;
+				}
 			else if(!RoundSummary.singleton._roundEnded && EventHandlers.sortedKills != null)
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			else
