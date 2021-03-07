@@ -270,6 +270,12 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXのキル時回復量")]
 		public int Scp939RecoveryAmount { get; set; } = 0;
 
+		[Description("SCP-939-XXのサイズ")]
+		public float Scp939ScaleMultiplier { get; set; } = 1f;
+
+		[Description("SCP-939-XXがHPの量で加速する")]
+		public bool Scp939SpeedupByHealthAmount { get; set; } = false;
+
 		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
 		public bool Scp939AttackBleeding { get; set; } = false;
 

@@ -884,26 +884,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//prevent
-	[HarmonyPatch(typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot))]
-	public static class Scp939PreventRpc
-	{
-		public static bool Prefix(Scp939PlayerScript __instance)
-		{
-			if(SanyaPlugin.Instance.Config.Scp939FakeHumansRange < 0) return true;
-
-			MirrorExtensions.SendFakeTargetRpc(Player.Get(__instance.gameObject), __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
-			foreach(var target in Player.List.Where(x => x.Team == Team.SCP || x.Team == Team.RIP))
-				MirrorExtensions.SendFakeTargetRpc(target, __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
-
-			foreach(var sanyacomp in UnityEngine.GameObject.FindObjectsOfType<SanyaPluginComponent>())
-				if(!sanyacomp.Faked939s.Contains(__instance))
-					MirrorExtensions.SendFakeTargetRpc(sanyacomp.player, __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
-
-			return false;
-		}
-	}
-
 	//not override
 	[HarmonyPatch(typeof(Scp173PlayerScript), nameof(Scp173PlayerScript.Start))]
 	public static class Scp173BlinktimePatch
@@ -1037,6 +1017,46 @@ namespace SanyaPlugin.Patches
 			{
 				Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkhole, target.TransformPoint(gameObject.transform.InverseTransformPoint(SanyaPlugin.Instance.Handlers.Sinkhole.transform.position)));
 			}
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(Scp939_VisionController), nameof(Scp939_VisionController.CanSee))]
+	public static class Scp939OverAllPatch
+	{
+		public static void Postfix(Scp939_VisionController __instance, Scp939PlayerScript scp939, ref bool __result)
+		{
+			if(SanyaPlugin.Instance.Handlers.Overrided != null && scp939._hub.nicknameSync.Network_myNickSync == SanyaPlugin.Instance.Handlers.Overrided.Nickname)
+				__result = true;
+		}
+	}
+
+	//transpiler
+	[HarmonyPatch(typeof(Scp207), nameof(Scp207.PublicUpdate))]
+	public static class Scp207PreventDamageForScpPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ret);
+			var brindex = newInst.FindIndex(x => x.opcode == OpCodes.Brtrue_S);
+			var exitlabel = newInst[index + 1].labels[0];
+			var retlabel = newInst[index].labels[0];
+
+			newInst[brindex].opcode = OpCodes.Brfalse_S;
+			newInst[brindex].operand = retlabel;
+
+			newInst.InsertRange(index, new[]{
+				new CodeInstruction(OpCodes.Ldarg_0),
+				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlayerEffect),nameof(PlayerEffect.Hub))),
+				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub),nameof(ReferenceHub.characterClassManager))),
+				new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(CharacterClassManager),nameof(CharacterClassManager.IsAnyScp))),
+				new CodeInstruction(OpCodes.Brfalse_S, exitlabel)
+			});
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
 		}
 	}
 

@@ -20,7 +20,6 @@ namespace SanyaPlugin
 
 		public Player player { get; private set; }
 		public bool DisableHud = false;
-		public readonly HashSet<Scp939PlayerScript> Faked939s = new HashSet<Scp939PlayerScript>();
 
 		private SanyaPlugin _plugin;
 
@@ -61,7 +60,6 @@ namespace SanyaPlugin
 			CheckTraitor();
 			CheckVoiceChatting();
 			CheckRadioRader();
-			CheckFake939();
 			CheckSinkholeDistance();
 			
 			UpdateMyCustomText();
@@ -137,34 +135,6 @@ namespace SanyaPlugin
 				&& player.GameObject.TryGetComponent(out Radio radio)
 				&& (radio.isVoiceChatting || radio.isTransmitting))
 				player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
-		}
-
-		private void CheckFake939()
-		{
-			if(SanyaPlugin.Instance.Config.Scp939FakeHumansRange < 0) return;
-
-			foreach(var scp939 in Scp939PlayerScript.instances)
-			{
-				bool isNear = false;
-				if(Vector3.Distance(scp939._hub.playerMovementSync.RealModelPosition, player.Position) < SanyaPlugin.Instance.Config.Scp939FakeHumansRange) isNear = true;
-
-				if(!Faked939s.Contains(scp939))
-				{
-					if(!isNear && player.IsHuman()) 
-					{
-						Faked939s.Add(scp939);
-						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(player.ReferenceHub, scp939._hub, player.Role, (ItemType)UnityEngine.Random.Range((int)ItemType.KeycardJanitor, (int)ItemType.Coin))));
-					}
-				}
-				else
-				{
-					if(isNear || !player.IsHuman())
-					{
-						Faked939s.Remove(scp939);
-						SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp939SetFake(player.ReferenceHub, scp939._hub, scp939._hub.characterClassManager.CurClass, ItemType.None)));
-					}
-				}
-			}
 		}
 
 		private void CheckRadioRader()

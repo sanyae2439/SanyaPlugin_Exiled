@@ -749,6 +749,20 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
 			}
 
+			//939Effect
+			if(ev.NewRole.Is939() && plugin.Config.Scp939ScaleMultiplier != 1f)
+			{
+				ev.Player.Scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
+				if(plugin.Config.Scp939SpeedupByHealthAmount)
+				{
+					roundCoroutines.Add(Timing.CallDelayed(1f, () => {
+						ev.Player.ChangeEffectIntensity<Scp207>(1);
+					}));
+				}
+			}
+			else if(ev.Player.Scale != Vector3.one)
+				ev.Player.Scale = Vector3.one;
+
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
@@ -876,6 +890,20 @@ namespace SanyaPlugin
 
 			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.Contain)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
+
+			//939Effect
+			if(ev.Target.Role.Is939())
+			{
+				var percent = (int)(100f - (Mathf.Clamp01(1f - (ev.Target.ReferenceHub.playerStats.Health - ev.Amount) / (float)ev.Target.ReferenceHub.characterClassManager.CurRole.maxHP)) * 100f);
+				var scp207 = ev.Target.GetEffect(Exiled.API.Enums.EffectType.Scp207);
+
+				if(75 > percent && scp207.Intensity == 1)
+					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(2);
+				else if(50 > percent && scp207.Intensity == 2)
+					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(3);
+				else if(25 > percent && scp207.Intensity == 3)
+					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(4);
+			}
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}
