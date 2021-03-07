@@ -750,7 +750,7 @@ namespace SanyaPlugin
 			}
 
 			//939Effect
-			if(ev.NewRole.Is939() && plugin.Config.Scp939ScaleMultiplier != 1f)
+			if(plugin.Config.Scp939ScaleMultiplier != 1f && ev.NewRole.Is939())
 			{
 				ev.Player.Scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
 				if(plugin.Config.Scp939SpeedupByHealthAmount)
@@ -892,7 +892,7 @@ namespace SanyaPlugin
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			//939Effect
-			if(ev.Target.Role.Is939())
+			if(plugin.Config.Scp939SpeedupByHealthAmount && ev.Target.Role.Is939())
 			{
 				var percent = (int)(100f - (Mathf.Clamp01(1f - (ev.Target.ReferenceHub.playerStats.Health - ev.Amount) / (float)ev.Target.ReferenceHub.characterClassManager.CurRole.maxHP)) * 100f);
 				var scp207 = ev.Target.GetEffect(Exiled.API.Enums.EffectType.Scp207);
