@@ -842,10 +842,9 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.FalldamageMultiplier;
 
 			//SCP-939 Bleeding
-			if(plugin.Config.Scp939AttackBleeding && ev.DamageType == DamageTypes.Scp939)
+			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)
 			{
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Bleeding>();
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Hemorrhage>();
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
 			}
 
 			//SCP-049-2 Effect
@@ -1053,15 +1052,14 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnDequippedMedicalItem] {ev.Player.Nickname} -> {ev.Item}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(ev.Item == ItemType.Medkit || ev.Item == ItemType.SCP500)
-			{
-				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Hemorrhage>();
-				ev.Player.ReferenceHub.playerEffectsController.DisableEffect<Bleeding>();
-			}
-
 			if(ev.Item == ItemType.SCP500)
 			{
 				ev.Player.ReferenceHub.playerStats.unsyncedArtificialHealth = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
+				ev.Player.ReferenceHub.fpc.ResetStamina();
+			}
+
+			if(ev.Item == ItemType.Adrenaline)
+			{
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 			}
 		}

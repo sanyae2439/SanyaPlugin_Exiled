@@ -276,8 +276,8 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXがHPの量で加速する")]
 		public bool Scp939SpeedupByHealthAmount { get; set; } = false;
 
-		[Description("SCP-939-XXの攻撃に出血エフェクトを追加する")]
-		public bool Scp939AttackBleeding { get; set; } = false;
+		[Description("SCP-939-XXの攻撃にエフェクトを追加する")]
+		public bool Scp939AttackEffect { get; set; } = false;
 
 		[Description("SCP-939-XXの攻撃で死体を発生させない")]
 		public bool Scp939RemoveRagdoll { get; set; } = false;
