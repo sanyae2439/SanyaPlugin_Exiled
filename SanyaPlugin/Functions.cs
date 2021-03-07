@@ -489,9 +489,9 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> Scp939SetFake(ReferenceHub human, ReferenceHub scp939, RoleType targetRole, ItemType targetItem)
 		{
 			var Phuman = Player.Get(human);
-			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), targetRole);
+			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), (sbyte)targetRole);
 			yield return Timing.WaitForSeconds(0.25f);
-			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), targetItem);
+			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), (int)targetItem);
 			yield break;
 		}
 
