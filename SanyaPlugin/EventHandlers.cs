@@ -841,7 +841,7 @@ namespace SanyaPlugin
 			if(ev.DamageType == DamageTypes.Falldown)
 				ev.Amount *= plugin.Config.FalldamageMultiplier;
 
-			//SCP-939 Bleeding
+			//SCP-939 Effect
 			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)
 			{
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
