@@ -315,10 +315,17 @@ namespace SanyaPlugin
 			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
 				switch(scp096.PlayerState)
 				{
+					case PlayableScps.Scp096PlayerState.Docile:
+						if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Docile:{ Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
+						else if(scp096._preWindupTime > 0f) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"PreWindup:{ Mathf.RoundToInt(scp096._preWindupTime)}s", 6));
+						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("Ready", 6));
+						break;
 					case PlayableScps.Scp096PlayerState.Enraging:
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.Enraged:
+					case PlayableScps.Scp096PlayerState.Attacking:
+					case PlayableScps.Scp096PlayerState.Charging:
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.Calming:
