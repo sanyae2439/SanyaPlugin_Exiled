@@ -64,10 +64,6 @@
       <HintPath>References\Exiled.Loader.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Exiled.MirrorExtensions">
-      <HintPath>References\Exiled.MirrorExtensions.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Exiled.Permissions">
       <HintPath>References\Exiled.Permissions.dll</HintPath>
       <Private>False</Private>

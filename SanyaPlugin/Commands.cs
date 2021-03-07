@@ -3,7 +3,7 @@ using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
-using Exiled.MirrorExtensions;
+using Exiled.API.Extensions;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
@@ -208,7 +208,7 @@ namespace SanyaPlugin.Commands
 
 						if(!isActwatchEnabled)
 						{
-							player.SendCustomSyncObject(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);
@@ -220,7 +220,7 @@ namespace SanyaPlugin.Commands
 						}
 						else
 						{
-							player.SendCustomSyncObject(player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
 								writer.WritePackedUInt64(1ul);
 								writer.WritePackedUInt32((uint)1);

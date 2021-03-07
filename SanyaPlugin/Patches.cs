@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Assets._Scripts.Dissonance;
 using CustomPlayerEffects;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
-using Exiled.MirrorExtensions;
 using Exiled.Permissions.Extensions;
 using Grenades;
 using HarmonyLib;
@@ -892,13 +892,13 @@ namespace SanyaPlugin.Patches
 		{
 			if(SanyaPlugin.Instance.Config.Scp939FakeHumansRange < 0) return true;
 
-			Player.Get(__instance.gameObject)?.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+			MirrorExtensions.SendFakeTargetRpc(Player.Get(__instance.gameObject), __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 			foreach(var target in Player.List.Where(x => x.Team == Team.SCP || x.Team == Team.RIP))
-				target.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+				MirrorExtensions.SendFakeTargetRpc(target, __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 
 			foreach(var sanyacomp in UnityEngine.GameObject.FindObjectsOfType<SanyaPluginComponent>())
 				if(!sanyacomp.Faked939s.Contains(__instance))
-					sanyacomp.player.SendCustomTargetRpc(__instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
+					MirrorExtensions.SendFakeTargetRpc(sanyacomp.player, __instance.netIdentity, typeof(Scp939PlayerScript), nameof(Scp939PlayerScript.RpcShoot), Array.Empty<object>());
 
 			return false;
 		}

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using CustomPlayerEffects;
 using Dissonance.Integrations.MirrorIgnorance;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
-using Exiled.MirrorExtensions;
 using Hints;
 using Interactables.Interobjects.DoorUtils;
 using MEC;
@@ -489,9 +489,9 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> Scp939SetFake(ReferenceHub human, ReferenceHub scp939, RoleType targetRole, ItemType targetItem)
 		{
 			var Phuman = Player.Get(human);
-			Phuman.SendCustomSyncVar(scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), targetRole);
+			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), targetRole);
 			yield return Timing.WaitForSeconds(0.25f);
-			Phuman.SendCustomSyncVar(scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), targetItem);
+			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), targetItem);
 			yield break;
 		}
 
@@ -756,18 +756,6 @@ namespace SanyaPlugin.Functions
 				if(identity.name == "Sinkhole")
 					return identity;
 			return null;
-		}
-
-		// Example:SyncVar
-		public static void SetTargetOnlyVisibleBadge(this Player target, string text)
-		{
-			target.SendCustomSyncVar(target.ReferenceHub.networkIdentity, typeof(ServerRoles), nameof(ServerRoles.NetworkMyText), text);
-		}
-
-		// Example:TargetRpc
-		public static void TargetShake(this Player target, bool achieve)
-		{
-			target.SendCustomTargetRpc(AlphaWarheadController.Host.netIdentity, typeof(AlphaWarheadController), nameof(AlphaWarheadController.RpcShake), new object[] { achieve });
 		}
 	}
 
