@@ -878,7 +878,10 @@ namespace SanyaPlugin
 						ev.Amount *= plugin.Config.Scp049DamageMultiplier;
 						break;
 					case RoleType.Scp096:
-						ev.Amount *= plugin.Config.Scp096DamageMultiplier;
+						if(ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.PlayerState == PlayableScps.Scp096PlayerState.Enraging)
+							ev.Amount *= plugin.Config.Scp096EnragingDamageMultiplier;
+						else
+							ev.Amount *= plugin.Config.Scp096DamageMultiplier;
 						break;
 					case RoleType.Scp0492:
 						ev.Amount *= plugin.Config.Scp0492DamageMultiplier;
@@ -898,12 +901,8 @@ namespace SanyaPlugin
 				var percent = (int)(100f - (Mathf.Clamp01(1f - (ev.Target.ReferenceHub.playerStats.Health - ev.Amount) / (float)ev.Target.ReferenceHub.characterClassManager.CurRole.maxHP)) * 100f);
 				var scp207 = ev.Target.GetEffect(Exiled.API.Enums.EffectType.Scp207);
 
-				if(75 > percent && scp207.Intensity == 1)
+				if(50 > percent && scp207.Intensity == 1)
 					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(2);
-				else if(50 > percent && scp207.Intensity == 2)
-					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(3);
-				else if(25 > percent && scp207.Intensity == 3)
-					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(4);
 			}
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
@@ -1056,8 +1055,10 @@ namespace SanyaPlugin
 
 			if(ev.Item == ItemType.SCP500)
 			{
+				ev.Player.DisableAllEffects();
 				ev.Player.ReferenceHub.playerStats.unsyncedArtificialHealth = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
 				ev.Player.ReferenceHub.fpc.ResetStamina();
+				ev.Player.EnableEffect<Invigorated>(20f);
 			}
 
 			if(ev.Item == ItemType.Adrenaline)
@@ -1184,12 +1185,22 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnUpgradingItems] {ev.KnobSetting} Players:{ev.Players.Count} Items:{ev.Items.Count}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.Scp914Death)
+			if(plugin.Config.Scp914Debuff)
 			{
 				foreach(var player in ev.Players)
 				{
-					player.Inventory.Clear();
-					player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), player.GameObject);
+					if(player.IsScp)
+					{
+						player.Inventory.Clear();
+						player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), player.GameObject);
+					}
+					else
+					{
+						player.EnableEffect<Disabled>();
+						player.EnableEffect<Poisoned>();
+						player.EnableEffect<Concussed>();
+						player.EnableEffect<Exhausted>();
+					}
 				}
 
 				var coliders = Physics.OverlapBox(ev.Scp914.output.position, ev.Scp914.inputSize / 2f);
@@ -1197,8 +1208,18 @@ namespace SanyaPlugin
 				{
 					if(colider.TryGetComponent(out CharacterClassManager ccm))
 					{
-						ccm._hub.inventory.Clear();
-						ccm._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), ccm.gameObject);
+						if(ccm._hub.characterClassManager.IsAnyScp())
+						{
+							ccm._hub.inventory.Clear();
+							ccm._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), ccm.gameObject);
+						}
+						else
+						{
+							ccm._hub.playerEffectsController.EnableEffect<Disabled>();
+							ccm._hub.playerEffectsController.EnableEffect<Poisoned>();
+							ccm._hub.playerEffectsController.EnableEffect<Concussed>();
+							ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
+						}
 					}
 				}
 			}

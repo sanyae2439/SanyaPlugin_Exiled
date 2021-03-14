@@ -83,6 +83,9 @@ namespace SanyaPlugin
 		public List<string> RemoveScp914Recipe { get; set; } = new List<string>();
 		public List<ItemType> RemoveScp914RecipeParsed = new List<ItemType>();
 
+		[Description("追加でアイテムを設置する")]
+		public bool SpawnAddItems { get; set; } = false;
+
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
@@ -189,8 +192,8 @@ namespace SanyaPlugin
 		[Description("落下のダメージ乗数")]
 		public float FalldamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-914に入ると死亡する")]
-		public bool Scp914Death { get; set; } = false;
+		[Description("SCP-914に入ると悪影響を受ける")]
+		public bool Scp914Debuff { get; set; } = false;
 
 		[Description("SCP-018のダメージ乗数")]
 		public float Scp018DamageMultiplier { get; set; } = 1f;
@@ -227,6 +230,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-096に触れると発狂するようになる距離")]
 		public float Scp096TouchEnrageDistance { get; set; } = -1f;
+
+		[Description("SCP-096の発狂時のダメージ乗数")]
+		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-106の被ダメージ乗数")]
 		public float Scp106DamageMultiplier { get; set; } = 1f;

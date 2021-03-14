@@ -52,7 +52,14 @@ namespace SanyaPlugin.Commands
 			{
 				case "test":
 					{
-						response = $"test ok.";
+						response = $"test ok.\n";
+						// testing zone start
+
+						response += "";
+
+						// testing zone end
+						response = response.TrimEnd('\n');
+
 						return true;
 					}
 				case "doortest":
