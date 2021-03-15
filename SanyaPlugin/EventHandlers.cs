@@ -755,7 +755,8 @@ namespace SanyaPlugin
 				ev.Player.Scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
 				if(plugin.Config.Scp939SpeedupByHealthAmount)
 				{
-					roundCoroutines.Add(Timing.CallDelayed(1f, () => {
+					roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+					{
 						ev.Player.ChangeEffectIntensity<Scp207>(1);
 					}));
 				}
@@ -1196,10 +1197,16 @@ namespace SanyaPlugin
 					}
 					else
 					{
-						player.EnableEffect<Disabled>();
-						player.EnableEffect<Poisoned>();
-						player.EnableEffect<Concussed>();
-						player.EnableEffect<Exhausted>();
+						foreach(var syncItemInfo in player.Inventory.items)
+							ev.Items.Add(player.Inventory.SetPickup(syncItemInfo.id, syncItemInfo.durability, player.Position, player.CameraTransform.rotation, syncItemInfo.modSight, syncItemInfo.modBarrel, syncItemInfo.modOther, true));
+						player.Inventory.Clear();
+						player.SetRole(RoleType.Scp0492, true, false);
+						roundCoroutines.Add(Timing.CallDelayed(1f, () => {
+							player.EnableEffect<Disabled>();
+							player.EnableEffect<Poisoned>();
+							player.EnableEffect<Concussed>();
+							player.EnableEffect<Exhausted>();
+						}));
 					}
 				}
 
@@ -1208,18 +1215,10 @@ namespace SanyaPlugin
 				{
 					if(colider.TryGetComponent(out CharacterClassManager ccm))
 					{
-						if(ccm._hub.characterClassManager.IsAnyScp())
-						{
-							ccm._hub.inventory.Clear();
-							ccm._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0), ccm.gameObject);
-						}
-						else
-						{
-							ccm._hub.playerEffectsController.EnableEffect<Disabled>();
-							ccm._hub.playerEffectsController.EnableEffect<Poisoned>();
-							ccm._hub.playerEffectsController.EnableEffect<Concussed>();
-							ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
-						}
+						ccm._hub.playerEffectsController.EnableEffect<Disabled>();
+						ccm._hub.playerEffectsController.EnableEffect<Poisoned>();
+						ccm._hub.playerEffectsController.EnableEffect<Concussed>();
+						ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
 					}
 				}
 			}

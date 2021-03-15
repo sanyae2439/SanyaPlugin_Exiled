@@ -1103,10 +1103,10 @@ namespace SanyaPlugin.Patches
 			var misclocker_4 = list.First(x => x.itemTag == "misclocker" && x.inventoryId == ItemType.KeycardScientist);
 			misclocker_4.inventoryId = ItemType.KeycardContainmentEngineer;
 			misclocker_4.copies = 0;
-			misclocker_4.chanceOfSpawn = 50;
+			misclocker_4.chanceOfSpawn = 10;
 
 			var misclocker_5 = list.First(x => x.itemTag == "misclocker" && x.inventoryId == ItemType.KeycardScientist);
-			misclocker_5.inventoryId = ItemType.KeycardChaosInsurgency;
+			misclocker_5.inventoryId = ItemType.KeycardNTFLieutenant;
 			misclocker_5.copies = 0;
 			misclocker_5.chanceOfSpawn = 50;
 
