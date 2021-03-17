@@ -66,9 +66,6 @@ namespace SanyaPlugin
 		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
 		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
 
-		[Description("研究員のスポーン位置を変更する")]
-		public bool ScientistsChangeSpawnPos { get; set; } = false;
-
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 
@@ -113,8 +110,8 @@ namespace SanyaPlugin
 		[Description("プレイヤー情報のMTF関係を無効にする")]
 		public bool PlayersInfoDisableFollow { get; set; } = false;
 
-		[Description("核カウントダウンキャンセル時に全ドアを閉じる")]
-		public bool CloseDoorsOnNukecancel { get; set; } = false;
+		[Description("リスポーンアナウンスを無効にする")]
+		public bool DisableEntranceAnnounce { get; set; } = false;
 
 		[Description("発電機のアンロックと同時にドアを開ける")]
 		public bool GeneratorUnlockOpen { get; set; } = false;
@@ -146,8 +143,14 @@ namespace SanyaPlugin
 		[Description("ラウンド待機時のチュートリアルモード")]
 		public bool WaitingTutorials { get; set; } = false;
 
+		[Description("研究員のスポーン位置を変更する")]
+		public bool ScientistsChangeSpawnPos { get; set; } = false;
+
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
+
+		[Description("初回リスポーンの秒数の乗数")]
+		public float FirstRespawnTimeMultiplier { get; set; } = 1f;
 
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
@@ -192,6 +195,10 @@ namespace SanyaPlugin
 		[Description("落下のダメージ乗数")]
 		public float FalldamageMultiplier { get; set; } = 1f;
 
+		[Description("初期スポーンから除外するSCP")]
+		public List<string> DisabledSpawnScps { get; set; } = new List<string>();
+		public List<RoleType> DisabledSpawnScpsParsed = new List<RoleType>();
+
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 
@@ -200,9 +207,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-049の被ダメージ乗数")]
 		public float Scp049DamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-049の治療成功時回復量")]
-		public int Scp049RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-049の治療成功時追加AHP量")]
 		public int Scp049CureAhpAmount { get; set; } = 0;
@@ -213,17 +217,11 @@ namespace SanyaPlugin
 		[Description("SCP-049-2の被ダメージ乗数")]
 		public float Scp0492DamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-049-2のキル時回復量")]
-		public int Scp0492RecoveryAmount { get; set; } = 0;
-
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
 
 		[Description("SCP-096の被ダメージ乗数")]
 		public float Scp096DamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-096のキル時回復量")]
-		public int Scp096RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-096の一人当たりの増加AHP量")]
 		public int Scp096ShieldPerTargets { get; set; } = 70;
@@ -258,9 +256,6 @@ namespace SanyaPlugin
 		[Description("SCP-173の被ダメージ乗数")]
 		public float Scp173DamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-173のキル時回復量")]
-		public int Scp173RecoveryAmount { get; set; } = 0;
-
 		[Description("SCP-173の被視認者に応じて増加するAHPの一人当たりの量")]
 		public int Scp173SeeingByHumansAhpAmount { get; set; } = 0;
 
@@ -272,9 +267,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXの被ダメージ乗数")]
 		public float Scp939DamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-939-XXのキル時回復量")]
-		public int Scp939RecoveryAmount { get; set; } = 0;
 
 		[Description("SCP-939-XXのサイズ")]
 		public float Scp939ScaleMultiplier { get; set; } = 1f;
@@ -489,6 +481,7 @@ namespace SanyaPlugin
 				ItemCleanupIgnoreParsed.Clear();
 				RemoveScp914RecipeParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
+				DisabledSpawnScps.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -509,6 +502,10 @@ namespace SanyaPlugin
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))
 						AltvoicechatScpsParsed.Add(role);
+
+				foreach(var item in DisabledSpawnScps)
+					if(Enum.TryParse(item, out RoleType role))
+						DisabledSpawnScpsParsed.Add(role);
 			}
 			catch(Exception ex)
 			{

@@ -15,6 +15,7 @@ using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MEC;
 using Mirror;
+using Respawning;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
@@ -272,7 +273,11 @@ namespace SanyaPlugin
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 			Sinkhole = Methods.GetSinkHoleHazard();
-			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, Map.GetRandomSpawnPoint(RoleType.Scp106) - (-Vector3.down * 4));
+			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnPointForConflict() - (-Vector3.down * 4));
+
+			if(plugin.Config.DisabledSpawnScpsParsed.Count > 0)
+				foreach(var role in plugin.Config.DisabledSpawnScpsParsed)
+					ReferenceHub.HostHub.characterClassManager.Classes.First(x => x.roleId == role).banClass = true;
 
 			if(plugin.Config.AddDoorsOnSurface)
 			{
@@ -349,6 +354,8 @@ namespace SanyaPlugin
 		public void OnRoundStarted()
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
+
+			RespawnManager.Singleton._timeForNextSequence *= plugin.Config.FirstRespawnTimeMultiplier;
 
 			switch(eventmode)
 			{
@@ -439,8 +446,8 @@ namespace SanyaPlugin
 				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
-					poslist.Add(RoleType.Scp049.GetRandomSpawnPoint());
-					poslist.Add(RoleType.Scp93953.GetRandomSpawnPoint());
+					poslist.Add(RoleType.Scp049.GetRandomSpawnPointForConflict());
+					poslist.Add(RoleType.Scp93953.GetRandomSpawnPointForConflict());
 
 					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
@@ -519,6 +526,13 @@ namespace SanyaPlugin
 							break;
 						}
 				}
+		}
+		public void OnAnnouncingNtfEntrance(AnnouncingNtfEntranceEventArgs ev)
+		{
+			Log.Debug($"[OnAnnouncingNtfEntrance] {ev.UnitName}:{ev.UnitNumber}:{ev.ScpsLeft}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.DisableEntranceAnnounce)
+				ev.IsAllowed = false;
 		}
 		public void OnDecontaminating(DecontaminatingEventArgs ev)
 		{
@@ -789,16 +803,14 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnSpawning] {ev.Player.Nickname}(old:{ev.Player.ReferenceHub.characterClassManager._prevId}) -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
+				ev.Position = RoleType.FacilityGuard.GetRandomSpawnPointForConflict();
+
 			if(plugin.Config.RandomRespawnPosPercent > 0
 				&& ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.Spectator
 				&& (ev.RoleType.GetTeam() == Team.MTF || ev.RoleType.GetTeam() == Team.CHI)
 				&& nextRespawnPos != Vector3.zero)
 				ev.Position = nextRespawnPos;
-
-			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
-			{
-				ev.Position = Map.GetRandomSpawnPoint(RoleType.FacilityGuard);
-			}
 
 			switch(eventmode)
 			{
@@ -940,27 +952,6 @@ namespace SanyaPlugin
 					);
 				}
 				scp049stackAmount++;
-			}
-
-			//SCPsRecovery
-			switch(ev.Killer.Role)
-			{
-				case RoleType.Scp173:
-					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp173RecoveryAmount, 0, ev.Killer.MaxHealth);
-					break;
-				case RoleType.Scp106:
-					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp106RecoveryAmount, 0, ev.Killer.MaxHealth);
-					break;
-				case RoleType.Scp096:
-					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp096RecoveryAmount, 0, ev.Killer.MaxHealth);
-					break;
-				case RoleType.Scp0492:
-					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp0492RecoveryAmount, 0, ev.Killer.MaxHealth);
-					break;
-				case RoleType.Scp93953:
-				case RoleType.Scp93989:
-					ev.Killer.Health = Mathf.Clamp(ev.Killer.Health + plugin.Config.Scp939RecoveryAmount, 0, ev.Killer.MaxHealth);
-					break;
 			}
 
 			//CassieSubtitle
@@ -1133,8 +1124,6 @@ namespace SanyaPlugin
 		public void OnFinishingRecall(FinishingRecallEventArgs ev)
 		{
 			Log.Debug($"[OnFinishingRecall] {ev.Scp049.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			ev.Scp049.Health = Mathf.Clamp(ev.Scp049.Health + plugin.Config.Scp049RecoveryAmount, 0, ev.Scp049.MaxHealth);
 
 			if(plugin.Config.Scp049CureAhpAmount > 0)
 			{

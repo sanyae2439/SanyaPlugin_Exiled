@@ -26,7 +26,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(2, 8, 0);
+		public override Version RequiredExiledVersion => new Version(2, 9, 4);
 
 		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
@@ -85,6 +85,7 @@ namespace SanyaPlugin
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
+			MapEvents.AnnouncingNtfEntrance += Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting += Handlers.OnStarting;
@@ -120,6 +121,8 @@ namespace SanyaPlugin
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
+			MapEvents.AnnouncingNtfEntrance -= Handlers.OnAnnouncingNtfEntrance;
+			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;

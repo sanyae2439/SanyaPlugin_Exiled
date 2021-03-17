@@ -431,7 +431,7 @@ namespace SanyaPlugin.Functions
 
 			if(!Physics.Raycast(player.Position, -Vector3.up, 50f, player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
 			{
-				player.Position = Map.GetRandomSpawnPoint(RoleType.Scp106);
+				player.Position = RoleType.Scp106.GetRandomSpawnPointForConflict();
 				yield break;
 			}
 
@@ -807,6 +807,8 @@ namespace SanyaPlugin.Functions
 		{
 			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, null, time));
 		}
+
+		public static Vector3 GetRandomSpawnPointForConflict(this RoleType role) => Exiled.API.Extensions.Role.GetRandomSpawnPoint(role);
 
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
 		{

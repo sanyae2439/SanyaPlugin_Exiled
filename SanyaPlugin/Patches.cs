@@ -222,7 +222,7 @@ namespace SanyaPlugin.Patches
 			if(PlayerManager.localPlayer == null || SeedSynchronizer.Seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{regular}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
+			if(SanyaPlugin.Instance.Config.CassieSubtitle && !SanyaPlugin.Instance.Config.DisableEntranceAnnounce)
 			{
 				int SCPCount = 0;
 
@@ -246,6 +246,7 @@ namespace SanyaPlugin.Patches
 		{
 			Log.Debug($"[RespawnEffectPatch] {type}:{team}", SanyaPlugin.Instance.Config.IsDebugged);
 			if(SanyaPlugin.Instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated && type == RespawnEffectsController.EffectType.Selection) return false;
+			if(SanyaPlugin.Instance.Config.DisableEntranceAnnounce && type == RespawnEffectsController.EffectType.UponRespawn) return false;
 			else return true;
 		}
 	}
@@ -1101,9 +1102,8 @@ namespace SanyaPlugin.Patches
 			misclocker_3.copies = 0;
 
 			var misclocker_4 = list.First(x => x.itemTag == "misclocker" && x.inventoryId == ItemType.KeycardScientist);
-			misclocker_4.inventoryId = ItemType.KeycardContainmentEngineer;
+			misclocker_4.inventoryId = ItemType.KeycardSeniorGuard;
 			misclocker_4.copies = 0;
-			misclocker_4.chanceOfSpawn = 10;
 
 			var misclocker_5 = list.First(x => x.itemTag == "misclocker" && x.inventoryId == ItemType.KeycardScientist);
 			misclocker_5.inventoryId = ItemType.KeycardNTFLieutenant;
