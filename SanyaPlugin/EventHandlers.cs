@@ -588,6 +588,7 @@ namespace SanyaPlugin
 			Log.Info($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
 
 			detonatedDuration = RoundSummary.roundTime;
+			DecontaminationController.Singleton.NetworkRoundStartTime = -1.0;
 		}
 
 		//PlayerEvents

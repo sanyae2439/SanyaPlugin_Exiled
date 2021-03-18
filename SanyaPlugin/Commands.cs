@@ -55,11 +55,18 @@ namespace SanyaPlugin.Commands
 						response = $"test ok.\n";
 						// testing zone start
 
-						response += "";
+
 
 						// testing zone end
 						response = response.TrimEnd('\n');
 
+						return true;
+					}
+				case "avlcol":
+					{
+						response = "Available colors:\n";
+						foreach(var i in ReferenceHub.HostHub.serverRoles.NamedColors.OrderBy(x => x.Restricted))
+							response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
 						return true;
 					}
 				case "doortest":

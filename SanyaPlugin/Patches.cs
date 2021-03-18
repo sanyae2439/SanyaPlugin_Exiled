@@ -1171,4 +1171,36 @@ namespace SanyaPlugin.Patches
 			Log.Debug($"SpawnerItem added.", SanyaPlugin.Instance.Config.IsDebugged);
 		}
 	}
+
+	//transpiler
+	[HarmonyPatch(typeof(Decontaminating), nameof(Decontaminating.PublicUpdate))]
+	public static class RemoveDecontPosCheckPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldfld && x.operand is FieldInfo fieldInfo && fieldInfo.Name == nameof(PlayerEffect.Hub)) - 1;
+
+			newInst.RemoveRange(index, 15);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//override
+	[HarmonyPatch(typeof(Lift), nameof(Lift.CheckMeltPlayer))]
+	public static class CheckDecontLiftPatch
+	{
+		public static bool Prefix(Lift __instance, GameObject ply)
+		{
+			if(!ReferenceHub.TryGetHub(ply, out var referenceHub) 
+				|| referenceHub.playerMovementSync.RealModelPosition.y >= 200f 
+				|| referenceHub.playerMovementSync.RealModelPosition.y <= -200f)
+				return false;
+			referenceHub.playerEffectsController.EnableEffect<Decontaminating>(0f, false);
+			return false;
+		}
+	}
 }
