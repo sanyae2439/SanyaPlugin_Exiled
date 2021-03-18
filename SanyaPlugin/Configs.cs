@@ -113,6 +113,9 @@ namespace SanyaPlugin
 		[Description("リスポーンアナウンスを無効にする")]
 		public bool DisableEntranceAnnounce { get; set; } = false;
 
+		[Description("人間陣営のサイズをランダムで変動させる")]
+		public bool ChangeScaleHumans { get; set; } = false;
+
 		[Description("発電機のアンロックと同時にドアを開ける")]
 		public bool GeneratorUnlockOpen { get; set; } = false;
 

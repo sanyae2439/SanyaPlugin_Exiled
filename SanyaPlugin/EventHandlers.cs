@@ -740,9 +740,6 @@ namespace SanyaPlugin
 				ev.Items.AddRange(plugin.Config.DefaultitemsEscapeClassdParsed);
 			}
 
-			//Fix Maingame
-			ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
-
 			//ScpAhp
 			if(ev.NewRole.GetTeam() != Team.SCP)
 			{
@@ -763,20 +760,37 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
 			}
 
-			//939Effect
+			//ScaleChanging
+			Vector3 scale = Vector3.one;
 			if(plugin.Config.Scp939ScaleMultiplier != 1f && ev.NewRole.Is939())
 			{
-				ev.Player.Scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
+				scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
 				if(plugin.Config.Scp939SpeedupByHealthAmount)
-				{
 					roundCoroutines.Add(Timing.CallDelayed(1f, () =>
 					{
 						ev.Player.ChangeEffectIntensity<Scp207>(1);
 					}));
-				}
+			}
+			else if(plugin.Config.ChangeScaleHumans
+				&& ev.NewRole.GetTeam() != Team.SCP
+				&& ev.NewRole.GetTeam() != Team.RIP
+				&& ev.NewRole != RoleType.Tutorial)
+			{
+				float xzmult = UnityEngine.Random.Range(0.9f, 1.1f);
+				float ymult = UnityEngine.Random.Range(0.9f, 1.1f);
+				scale = new Vector3(1f * xzmult, 1f * ymult, 1f * xzmult);
 			}
 			else if(ev.Player.Scale != Vector3.one)
-				ev.Player.Scale = Vector3.one;
+				scale = Vector3.one;
+
+			if(ev.Player.Scale != scale)
+			{
+				roundCoroutines.Add(Timing.CallDelayed(0.5f, () =>
+				{
+					Log.Debug($"Scale changed:{scale}", SanyaPlugin.Instance.Config.IsDebugged);
+					ev.Player.Scale = scale;
+				}));
+			}
 
 			switch(eventmode)
 			{
@@ -1190,7 +1204,8 @@ namespace SanyaPlugin
 							ev.Items.Add(player.Inventory.SetPickup(syncItemInfo.id, syncItemInfo.durability, player.Position, player.CameraTransform.rotation, syncItemInfo.modSight, syncItemInfo.modBarrel, syncItemInfo.modOther, true));
 						player.Inventory.Clear();
 						player.SetRole(RoleType.Scp0492, true, false);
-						roundCoroutines.Add(Timing.CallDelayed(1f, () => {
+						roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+						{
 							player.EnableEffect<Disabled>();
 							player.EnableEffect<Poisoned>();
 							player.EnableEffect<Concussed>();
