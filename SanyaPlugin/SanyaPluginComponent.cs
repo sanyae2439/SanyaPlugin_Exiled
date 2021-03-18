@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Features;
-using MEC;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
 using SanyaPlugin.Data;

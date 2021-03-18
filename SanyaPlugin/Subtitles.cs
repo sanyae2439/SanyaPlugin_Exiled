@@ -197,6 +197,14 @@
 			"《Danger. Detected security warning in light containment zones armory.》\n",
 			"</size></color>"
 		);
+
+		internal static readonly string AlreadyBreakFirst = string.Concat(
+			"<color=#6c80ff><size=25>",
+			"《通達。施設警備員がサイトに到着しました。\n生存中の職員は、警備員が貴方の場所へ到着するまで「標準避難プロトコル」の続行を推奨します。》\n",
+			"</size><size=20>",
+			"《Attention all personnel. Facility guards has entered the facility.\nAll remaining personnel are advised to proceed with standard evacuation protocols until an MTF squad reaches your destination.》\n",
+			"</size></color>"
+		);
 	}
 
 	internal static class HintTexts

@@ -342,6 +342,14 @@ namespace SanyaPlugin
 						lczarmony = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory);
 						break;
 					}
+				case SANYA_GAME_MODE.ALREADY_BREAKED:
+					{
+						for(int i = 0; i < CharacterClassManager.ClassTeamQueue.Count; i++)
+							if(CharacterClassManager.ClassTeamQueue[i] == Team.CDP || CharacterClassManager.ClassTeamQueue[i] == Team.RSC)
+								CharacterClassManager.ClassTeamQueue[i] = Team.MTF;
+						Lift.Instances.First(x => x.elevatorName == "GateB").SetStatus((byte)Lift.Status.Down);
+						break;
+					}
 				default:
 					{
 						eventmode = SANYA_GAME_MODE.NORMAL;
@@ -367,6 +375,11 @@ namespace SanyaPlugin
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 					{
 						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.ClassDInsurgencyInit()));
+						break;
+					}
+				case SANYA_GAME_MODE.ALREADY_BREAKED:
+					{
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AlreadyBreakInit()));
 						break;
 					}
 			}
@@ -811,7 +824,22 @@ namespace SanyaPlugin
 						}
 						break;
 					}
-
+				case SANYA_GAME_MODE.ALREADY_BREAKED:
+					{
+						if(ev.NewRole == RoleType.FacilityGuard)
+						{
+							if(plugin.Config.DefaultitemsParsed.TryGetValue(RoleType.NtfScientist, out List<ItemType> ntfitems))
+							{
+								if(ntfitems.Contains(ItemType.None)) ev.Items.Clear();
+								else
+								{
+									ev.Items.Clear();
+									ev.Items.AddRange(ntfitems);
+								}
+							}
+						}
+						break;
+					}
 			}
 		}
 		public void OnSpawning(SpawningEventArgs ev)
@@ -836,6 +864,17 @@ namespace SanyaPlugin
 							ev.Position = lczarmony.Position + Vector3.up;
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.ChaosInsurgency).ammoTypes)
+								ev.Player.Ammo.amount.Add(ammo);
+						}
+						break;
+					}
+				case SANYA_GAME_MODE.ALREADY_BREAKED:
+					{
+						if(ev.RoleType == RoleType.FacilityGuard)
+						{
+							ev.Position = Lift.Instances.First(x => x.elevatorName == "GateB").elevators.First(x => x.target.position.y > -800).target.position + Vector3.up;
+							ev.Player.Ammo.amount.Clear();
+							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.NtfScientist).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);
 						}
 						break;

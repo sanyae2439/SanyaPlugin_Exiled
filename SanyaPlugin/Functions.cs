@@ -506,6 +506,15 @@ namespace SanyaPlugin.Functions
 			armorydoor.NetworkTargetState = true;
 			yield break;
 		}
+
+		public static IEnumerator<float> AlreadyBreakInit()
+		{
+			Lift.Instances.First(x => x.elevatorName == "GateB").UseLift();
+			yield return Timing.WaitForSeconds(3f);
+			Methods.SendSubtitle(Subtitles.AlreadyBreakFirst, 20);
+			RespawnEffectsController.PlayCassieAnnouncement("attention all personnel . facility guards HasEntered . AllRemaining .", false, true);
+			yield break;
+		}
 	}
 
 	internal static class Methods
