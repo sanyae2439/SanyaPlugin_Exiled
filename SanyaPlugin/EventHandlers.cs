@@ -243,6 +243,7 @@ namespace SanyaPlugin
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private Room lczarmony = null;
+		private List<Team> prevSpawnQueue = null;
 
 		//ServerEvents
 		public void OnWaintingForPlayers()
@@ -274,6 +275,12 @@ namespace SanyaPlugin
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 			Sinkhole = Methods.GetSinkHoleHazard();
 			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnPointForConflict() - (-Vector3.down * 4));
+			if(prevSpawnQueue != null)
+			{
+				CharacterClassManager.ClassTeamQueue.Clear();
+				CharacterClassManager.ClassTeamQueue.AddRange(prevSpawnQueue);
+				prevSpawnQueue = null;
+			}
 
 			if(plugin.Config.DisabledSpawnScpsParsed.Count > 0)
 				foreach(var role in plugin.Config.DisabledSpawnScpsParsed)
@@ -344,6 +351,7 @@ namespace SanyaPlugin
 					}
 				case SANYA_GAME_MODE.ALREADY_BREAKED:
 					{
+						prevSpawnQueue = CharacterClassManager.ClassTeamQueue.ToList();
 						for(int i = 0; i < CharacterClassManager.ClassTeamQueue.Count; i++)
 							if(CharacterClassManager.ClassTeamQueue[i] == Team.CDP || CharacterClassManager.ClassTeamQueue[i] == Team.RSC)
 								CharacterClassManager.ClassTeamQueue[i] = Team.MTF;
