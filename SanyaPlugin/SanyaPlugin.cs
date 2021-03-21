@@ -106,6 +106,7 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
+			PlayerEvents.ChangingItem += Handlers.OnChangingItem;
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
@@ -142,6 +143,7 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			PlayerEvents.ChangingItem -= Handlers.OnChangingItem;
 			Scp049Events.FinishingRecall -= Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;

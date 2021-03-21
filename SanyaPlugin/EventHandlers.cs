@@ -1181,6 +1181,15 @@ namespace SanyaPlugin
 			if(plugin.Config.TeslaTabletDisable && ev.Player.IsHuman() && ev.Player.Inventory.items.Any(x => x.id == ItemType.WeaponManagerTablet))
 				ev.IsTriggerable = false;
 		}
+		public void OnChangingItem(ChangingItemEventArgs ev)
+		{
+			if(ev.Player.ReferenceHub.weaponManager._reloadingWeapon == ev.Player.ReferenceHub.weaponManager.curWeapon
+				&& ev.Player.ReferenceHub.weaponManager._reloadingWeapon != -100)
+			{
+				ev.Player.ReferenceHub.weaponManager._reloadingWeapon = -100;
+				ev.Player.ReferenceHub.weaponManager._reloadCooldown = -1f;
+			}
+		}
 
 		//Scp049
 		public void OnFinishingRecall(FinishingRecallEventArgs ev)
