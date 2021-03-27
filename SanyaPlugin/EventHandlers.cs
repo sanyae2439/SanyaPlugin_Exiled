@@ -646,10 +646,7 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnVerified] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
-			if(plugin.Config.DataEnabled && ev.Player.DoNotTrack && PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
-				PlayerDataManager.playersData.Remove(ev.Player.UserId);
-
-			if(plugin.Config.DataEnabled && !ev.Player.DoNotTrack && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
+			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
 				PlayerDataManager.playersData.Add(ev.Player.UserId, PlayerDataManager.LoadPlayerData(ev.Player.UserId));
 
 			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
@@ -967,7 +964,7 @@ namespace SanyaPlugin
 						break;
 				}
 
-			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.Contain)
+			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			//939Effect

@@ -279,7 +279,7 @@ namespace SanyaPlugin.Functions
 			string level = data.level.ToString();
 			string rolestr = player.ReferenceHub.serverRoles.GetUncoloredRoleString();
 			string rolecolor = player.RankColor;
-			string badge;
+			string badge = string.Empty;
 
 			rolestr = rolestr.Replace("[", string.Empty).Replace("]", string.Empty).Replace("<", string.Empty).Replace(">", string.Empty);
 
@@ -289,13 +289,26 @@ namespace SanyaPlugin.Functions
 			if(data.level == -1)
 				level = "???";
 
-			if(string.IsNullOrEmpty(rolestr))
-				badge = $"Level{level}";
-			else
-				badge = $"Level{level} : {rolestr}";
+			if(!player.DoNotTrack)
+			{
+				if(string.IsNullOrEmpty(rolestr))
+					badge = $"Level{level}";
+				else
+					badge = $"Level{level} : {rolestr}";
 
-			if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
-				badge += " : 認証済み";
+				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
+					badge += " : 認証済み";
+			}
+			else
+			{
+				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
+				{
+					if(!string.IsNullOrEmpty(rolestr))
+						badge = $"{rolestr} : 認証済み";
+					else
+						badge = $"認証済み";
+				}			
+			}
 
 			if(group == null)
 				group = new UserGroup()
@@ -319,7 +332,10 @@ namespace SanyaPlugin.Functions
 
 			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
-			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level}", SanyaPlugin.Instance.Config.IsDebugged);
+			if(player.DoNotTrack)
+				PlayerDataManager.playersData.Remove(player.UserId);
+
+			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level} : DNT={player.DoNotTrack}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			yield break;
 		}
