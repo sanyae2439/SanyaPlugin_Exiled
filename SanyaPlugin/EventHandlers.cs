@@ -264,7 +264,7 @@ namespace SanyaPlugin
 			detonatedDuration = -1;
 			IsEnableBlackout = false;
 
-			flickerableLightController = UnityEngine.Object.FindObjectOfType<FlickerableLightController>();
+			flickerableLightController = UnityEngine.Object.FindObjectsOfType<FlickerableLightController>().First(x => x.name == "FlickerableLightController");
 
 			last079cam = null;
 			scp049stackAmount = 0;
@@ -272,7 +272,7 @@ namespace SanyaPlugin
 			foreach(var i in plugin.Config.RemoveScp914RecipeParsed)
 				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
-			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
+			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);	
 			Sinkhole = Methods.GetSinkHoleHazard();
 			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnPointForConflict() - (-Vector3.down * 4));
 			if(prevSpawnQueue != null)
@@ -710,6 +710,9 @@ namespace SanyaPlugin
 			//KillDict
 			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
 				KillsDict.Add(ev.Player.Nickname, 0);
+
+			//LightIntensity
+			flickerableLightController?.RpcSetLightIntensity(plugin.Config.OutsideIntensityMultiplier);
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
@@ -1186,6 +1189,15 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.weaponManager._reloadingWeapon = -100;
 				ev.Player.ReferenceHub.weaponManager._reloadCooldown = -1f;
 			}
+		}
+		public void OnActivatingWarheadPanel(ActivatingWarheadPanelEventArgs ev)
+		{
+			Log.Debug($"[OnActivatingWarheadPanel] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.InventoryKeycardActivation)
+				foreach(var item in ev.Player.Inventory.items)
+					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("CONT_LVL_3"))
+						ev.IsAllowed = true;
 		}
 
 		//Scp049

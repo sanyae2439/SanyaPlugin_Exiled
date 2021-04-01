@@ -155,6 +155,9 @@ namespace SanyaPlugin
 		[Description("初回リスポーンの秒数の乗数")]
 		public float FirstRespawnTimeMultiplier { get; set; } = 1f;
 
+		[Description("地上の明るさの乗数")]
+		public float OutsideIntensityMultiplier { get; set; } = 1f;
+
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
