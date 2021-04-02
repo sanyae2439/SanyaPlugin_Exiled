@@ -1256,6 +1256,12 @@ namespace SanyaPlugin
 			}
 		}
 
+		//Scp173
+		public void OnBlinking(BlinkingEventArgs ev)
+		{
+			ev.Player.ReferenceHub.playerMovementSync.AddSafeTime(0.5f);
+		}
+
 		//Scp914
 		public void OnUpgradingItems(UpgradingItemsEventArgs ev)
 		{

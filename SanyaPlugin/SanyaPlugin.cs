@@ -11,6 +11,7 @@ using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp049Events = Exiled.Events.Handlers.Scp049;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
+using Scp173Events = Exiled.Events.Handlers.Scp173;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
@@ -111,6 +112,7 @@ namespace SanyaPlugin
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
+			Scp173Events.Blinking += Handlers.OnBlinking;
 			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
 		}
 
@@ -149,6 +151,7 @@ namespace SanyaPlugin
 			Scp049Events.FinishingRecall -= Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
+			Scp173Events.Blinking -= Handlers.OnBlinking;
 			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;
 		}
