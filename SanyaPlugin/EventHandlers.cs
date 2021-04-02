@@ -782,17 +782,22 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.playerStats.NetworkartificialNormalRatio = 1f;
 			}
 
+			//Speedup
+			if(plugin.Config.Scp939SpeedupByHealthAmount && ev.NewRole.Is939())
+				roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+				{
+					ev.Player.ChangeEffectIntensity<Scp207>(1);
+				}));
+			else if(plugin.Config.Scp0492SpeedupByHealthAmount && ev.NewRole == RoleType.Scp0492)
+				roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+				{
+					ev.Player.ChangeEffectIntensity<Scp207>(1);
+				}));
+
 			//ScaleChanging
 			Vector3 scale = Vector3.one;
 			if(plugin.Config.Scp939ScaleMultiplier != 1f && ev.NewRole.Is939())
-			{
 				scale = Vector3.one * plugin.Config.Scp939ScaleMultiplier;
-				if(plugin.Config.Scp939SpeedupByHealthAmount)
-					roundCoroutines.Add(Timing.CallDelayed(1f, () =>
-					{
-						ev.Player.ChangeEffectIntensity<Scp207>(1);
-					}));
-			}
 			else if(plugin.Config.ChangeScaleHumans
 				&& ev.NewRole.GetTeam() != Team.SCP
 				&& ev.NewRole.GetTeam() != Team.RIP
@@ -970,8 +975,9 @@ namespace SanyaPlugin
 			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
-			//939Effect
-			if(plugin.Config.Scp939SpeedupByHealthAmount && ev.Target.Role.Is939())
+			//Speedup
+			if((plugin.Config.Scp939SpeedupByHealthAmount && ev.Target.Role.Is939())
+				|| (plugin.Config.Scp0492SpeedupByHealthAmount && ev.Target.Role == RoleType.Scp0492))
 			{
 				var percent = (int)(100f - (Mathf.Clamp01(1f - (ev.Target.ReferenceHub.playerStats.Health - ev.Amount) / (float)ev.Target.ReferenceHub.characterClassManager.CurRole.maxHP)) * 100f);
 				var scp207 = ev.Target.GetEffect(Exiled.API.Enums.EffectType.Scp207);

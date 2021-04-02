@@ -226,6 +226,9 @@ namespace SanyaPlugin
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
 
+		[Description("SCP-049-2がHPの量に応じて加速する")]
+		public bool Scp0492SpeedupByHealthAmount { get; set; } = false;
+
 		[Description("SCP-096の被ダメージ乗数")]
 		public float Scp096DamageMultiplier { get; set; } = 1f;
 
