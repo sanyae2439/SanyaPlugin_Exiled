@@ -244,6 +244,7 @@ namespace SanyaPlugin
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private Room lczarmony = null;
 		private List<Team> prevSpawnQueue = null;
+		private Lift GateBLift = null;
 
 		//ServerEvents
 		public void OnWaintingForPlayers()
@@ -355,7 +356,8 @@ namespace SanyaPlugin
 						for(int i = 0; i < CharacterClassManager.ClassTeamQueue.Count; i++)
 							if(CharacterClassManager.ClassTeamQueue[i] == Team.CDP || CharacterClassManager.ClassTeamQueue[i] == Team.RSC)
 								CharacterClassManager.ClassTeamQueue[i] = Team.MTF;
-						Lift.Instances.First(x => x.elevatorName == "GateB").SetStatus((byte)Lift.Status.Down);
+						GateBLift = Lift.Instances.First(x => x.elevatorName == "GateB");
+						GateBLift.SetStatus((byte)Lift.Status.Down);
 						break;
 					}
 				default:
@@ -885,7 +887,7 @@ namespace SanyaPlugin
 					{
 						if(ev.RoleType == RoleType.FacilityGuard)
 						{
-							ev.Position = Lift.Instances.First(x => x.elevatorName == "GateB").elevators.First(x => x.target.position.y > -800).target.position + Vector3.up;
+							ev.Position = GateBLift.elevators.First(x => x.target.position.y > -800).target.position + Vector3.up;
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.NtfScientist).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);
