@@ -988,6 +988,10 @@ namespace SanyaPlugin
 					ev.Target.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Scp207>(2);
 			}
 
+			//FFNotify
+			if(ev.Attacker != ev.Target && !ev.Attacker.IsEnemy(ev.Target.Team))
+				ev.Target.GameObject.GetComponent<SanyaPluginComponent>()?.AddHudBottomText($"<color=#ff0000><size=25>{ev.Attacker.Nickname}よりFriendlyFireを受けました[{ev.DamageType.name}:{Mathf.RoundToInt(ev.Amount)}Dmg]</size></color>", 5);
+
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}
 		public void OnDied(DiedEventArgs ev)

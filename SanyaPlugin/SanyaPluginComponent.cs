@@ -30,6 +30,9 @@ namespace SanyaPlugin
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
 		private float _hudCenterDownTimer = 0f;
+		private string _hudBottomDownString = string.Empty;
+		private float _hudBottomDownTime = -1f;
+		private float _hudBottomDownTimer = 0f;
 		private int _prevHealth = -1;
 		private byte _prevPreset = 0;
 		
@@ -77,9 +80,21 @@ namespace SanyaPlugin
 			_hudCenterDownTimer = 0f;
 		}
 
-		public void ClearHudCenterDownText(string text, ulong timer)
+		public void ClearHudCenterDownText()
 		{
 			_hudCenterDownTime = -1f;
+		}
+
+		public void AddHudBottomText(string text, ulong timer)
+		{
+			_hudBottomDownString = text;
+			_hudBottomDownTime = timer;
+			_hudBottomDownTimer = 0f;
+		}
+
+		public void ClearHudBottomText()
+		{
+			_hudBottomDownTime = -1f;
 		}
 
 		public void UpdateTimers()
@@ -88,6 +103,11 @@ namespace SanyaPlugin
 				_hudCenterDownTimer += Time.deltaTime;
 			else
 				_hudCenterDownString = string.Empty;
+
+			if(_hudBottomDownTimer < _hudBottomDownTime)
+				_hudBottomDownTimer += Time.deltaTime;
+			else
+				_hudBottomDownString = string.Empty;
 		}
 
 		private void CheckTraitor()
@@ -364,7 +384,9 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(string.Empty, 6));
 
 			//[BOTTOM]
-			if(Intercom.host.speaking && Intercom.host.speaker != null)
+			if(!string.IsNullOrEmpty(_hudBottomDownString))
+				curText = curText.Replace("[BOTTOM]", _hudBottomDownString);
+			else if(Intercom.host.speaking && Intercom.host.speaker != null)
 				curText = curText.Replace("[BOTTOM]", $"{Player.Get(Intercom.host.speaker)?.Nickname}が放送中...");
 			else
 				curText = curText.Replace("[BOTTOM]", string.Empty);

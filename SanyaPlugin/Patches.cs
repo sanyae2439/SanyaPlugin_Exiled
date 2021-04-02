@@ -923,6 +923,8 @@ namespace SanyaPlugin.Patches
 			foreach(GameObject gameObject in PlayerManager.players)
 			{
 				Vector3 position = __instance.transform.position;
+				Player thrower = Player.Get(__instance.thrower.gameObject);
+				Player target = Player.Get(gameObject);
 				ReferenceHub hub = ReferenceHub.GetHub(gameObject);
 				Flashed effect = hub.playerEffectsController.GetEffect<Flashed>();
 				if(effect != null && !(__instance.thrower == null) && effect.Flashable(ReferenceHub.GetHub(__instance.thrower.gameObject), position, __instance._ignoredLayers))
@@ -933,6 +935,9 @@ namespace SanyaPlugin.Patches
 					byte b = (byte)Mathf.Clamp(Mathf.RoundToInt(num * 10f * __instance.maximumDuration), 1, 255);
 					if(b >= effect.Intensity && num > 0f)
 					{
+						if(target != thrower && !thrower.IsEnemy(target.Team) && target.GameObject.TryGetComponent<SanyaPluginComponent>(out var comp))
+							comp.AddHudBottomText($"<color=#ff0000><size=25>{thrower.Nickname}よりFriendlyFireを受けました[FlashGrenade]</size></color>", 5);
+
 						if(hub.characterClassManager.IsAnyScp())
 							hub.playerEffectsController.ChangeEffectIntensity<Flashed>(1);
 
