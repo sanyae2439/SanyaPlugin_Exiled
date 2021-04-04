@@ -60,11 +60,11 @@ namespace SanyaPlugin
 		{
 			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
 		};
-		public Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
+		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
 
 		[Description("Dクラスの脱出成功時装備")]
 		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
-		public List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
+		public readonly List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
 
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
@@ -74,11 +74,11 @@ namespace SanyaPlugin
 
 		[Description("アイテム削除の対象外アイテム")]
 		public List<string> ItemCleanupIgnore { get; set; } = new List<string>();
-		public List<ItemType> ItemCleanupIgnoreParsed = new List<ItemType>();
+		public readonly List<ItemType> ItemCleanupIgnoreParsed = new List<ItemType>();
 
 		[Description("SCP-914からレシピを削除するアイテム")]
 		public List<string> RemoveScp914Recipe { get; set; } = new List<string>();
-		public List<ItemType> RemoveScp914RecipeParsed = new List<ItemType>();
+		public readonly List<ItemType> RemoveScp914RecipeParsed = new List<ItemType>();
 
 		[Description("追加でアイテムを設置する")]
 		public bool SpawnAddItems { get; set; } = false;
@@ -160,7 +160,7 @@ namespace SanyaPlugin
 
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
-		public List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
+		public readonly List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
 
 		[Description("核起爆後の増援を停止する")]
 		public bool StopRespawnAfterDetonated { get; set; } = false;
@@ -201,18 +201,28 @@ namespace SanyaPlugin
 		[Description("落下のダメージ乗数")]
 		public float FalldamageMultiplier { get; set; } = 1f;
 
-		[Description("初期スポーンから除外するSCP")]
-		public List<string> DisabledSpawnScps { get; set; } = new List<string>();
-		public List<RoleType> DisabledSpawnScpsParsed = new List<RoleType>();
-
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 
 		[Description("SCP-018のダメージ乗数")]
 		public float Scp018DamageMultiplier { get; set; } = 1f;
 
-		[Description("SCP-049の被ダメージ乗数")]
-		public float Scp049DamageMultiplier { get; set; } = 1f;
+		[Description("初期スポーンから除外するSCP")]
+		public List<string> DisabledSpawnScps { get; set; } = new List<string>();
+		public readonly List<RoleType> DisabledSpawnScpsParsed = new List<RoleType>();
+
+		[Description("SCPの被ダメージ乗数")]
+		public Dictionary<string, float> ScpTakenDamageMultiplier { get; set; } = new Dictionary<string, float>()
+		{
+			{ nameof(RoleType.Scp049), 1f },
+			{ nameof(RoleType.Scp0492), 1f },
+			{ nameof(RoleType.Scp096), 1f },
+			{ nameof(RoleType.Scp106), 1f },
+			{ nameof(RoleType.Scp173), 1f },
+			{ nameof(RoleType.Scp93953), 1f },
+			{ nameof(RoleType.Scp93989), 1f },
+		};
+		public readonly Dictionary<RoleType, float> ScpTakenDamageMultiplierParsed = new Dictionary<RoleType, float>();
 
 		[Description("SCP-049の治療成功時追加AHP量")]
 		public int Scp049CureAhpAmount { get; set; } = 0;
@@ -220,17 +230,11 @@ namespace SanyaPlugin
 		[Description("SCP-049が殺害時に死体をスタックできるように")]
 		public bool Scp049StackBody { get; set; } = false;
 
-		[Description("SCP-049-2の被ダメージ乗数")]
-		public float Scp0492DamageMultiplier { get; set; } = 1f;
-
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
 
 		[Description("SCP-049-2がHPの量に応じて加速する")]
 		public bool Scp0492SpeedupByHealthAmount { get; set; } = false;
-
-		[Description("SCP-096の被ダメージ乗数")]
-		public float Scp096DamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-096の一人当たりの増加AHP量")]
 		public int Scp096ShieldPerTargets { get; set; } = 70;
@@ -240,9 +244,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-096の発狂時のダメージ乗数")]
 		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-106の被ダメージ乗数")]
-		public float Scp106DamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-106のグレネードの被ダメージ乗数")]
 		public float Scp106GrenadeMultiplier { get; set; } = 1f;
@@ -262,9 +263,6 @@ namespace SanyaPlugin
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
-		[Description("SCP-173の被ダメージ乗数")]
-		public float Scp173DamageMultiplier { get; set; } = 1f;
-
 		[Description("SCP-173の被視認者に応じて増加するAHPの一人当たりの量")]
 		public int Scp173SeeingByHumansAhpAmount { get; set; } = 0;
 
@@ -273,9 +271,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-173のまばたきのの最大間隔")]
 		public float Scp173MaxBlinktime { get; set; } = 3.5f;
-
-		[Description("SCP-939-XXの被ダメージ乗数")]
-		public float Scp939DamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-939-XXのサイズ")]
 		public float Scp939ScaleMultiplier { get; set; } = 1f;
@@ -297,6 +292,31 @@ namespace SanyaPlugin
 
 		[Description("SCP-079がゲートと914操作に必要なTier")]
 		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;
+
+		[Description("SCP-079の消費コスト")]
+		public Dictionary<string, float> Scp079ManaCost { get; set; } = new Dictionary<string, float>()
+		{
+			{"Camera Switch",                   1f },
+			{"Door Lock",                       4f },
+			{"Door Lock Start",                 5f },
+			{"Door Lock Minimum",              10f },
+			{"Door Interaction DEFAULT",        5f },
+			{"Door Interaction CONT_LVL_1",    50f },
+			{"Door Interaction CONT_LVL_2",    40f },
+			{"Door Interaction CONT_LVL_3",   110f },
+			{"Door Interaction ARMORY_LVL_1",  50f },
+			{"Door Interaction ARMORY_LVL_2",  60f },
+			{"Door Interaction ARMORY_LVL_3",  70f },
+			{"Door Interaction EXIT_ACC",      60f },
+			{"Door Interaction INCOM_ACC",     30f },
+			{"Door Interaction CHCKPOINT_ACC", 10f },
+			{"Room Lockdown",                  60f },
+			{"Tesla Gate Burst",               50f },
+			{"Elevator Teleport",              30f },
+			{"Elevator Use",                   10f },
+			{"Speaker Start",                  10f },
+			{"Speaker Update",                0.8f }
+		};
 
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;
@@ -327,66 +347,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-079のExモードでの地上ターゲット起爆の必要コスト")]
 		public float Scp079ExtendCostTargetBomb { get; set; } = 75f;
-
-		[Description("SCP-079の1カメラ移動コスト")]
-		public float Scp079CostCamera { get; set; } = 1f;
-
-		[Description("SCP-079のドアロック維持コスト")]
-		public float Scp079CostLock { get; set; } = 4f;
-
-		[Description("SCP-079のドアロック初期コスト")]
-		public float Scp079CostLockStart { get; set; } = 5f;
-
-		[Description("SCP-079のドアロック必要最低量")]
-		public float Scp079ConstLockMinimum { get; set; } = 10f;
-
-		[Description("SCP-079のドア操作コスト(権限無しドア)")]
-		public float Scp079CostDoorDefault { get; set; } = 5f;
-
-		[Description("SCP-079のドア操作コスト(ContLv1)")]
-		public float Scp079CostDoorContlv1 { get; set; } = 50f;
-
-		[Description("SCP-079のドア操作コスト(ContLv2)")]
-		public float Scp079CostDoorContlv2 { get; set; } = 40f;
-
-		[Description("SCP-079のドア操作コスト(ContLv3)")]
-		public float Scp079CostDoorContlv3 { get; set; } = 110f;
-
-		[Description("SCP-079のドア操作コスト(ArmoryLv1)")]
-		public float Scp079CostDoorArmlv1 { get; set; } = 50f;
-
-		[Description("SCP-079のドア操作コスト(ArmoryLv2)")]
-		public float Scp079CostDoorArmlv2 { get; set; } = 60f;
-
-		[Description("SCP-079のドア操作コスト(ArmoryLv3)")]
-		public float Scp079CostDoorArmlv3 { get; set; } = 70f;
-
-		[Description("SCP-079のドア操作コスト(Exit<GateAB>)")]
-		public float Scp079CostDoorExit { get; set; } = 60f;
-
-		[Description("SCP-079のドア操作コスト(Intercom)")]
-		public float Scp079CostDoorIntercom { get; set; } = 30f;
-
-		[Description("SCP-079のドア操作コスト(Checkpoint)")]
-		public float Scp079CostDoorCheckpoint { get; set; } = 10f;
-
-		[Description("SCP-079のロックダウンコスト")]
-		public float Scp079CostLockDown { get; set; } = 60f;
-
-		[Description("SCP-079のテスラゲート使用コスト")]
-		public float Scp079CostTesla { get; set; } = 50f;
-
-		[Description("SCP-079の階層移動コスト")]
-		public float Scp079CostElevatorTeleport { get; set; } = 30f;
-
-		[Description("SCP-079のエレベーター操作コスト")]
-		public float Scp079CostElevatorUse { get; set; } = 10f;
-
-		[Description("SCP-079のスピーカー使用初期コスト")]
-		public float Scp079CostSpeakerStart { get; set; } = 10f;
-
-		[Description("SCP-079のスピーカー使用維持コスト")]
-		public float Scp079CostSpeakerUpdate { get; set; } = 0.8f;
 
 		public string GetConfigs()
 		{
@@ -491,6 +451,7 @@ namespace SanyaPlugin
 				RemoveScp914RecipeParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 				DisabledSpawnScpsParsed.Clear();
+				ScpTakenDamageMultiplierParsed.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -515,6 +476,10 @@ namespace SanyaPlugin
 				foreach(var item in DisabledSpawnScps)
 					if(Enum.TryParse(item, out RoleType role))
 						DisabledSpawnScpsParsed.Add(role);
+
+				foreach(var key in ScpTakenDamageMultiplier)
+					if(Enum.TryParse(key.Key, out RoleType role))
+						ScpTakenDamageMultiplierParsed.Add(role, key.Value);
 			}
 			catch(Exception ex)
 			{

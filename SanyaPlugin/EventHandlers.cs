@@ -944,35 +944,23 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
 
 			//SCPsMultiplier
-			if(ev.Attacker != ev.Target)
+			if(ev.Attacker != ev.Target && ev.Target.IsScp)
+			{
 				switch(ev.Target.Role)
 				{
-					case RoleType.Scp173:
-						ev.Amount *= plugin.Config.Scp173DamageMultiplier;
-						break;
 					case RoleType.Scp106:
 						if(ev.DamageType == DamageTypes.Grenade)
 							ev.Amount *= plugin.Config.Scp106GrenadeMultiplier;
-						else
-							ev.Amount *= plugin.Config.Scp106DamageMultiplier;
-						break;
-					case RoleType.Scp049:
-						ev.Amount *= plugin.Config.Scp049DamageMultiplier;
 						break;
 					case RoleType.Scp096:
 						if(ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.PlayerState == PlayableScps.Scp096PlayerState.Enraging)
 							ev.Amount *= plugin.Config.Scp096EnragingDamageMultiplier;
-						else
-							ev.Amount *= plugin.Config.Scp096DamageMultiplier;
-						break;
-					case RoleType.Scp0492:
-						ev.Amount *= plugin.Config.Scp0492DamageMultiplier;
-						break;
-					case RoleType.Scp93953:
-					case RoleType.Scp93989:
-						ev.Amount *= plugin.Config.Scp939DamageMultiplier;
 						break;
 				}
+
+				if(plugin.Config.ScpTakenDamageMultiplierParsed.TryGetValue(ev.Target.Role, out var value))
+					ev.Amount *= value;
+			}
 
 			if(!RoundSummary.singleton._roundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
