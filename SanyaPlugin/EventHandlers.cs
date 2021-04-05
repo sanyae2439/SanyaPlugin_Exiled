@@ -244,6 +244,7 @@ namespace SanyaPlugin
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private Room lczarmony = null;
 		private List<Team> prevSpawnQueue = null;
+		private readonly Vector3 GateBLiftPos = new Vector3(87.5f, 995.7f, -41.5f);
 		private Lift GateBLift = null;
 
 		//ServerEvents
@@ -887,7 +888,7 @@ namespace SanyaPlugin
 					{
 						if(ev.RoleType == RoleType.FacilityGuard)
 						{
-							ev.Position = GateBLift.elevators.First(x => x.target.position.y > -800).target.position + Vector3.up;
+							ev.Position = GateBLiftPos;
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.NtfScientist).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);

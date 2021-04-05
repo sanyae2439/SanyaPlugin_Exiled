@@ -62,6 +62,30 @@ namespace SanyaPlugin.Commands
 
 						return true;
 					}
+				case "checkobj":
+					{
+						response = "ok.";
+						if(Physics.Raycast(player.Position + player.CameraTransform.forward, player.CameraTransform.forward, out var casy))
+						{
+							Log.Warn($"{casy.transform.name} (layer{casy.transform.gameObject.layer})");
+							Log.Warn($"HasComponents:");
+							foreach(var i in casy.transform.gameObject.GetComponents<Component>())
+							{
+								Log.Warn($"    {i.name}:{i.GetType()}");
+							}
+							Log.Warn($"HasComponentsInChildren:");
+							foreach(var i in casy.transform.gameObject.GetComponentsInChildren<Component>())
+							{
+								Log.Warn($"    {i.name}:{i.GetType()}");
+							}
+							Log.Warn($"HasComponentsInParent:");
+							foreach(var i in casy.transform.gameObject.GetComponentsInParent<Component>())
+							{
+								Log.Warn($"    {i.name}:{i.GetType()}");
+							}
+						}
+						return true;
+					}
 				case "avlcol":
 					{
 						response = "Available colors:\n";
