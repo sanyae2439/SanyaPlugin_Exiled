@@ -531,6 +531,54 @@ namespace SanyaPlugin.Functions
 			RespawnEffectsController.PlayCassieAnnouncement("attention all personnel . facility guards HasEntered . AllRemaining .", false, true);
 			yield break;
 		}
+
+		public static IEnumerator<float> _106PortalAnimation(Player player, Vector3 portalpos, bool isAnim = false, bool isHurt = false)
+		{
+			if(player.ReferenceHub.scp106PlayerScript.goingViaThePortal) yield break;
+
+			player.ReferenceHub.scp106PlayerScript.goingViaThePortal = true;
+
+			if(isAnim)
+			{
+				player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+				player.SendFakeSyncVar(player.ReferenceHub.networkIdentity, typeof(Scp106PlayerScript), nameof(Scp106PlayerScript.NetworkportalPosition), portalpos);
+
+				yield return Timing.WaitForOneFrame;
+				player.ReferenceHub.scp106PlayerScript.RpcTeleportAnimation();
+
+				for(int i = 0; i < 230; i++)
+				{
+					var pos = player.ReferenceHub.playerMovementSync.RealModelPosition;
+					pos.y -= 0.01f;
+					player.ReferenceHub.playerMovementSync.OverridePosition(pos, 0f);
+					yield return Timing.WaitForOneFrame;
+				}
+
+				if(player.Team != Team.SCP && isHurt)
+					if(AlphaWarheadController.Host.doorsClosed)
+						player.Kill(DamageTypes.Pocket);
+					else
+						player.Hurt(40f, DamageTypes.Scp106);
+
+				player.ReferenceHub.playerMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, true);
+				player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+			}
+			else
+			{
+				if(player.Team != Team.SCP && isHurt)
+					if(AlphaWarheadController.Host.doorsClosed)
+						player.Kill(DamageTypes.Pocket);
+					else
+						player.Hurt(40f, DamageTypes.Scp106);
+
+				player.ReferenceHub.playerMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, true);
+			}
+
+			player.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
+			yield return Timing.WaitForSeconds(3f);
+			player.ReferenceHub.scp106PlayerScript.goingViaThePortal = false;
+			yield break;
+		}
 	}
 
 	internal static class Methods

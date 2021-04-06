@@ -804,12 +804,9 @@ namespace SanyaPlugin
 			else if(plugin.Config.ChangeScaleHumans
 				&& ev.NewRole.GetTeam() != Team.SCP
 				&& ev.NewRole.GetTeam() != Team.RIP
-				&& ev.NewRole != RoleType.Tutorial)
-			{
-				float xzmult = UnityEngine.Random.Range(0.9f, 1.1f);
-				float ymult = UnityEngine.Random.Range(0.9f, 1.1f);
-				scale = new Vector3(1f * xzmult, 1f * ymult, 1f * xzmult);
-			}
+				&& ev.NewRole != RoleType.Tutorial
+			)
+				scale = Vector3.one * UnityEngine.Random.Range(0.9f, 1.1f);
 			else if(ev.Player.Scale != Vector3.one)
 				scale = Vector3.one;
 
