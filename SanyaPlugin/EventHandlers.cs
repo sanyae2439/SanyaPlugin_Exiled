@@ -673,22 +673,6 @@ namespace SanyaPlugin
 				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
 					ev.Player.IsMuted = true;
 
-			if(plugin.Config.WaitingTutorials && !ReferenceHub.HostHub.characterClassManager.RoundStarted)
-			{
-				NetworkIdentity identitytarget = null;
-				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
-					if(identity.name == "StartRound")
-						identitytarget = identity;
-
-				identitytarget.gameObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-				ObjectDestroyMessage objectDestroyMessage = new ObjectDestroyMessage();
-				objectDestroyMessage.netId = identitytarget.netId;
-				ev.Player.Connection.Send(objectDestroyMessage, 0);
-				typeof(NetworkServer).GetMethod("SendSpawnMessage", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).Invoke(null, new object[] { identitytarget, ev.Player.Connection });
-
-				roundCoroutines.Add(Timing.CallDelayed(0.25f, () => { ev.Player.ReferenceHub.characterClassManager.SetPlayersClass(RoleType.Tutorial, ev.Player.GameObject); }));
-			}
-
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
 				Methods.SendSubtitle(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
 			else if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
