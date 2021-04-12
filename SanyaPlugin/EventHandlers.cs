@@ -670,8 +670,11 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data)));
 
 			if(plugin.Config.DisableAllChat)
-				if(!(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId)))
-					ev.Player.IsMuted = true;
+			{
+				ev.Player.IsMuted = true;
+				if(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId))
+					roundCoroutines.Add(Timing.CallDelayed(1f, () => { ev.Player.IsMuted = false; }));
+			}						
 
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
 				Methods.SendSubtitle(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
@@ -1091,7 +1094,6 @@ namespace SanyaPlugin
 
 			if(ev.Item == ItemType.SCP500)
 			{
-				ev.Player.DisableAllEffects();
 				ev.Player.ReferenceHub.playerStats.unsyncedArtificialHealth = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 				ev.Player.EnableEffect<Invigorated>(20f);
