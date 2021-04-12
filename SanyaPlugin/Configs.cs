@@ -143,9 +143,6 @@ namespace SanyaPlugin
 		[Description("ホワイトリストに入っていないミュートされたプレイヤーへのメッセージ")]
 		public string MotdMessageOnDisabledChat { get; set; } = string.Empty;
 
-		[Description("研究員のスポーン位置を変更する")]
-		public bool ScientistsChangeSpawnPos { get; set; } = false;
-
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
 

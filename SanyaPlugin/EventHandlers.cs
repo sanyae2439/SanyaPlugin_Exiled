@@ -274,7 +274,7 @@ namespace SanyaPlugin
 			foreach(var i in plugin.Config.RemoveScp914RecipeParsed)
 				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
-			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);	
+			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 			Sinkhole = Methods.GetSinkHoleHazard();
 			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnPointForConflict() - (-Vector3.down * 4));
 			if(prevSpawnQueue != null)
@@ -672,9 +672,9 @@ namespace SanyaPlugin
 			if(plugin.Config.DisableAllChat)
 			{
 				ev.Player.IsMuted = true;
-				if(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId))
+				if(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId) && !MuteHandler.QueryPersistentMute(ev.Player.UserId))
 					roundCoroutines.Add(Timing.CallDelayed(1f, () => { ev.Player.IsMuted = false; }));
-			}						
+			}
 
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
 				Methods.SendSubtitle(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
@@ -845,9 +845,6 @@ namespace SanyaPlugin
 		public void OnSpawning(SpawningEventArgs ev)
 		{
 			Log.Debug($"[OnSpawning] {ev.Player.Nickname}(old:{ev.Player.ReferenceHub.characterClassManager._prevId}) -{ev.RoleType}-> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.ScientistsChangeSpawnPos && ev.RoleType == RoleType.Scientist)
-				ev.Position = RoleType.FacilityGuard.GetRandomSpawnPointForConflict();
 
 			if(plugin.Config.RandomRespawnPosPercent > 0
 				&& ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.Spectator
