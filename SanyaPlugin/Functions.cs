@@ -513,13 +513,24 @@ namespace SanyaPlugin.Functions
 
 		public static IEnumerator<float> ClassDInsurgencyInit()
 		{
-			var armorydoor = DoorNametagExtension.NamedDoors.First(x => x.Key == "LCZ_ARMORY").Value.TargetDoor;
-			armorydoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
+			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
+			var doors = room.Doors;
+			room.TurnOffLights(10f);
+			foreach(var i in doors)
+			{
+				i.ServerChangeLock(DoorLockReason.AdminCommand, true);
+				if(i.Type() == Exiled.API.Enums.DoorType.PrisonDoor)
+					i.NetworkTargetState = true;
+			}		
 			yield return Timing.WaitForSeconds(10f);
 			Methods.SendSubtitle(Subtitles.ClassDInsurgencyFirst, 10);
-			RespawnEffectsController.PlayCassieAnnouncement("danger . Detected security warning in light containment zones armory", false, true);
-			armorydoor.ServerChangeLock(DoorLockReason.AdminCommand, false);
-			armorydoor.NetworkTargetState = true;
+			RespawnEffectsController.PlayCassieAnnouncement("danger . Detected security warning in classD containment chamber.", false, true);
+			foreach(var i in doors)
+			{
+				i.ServerChangeLock(DoorLockReason.AdminCommand, false);
+				if(i.Type() != Exiled.API.Enums.DoorType.PrisonDoor)
+					i.NetworkTargetState = true;
+			}	
 			yield break;
 		}
 

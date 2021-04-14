@@ -192,9 +192,9 @@
 
 		internal static readonly string ClassDInsurgencyFirst = string.Concat(
 			"<color=#ff0000><size=25>",
-			"《警告。軽度収容区画の武器庫にてセキュリティ違反を検知しました。》\n",
+			"《警告。Dクラス収容室にてセキュリティ違反を検知しました。》\n",
 			"</size><size=20>",
-			"《Danger. Detected security warning in light containment zones armory.》\n",
+			"《Danger. Detected security warning in Class-D containment chamber.》\n",
 			"</size></color>"
 		);
 

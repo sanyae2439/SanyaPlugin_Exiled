@@ -858,7 +858,6 @@ namespace SanyaPlugin
 					{
 						if(ev.RoleType == RoleType.ClassD)
 						{
-							ev.Position = lczarmony.Position + Vector3.up;
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.ChaosInsurgency).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);
