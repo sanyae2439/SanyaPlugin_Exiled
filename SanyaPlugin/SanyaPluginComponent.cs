@@ -59,7 +59,6 @@ namespace SanyaPlugin
 			UpdateTimers();
 
 			CheckHighPing();
-			CheckTraitor();
 			CheckVoiceChatting();
 			CheckRadioRader();
 			CheckSinkholeDistance();
@@ -108,30 +107,6 @@ namespace SanyaPlugin
 				_hudBottomDownTimer += Time.deltaTime;
 			else
 				_hudBottomDownString = string.Empty;
-		}
-
-		private void CheckTraitor()
-		{
-			if(_plugin.Config.TraitorChancePercent <= 0) return;
-
-			if(player.Team != Team.MTF && player.Team != Team.CHI) return;
-			if(!player.IsCuffed) return;
-			if(Vector3.Distance(player.Position, _espaceArea) > Escape.radius) return;
-
-			if(UnityEngine.Random.Range(0, 100) >= _plugin.Config.TraitorChancePercent)
-			{
-				switch(player.Team)
-				{
-					case Team.MTF:
-						player.SetRole(RoleType.ChaosInsurgency);
-						break;
-					case Team.CHI:
-						player.SetRole(RoleType.NtfCadet);
-						break;
-				}
-			}
-			else
-				player.SetRole(RoleType.Spectator);
 		}
 
 		private void CheckHighPing()
@@ -243,7 +218,7 @@ namespace SanyaPlugin
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
 			if(!(_timer > 1f)) return;
 
-			string curText = _hudTemplate.Replace("[STATS]", 
+			string curText = _hudTemplate.Replace("[STATS]",
 				$"St:{DateTime.Now:HH:mm:ss} " +
 				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
 				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
@@ -361,14 +336,16 @@ namespace SanyaPlugin
 
 			//[CENTER]
 			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated)
+			{
+				int TargettMinus = AlphaWarheadController._resumeScenario == -1
+						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
+						: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime;
+
 				if(!AlphaWarheadController.Host.doorsOpen)
-					curText = curText.Replace("[CENTER]", FormatStringForHud(
-						(AlphaWarheadController._resumeScenario < 0
-						? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._startScenario].tMinusTime.ToString("\n00 : 00")
-						: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime.ToString("\n00 : 00")
-					), 6));
+					curText = curText.Replace("[CENTER]", FormatStringForHud($"\n{TargettMinus / 60:00} : {TargettMinus % 60:00}", 6));
 				else
-					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>{AlphaWarheadController.Host.timeToDetonation.ToString("\n00 : 00")}</color>", 6));
+					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>\n{Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) / 60:00} : {Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) % 60:00}</color>", 6));
+			}
 			else
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 

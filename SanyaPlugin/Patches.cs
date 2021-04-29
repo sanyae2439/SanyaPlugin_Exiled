@@ -252,41 +252,6 @@ namespace SanyaPlugin.Patches
 	}
 
 	//override - 10.0.0 checked
-	[HarmonyPatch(typeof(Inventory), nameof(Inventory.SetPickup))]
-	public static class ItemCleanupPatch
-	{
-		public static Dictionary<GameObject, float> items = new Dictionary<GameObject, float>();
-
-		public static bool Prefix(Inventory __instance, ref Pickup __result, ItemType droppedItemId, float dur, Vector3 pos, Quaternion rot, int s, int b, int o, bool spawnAutomatically = true)
-		{
-			if(SanyaPlugin.Instance.Config.ItemCleanup < 0 || __instance.isLocalPlayer) return true;
-
-			if(SanyaPlugin.Instance.Config.ItemCleanupIgnoreParsed.Contains(droppedItemId))
-			{
-				Log.Debug($"[ItemCleanupPatch] Ignored:{droppedItemId}", SanyaPlugin.Instance.Config.IsDebugged);
-				return true;
-			}
-
-			Log.Debug($"[ItemCleanupPatch] {droppedItemId}{pos} Time:{Time.time} Cleanuptimes:{SanyaPlugin.Instance.Config.ItemCleanup}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(droppedItemId < ItemType.KeycardJanitor)
-			{
-				__result = null;
-				return false;
-			}
-			GameObject gameObject = UnityEngine.Object.Instantiate(__instance.pickupPrefab);
-
-			if(spawnAutomatically)
-				NetworkServer.Spawn(gameObject);
-
-			items.Add(gameObject, Time.time);
-			gameObject.GetComponent<Pickup>().SetupPickup(droppedItemId, dur, __instance.gameObject, new Pickup.WeaponModifiers(true, s, b, o), pos, rot);
-			__result = gameObject.GetComponent<Pickup>();
-			return false;
-		}
-	}
-
-	//override - 10.0.0 checked
 	[HarmonyPatch(typeof(Grenade), nameof(Grenade.ServersideExplosion))]
 	public static class GrenadeLogPatch
 	{

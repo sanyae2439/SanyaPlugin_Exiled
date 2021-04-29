@@ -122,31 +122,6 @@ namespace SanyaPlugin
 						detonatedDuration = -1;
 					}
 
-					//ItemCleanup
-					if(plugin.Config.ItemCleanup > 0)
-					{
-						List<GameObject> nowitems = null;
-
-						foreach(var i in ItemCleanupPatch.items)
-						{
-							if(Time.time - i.Value > plugin.Config.ItemCleanup && i.Key != null)
-							{
-								if(nowitems == null) nowitems = new List<GameObject>();
-								Log.Debug($"[ItemCleanup] Cleanup:{i.Key.transform.position} {Time.time - i.Value} > {plugin.Config.ItemCleanup}", SanyaPlugin.Instance.Config.IsDebugged);
-								nowitems.Add(i.Key);
-							}
-						}
-
-						if(nowitems != null)
-						{
-							foreach(var x in nowitems)
-							{
-								ItemCleanupPatch.items.Remove(x);
-								NetworkServer.Destroy(x);
-							}
-						}
-					}
-
 					//停電時強制再収容の際復電
 					if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
 					{
@@ -260,7 +235,6 @@ namespace SanyaPlugin
 			roundCoroutines.Add(Timing.RunCoroutine(FixedUpdate(), Segment.FixedUpdate));
 
 			PlayerDataManager.playersData.Clear();
-			ItemCleanupPatch.items.Clear();
 			Coroutines.isAirBombGoing = false;
 
 			detonatedDuration = -1;
@@ -271,8 +245,6 @@ namespace SanyaPlugin
 			last079cam = null;
 			scp049stackAmount = 0;
 
-			foreach(var i in plugin.Config.RemoveScp914RecipeParsed)
-				Methods.Remove914Item(i);
 			Methods.Add914RecipeCoin();
 			FriendlyFlashEnabled = GameCore.ConfigFile.ServerConfig.GetBool("friendly_flash", false);
 			Sinkhole = Methods.GetSinkHoleHazard();
@@ -283,10 +255,6 @@ namespace SanyaPlugin
 				CharacterClassManager.ClassTeamQueue.AddRange(prevSpawnQueue);
 				prevSpawnQueue = null;
 			}
-
-			if(plugin.Config.DisabledSpawnScpsParsed.Count > 0)
-				foreach(var role in plugin.Config.DisabledSpawnScpsParsed)
-					ReferenceHub.HostHub.characterClassManager.Classes.First(x => x.roleId == role).banClass = true;
 
 			if(plugin.Config.AddDoorsOnSurface)
 			{
@@ -700,9 +668,6 @@ namespace SanyaPlugin
 			//KillDict
 			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
 				KillsDict.Add(ev.Player.Nickname, 0);
-
-			//LightIntensity
-			flickerableLightController?.RpcSetLightIntensity(plugin.Config.OutsideIntensityMultiplier);
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
@@ -744,12 +709,6 @@ namespace SanyaPlugin
 					ev.Items.Clear();
 					ev.Items.AddRange(itemconfig);
 				}
-			}
-
-			if(plugin.Config.DefaultitemsEscapeClassd.Count > 0 && ev.NewRole == RoleType.ChaosInsurgency && ev.IsEscaped)
-			{
-				ev.Items.Clear();
-				ev.Items.AddRange(plugin.Config.DefaultitemsEscapeClassdParsed);
 			}
 
 			//ScpAhp
@@ -899,10 +858,6 @@ namespace SanyaPlugin
 					ev.Amount *= plugin.Config.UspDamageMultiplierScp;
 				else
 					ev.Amount *= plugin.Config.UspDamageMultiplierHuman;
-
-			//FallMultiplier
-			if(ev.DamageType == DamageTypes.Falldown)
-				ev.Amount *= plugin.Config.FalldamageMultiplier;
 
 			//SCP-939 Effect
 			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)

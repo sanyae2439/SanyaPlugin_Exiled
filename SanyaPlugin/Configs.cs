@@ -62,23 +62,8 @@ namespace SanyaPlugin
 		};
 		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
 
-		[Description("Dクラスの脱出成功時装備")]
-		public List<string> DefaultitemsEscapeClassd { get; set; } = new List<string>();
-		public readonly List<ItemType> DefaultitemsEscapeClassdParsed = new List<ItemType>();
-
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
-
-		[Description("アイテムが自動で削除されるまでの秒数")]
-		public int ItemCleanup { get; set; } = -1;
-
-		[Description("アイテム削除の対象外アイテム")]
-		public List<string> ItemCleanupIgnore { get; set; } = new List<string>();
-		public readonly List<ItemType> ItemCleanupIgnoreParsed = new List<ItemType>();
-
-		[Description("SCP-914からレシピを削除するアイテム")]
-		public List<string> RemoveScp914Recipe { get; set; } = new List<string>();
-		public readonly List<ItemType> RemoveScp914RecipeParsed = new List<ItemType>();
 
 		[Description("追加でアイテムを設置する")]
 		public bool SpawnAddItems { get; set; } = false;
@@ -149,9 +134,6 @@ namespace SanyaPlugin
 		[Description("初回リスポーンの秒数の乗数")]
 		public float FirstRespawnTimeMultiplier { get; set; } = 1f;
 
-		[Description("地上の明るさの乗数")]
-		public float OutsideIntensityMultiplier { get; set; } = 1f;
-
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public readonly List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
@@ -177,9 +159,6 @@ namespace SanyaPlugin
 		[Description("キルすると大きいヒットマークが出るように")]
 		public bool HitmarkKilled { get; set; } = false;
 
-		[Description("裏切りの成功率")]
-		public int TraitorChancePercent { get; set; } = 50;
-
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 
@@ -192,18 +171,11 @@ namespace SanyaPlugin
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
 
-		[Description("落下のダメージ乗数")]
-		public float FalldamageMultiplier { get; set; } = 1f;
-
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 
 		[Description("SCP-018のダメージ乗数")]
 		public float Scp018DamageMultiplier { get; set; } = 1f;
-
-		[Description("初期スポーンから除外するSCP")]
-		public List<string> DisabledSpawnScps { get; set; } = new List<string>();
-		public readonly List<RoleType> DisabledSpawnScpsParsed = new List<RoleType>();
 
 		[Description("SCPの被ダメージ乗数")]
 		public Dictionary<string, float> ScpTakenDamageMultiplier { get; set; } = new Dictionary<string, float>()
@@ -440,36 +412,16 @@ namespace SanyaPlugin
 			try
 			{
 				DefaultitemsParsed.Clear();
-				DefaultitemsEscapeClassdParsed.Clear();
-				ItemCleanupIgnoreParsed.Clear();
-				RemoveScp914RecipeParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
-				DisabledSpawnScpsParsed.Clear();
 				ScpTakenDamageMultiplierParsed.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
 						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 
-				foreach(var item in DefaultitemsEscapeClassd)
-					if(Enum.TryParse(item, out ItemType type))
-						DefaultitemsEscapeClassdParsed.Add(type);
-
-				foreach(var item in ItemCleanupIgnore)
-					if(Enum.TryParse(item, out ItemType type))
-						ItemCleanupIgnoreParsed.Add(type);
-
-				foreach(var item in RemoveScp914Recipe)
-					if(Enum.TryParse(item, out ItemType type))
-						RemoveScp914RecipeParsed.Add(type);
-
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))
 						AltvoicechatScpsParsed.Add(role);
-
-				foreach(var item in DisabledSpawnScps)
-					if(Enum.TryParse(item, out RoleType role))
-						DisabledSpawnScpsParsed.Add(role);
 
 				foreach(var key in ScpTakenDamageMultiplier)
 					if(Enum.TryParse(key.Key, out RoleType role))
