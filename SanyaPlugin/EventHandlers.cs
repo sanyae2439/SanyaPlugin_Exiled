@@ -435,7 +435,7 @@ namespace SanyaPlugin
 			{
 				int randomnum = UnityEngine.Random.Range(0, 100);
 				Log.Debug($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
-				if(randomnum > plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
+				if(randomnum < plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
 					poslist.Add(RoleType.Scp049.GetRandomSpawnPointForConflict());
@@ -865,6 +865,7 @@ namespace SanyaPlugin
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Poisoned>(3f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(3f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(3f);
 			}
 
 			//SCP-049-2 Effect
@@ -876,7 +877,7 @@ namespace SanyaPlugin
 				ev.Attacker.ReferenceHub.playerStats.NetworkmaxArtificialHealth += SanyaPlugin.Instance.Config.Scp106SendPocketAhpAmount;
 
 			//CuffedMultiplier
-			if(ev.Target.IsCuffed && ev.Attacker.ReferenceHub.characterClassManager.IsHuman())
+			if(ev.Target.IsCuffed && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
 
 			//SCPsMultiplier
