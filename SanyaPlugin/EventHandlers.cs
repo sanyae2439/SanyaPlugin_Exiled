@@ -844,6 +844,13 @@ namespace SanyaPlugin
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Attacker.Role == RoleType.Spectator || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
+			//Prevent079FF
+			if(ev.Target.Team == Team.SCP && ev.Attacker.Role == RoleType.Scp079)
+			{
+				ev.IsAllowed = false;
+				return;
+			}
+
 			//GrenadeHitmark
 			if(plugin.Config.HitmarkGrenade && ev.DamageType == DamageTypes.Grenade && ev.Target != ev.Attacker)
 				ev.Attacker.ShowHitmarker();
