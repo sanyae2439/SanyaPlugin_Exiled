@@ -845,7 +845,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//Prevent079FF
-			if(ev.Target.Team == Team.SCP && ev.Attacker.Role == RoleType.Scp079)
+			if(ev.Attacker != ev.Target && ev.Target.IsScp && ev.Attacker.Role == RoleType.Scp079)
 			{
 				ev.IsAllowed = false;
 				return;
