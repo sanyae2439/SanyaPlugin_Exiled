@@ -5,12 +5,12 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Assets._Scripts.Dissonance;
 using CustomPlayerEffects;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using Grenades;
 using HarmonyLib;
 using Hints;
+using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using LightContainmentZoneDecontamination;
 using MapGeneration;
@@ -811,6 +811,21 @@ namespace SanyaPlugin.Patches
 			{
 				__instance.NetworkfuseTime = NetworkTime.time + 1.0;
 				flashGrenade.DisableGameObject = false;
+			}
+		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(FragGrenade), nameof(FragGrenade.ServersideExplosion))]
+	public static class FragPryGatePatch
+	{
+		public static void Prefix(FragGrenade __instance)
+		{
+			foreach(Collider collider in Physics.OverlapSphere(__instance.transform.position, __instance.chainTriggerRadius, __instance.damageLayerMask))
+			{
+				PryableDoor componentInParent = collider.GetComponentInParent<PryableDoor>();
+				if(componentInParent != null && !componentInParent.NetworkTargetState)
+					componentInParent.TryPryGate();
 			}
 		}
 	}

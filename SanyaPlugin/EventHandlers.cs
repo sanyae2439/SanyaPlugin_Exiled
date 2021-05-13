@@ -286,7 +286,11 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(door6.gameObject);
 			}
 
+
+			//fix maingame
 			(DoorNametagExtension.NamedDoors.First(x => x.Key == "SURFACE_NUKE").Value.TargetDoor as BreakableDoor)._ignoredDamageSources &= ~DoorDamageType.Grenade;
+			foreach(var i in UnityEngine.Object.FindObjectsOfType<PryableDoor>())
+				i.PrySpeed = new Vector2(1.0f, 0f);
 
 			if(plugin.Config.WarheadInitCountdown > 0)
 			{

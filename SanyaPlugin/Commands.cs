@@ -2,12 +2,13 @@
 using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
-using Exiled.API.Features;
 using Exiled.API.Extensions;
+using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
 using MapGeneration;
+using MEC;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
@@ -44,7 +45,7 @@ namespace SanyaPlugin.Commands
 
 			if(arguments.Count == 0)
 			{
-				response = "sanya plugins command. params: <hud/ping/override/actwatch/106/914/nukecap/nukelock/femur/blackout/addscps/ammo/forrcend/now/config>";
+				response = "sanya plugins command. params: <hud/ping/override/actwatch/airbomb/106/914/nukecap/nukelock/lure/femur/blackout/addscps/ammo/forrcend/now/config>";
 				return true;
 			}
 
@@ -60,6 +61,15 @@ namespace SanyaPlugin.Commands
 						// testing zone end
 						response = response.TrimEnd('\n');
 
+						return true;
+					}
+				case "airbomb":
+					{
+						response = "ok.";
+						if(!Coroutines.isAirBombGoing)
+							SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(), Segment.FixedUpdate));
+						else
+							Coroutines.isAirBombGoing = false;
 						return true;
 					}
 				case "checkobj":
@@ -332,6 +342,14 @@ namespace SanyaPlugin.Commands
 						response = $"ok.[{AlphaWarheadController.Host._isLocked}] -> ";
 						AlphaWarheadController.Host._isLocked = !AlphaWarheadController.Host._isLocked;
 						response += $"[{AlphaWarheadController.Host._isLocked}]";
+						return true;
+					}
+				case "lure":
+					{
+						var lure = UnityEngine.Object.FindObjectOfType<LureSubjectContainer>();
+						response = $"ok.[{lure.allowContain}] -> ";
+						lure.NetworkallowContain = !lure.allowContain;
+						response += $"[{lure.allowContain}]";
 						return true;
 					}
 				case "femur":
