@@ -422,7 +422,7 @@ namespace SanyaPlugin.Functions
 
 			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
 			player.EnableEffect<Amnesia>();
-			yield return Timing.WaitForSeconds(5f);
+			yield return Timing.WaitForSeconds(2f);
 
 			var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
 			var target = Player.List.Where(x => x.IsDead && x.MaxHealth != 0).Random();
