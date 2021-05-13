@@ -360,8 +360,8 @@ namespace SanyaPlugin
 
 			//[CENTER_DOWN]
 			if(player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated && !RoundSummary.singleton._roundEnded)
-				if(_respawnCounter == 0)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします", 6));
+				if(_respawnCounter == 0 && RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします\nチーム：{RespawnManager.Singleton.NextKnownTeam}", 6));
 				else
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 6));
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
