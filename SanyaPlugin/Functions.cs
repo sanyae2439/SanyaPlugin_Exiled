@@ -841,6 +841,15 @@ namespace SanyaPlugin.Functions
 					return identity;
 			return null;
 		}
+
+		public static bool IsAlphaWarheadCountdown()
+		{
+			return AlphaWarheadController.Host.timeToDetonation < 
+				AlphaWarheadController.Host.RealDetonationTime() - 
+				((AlphaWarheadController._resumeScenario >= 0) 
+				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime 
+				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
+		}
 	}
 
 	internal static class Extensions

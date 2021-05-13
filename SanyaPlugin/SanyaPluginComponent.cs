@@ -295,6 +295,15 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 6));
 			}
+			else if(player.Role == RoleType.Spectator)
+			{
+				string TicketList = string.Empty;
+				TicketList += $"<color=#6fc3ff>MTF Ticket:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>\n";
+				TicketList += $"<color=#008f1e> CI Ticket:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>\n";
+				TicketList = TicketList.TrimEnd('\n');
+
+				curText = curText.Replace("[LIST]", FormatStringForHud(TicketList, 6));
+			}
 			else
 				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 6));
 
@@ -341,7 +350,7 @@ namespace SanyaPlugin
 						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
 						: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime;
 
-				if(!AlphaWarheadController.Host.doorsOpen)
+				if(!Methods.IsAlphaWarheadCountdown())
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"\n{TargettMinus / 60:00} : {TargettMinus % 60:00}", 6));
 				else
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>\n{Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) / 60:00} : {Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) % 60:00}</color>", 6));
