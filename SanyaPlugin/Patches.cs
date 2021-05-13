@@ -529,12 +529,11 @@ namespace SanyaPlugin.Patches
 					return false;
 				}
 			}
-			else if(command.Contains("DOOR:"))
+			else if(command.Contains("ELEVATORUSE:"))
 			{
 				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelTargetBomb)
 				{
-					var door = target.GetComponent<DoorVariant>();
-					if(door != null && door.TryGetComponent<DoorNametagExtension>(out var nametag) && nametag.GetName == "SURFACE_GATE")
+					if(__instance.currentZone == "Outside")
 					{
 						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
 						{

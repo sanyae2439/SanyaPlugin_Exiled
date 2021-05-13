@@ -401,7 +401,7 @@ namespace SanyaPlugin.Functions
 					isAirBombGoing = false;
 					break;
 				}
-				yield return Timing.WaitForSeconds(0.25f);
+				yield return Timing.WaitForSeconds(0.5f);
 			}
 
 			if(SanyaPlugin.Instance.Config.CassieSubtitle)

@@ -18,7 +18,6 @@ using Mirror;
 using Respawning;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
-using SanyaPlugin.Patches;
 using UnityEngine;
 using Utf8Json;
 
@@ -118,7 +117,7 @@ namespace SanyaPlugin
 						&& detonatedDuration != -1
 						&& RoundSummary.roundTime > (plugin.Config.OutsidezoneTerminationTimeAfterNuke + detonatedDuration))
 					{
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb()));
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(), Segment.FixedUpdate));
 						detonatedDuration = -1;
 					}
 
@@ -348,17 +347,17 @@ namespace SanyaPlugin
 			{
 				case SANYA_GAME_MODE.NIGHT:
 					{
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode()));
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode(), Segment.FixedUpdate));
 						break;
 					}
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 					{
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.ClassDInsurgencyInit()));
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.ClassDInsurgencyInit(), Segment.FixedUpdate));
 						break;
 					}
 				case SANYA_GAME_MODE.ALREADY_BREAKED:
 					{
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AlreadyBreakInit()));
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AlreadyBreakInit(), Segment.FixedUpdate));
 						break;
 					}
 			}
@@ -607,11 +606,11 @@ namespace SanyaPlugin
 					ev.Request.Reject(writer);
 					return;
 				}
-				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev)));
+				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev), Segment.FixedUpdate));
 			}
 
 			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam"))
-				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId)));
+				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId), Segment.FixedUpdate));
 		}
 		public void OnVerified(VerifiedEventArgs ev)
 		{
@@ -635,13 +634,13 @@ namespace SanyaPlugin
 
 			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
 				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
-				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data)));
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate));
 
 			if(plugin.Config.DisableAllChat)
 			{
 				ev.Player.IsMuted = true;
 				if(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId) && !MuteHandler.QueryPersistentMute(ev.Player.UserId))
-					roundCoroutines.Add(Timing.CallDelayed(1f, () => { ev.Player.IsMuted = false; }));
+					roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () => { ev.Player.IsMuted = false; }));
 			}
 
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
@@ -693,13 +692,13 @@ namespace SanyaPlugin
 			}
 
 			if(plugin.Config.ExHudEnabled && plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
-				roundCoroutines.Add(Timing.CallDelayed(10f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(10f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
 
 			if(plugin.Config.ExHudEnabled && plugin.Config.Scp049StackBody && ev.NewRole == RoleType.Scp049)
-				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend049First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend049First, 10)));
 
 			if(plugin.Config.ExHudEnabled && plugin.Config.Scp106Exmode && ev.NewRole == RoleType.Scp106)
-				roundCoroutines.Add(Timing.CallDelayed(3f, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
+				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
 
 			if(plugin.Config.DefaultitemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
@@ -733,12 +732,12 @@ namespace SanyaPlugin
 
 			//Speedup
 			if(plugin.Config.Scp939SpeedupByHealthAmount && ev.NewRole.Is939())
-				roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 				}));
 			else if(plugin.Config.Scp0492SpeedupByHealthAmount && ev.NewRole == RoleType.Scp0492)
-				roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 				}));
@@ -752,7 +751,7 @@ namespace SanyaPlugin
 
 			if(ev.Player.Scale != scale)
 			{
-				roundCoroutines.Add(Timing.CallDelayed(0.5f, () =>
+				roundCoroutines.Add(Timing.CallDelayed(0.5f, Segment.FixedUpdate, () =>
 				{
 					Log.Debug($"Scale changed:{scale}", SanyaPlugin.Instance.Config.IsDebugged);
 					ev.Player.Scale = scale;
@@ -938,7 +937,7 @@ namespace SanyaPlugin
 
 			//HitmarkKilled
 			if(plugin.Config.HitmarkKilled && ev.Killer != ev.Target)
-				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GameObject.GetComponent<MicroHID>())));
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmark(ev.Killer.GameObject.GetComponent<MicroHID>()), Segment.FixedUpdate));
 
 			if(plugin.Config.Scp049StackBody && ev.HitInformations.GetDamageType() == DamageTypes.Scp049)
 			{
@@ -1022,7 +1021,7 @@ namespace SanyaPlugin
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
 				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
 				if(scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled)
-					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player)));
+					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
 
 			if(plugin.Config.Scp106Exmode
 				&& ev.Player.Role == RoleType.Scp106
@@ -1031,7 +1030,7 @@ namespace SanyaPlugin
 				&& !Warhead.IsDetonated)
 				roundCoroutines.Add(Timing.RunCoroutine(
 					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, DoorNametagExtension.NamedDoors.First(x => x.Key == "106_PRIMARY").Value.TargetDoor.transform.position + Vector3.up * 1.5f)
-					));
+					, Segment.FixedUpdate));
 
 			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman()
 				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.Enabled && !ev.Player.ReferenceHub.fpc.staminaController._scp207.Enabled)
@@ -1213,7 +1212,7 @@ namespace SanyaPlugin
 							ev.Items.Add(player.Inventory.SetPickup(syncItemInfo.id, syncItemInfo.durability, player.Position, player.CameraTransform.rotation, syncItemInfo.modSight, syncItemInfo.modBarrel, syncItemInfo.modOther, true));
 						player.Inventory.Clear();
 						player.SetRole(RoleType.Scp0492, true, false);
-						roundCoroutines.Add(Timing.CallDelayed(1f, () =>
+						roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 						{
 							player.EnableEffect<Disabled>();
 							player.EnableEffect<Poisoned>();

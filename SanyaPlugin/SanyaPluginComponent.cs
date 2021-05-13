@@ -297,12 +297,20 @@ namespace SanyaPlugin
 			}
 			else if(player.Role == RoleType.Spectator)
 			{
-				string TicketList = string.Empty;
-				TicketList += $"<color=#6fc3ff>MTF Ticket:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>\n";
-				TicketList += $"<color=#008f1e> CI Ticket:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>\n";
-				TicketList = TicketList.TrimEnd('\n');
+				string RespawnList = string.Empty;
+				RespawnList += $"Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>:";
+				RespawnList += $"<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>:";
+				RespawnList += $" NextSpawns({RoundSummary.singleton.CountRole(RoleType.Spectator)} Spectators):\n";
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(TicketList, 6));
+				if(RespawnManager.Singleton._prioritySpawn)
+					foreach(var i in Player.List.Where(x => x.Role == RoleType.Spectator && !x.IsOverwatchEnabled).OrderBy(x => x.ReferenceHub.characterClassManager.DeathTime).Take(5))
+						RespawnList += $"{i.Nickname}\n";
+				else
+					RespawnList += $"Random!";
+
+				RespawnList = RespawnList.TrimEnd('\n');
+
+				curText = curText.Replace("[LIST]", FormatStringForHud(RespawnList, 6));
 			}
 			else
 				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 6));
@@ -360,10 +368,15 @@ namespace SanyaPlugin
 
 			//[CENTER_DOWN]
 			if(player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated && !RoundSummary.singleton._roundEnded)
-				if(_respawnCounter == 0 && RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします\nチーム：{RespawnManager.Singleton.NextKnownTeam}", 6));
+			{
+				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
+				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンチケットがありません", 6));
+				else if(_respawnCounter == 0 && RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 6));
 				else
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 6));
+			}
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(_hudCenterDownString, 6));
 			else
