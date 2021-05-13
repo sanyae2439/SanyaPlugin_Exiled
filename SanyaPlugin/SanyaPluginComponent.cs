@@ -344,7 +344,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
-			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated)
+			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton._roundEnded)
 			{
 				int TargettMinus = AlphaWarheadController._resumeScenario == -1
 						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
