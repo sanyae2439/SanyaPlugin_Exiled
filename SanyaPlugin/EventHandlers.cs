@@ -125,6 +125,7 @@ namespace SanyaPlugin
 					//SCPAutoNuke
 					if(plugin.Config.WarheadAutoWhenNoScps > 0
 						&& RoundSummary.RoundInProgress()
+						&& RoundSummary.roundTime > 5
 						&& !ScpAutoWarheadUsed
 						&& AlphaWarheadController.Host._autoDetonate 
 						&& AlphaWarheadController.Host._autoDetonateTimer >= 0f
