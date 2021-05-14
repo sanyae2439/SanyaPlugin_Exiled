@@ -107,6 +107,9 @@ namespace SanyaPlugin
 		[Description("核の初期カウントダウン時間(30-120)")]
 		public int WarheadInitCountdown { get; set; } = -1;
 
+		[Description("SCPが0になった際に自動核を起爆するまでの時間")]
+		public int WarheadAutoWhenNoScps { get; set; } = -1;
+
 		[Description("核起爆後に地上エリアの空爆が開始するまでの秒数")]
 		public int OutsidezoneTerminationTimeAfterNuke { get; set; } = -1;
 

@@ -121,6 +121,21 @@ namespace SanyaPlugin
 						detonatedDuration = -1;
 					}
 
+
+					//SCPAutoNuke
+					if(plugin.Config.WarheadAutoWhenNoScps > 0
+						&& RoundSummary.RoundInProgress()
+						&& !ScpAutoWarheadUsed
+						&& AlphaWarheadController.Host._autoDetonate 
+						&& AlphaWarheadController.Host._autoDetonateTimer >= 0f
+						&& RoundSummary.singleton.CountTeam(Team.SCP) == 0)
+					{
+						roundCoroutines.Add(Timing.CallDelayed(plugin.Config.WarheadAutoWhenNoScps, Segment.FixedUpdate, () => {
+							AlphaWarheadController.Host._autoDetonateTimer = -1f;
+						}));
+						ScpAutoWarheadUsed = true;
+					}
+
 					//停電時強制再収容の際復電
 					if(eventmode == SANYA_GAME_MODE.NIGHT && IsEnableBlackout && Generator079.mainGenerator.forcedOvercharge)
 					{
@@ -213,10 +228,10 @@ namespace SanyaPlugin
 		internal Player Overrided = null;
 		public bool FriendlyFlashEnabled = false;
 		internal NetworkIdentity Sinkhole = null;
+		private bool ScpAutoWarheadUsed = false;
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
-		private Room lczarmony = null;
 		private List<Team> prevSpawnQueue = null;
 		private readonly Vector3 GateBLiftPos = new Vector3(87.5f, 995.7f, -41.5f);
 		private Lift GateBLift = null;
@@ -238,6 +253,7 @@ namespace SanyaPlugin
 
 			detonatedDuration = -1;
 			IsEnableBlackout = false;
+			ScpAutoWarheadUsed = false;
 
 			flickerableLightController = UnityEngine.Object.FindObjectsOfType<FlickerableLightController>().First(x => x.name == "FlickerableLightController");
 
@@ -313,13 +329,9 @@ namespace SanyaPlugin
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
+				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
 				case SANYA_GAME_MODE.NIGHT:
 					{
-						break;
-					}
-				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
-					{
-						lczarmony = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory);
 						break;
 					}
 				case SANYA_GAME_MODE.ALREADY_BREAKED:

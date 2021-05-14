@@ -299,7 +299,7 @@ namespace SanyaPlugin
 			{
 				string RespawnList = string.Empty;
 				RespawnList += $"Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>:";
-				RespawnList += $"<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>:";
+				RespawnList += $"<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>";
 				RespawnList += $" NextSpawns({RoundSummary.singleton.CountRole(RoleType.Spectator)} Spectators):\n";
 
 				if(RespawnManager.Singleton._prioritySpawn)
