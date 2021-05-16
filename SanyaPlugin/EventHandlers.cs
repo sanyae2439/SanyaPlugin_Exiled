@@ -887,7 +887,11 @@ namespace SanyaPlugin
 
 			//SCP-049-2 Effect
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
+			{
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(2f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(2f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(2f);
+			}
 
 			//SCP-106 AHP
 			if(plugin.Config.Scp106SendPocketAhpAmount > 0 && ev.DamageType == DamageTypes.Scp106)
