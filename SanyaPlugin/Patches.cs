@@ -948,7 +948,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static void Postfix(Scp939_VisionController __instance, Scp939PlayerScript scp939, ref bool __result)
 		{
-			if(SanyaPlugin.Instance.Handlers.Overrided != null && scp939._hub.nicknameSync.Network_myNickSync == SanyaPlugin.Instance.Handlers.Overrided.Nickname)
+			if(SanyaPlugin.Instance.Handlers.Overrided?.ReferenceHub.nicknameSync.Network_myNickSync == scp939._hub.nicknameSync.Network_myNickSync)
 				__result = true;
 		}
 	}
@@ -1187,5 +1187,27 @@ namespace SanyaPlugin.Patches
 			for(int i = 0; i < newInst.Count; i++)
 				yield return newInst[i];
 		}
+	}
+
+	//fix
+	[HarmonyPatch(typeof(MEC.Timing), nameof(MEC.Timing.RunCoroutine), new Type[] { typeof(IEnumerator<float>) })]
+	public static class FixDefaultSegmentPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			newInst.Find(x => x.opcode == OpCodes.Ldc_I4_0).opcode = OpCodes.Ldc_I4_1;
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//override
+	[HarmonyPatch(typeof(MEC.Timing), nameof(MEC.Timing.RunCoroutine), new Type[] { typeof(IEnumerator<float>), typeof(MEC.Segment) })]
+	public static class FixOverrideFixedUpdateCoroutinePatch
+	{
+		public static void Prefix(ref MEC.Segment segment) => segment = MEC.Segment.FixedUpdate;
 	}
 }

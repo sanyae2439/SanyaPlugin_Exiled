@@ -63,6 +63,11 @@ namespace SanyaPlugin.Commands
 
 						return true;
 					}
+				case "coroutines":
+					{
+						response = $"FixedUpdate:{Timing.Instance.FixedUpdateCoroutines} Update:{Timing.Instance.UpdateCoroutines}";
+						return true;
+					}
 				case "airbomb":
 					{
 						response = "ok.";
