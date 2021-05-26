@@ -340,18 +340,6 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> NightModeInit()
-		{
-			Log.Debug($"[StartNightMode] Started. Wait for {60}s...", SanyaPlugin.Instance.Config.IsDebugged);
-			yield return Timing.WaitForSeconds(60f);
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
-				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
-			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			SanyaPlugin.Instance.Handlers.IsEnableBlackout = true;
-			Methods.SetAllIntensity(EventHandlers.currentIntensity);	
-			yield break;
-		}
-
 		public static IEnumerator<float> BigHitmark(MicroHID microHID)
 		{
 			yield return Timing.WaitForSeconds(0.1f);
@@ -509,6 +497,18 @@ namespace SanyaPlugin.Functions
 			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), (sbyte)targetRole);
 			yield return Timing.WaitForSeconds(0.25f);
 			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), (int)targetItem);
+			yield break;
+		}
+
+
+		public static IEnumerator<float> NightModeInit()
+		{
+			yield return Timing.WaitForSeconds(10f);
+			if(SanyaPlugin.Instance.Config.CassieSubtitle)
+				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
+			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
+			SanyaPlugin.Instance.Handlers.IsEnableBlackout = true;
+			Methods.SetAllIntensity(EventHandlers.currentIntensity);
 			yield break;
 		}
 
