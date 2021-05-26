@@ -340,7 +340,7 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> StartNightMode()
+		public static IEnumerator<float> NightModeInit()
 		{
 			Log.Debug($"[StartNightMode] Started. Wait for {60}s...", SanyaPlugin.Instance.Config.IsDebugged);
 			yield return Timing.WaitForSeconds(60f);
@@ -348,6 +348,7 @@ namespace SanyaPlugin.Functions
 				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			SanyaPlugin.Instance.Handlers.IsEnableBlackout = true;
+			Methods.SetAllIntensity(EventHandlers.currentIntensity);	
 			yield break;
 		}
 
@@ -536,7 +537,6 @@ namespace SanyaPlugin.Functions
 
 		public static IEnumerator<float> AlreadyBreakInit()
 		{
-			Lift.Instances.First(x => x.elevatorName == "GateB").UseLift();
 			yield return Timing.WaitForSeconds(3f);
 			Methods.SendSubtitle(Subtitles.AlreadyBreakFirst, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("attention all personnel . facility guards HasEntered . AllRemaining .", false, true);
@@ -849,6 +849,12 @@ namespace SanyaPlugin.Functions
 				((AlphaWarheadController._resumeScenario >= 0) 
 				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime 
 				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
+		}
+
+		public static void SetAllIntensity(float intensity)
+		{
+			foreach(var cont in EventHandlers.flickerableLightControllers)
+				cont.ServerSetLightIntensity(intensity);
 		}
 	}
 

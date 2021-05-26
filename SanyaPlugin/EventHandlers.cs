@@ -191,27 +191,6 @@ namespace SanyaPlugin
 				yield return Timing.WaitForSeconds(1f);
 			}
 		}
-		private IEnumerator<float> FixedUpdate()
-		{
-			while(true)
-			{
-				try
-				{
-					//Blackouter
-					if(flickerableLightController != null && IsEnableBlackout && !flickerableLightController.IsEnabled())
-					{
-						Log.Debug($"[Blackouter] Fired.", SanyaPlugin.Instance.Config.IsDebugged);
-						Generator079.mainGenerator.ServerOvercharge(10f, false);
-					}
-				}
-				catch(Exception e)
-				{
-					Log.Error($"[FixedUpdate] {e}");
-				}
-				//FixedUpdateの次フレームへ
-				yield return Timing.WaitForOneFrame;
-			}
-		}
 
 		/** Flag Params **/
 		private int detonatedDuration = -1;
@@ -221,7 +200,6 @@ namespace SanyaPlugin
 		public readonly static Dictionary<string, uint> KillsDict = new Dictionary<string, uint>();
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
-		private FlickerableLightController flickerableLightController = null;
 		internal bool IsEnableBlackout = false;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		private Camera079 last079cam = null;
@@ -233,9 +211,9 @@ namespace SanyaPlugin
 
 		/** EventModeVar **/
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
+		internal static List<FlickerableLightController> flickerableLightControllers = new List<FlickerableLightController>();
+		internal static float currentIntensity = 1f;
 		private List<Team> prevSpawnQueue = null;
-		private readonly Vector3 GateBLiftPos = new Vector3(87.5f, 995.7f, -41.5f);
-		private Lift GateBLift = null;
 
 		//ServerEvents
 		public void OnWaintingForPlayers()
@@ -247,7 +225,6 @@ namespace SanyaPlugin
 				sendertask = SenderAsync().StartSender();
 
 			roundCoroutines.Add(Timing.RunCoroutine(EverySecond(), Segment.FixedUpdate));
-			roundCoroutines.Add(Timing.RunCoroutine(FixedUpdate(), Segment.FixedUpdate));
 
 			PlayerDataManager.playersData.Clear();
 			Coroutines.isAirBombGoing = false;
@@ -256,7 +233,8 @@ namespace SanyaPlugin
 			IsEnableBlackout = false;
 			ScpAutoWarheadUsed = false;
 
-			flickerableLightController = UnityEngine.Object.FindObjectsOfType<FlickerableLightController>().First(x => x.name == "FlickerableLightController");
+			flickerableLightControllers.Clear();
+			flickerableLightControllers.AddRange(UnityEngine.Object.FindObjectsOfType<FlickerableLightController>());
 
 			last079cam = null;
 			scp049stackAmount = 0;
@@ -325,8 +303,12 @@ namespace SanyaPlugin
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
+					{
+						break;
+					}
 				case SANYA_GAME_MODE.NIGHT:
 					{
+						currentIntensity = 0.25f;
 						break;
 					}
 				case SANYA_GAME_MODE.ALREADY_BREAKED:
@@ -335,8 +317,6 @@ namespace SanyaPlugin
 						for(int i = 0; i < CharacterClassManager.ClassTeamQueue.Count; i++)
 							if(CharacterClassManager.ClassTeamQueue[i] == Team.CDP || CharacterClassManager.ClassTeamQueue[i] == Team.RSC)
 								CharacterClassManager.ClassTeamQueue[i] = Team.MTF;
-						GateBLift = Lift.Instances.First(x => x.elevatorName == "GateB");
-						GateBLift.SetStatus((byte)Lift.Status.Down);
 						break;
 					}
 				default:
@@ -358,7 +338,7 @@ namespace SanyaPlugin
 			{
 				case SANYA_GAME_MODE.NIGHT:
 					{
-						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.StartNightMode(), Segment.FixedUpdate));
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.NightModeInit(), Segment.FixedUpdate));
 						break;
 					}
 				case SANYA_GAME_MODE.CLASSD_INSURGENCY:
@@ -555,8 +535,12 @@ namespace SanyaPlugin
 				else
 					Methods.SendSubtitle(Subtitles.GeneratorComplete, 20);
 
-			if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout)
+			if(eventmode == SANYA_GAME_MODE.NIGHT && curgen >= 3 && IsEnableBlackout) 
+			{
 				IsEnableBlackout = false;
+				currentIntensity = 1f;
+				Methods.SetAllIntensity(currentIntensity);
+			}
 		}
 
 		//WarheadEvents
@@ -678,6 +662,16 @@ namespace SanyaPlugin
 			//KillDict
 			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
 				KillsDict.Add(ev.Player.Nickname, 0);
+
+			switch(eventmode)
+			{
+				case SANYA_GAME_MODE.NIGHT:
+					{
+						if(IsEnableBlackout)
+							Methods.SetAllIntensity(currentIntensity);
+						break;
+					}
+			}
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
@@ -831,7 +825,7 @@ namespace SanyaPlugin
 					{
 						if(ev.RoleType == RoleType.FacilityGuard)
 						{
-							ev.Position = GateBLiftPos;
+							ev.Position = RoleType.NtfCommander.GetRandomSpawnPointForConflict();
 							ev.Player.Ammo.amount.Clear();
 							foreach(var ammo in ev.Player.ReferenceHub.characterClassManager.Classes.SafeGet(RoleType.NtfScientist).ammoTypes)
 								ev.Player.Ammo.amount.Add(ammo);
