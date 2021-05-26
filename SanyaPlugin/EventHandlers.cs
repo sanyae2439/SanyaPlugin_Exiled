@@ -308,7 +308,7 @@ namespace SanyaPlugin
 					}
 				case SANYA_GAME_MODE.NIGHT:
 					{
-						currentIntensity = 0.25f;
+						currentIntensity = 0.1f;
 						break;
 					}
 				case SANYA_GAME_MODE.ALREADY_BREAKED:
