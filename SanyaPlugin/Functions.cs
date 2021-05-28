@@ -115,7 +115,7 @@ namespace SanyaPlugin.Functions
 					}
 					else if(data.block == 1)
 					{
-						Log.Info($"[VPNChecker] VPN Detected:{address} UserId:{ev.UserId}");
+						Log.Warn($"[VPNChecker] VPN Detected:{address} UserId:{ev.UserId}");
 						AddBlacklist(address);
 
 						var player = Player.Get(ev.UserId);
