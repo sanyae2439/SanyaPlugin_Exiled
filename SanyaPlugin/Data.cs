@@ -126,11 +126,12 @@ namespace SanyaPlugin.Data
 
 	public class PlayerData
 	{
-		public PlayerData(DateTime lastupdate, string userid, bool isSteamChecked, int level, int exp, int count)
+		public PlayerData(DateTime lastupdate, string userid, bool isLimited, bool isVacBanned, int level, int exp, int count)
 		{
 			this.lastUpdate = lastupdate;
 			this.userid = userid;
-			this.steamchecked = isSteamChecked;
+			this.steamlimited = isLimited;
+			this.steamvacbanned = isVacBanned;
 			this.level = level;
 			this.exp = exp;
 			this.playingcount = count;
@@ -163,12 +164,13 @@ namespace SanyaPlugin.Data
 		}
 		public override string ToString()
 		{
-			return $"userid:{userid} steamchecked:{steamchecked} level:{level} exp:{exp}";
+			return $"userid:{userid} steamLimited:{steamlimited} steamVacBanned:{steamvacbanned} level:{level} exp:{exp}";
 		}
 
 		public DateTime lastUpdate;
 		public string userid;
-		public bool steamchecked;
+		public bool steamlimited;
+		public bool steamvacbanned;
 		public int level;
 		public int exp;
 		public int playingcount;

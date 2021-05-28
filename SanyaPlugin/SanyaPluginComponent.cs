@@ -194,7 +194,10 @@ namespace SanyaPlugin
 		{
 			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || player.Role != RoleType.Spectator || _timer < 1f) return;
 
-			_respawnCounter = (int)Math.Truncate(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown ? RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds : 0);
+			if(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown || RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.PlayingEntryAnimations)
+				_respawnCounter = (int)Math.Truncate(RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds);
+			else
+				_respawnCounter = 0;
 		}
 
 		private void UpdateScpLists()
@@ -374,8 +377,8 @@ namespace SanyaPlugin
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンチケットがありません", 6));
-				else if(_respawnCounter == 0 && RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"間もなくリスポーンします\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 6));
+				else if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"突入まで{_respawnCounter}秒\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 6));
 				else
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 6));
 			}

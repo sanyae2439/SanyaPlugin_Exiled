@@ -33,7 +33,7 @@ namespace SanyaPlugin.Functions
 		{
 			string targetuseridpath = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, $"{userid}.txt");
 			if(!Directory.Exists(SanyaPlugin.Instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.Instance.Config.DataDirectory);
-			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, false, 0, 0, 0);
+			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, true, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
@@ -46,7 +46,8 @@ namespace SanyaPlugin.Functions
 			string[] textdata = new string[] {
 				data.lastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzzz"),
 				data.userid,
-				data.steamchecked.ToString(),
+				data.steamlimited.ToString(),
+				data.steamvacbanned.ToString(),
 				data.level.ToString(),
 				data.exp.ToString(),
 				data.playingcount.ToString()
@@ -62,9 +63,10 @@ namespace SanyaPlugin.Functions
 				DateTime.Parse(text[0]),
 				text[1],
 				bool.Parse(text[2]),
-				int.Parse(text[3]),
+				bool.Parse(text[3]),
 				int.Parse(text[4]),
-				int.Parse(text[5])
+				int.Parse(text[5]),
+				int.Parse(text[6])
 				);
 		}
 
@@ -74,7 +76,8 @@ namespace SanyaPlugin.Functions
 			{
 				if(!file.Contains("@")) continue;
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
-				data.steamchecked = false;
+				data.steamlimited = true;
+				data.steamvacbanned = true;
 				SavePlayerData(data);
 			}
 		}
@@ -143,7 +146,9 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> CheckSteam(string userid)
 		{
 			PlayerData data = null;
-			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && data.steamchecked)
+			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) 
+				&& (!SanyaPlugin.Instance.Config.KickSteamLimited || !data.steamlimited)
+				&& (!SanyaPlugin.Instance.Config.KickSteamVacBanned || !data.steamvacbanned))
 			{
 				Log.Debug($"[SteamCheck] Already Checked:{userid}", SanyaPlugin.Instance.Config.IsDebugged);
 				yield break;
@@ -173,7 +178,7 @@ namespace SanyaPlugin.Functions
 								Log.Info($"[SteamCheck:VacBanned] OK:{userid}");
 								if(data != null)
 								{
-									data.steamchecked = true;
+									data.steamvacbanned = false;
 									PlayerDataManager.SavePlayerData(data);
 								}
 							}
@@ -198,7 +203,7 @@ namespace SanyaPlugin.Functions
 								Log.Info($"[SteamCheck:Limited] OK:{userid}");
 								if(data != null)
 								{
-									data.steamchecked = true;
+									data.steamlimited = false;
 									PlayerDataManager.SavePlayerData(data);
 								}
 							}
