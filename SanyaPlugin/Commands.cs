@@ -400,6 +400,12 @@ namespace SanyaPlugin.Commands
 						response = $"now ticks:{TimeBehaviour.CurrentTimestamp()}";
 						return true;
 					}
+				case "resetflag":
+					{
+						response = "ok.";
+						PlayerDataManager.ReloadParams();
+						return true;
+					}
 				case "config":
 					{
 						response = SanyaPlugin.Instance.Config.GetConfigs();

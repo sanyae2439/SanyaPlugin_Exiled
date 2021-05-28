@@ -33,7 +33,7 @@ namespace SanyaPlugin.Functions
 		{
 			string targetuseridpath = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, $"{userid}.txt");
 			if(!Directory.Exists(SanyaPlugin.Instance.Config.DataDirectory)) Directory.CreateDirectory(SanyaPlugin.Instance.Config.DataDirectory);
-			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, true, 0, 0, 0);
+			if(!File.Exists(targetuseridpath)) return new PlayerData(DateTime.Now, userid, false, 0, 0, 0);
 			else return ParsePlayerData(targetuseridpath);
 		}
 
@@ -46,7 +46,7 @@ namespace SanyaPlugin.Functions
 			string[] textdata = new string[] {
 				data.lastUpdate.ToString("yyyy-MM-ddTHH:mm:sszzzz"),
 				data.userid,
-				data.limited.ToString(),
+				data.steamchecked.ToString(),
 				data.level.ToString(),
 				data.exp.ToString(),
 				data.playingcount.ToString()
@@ -74,6 +74,7 @@ namespace SanyaPlugin.Functions
 			{
 				if(!file.Contains("@")) continue;
 				var data = LoadPlayerData(file.Replace(".txt", string.Empty));
+				data.steamchecked = false;
 				SavePlayerData(data);
 			}
 		}
@@ -139,10 +140,10 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
-		public static IEnumerator<float> CheckIsLimitedSteam(string userid)
+		public static IEnumerator<float> CheckSteam(string userid)
 		{
 			PlayerData data = null;
-			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && !data.limited)
+			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) && data.steamchecked)
 			{
 				Log.Debug($"[SteamCheck] Already Checked:{userid}", SanyaPlugin.Instance.Config.IsDebugged);
 				yield break;
@@ -160,24 +161,50 @@ namespace SanyaPlugin.Functions
 				{
 					XmlReaderSettings xmlReaderSettings = new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true };
 					XmlReader xmlReader = XmlReader.Create(new MemoryStream(unityWebRequest.downloadHandler.data), xmlReaderSettings);
+					bool ReadSuccess = false;
 					while(xmlReader.Read())
 					{
-						if(xmlReader.ReadToFollowing("isLimitedAccount"))
+						if(xmlReader.ReadToFollowing("vacBanned") && SanyaPlugin.Instance.Config.KickSteamVacBanned)
 						{
-							string isLimited = xmlReader.ReadElementContentAsString();
-							if(isLimited == "0")
+							ReadSuccess = true;
+							string isVacBanned = xmlReader.ReadElementContentAsString();
+							if(isVacBanned == "0")
 							{
-								Log.Info($"[SteamCheck] OK:{userid}");
+								Log.Info($"[SteamCheck:VacBanned] OK:{userid}");
 								if(data != null)
 								{
-									data.limited = false;
+									data.steamchecked = true;
 									PlayerDataManager.SavePlayerData(data);
 								}
-								yield break;
 							}
 							else
 							{
-								Log.Warn($"[SteamCheck] NG:{userid}");
+								Log.Warn($"[SteamCheck:VacBanned] NG:{userid}");
+								var player = Player.Get(userid);
+								if(player != null)
+									ServerConsole.Disconnect(player.Connection, Subtitles.VacBannedKickMessage);
+
+								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
+									EventHandlers.kickedbyChecker.Add(userid, "steam_vac");
+							}
+						}
+
+						if(xmlReader.ReadToFollowing("isLimitedAccount") && SanyaPlugin.Instance.Config.KickSteamLimited)
+						{
+							ReadSuccess = true;
+							string isLimited = xmlReader.ReadElementContentAsString();
+							if(isLimited == "0")
+							{
+								Log.Info($"[SteamCheck:Limited] OK:{userid}");
+								if(data != null)
+								{
+									data.steamchecked = true;
+									PlayerDataManager.SavePlayerData(data);
+								}
+							}
+							else
+							{
+								Log.Warn($"[SteamCheck:Limited] NG:{userid}");
 								var player = Player.Get(userid);
 								if(player != null)
 								{
@@ -185,23 +212,22 @@ namespace SanyaPlugin.Functions
 								}
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
-									EventHandlers.kickedbyChecker.Add(userid, "steam");
-
-								yield break;
+									EventHandlers.kickedbyChecker.Add(userid, "steam_limited");
 							}
 						}
-						else
+
+
+						if(!ReadSuccess)
 						{
-							Log.Warn($"[SteamCheck] Falied(NoProfile):{userid}");
+							Log.Warn($"[SteamCheck] Falied(NoProfile or Error):{userid}");
 							var player = Player.Get(userid);
 							if(player != null)
-							{
 								ServerConsole.Disconnect(player.Connection, Subtitles.NoProfileKickMessage);
-							}
 							if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
-								EventHandlers.kickedbyChecker.Add(userid, "steam");
-							yield break;
+								EventHandlers.kickedbyChecker.Add(userid, "steam_noprofile");
 						}
+
+						yield break;
 					}
 				}
 				else

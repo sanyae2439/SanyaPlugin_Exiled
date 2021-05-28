@@ -71,6 +71,9 @@ namespace SanyaPlugin
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
+		[Description("SteamのVACBannedユーザーをキックする")]
+		public bool KickSteamVacBanned { get; set; } = false;
+
 		[Description("VPN検知に使用するIPHubのAPIキー")]
 		public string KickVpnApikey { get; set; } = string.Empty;
 

@@ -7,6 +7,11 @@
 			"(Your Steam account is Limited User Account. This server doesn't allow Limited User Account.)"
 			);
 
+		internal static readonly string VacBannedKickMessage = string.Concat(
+			"あなたのSteamIDは「VAC 検出記録」があります。このサーバーはそれを許可していません。\n",
+			"(Your Steam account has VAC Detected record. This server doesn't allow it.)"
+			);
+
 		internal static readonly string NoProfileKickMessage = string.Concat(
 			"あなたのSteamIDはプロフィールが作成されていません。このサーバーはプロフィール無しのユーザーを許可していません。\n",
 			"(Your Steam account does not have Profile. This server doesn't allow users without Profile.)"

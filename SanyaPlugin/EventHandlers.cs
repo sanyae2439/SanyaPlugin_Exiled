@@ -604,8 +604,8 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev), Segment.FixedUpdate));
 			}
 
-			if(plugin.Config.KickSteamLimited && ev.UserId.Contains("@steam"))
-				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckIsLimitedSteam(ev.UserId), Segment.FixedUpdate));
+			if((plugin.Config.KickSteamLimited || plugin.Config.KickSteamVacBanned) && ev.UserId.Contains("@steam"))
+				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckSteam(ev.UserId), Segment.FixedUpdate));
 		}
 		public void OnVerified(VerifiedEventArgs ev)
 		{
@@ -617,8 +617,12 @@ namespace SanyaPlugin
 			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
 			{
 				string reasonMessage = string.Empty;
-				if(reason == "steam")
+				if(reason == "steam_vac")
+					reasonMessage = Subtitles.VacBannedKickMessage;
+				else if(reason == "steam_limited")
 					reasonMessage = Subtitles.LimitedKickMessage;
+				else if(reason == "steam_noprofile")
+					reasonMessage = Subtitles.NoProfileKickMessage;
 				else if(reason == "vpn")
 					reasonMessage = Subtitles.VPNKickMessage;
 
