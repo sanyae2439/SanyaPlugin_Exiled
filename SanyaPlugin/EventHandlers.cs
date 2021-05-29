@@ -428,30 +428,39 @@ namespace SanyaPlugin
 				if(randomnum < plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
+					poslist.Add(RoleType.Scp096.GetRandomSpawnPointForConflict());
 					poslist.Add(RoleType.Scp049.GetRandomSpawnPointForConflict());
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnPointForConflict());
 
 					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
+						poslist.Add(RoleType.Scp173.GetRandomSpawnPointForConflict());
+
 						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
+
+						poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "LC_914_CR").transform.position);
 
 						foreach(var itempos in RandomItemSpawner.singleton.posIds)
 						{
-							if(itempos.posID == "RandomPistol" && itempos.position.position.y > 0.5f && itempos.position.position.y < 0.7f)
-							{
+							if(itempos.posID == "RandomPistol" && itempos.DoorTriggerName == "372")
 								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
-							}
+							else if(itempos.posID == "RandomPistol" && itempos.DoorTriggerName == "173")
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
 							else if(itempos.posID == "toilet_keycard" && itempos.position.position.y > 1.25f && itempos.position.position.y < 1.35f)
-							{
-								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y - 0.5f, itempos.position.position.z));
-							}
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
+							else if(itempos.posID == "012_mScientist_keycard")
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
+							else if(itempos.posID == "Servers")
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
+							else if(itempos.posID == "MicroHID")
+								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
 						}
 					}
 
 					foreach(GameObject roomid in GameObject.FindGameObjectsWithTag("RoomID"))
 					{
 						Rid rid = roomid.GetComponent<Rid>();
-						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter" || rid.id == "nukesite"))
+						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter" || rid.id == "nukesite" || rid.id == "Intercom"))
 						{
 							poslist.Add(roomid.transform.position);
 						}
@@ -1022,6 +1031,7 @@ namespace SanyaPlugin
 			{
 				player.Health = Mathf.Clamp(player.Health + plugin.Config.Scp106RecoveryAmount, 0, player.MaxHealth);
 				player.GameObject.GetComponent<MicroHID>()?.TargetSendHitmarker(false);
+				if(!RoundSummary.singleton._roundEnded) KillsDict[player.Nickname] += 1;
 				if(plugin.Config.Scp106SendPocketAhpDecayAmount > 0) player.ReferenceHub.playerStats.NetworkartificialHpDecay -= plugin.Config.Scp106SendPocketAhpDecayAmount;
 			}
 		}
