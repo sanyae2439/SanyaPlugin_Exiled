@@ -1275,6 +1275,8 @@ namespace SanyaPlugin
 				if(UnityEngine.Random.Range(0, 100) < 20)
 				{
 					Methods.SpawnGrenade(ev.Scp914.output.position, (GRENADE_ID)UnityEngine.Random.Range(0,3));
+					var pickup = ReferenceHub.HostHub.inventory.SetPickup((ItemType)UnityEngine.Random.Range((int)ItemType.KeycardJanitor, (int)ItemType.Coin + 1), 0f, ev.Scp914.output.position, Quaternion.identity, 0, 0, 0, true);
+					pickup.RefreshDurability(true, true);
 				}
 			}
 		}
