@@ -250,6 +250,9 @@ namespace SanyaPlugin
 				prevSpawnQueue = null;
 			}
 
+			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+
 			if(plugin.Config.AddDoorsOnSurface)
 			{
 				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
@@ -882,7 +885,7 @@ namespace SanyaPlugin
 			//SCP-939 Effect
 			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)
 			{
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(3f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Poisoned>(3f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(3f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(3f);
