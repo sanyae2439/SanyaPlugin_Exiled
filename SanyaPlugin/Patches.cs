@@ -1308,4 +1308,21 @@ namespace SanyaPlugin.Patches
 			}
 		}
 	}
+
+	//transpiler
+	[HarmonyPatch(typeof(Generator079), nameof(Generator079.LateUpdate))]
+	public static class GeneratorPreventReductPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindLastIndex(x => x.opcode == OpCodes.Call && x.operand is MethodBase methodBase && methodBase.Name == $"set_{nameof(Generator079.NetworkremainingPowerup)}") - 5;
+
+			newInst.RemoveRange(index, 6);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
 }
