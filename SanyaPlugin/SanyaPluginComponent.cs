@@ -333,7 +333,7 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Docile:
 						if(scp096.IsPreWindup) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"PreWindup:{ Mathf.RoundToInt(scp096._preWindupTime)}s", 6));
 						else if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Docile:{ Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
-						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("Ready", 6));
+						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 					case PlayableScps.Scp096PlayerState.Enraging:
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));

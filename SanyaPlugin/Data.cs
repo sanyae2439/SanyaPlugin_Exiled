@@ -35,7 +35,7 @@ namespace SanyaPlugin.Data
 				new Vector3(UnityEngine.Random.Range(186, 174),  990, UnityEngine.Random.Range( -1,  -2)),
 				new Vector3(UnityEngine.Random.Range(186, 189),  991, UnityEngine.Random.Range( -1, -24)),
 				new Vector3(UnityEngine.Random.Range(186, 189),  991, UnityEngine.Random.Range( -1, -24)),
-				new Vector3(UnityEngine.Random.Range( 20,  21),  992, UnityEngine.Random.Range(-48, -49)),
+				new Vector3(UnityEngine.Random.Range( 20,  21),  993, UnityEngine.Random.Range(-48, -49)),
 				new Vector3(UnityEngine.Random.Range(185, 189),  993, UnityEngine.Random.Range(-26, -34)),
 				new Vector3(UnityEngine.Random.Range(180, 195),  995, UnityEngine.Random.Range(-36, -91)),
 				new Vector3(UnityEngine.Random.Range(148, 179),  995, UnityEngine.Random.Range(-45, -72)),

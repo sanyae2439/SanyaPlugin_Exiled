@@ -145,7 +145,7 @@ namespace SanyaPlugin.Commands
 
 						if(target != null)
 						{
-							Methods.SpawnGrenade(target.Position, false, -1, target.ReferenceHub);
+							Methods.SpawnGrenade(target.Position, Data.GRENADE_ID.FRAG_NADE, -1, target.ReferenceHub);
 							response = $"{target.Nickname} ok.";
 							return true;
 						}
@@ -161,7 +161,23 @@ namespace SanyaPlugin.Commands
 
 						if(target != null)
 						{
-							Methods.SpawnGrenade(target.Position, true, -1, target.ReferenceHub);
+							Methods.SpawnGrenade(target.Position, Data.GRENADE_ID.FLASH_NADE, -1, target.ReferenceHub);
+							response = $"{target.Nickname} ok.";
+							return true;
+						}
+						else
+						{
+							response = $"target is null.";
+							return false;
+						}
+					}
+				case "ball":
+					{
+						var target = Player.Get(int.Parse(arguments.At(1)));
+
+						if(target != null)
+						{
+							Methods.SpawnGrenade(target.Position + Vector3.up, Data.GRENADE_ID.SCP018_NADE, -1, target.ReferenceHub);
 							response = $"{target.Nickname} ok.";
 							return true;
 						}

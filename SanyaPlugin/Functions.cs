@@ -411,7 +411,7 @@ namespace SanyaPlugin.Functions
 				List<Vector3> randampos = OutsideRandomAirbombPos.Load().OrderBy(x => Guid.NewGuid()).ToList();
 				foreach(var pos in randampos)
 				{
-					Methods.SpawnGrenade(pos, false, 0.1f);
+					Methods.SpawnGrenade(pos, GRENADE_ID.FRAG_NADE, 0.1f);
 					yield return Timing.WaitForSeconds(0.25f);
 				}
 				throwcount++;
@@ -627,23 +627,20 @@ namespace SanyaPlugin.Functions
 	{
 		public static HttpClient httpClient = new HttpClient();
 
-		public static void SpawnGrenade(Vector3 position, bool isFlash = false, float fusedur = -1, ReferenceHub player = null)
+		public static void SpawnGrenade(Vector3 position, GRENADE_ID id, float fusedur = -1, ReferenceHub player = null)
 		{
 			if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
 			var gm = player.GetComponent<Grenades.GrenadeManager>();
-			Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[isFlash ? (int)GRENADE_ID.FLASH_NADE : (int)GRENADE_ID.FRAG_NADE].grenadeInstance).GetComponent<Grenades.Grenade>();
+			Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[(int)id].grenadeInstance).GetComponent<Grenades.Grenade>();
 			if(fusedur != -1) component.fuseDuration = fusedur;
-			component.FullInitData(gm, position, Quaternion.Euler(component.throwStartAngle), Vector3.zero, component.throwAngularVelocity, player == null ? Team.TUT : player.characterClassManager.CurRole.team);
-			NetworkServer.Spawn(component.gameObject);
-		}
-
-		public static void Spawn018(ReferenceHub player)
-		{
-			var gm = player.GetComponent<Grenades.GrenadeManager>();
-			var component = UnityEngine.Object.Instantiate(gm.availableGrenades[(int)GRENADE_ID.SCP018_NADE].grenadeInstance).GetComponent<Grenades.Scp018Grenade>();
-			component.InitData(gm,
-				new Vector3(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f)),
-				new Vector3(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f)));
+			component.FullInitData(
+				gm, 
+				position, 
+				Quaternion.Euler(component.throwStartAngle), 
+				Vector3.zero + component.throwForce * 0.5f * (new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)) + component.throwLinearVelocityOffset).normalized,
+				component.throwAngularVelocity, 
+				player == null ? Team.TUT : player.characterClassManager.CurRole.team
+			);
 			NetworkServer.Spawn(component.gameObject);
 		}
 

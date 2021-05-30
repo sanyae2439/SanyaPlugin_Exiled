@@ -540,9 +540,9 @@ namespace SanyaPlugin.Patches
 
 					var players = player.CurrentRoom?.Players.Where(x => x.Team != Team.SCP);
 					if(players?.Count() > 0)
-						Methods.SpawnGrenade(players.Random().Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);
+						Methods.SpawnGrenade(players.Random().Position + new Vector3(0, 2, 0), GRENADE_ID.FRAG_NADE, -1, player.ReferenceHub);
 					else
-						Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), false, -1, player.ReferenceHub);	
+						Methods.SpawnGrenade(player.CurrentRoom.Position + new Vector3(0, 2, 0), GRENADE_ID.FRAG_NADE, -1, player.ReferenceHub);	
 					return false;
 				}
 			}
@@ -562,7 +562,9 @@ namespace SanyaPlugin.Patches
 						var bombtarget = Player.List.Where(x => x.Position.y > 970 && x.Team != Team.RIP && x.Team != Team.SCP).Random();
 						if(bombtarget != null)
 						{
-							Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
+							Methods.SpawnGrenade(bombtarget.Position, GRENADE_ID.FRAG_NADE, -1, player.ReferenceHub);
+							Methods.SpawnGrenade(bombtarget.Position, GRENADE_ID.FRAG_NADE, -1, player.ReferenceHub);
+							Methods.SpawnGrenade(bombtarget.Position, GRENADE_ID.FRAG_NADE, -1, player.ReferenceHub);
 							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
 							__instance.AddInteractionToHistory(target, args[0], true);
 							return false;

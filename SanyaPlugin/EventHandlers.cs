@@ -1251,6 +1251,7 @@ namespace SanyaPlugin
 						player.SetRole(RoleType.Scp0492, true, false);
 						roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 						{
+							player.Health = player.Health / 5f;
 							player.EnableEffect<Disabled>();
 							player.EnableEffect<Poisoned>();
 							player.EnableEffect<Concussed>();
@@ -1269,6 +1270,11 @@ namespace SanyaPlugin
 						ccm._hub.playerEffectsController.EnableEffect<Concussed>();
 						ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
 					}
+				}
+
+				if(UnityEngine.Random.Range(0, 100) < 20)
+				{
+					Methods.SpawnGrenade(ev.Scp914.output.position, (GRENADE_ID)UnityEngine.Random.Range(0,3));
 				}
 			}
 		}
