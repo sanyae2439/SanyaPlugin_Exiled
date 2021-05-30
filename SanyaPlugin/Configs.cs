@@ -156,6 +156,9 @@ namespace SanyaPlugin
 		[Description("武器管理端末を持っているときはテスラが反応しなくなる")]
 		public bool TeslaTabletDisable { get; set; } = false;
 
+		[Description("リスポーン時のアタッチメントをランダムにする")]
+		public bool RandomAttachments { get; set; } = false;
+
 		[Description("グレネードが命中するとヒットマークが出るように")]
 		public bool HitmarkGrenade { get; set; } = false;
 

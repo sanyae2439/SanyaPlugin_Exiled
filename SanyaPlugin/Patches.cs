@@ -1325,4 +1325,102 @@ namespace SanyaPlugin.Patches
 				yield return newInst[i];
 		}
 	}
+
+	//override
+	[HarmonyPatch(typeof(Inventory), nameof(Inventory.AddNewItem))]
+	public static class AttachmentRandomizerPatch
+	{
+		public static bool Prefix(Inventory __instance, ItemType id, float dur = -4.6566467E+11f, int s = 0, int b = 0, int o = 0)
+		{
+			if(id < ItemType.KeycardJanitor)
+			{
+				throw new Exception("Invalid item ID.");
+			}
+			Inventory._uniqId++;
+			Item item = new Item(__instance.GetItemByID(id));
+			if(__instance.items.Count >= 8 && !item.noEquipable)
+			{
+				return false;
+			}
+			Inventory.SyncItemInfo item2 = new Inventory.SyncItemInfo
+			{
+				id = item.id,
+				durability = item.durability,
+				uniq = Inventory._uniqId
+			};
+			if(Math.Abs(dur - -4.6566467E+11f) > 0.05f)
+			{
+				item2.durability = dur;
+				item2.modSight = s;
+				item2.modBarrel = b;
+				item2.modOther = o;
+			}
+			else
+			{
+				for(int i = 0; i < __instance._weaponManager.weapons.Length; i++)
+				{
+					if(__instance._weaponManager.weapons[i].inventoryID == id)
+					{
+						if(SanyaPlugin.Instance.Config.RandomAttachments)
+						{
+							var modSight = 0;
+							var modBarrel = 0;
+							var modOther = 0;
+							switch(__instance._weaponManager.weapons[i].inventoryID)
+							{
+								case ItemType.GunCOM15:
+									modSight = 0;
+									modBarrel = UnityEngine.Random.Range(0, 1 + 1);
+									modOther = UnityEngine.Random.Range(0, 1 + 1);
+									break;
+								case ItemType.GunProject90:
+									modSight = UnityEngine.Random.Range(0, 2 + 1);
+									modBarrel = UnityEngine.Random.Range(0, 3 + 1);
+									modOther = UnityEngine.Random.Range(0, 3 + 1);
+									break;
+								case ItemType.GunE11SR:
+									modSight = UnityEngine.Random.Range(0, 4 + 1);
+									modBarrel = UnityEngine.Random.Range(0, 4 + 1);
+									modOther = UnityEngine.Random.Range(0, 4 + 1);
+									break;
+								case ItemType.GunMP7:
+									modSight = UnityEngine.Random.Range(0, 2 + 1);
+									modBarrel = UnityEngine.Random.Range(0, 1 + 1);
+									modOther = UnityEngine.Random.Range(0, 1 + 1);
+									break;
+								case ItemType.GunLogicer:
+									break;
+								case ItemType.GunUSP:
+									modSight = UnityEngine.Random.Range(0, 1 + 1);
+									modBarrel = UnityEngine.Random.Range(0, 2 + 1);
+									modOther = UnityEngine.Random.Range(0, 1 + 1);
+									break;
+							}
+							item2.modSight = modSight;
+							item2.modBarrel = modBarrel;
+							item2.modOther = modOther;
+						}
+						else
+						{
+							item2.modSight = __instance._weaponManager.modPreferences[i, 0];
+							item2.modBarrel = __instance._weaponManager.modPreferences[i, 1];
+							item2.modOther = __instance._weaponManager.modPreferences[i, 2];
+						}
+					}
+				}
+			}
+			if(!__instance._gotO5 && id == ItemType.KeycardO5)
+			{
+				__instance._gotO5 = true;
+				__instance._hub.playerStats.TargetAchieve(__instance.connectionToClient, "power");
+			}
+			if(!__instance._gotFirearm && __instance._ccm.CurClass == RoleType.ClassD && __instance.IsFirearm(id))
+			{
+				__instance._gotFirearm = true;
+				__instance._hub.playerStats.TargetAchieve(__instance.connectionToClient, "thatcanbeusefull");
+			}
+			__instance.items.Add(item2);
+			return false;
+		}
+	}
 }
