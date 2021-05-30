@@ -250,9 +250,6 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXの攻撃にエフェクトを追加する")]
 		public bool Scp939AttackEffect { get; set; } = false;
 
-		[Description("SCP-939-XXの攻撃で死体を発生させない")]
-		public bool Scp939RemoveRagdoll { get; set; } = false;
-
 		[Description("SCP-939-XXが人間の視認数に応じてAHPを持つ際の一人当たりの量")]
 		public int Scp939SeeingAhpAmount { get; set; } = 0;
 

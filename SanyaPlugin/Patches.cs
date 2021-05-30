@@ -611,7 +611,6 @@ namespace SanyaPlugin.Patches
 		public static bool Prefix(RagdollManager __instance, PlayerStats.HitInfo ragdollInfo)
 		{
 			if(SanyaPlugin.Instance.Config.TeslaDeleteObjects && ragdollInfo.GetDamageType() == DamageTypes.Tesla) return false;
-			else if(SanyaPlugin.Instance.Config.Scp939RemoveRagdoll && ragdollInfo.GetDamageType() == DamageTypes.Scp939) return false;
 			else if(SanyaPlugin.Instance.Config.Scp049StackBody && ragdollInfo.GetDamageType() == DamageTypes.Scp049) return false;
 			else return true;
 		}
