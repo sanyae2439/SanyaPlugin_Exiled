@@ -162,6 +162,9 @@ namespace SanyaPlugin
 		[Description("キルすると大きいヒットマークが出るように")]
 		public bool HitmarkKilled { get; set; } = false;
 
+		[Description("エレベーターの速度")]
+		public float LiftMovingSpeed { get; set; } = 5f;
+
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 

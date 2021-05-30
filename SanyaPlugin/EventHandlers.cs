@@ -250,6 +250,8 @@ namespace SanyaPlugin
 				prevSpawnQueue = null;
 			}
 
+			Lift.Instances.ForEach(x => x.movingSpeed = plugin.Config.LiftMovingSpeed);
+
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
