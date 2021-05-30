@@ -432,6 +432,8 @@ namespace SanyaPlugin
 					poslist.Add(RoleType.Scp049.GetRandomSpawnPointForConflict());
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnPointForConflict());
 
+					poslist.Add(Intercom.host._area.position);
+
 					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
 						poslist.Add(RoleType.Scp173.GetRandomSpawnPointForConflict());
@@ -460,7 +462,7 @@ namespace SanyaPlugin
 					foreach(GameObject roomid in GameObject.FindGameObjectsWithTag("RoomID"))
 					{
 						Rid rid = roomid.GetComponent<Rid>();
-						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter" || rid.id == "nukesite" || rid.id == "Intercom"))
+						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter" || rid.id == "nukesite"))
 						{
 							poslist.Add(roomid.transform.position);
 						}
@@ -937,7 +939,14 @@ namespace SanyaPlugin
 
 			//FFNotify
 			if(ev.Attacker != ev.Target && !ev.Attacker.IsEnemy(ev.Target.Team))
-				ev.Target.GameObject.GetComponent<SanyaPluginComponent>()?.AddHudBottomText($"<color=#ff0000><size=25>{ev.Attacker.Nickname}よりFriendlyFireを受けました[{ev.DamageType.name}:{Mathf.RoundToInt(ev.Amount)}Dmg]</size></color>", 5);
+			{
+				ev.Target.GameObject.GetComponent<SanyaPluginComponent>()?.AddHudBottomText($"<color=#ffff00><size=25>味方の{ev.Attacker.Nickname}よりダメージを受けました[{ev.DamageType.name}:{Mathf.RoundToInt(ev.Amount * PlayerStats.FriendlyFireFactor)}Dmg]</size></color>", 5);
+				ev.Attacker.GameObject.GetComponent<SanyaPluginComponent>()?.AddHudBottomText($"<color=#ff0000><size=25>味方の{ev.Target.Nickname}へダメージを与えました[{ev.DamageType.name}:{Mathf.RoundToInt(ev.Amount * PlayerStats.FriendlyFireFactor)}Dmg]</size></color>", 5);
+			}
+
+			//ReverseFF
+			if(ev.Attacker != ev.Target && !ev.Attacker.IsEnemy(ev.Target.Team))
+				ev.Attacker.Hurt(ev.Amount, ev.Attacker, ev.DamageType);
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}

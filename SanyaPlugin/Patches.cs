@@ -499,13 +499,12 @@ namespace SanyaPlugin.Patches
 						{
 							AlphaWarheadController.Host.InstantPrepare();
 							AlphaWarheadController.Host.StartDetonation();
-							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostNuke;
 						}
 						else
-						{
 							AlphaWarheadController.Host.CancelDetonation();
-							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostNuke;
-						}
+
+						__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostNuke;
+						__instance.AddInteractionToHistory(GameObject.Find(__instance.currentZone + "/" + __instance.currentRoom + "/Scp079Speaker"), args[0], true);
 						return false;
 					}
 				}
@@ -519,7 +518,25 @@ namespace SanyaPlugin.Patches
 						__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb, __instance.curMana);
 						return false;
 					}
+
+					GameObject gameObject3 = null;
+					List<Scp079Interactable> list2 = new List<Scp079Interactable>();
+					foreach(Scp079Interactable scp079Interactable4 in Interface079.singleton.allInteractables)
+						if(scp079Interactable4 != null)
+							foreach(Scp079Interactable.ZoneAndRoom zoneAndRoom in scp079Interactable4.currentZonesAndRooms)
+								if(zoneAndRoom.currentRoom == __instance.currentRoom 
+									&& zoneAndRoom.currentZone == __instance.currentZone 
+									&& scp079Interactable4.transform.position.y - 100f < __instance.currentCamera.transform.position.y 
+									&& !list2.Contains(scp079Interactable4))
+									list2.Add(scp079Interactable4);
+
+					foreach(Scp079Interactable scp079Interactable5 in list2)
+						if(scp079Interactable5.type != Scp079Interactable.InteractableType.Door)
+							if(scp079Interactable5.type == Scp079Interactable.InteractableType.Lockdown)
+								gameObject3 = scp079Interactable5.gameObject;
+
 					__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostBomb;
+					__instance.AddInteractionToHistory(gameObject3, args[0], true);
 
 					var players = player.CurrentRoom?.Players.Where(x => x.Team != Team.SCP);
 					if(players?.Count() > 0)
@@ -547,9 +564,9 @@ namespace SanyaPlugin.Patches
 						{
 							Methods.SpawnGrenade(bombtarget.Position, false, -1, player.ReferenceHub);
 							__instance.Mana -= SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb;
+							__instance.AddInteractionToHistory(target, args[0], true);
+							return false;
 						}
-
-						return false;
 					}
 				}
 			}
@@ -852,7 +869,10 @@ namespace SanyaPlugin.Patches
 					if(b >= effect.Intensity && num > 0f)
 					{
 						if(target != thrower && !thrower.IsEnemy(target.Team) && target.GameObject.TryGetComponent<SanyaPluginComponent>(out var comp))
-							comp.AddHudBottomText($"<color=#ff0000><size=25>{thrower.Nickname}よりFriendlyFireを受けました[FlashGrenade]</size></color>", 5);
+						{
+							comp.AddHudBottomText($"<color=#ffff00><size=25>味方の{thrower.Nickname}よりダメージを受けました[FlashGrenade]</size></color>", 5);
+							thrower.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudBottomText($"味方の<color=#ff0000><size=25>{comp.player.Nickname}へダメージを与えました[FlashGrenade]</size></color>", 5);
+						}
 
 						if(hub.characterClassManager.IsAnyScp())
 							hub.playerEffectsController.ChangeEffectIntensity<Flashed>(1);
