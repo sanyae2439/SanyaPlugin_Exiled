@@ -255,7 +255,7 @@ namespace SanyaPlugin
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
-			if(plugin.Config.RandomOpenNotPermissionDoors != 1f)
+			if(plugin.Config.RandomOpenNotPermissionDoors != -1f)
 			{
 				int counter = 0;
 				foreach(var door in Map.Doors.Where(x => x.RequiredPermissions.RequiredPermissions == KeycardPermissions.None))
