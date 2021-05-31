@@ -147,6 +147,9 @@ namespace SanyaPlugin
 		[Description("追加で地上にドアを設置する")]
 		public bool AddDoorsOnSurface { get; set; } = false;
 
+		[Description("ランダムでキーカードが不要なドアが開いているようになる確率")]
+		public float RandomOpenNotPermissionDoors { get; set; } = -1f;
+
 		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
 		public bool InventoryKeycardActivation { get; set; } = false;
 

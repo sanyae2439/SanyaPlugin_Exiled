@@ -255,6 +255,19 @@ namespace SanyaPlugin
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
+			if(plugin.Config.RandomOpenNotPermissionDoors != 1f)
+			{
+				int counter = 0;
+				foreach(var door in Map.Doors.Where(x => x.RequiredPermissions.RequiredPermissions == KeycardPermissions.None))
+					if(UnityEngine.Random.Range(0, 100) < plugin.Config.RandomOpenNotPermissionDoors)
+					{
+						counter++;
+						door.NetworkTargetState = true;
+					}
+				Log.Info($"[RandomDoorOpener] {counter} doors opened.");
+			}
+
+
 			if(plugin.Config.AddDoorsOnSurface)
 			{
 				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
@@ -429,7 +442,7 @@ namespace SanyaPlugin
 			if(plugin.Config.RandomRespawnPosPercent > 0)
 			{
 				int randomnum = UnityEngine.Random.Range(0, 100);
-				Log.Debug($"[RandomRespawnPos] Check:{randomnum}>{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
+				Log.Debug($"[RandomRespawnPos] Check:{randomnum}<{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
 				if(randomnum < plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
@@ -521,6 +534,10 @@ namespace SanyaPlugin
 					case 4:
 						{
 							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
+							roundCoroutines.Add(Timing.CallDelayed(9f, Segment.FixedUpdate, () => {
+								foreach(var i in Map.Doors.Where(x => x.transform.position.y > -100f && x.transform.position.y < 100f))
+									i.NetworkTargetState = true;
+							}));
 							break;
 						}
 				}
@@ -1171,6 +1188,11 @@ namespace SanyaPlugin
 				foreach(var item in ev.Player.Inventory.items)
 					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("CONT_LVL_3"))
 						ev.IsAllowed = true;
+		}
+		public void OnEnteringFemurBreaker(EnteringFemurBreakerEventArgs ev)
+		{
+			if(Generator079.mainGenerator.totalVoltage < 3)
+				ev.IsAllowed = false;
 		}
 
 		//Scp049

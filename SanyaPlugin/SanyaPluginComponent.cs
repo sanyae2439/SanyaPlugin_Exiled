@@ -267,7 +267,7 @@ namespace SanyaPlugin
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}\n";
+						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP/{Generator079.mainGenerator.totalVoltage}Gens\n";
 					else
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
 				if(scp0492counter > 0)
@@ -369,6 +369,14 @@ namespace SanyaPlugin
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"\n{TargettMinus / 60:00} : {TargettMinus % 60:00}", 6));
 				else
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>\n{Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) / 60:00} : {Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) % 60:00}</color>", 6));
+			}
+			else if(player.Role == RoleType.Scp079 && Generator079.Generators.Any(x => x.isTabletConnected))
+			{
+				string CounterList = "\n";
+				foreach(var i in Generator079.Generators.Where(x => x.isTabletConnected).OrderBy(x => x.remainingPowerup))
+					CounterList += $"<color=#ffff00>({i.CurRoom}){Mathf.FloorToInt(i.remainingPowerup) / 60:00} : {Mathf.FloorToInt(i.remainingPowerup) % 60:00}</color>\n";
+				CounterList = CounterList.TrimEnd('\n');
+				curText = curText.Replace("[CENTER]", FormatStringForHud(CounterList, 6));
 			}
 			else
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
