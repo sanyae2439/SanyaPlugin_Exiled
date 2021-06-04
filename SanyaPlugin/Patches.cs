@@ -1426,4 +1426,19 @@ namespace SanyaPlugin.Patches
 			return false;
 		}
 	}
+
+	//override
+	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.Charge))]
+	public static class Scp096ChargePatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			newInst.Find(x => x.opcode == OpCodes.Ldc_R4 && (float)x.operand == 6f).operand = 0f;
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
 }

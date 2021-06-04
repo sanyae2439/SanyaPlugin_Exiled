@@ -463,7 +463,7 @@ namespace SanyaPlugin
 						{
 							if(itempos.posID == "RandomPistol" && itempos.DoorTriggerName == "372")
 								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
-							else if(itempos.posID == "RandomPistol" && itempos.DoorTriggerName == "173")
+							else if(itempos.posID == "RandomPistol" && itempos.DoorTriggerName == "173_ARMORY")
 								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
 							else if(itempos.posID == "toilet_keycard" && itempos.position.position.y > 1.25f && itempos.position.position.y < 1.35f)
 								poslist.Add(new Vector3(itempos.position.position.x, itempos.position.position.y, itempos.position.position.z));
