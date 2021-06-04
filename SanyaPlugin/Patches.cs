@@ -1014,6 +1014,9 @@ namespace SanyaPlugin.Patches
 			Log.Debug($"Item adding...", SanyaPlugin.Instance.Config.IsDebugged);
 			var list = new List<SpawnableItem>(__instance.items);
 
+			foreach(var i in list.Where(x => x.itemTag == "medkit"))
+				i.inventoryId = ItemType.Flashlight;
+
 			var glocker556_1 = list.First(x => x.itemTag == "glocker556" && x.inventoryId == ItemType.Ammo556);
 			glocker556_1.inventoryId = ItemType.Radio;
 

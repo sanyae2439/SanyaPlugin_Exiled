@@ -258,7 +258,7 @@ namespace SanyaPlugin
 			if(plugin.Config.RandomOpenNotPermissionDoors != -1f)
 			{
 				int counter = 0;
-				foreach(var door in Map.Doors.Where(x => x.RequiredPermissions.RequiredPermissions == KeycardPermissions.None))
+				foreach(var door in Map.Doors.Where(x => x.RequiredPermissions.RequiredPermissions == KeycardPermissions.None && x.GetComponentInParent<CheckpointDoor>() == null))
 					if(UnityEngine.Random.Range(0, 100) < plugin.Config.RandomOpenNotPermissionDoors)
 					{
 						counter++;
@@ -450,11 +450,10 @@ namespace SanyaPlugin
 					poslist.Add(RoleType.Scp049.GetRandomSpawnPointForConflict());
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnPointForConflict());
 
-					poslist.Add(Intercom.host._area.position);
-
 					if(!Map.IsLCZDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
 						poslist.Add(RoleType.Scp173.GetRandomSpawnPointForConflict());
+						poslist.Add(RoleType.ClassD.GetRandomSpawnPointForConflict());
 
 						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
 
@@ -968,7 +967,7 @@ namespace SanyaPlugin
 
 			//ReverseFF
 			if(ev.Attacker != ev.Target && !ev.Attacker.IsEnemy(ev.Target.Team))
-				ev.Attacker.Hurt(ev.Amount, ev.Attacker, ev.DamageType);
+				ev.Attacker.Hurt(ev.Amount * PlayerStats.FriendlyFireFactor, ev.Attacker, ev.DamageType);
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 		}
@@ -1102,10 +1101,10 @@ namespace SanyaPlugin
 			{
 				ev.Player.ReferenceHub.playerStats.unsyncedArtificialHealth = ev.Player.ReferenceHub.playerStats.maxArtificialHealth;
 				ev.Player.ReferenceHub.fpc.ResetStamina();
-				ev.Player.EnableEffect<Invigorated>(20f);
+				ev.Player.EnableEffect<Invigorated>(30f);
 			}
 
-			if(ev.Item == ItemType.Adrenaline)
+			if(ev.Item == ItemType.Adrenaline || ev.Item == ItemType.Painkillers)
 			{
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 			}
