@@ -1446,6 +1446,6 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(AmbientSoundPlayer), nameof(AmbientSoundPlayer.GenerateRandom))]
 	public static class PreventAmbientSoundPatch
 	{
-		public static bool Prefix(AmbientSoundPlayer __instance) => !RoundSummary.RoundInProgress();
+		public static bool Prefix(AmbientSoundPlayer __instance) => RoundSummary.RoundInProgress();
 	}
 }
