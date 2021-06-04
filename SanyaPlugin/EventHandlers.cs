@@ -1167,7 +1167,10 @@ namespace SanyaPlugin
 		}
 		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
 		{
-			if(plugin.Config.TeslaTabletDisable && ev.Player.IsHuman() && ev.Player.Inventory.items.Any(x => x.id == ItemType.WeaponManagerTablet))
+			if(plugin.Config.TeslaDisabledPermission != "None"
+				&& ev.Player.IsHuman() 
+				&& ev.Player.CurrentItemIndex != -1
+				&& ReferenceHub.HostHub.inventory.GetItemByID(ev.Player.CurrentItem.id).permissions.Contains(plugin.Config.TeslaDisabledPermission))
 				ev.IsTriggerable = false;
 		}
 		public void OnChangingItem(ChangingItemEventArgs ev)

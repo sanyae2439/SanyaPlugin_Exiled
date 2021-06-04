@@ -156,8 +156,8 @@ namespace SanyaPlugin
 		[Description("フラッシュバンが壁にぶつかると起爆する")]
 		public bool FlashbangFuseWithCollision { get; set; } = false;
 
-		[Description("武器管理端末を持っているときはテスラが反応しなくなる")]
-		public bool TeslaTabletDisable { get; set; } = false;
+		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
+		public string TeslaDisabledPermission { get; set; } = "None";
 
 		[Description("リスポーン時のアタッチメントをランダムにする")]
 		public bool RandomAttachments { get; set; } = false;

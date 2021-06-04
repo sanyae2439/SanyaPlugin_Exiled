@@ -489,7 +489,7 @@ namespace SanyaPlugin.Patches
 				{
 					if(SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelNuke)
 					{
-						if(SanyaPlugin.Instance.Config.Scp079ExtendCostNuke > __instance.curMana)
+						if(SanyaPlugin.Instance.Config.Scp079ExtendCostNuke > __instance.curMana && !player.IsBypassModeEnabled)
 						{
 							__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostNuke, __instance.curMana);
 							return false;
@@ -513,7 +513,7 @@ namespace SanyaPlugin.Patches
 			{
 				if(SanyaPlugin.Instance.Config.Scp079ExtendLevelBomb > 0 && __instance.curLvl + 1 >= SanyaPlugin.Instance.Config.Scp079ExtendLevelBomb)
 				{
-					if(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb > __instance.curMana)
+					if(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb > __instance.curMana && !player.IsBypassModeEnabled)
 					{
 						__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostBomb, __instance.curMana);
 						return false;
@@ -552,7 +552,7 @@ namespace SanyaPlugin.Patches
 				{
 					if(__instance.currentZone == "Outside")
 					{
-						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana)
+						if(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb > __instance.curMana && !player.IsBypassModeEnabled)
 						{
 							__instance.RpcNotEnoughMana(SanyaPlugin.Instance.Config.Scp079ExtendCostTargetBomb, __instance.curMana);
 							return false;
@@ -1427,7 +1427,7 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override
+	//transpiler
 	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.Charge))]
 	public static class Scp096ChargePatch
 	{
@@ -1440,5 +1440,12 @@ namespace SanyaPlugin.Patches
 			for(int i = 0; i < newInst.Count; i++)
 				yield return newInst[i];
 		}
+	}
+
+	//not override
+	[HarmonyPatch(typeof(AmbientSoundPlayer), nameof(AmbientSoundPlayer.GenerateRandom))]
+	public static class PreventAmbientSoundPatch
+	{
+		public static bool Prefix(AmbientSoundPlayer __instance) => !RoundSummary.RoundInProgress();
 	}
 }
