@@ -86,7 +86,6 @@ namespace SanyaPlugin
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
-			MapEvents.AnnouncingNtfEntrance += Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting += Handlers.OnStarting;
@@ -102,14 +101,10 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemDequipped += Handlers.OnDequippedMedicalItem;
-			PlayerEvents.InteractingDoor += Handlers.OnInteractingDoor;
-			PlayerEvents.InteractingLocker += Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.ChangingItem += Handlers.OnChangingItem;
-			PlayerEvents.ActivatingWarheadPanel += Handlers.OnActivatingWarheadPanel;
-			PlayerEvents.EnteringFemurBreaker += Handlers.OnEnteringFemurBreaker;
 			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
@@ -126,7 +121,6 @@ namespace SanyaPlugin
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
-			MapEvents.AnnouncingNtfEntrance -= Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;
@@ -142,14 +136,10 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemDequipped -= Handlers.OnDequippedMedicalItem;
-			PlayerEvents.InteractingDoor -= Handlers.OnInteractingDoor;
-			PlayerEvents.InteractingLocker -= Handlers.OnInteractingLocker;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.ChangingItem -= Handlers.OnChangingItem;
-			PlayerEvents.ActivatingWarheadPanel -= Handlers.OnActivatingWarheadPanel;
-			PlayerEvents.EnteringFemurBreaker -= Handlers.OnEnteringFemurBreaker;
 			Scp049Events.FinishingRecall -= Handlers.OnFinishingRecall;
 			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;

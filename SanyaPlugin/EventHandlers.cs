@@ -250,8 +250,6 @@ namespace SanyaPlugin
 				prevSpawnQueue = null;
 			}
 
-			Lift.Instances.ForEach(x => x.movingSpeed = plugin.Config.LiftMovingSpeed);
-
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
@@ -268,7 +266,7 @@ namespace SanyaPlugin
 			}
 
 
-			if(plugin.Config.AddDoorsOnSurface)
+			if(plugin.Config.EditMapOnSurface)
 			{
 				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
 				var EZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("EZ"));
@@ -283,13 +281,13 @@ namespace SanyaPlugin
 				var door4 = UnityEngine.Object.Instantiate(EZprefab.TargetPrefab, new UnityEngine.Vector3(174.4f, 983.24f, 29.1f), Quaternion.Euler(Vector3.up * 90f));
 				(door4 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
-				var door5 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(1.15f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
+				var door5 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(0f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
 				(door5 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				var door6 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(-1.27f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
-				(door6 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				door5.transform.localScale = new Vector3(2f, 2.05f, 1f);
 
-				door5.gameObject.AddComponent<DoorNametagExtension>().UpdateName("GATE_EX_R");
-				door6.gameObject.AddComponent<DoorNametagExtension>().UpdateName("GATE_EX_L");
+				var door6 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(86.5f, 987.15f, -67.3f), Quaternion.Euler(Vector3.zero));
+				(door6 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+				door6.transform.localScale = new Vector3(2.5f, 1.6f, 1f);
 
 				NetworkServer.Spawn(door1.gameObject);
 				NetworkServer.Spawn(door2.gameObject);
@@ -297,6 +295,14 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(door4.gameObject);
 				NetworkServer.Spawn(door5.gameObject);
 				NetworkServer.Spawn(door6.gameObject);
+
+				var gate = DoorNametagExtension.NamedDoors["SURFACE_GATE"].TargetDoor;
+				gate.transform.localRotation = Quaternion.Euler(Vector3.up * 90f);
+				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 998f, -24f));
+
+				var station = UnityEngine.Object.FindObjectsOfType<WorkStation>().First(x => x.transform.parent?.name == "GateA");
+				station.transform.localRotation = Quaternion.Euler(Vector3.up);
+				Methods.MoveNetworkIdentityObject(station.netIdentity, new UnityEngine.Vector3(86.69f, 988.37f, -70.4f));
 			}
 
 			if(plugin.Config.WarheadInitCountdown > 0)
@@ -349,8 +355,6 @@ namespace SanyaPlugin
 		public void OnRoundStarted()
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
-
-			RespawnManager.Singleton._timeForNextSequence *= plugin.Config.FirstRespawnTimeMultiplier;
 
 			switch(eventmode)
 			{
@@ -540,13 +544,6 @@ namespace SanyaPlugin
 							break;
 						}
 				}
-		}
-		public void OnAnnouncingNtfEntrance(AnnouncingNtfEntranceEventArgs ev)
-		{
-			Log.Debug($"[OnAnnouncingNtfEntrance] {ev.UnitName}:{ev.UnitNumber}:{ev.ScpsLeft}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.DisableEntranceAnnounce)
-				ev.IsAllowed = false;
 		}
 		public void OnDecontaminating(DecontaminatingEventArgs ev)
 		{
@@ -893,22 +890,6 @@ namespace SanyaPlugin
 			if(plugin.Config.TeslaDeleteObjects && ev.DamageType == DamageTypes.Tesla && ev.Target.ReferenceHub.characterClassManager.IsHuman())
 				ev.Target.Inventory.Clear();
 
-			//USPMultiplier
-			if(ev.DamageType == DamageTypes.Usp)
-				if(ev.Target.Team == Team.SCP)
-					ev.Amount *= plugin.Config.UspDamageMultiplierScp;
-				else
-					ev.Amount *= plugin.Config.UspDamageMultiplierHuman;
-
-			//SCP-939 Effect
-			if(plugin.Config.Scp939AttackEffect && ev.DamageType == DamageTypes.Scp939)
-			{
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(3f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Poisoned>(3f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(3f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(3f);
-			}
-
 			//SCP-049-2 Effect
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
 			{
@@ -1109,47 +1090,9 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 			}
 		}
-		public void OnInteractingDoor(InteractingDoorEventArgs ev)
-		{
-			Log.Debug($"[OnInteractingDoor] {ev.Player.Nickname}:{ev.Door.name}:{ev.Door.RequiredPermissions.RequiredPermissions}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.InventoryKeycardActivation && ev.Player.Team != Team.SCP && !ev.Player.IsBypassModeEnabled && ev.Door.ActiveLocks == 0)
-				foreach(var item in ev.Player.Inventory.items)
-					if(ev.Door.RequiredPermissions.CheckPermissions(item.id, ev.Player.ReferenceHub))
-						ev.IsAllowed = true;
-
-			if(plugin.Config.AddDoorsOnSurface && ev.Door.TryGetComponent<DoorNametagExtension>(out var nametag))
-			{
-				if(nametag._nametag.Contains("GATE_EX_"))
-				{
-					bool flagL = DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.AllowInteracting(ev.Player.ReferenceHub, 0);
-					bool flagR = DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.AllowInteracting(ev.Player.ReferenceHub, 0);
-					if(flagL && flagR)
-						if(nametag._nametag == "GATE_EX_L")
-							DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.NetworkTargetState = !DoorNametagExtension.NamedDoors["GATE_EX_R"].TargetDoor.TargetState;
-						else
-							DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.NetworkTargetState = !DoorNametagExtension.NamedDoors["GATE_EX_L"].TargetDoor.TargetState;
-					else
-						ev.IsAllowed = false;
-				}
-			}
-		}
-		public void OnInteractingLocker(InteractingLockerEventArgs ev)
-		{
-			Log.Debug($"[OnInteractingLocker] {ev.Player.Nickname}:{ev.LockerId}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.InventoryKeycardActivation)
-				foreach(var item in ev.Player.Inventory.items)
-					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("PEDESTAL_ACC"))
-						ev.IsAllowed = true;
-		}
 		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
 		{
 			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.CurRoom}", SanyaPlugin.Instance.Config.IsDebugged);
-			if(plugin.Config.InventoryKeycardActivation && !ev.Player.IsBypassModeEnabled)
-				foreach(var item in ev.Player.Inventory.items)
-					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("ARMORY_LVL_2"))
-						ev.IsAllowed = true;
 
 			if(ev.IsAllowed && plugin.Config.GeneratorUnlockOpen)
 			{
@@ -1175,26 +1118,13 @@ namespace SanyaPlugin
 		}
 		public void OnChangingItem(ChangingItemEventArgs ev)
 		{
+			//Fix maingame(10.2.2)
 			if(ev.Player.ReferenceHub.weaponManager._reloadingWeapon == ev.Player.ReferenceHub.weaponManager.curWeapon
 				&& ev.Player.ReferenceHub.weaponManager._reloadingWeapon != -100)
 			{
 				ev.Player.ReferenceHub.weaponManager._reloadingWeapon = -100;
 				ev.Player.ReferenceHub.weaponManager._reloadCooldown = -1f;
 			}
-		}
-		public void OnActivatingWarheadPanel(ActivatingWarheadPanelEventArgs ev)
-		{
-			Log.Debug($"[OnActivatingWarheadPanel] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.InventoryKeycardActivation)
-				foreach(var item in ev.Player.Inventory.items)
-					if(ev.Player.Inventory.GetItemByID(item.id).permissions.Contains("CONT_LVL_3"))
-						ev.IsAllowed = true;
-		}
-		public void OnEnteringFemurBreaker(EnteringFemurBreakerEventArgs ev)
-		{
-			if(Generator079.mainGenerator.totalVoltage < 3)
-				ev.IsAllowed = false;
 		}
 
 		//Scp049
@@ -1242,15 +1172,14 @@ namespace SanyaPlugin
 			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp106PortalWithSinkhole && Sinkhole != null)
-			{
 				Methods.MoveNetworkIdentityObject(Sinkhole, ev.Position);
-			}
 		}
 
 		//Scp173
 		public void OnBlinking(BlinkingEventArgs ev)
 		{
-			ev.Player.ReferenceHub.playerMovementSync.AddSafeTime(0.5f);
+			//Fix maingame(10.2.2)
+			ev.Player.ReferenceHub?.playerMovementSync?.AddSafeTime(0.5f);
 		}
 
 		//Scp914

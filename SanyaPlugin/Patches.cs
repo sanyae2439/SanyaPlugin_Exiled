@@ -24,7 +24,7 @@ using UnityEngine;
 
 namespace SanyaPlugin.Patches
 {
-	//override - Exiled 2.0
+	//override - Exiled 2.x
 	[HarmonyPatch(typeof(Permissions), nameof(Permissions.CheckPermission), new Type[] { typeof(Player), typeof(string) })]
 	public static class ExiledPermissionPatcher
 	{
@@ -126,7 +126,7 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override - Fixed
+	//override - Fix maingame(10.2.2)
 	[HarmonyPatch(typeof(PlayerManager), nameof(PlayerManager.RemovePlayer))]
 	public static class IdleModePatch
 	{
@@ -140,6 +140,119 @@ namespace SanyaPlugin.Patches
 				new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(RoundSummary), nameof(RoundSummary.singleton))),
 				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(RoundSummary), nameof(RoundSummary._roundEnded))),
 				new CodeInstruction(OpCodes.Brtrue_S, newInst[newInst.Count - 1].labels[0])
+			});
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//transpiler - Fix maingame(10.2.2)
+	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.CallCmdRegisterEscape))]
+	public static class RemoveEscapeCounterPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var cuffedClassDindex = newInst.FindIndex(x => x.opcode == OpCodes.Ldsfld
+				&& x.operand is FieldInfo fieldInfo
+				&& fieldInfo.Name == nameof(RoundSummary.escaped_scientists)
+			);
+			newInst.RemoveRange(cuffedClassDindex, 4);
+
+			var cuffedScientistindex = newInst.FindLastIndex(x => x.opcode == OpCodes.Ldsfld
+				&& x.operand is FieldInfo fieldInfo
+				&& fieldInfo.Name == nameof(RoundSummary.escaped_ds)
+			);
+			newInst.RemoveRange(cuffedScientistindex, 4);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//override - Fix maingame(10.2.2)
+	[HarmonyPatch(typeof(Lift), nameof(Lift.CheckMeltPlayer))]
+	public static class CheckDecontLiftPatch
+	{
+		public static bool Prefix(Lift __instance, GameObject ply)
+		{
+			if(!ReferenceHub.TryGetHub(ply, out var referenceHub)
+				|| referenceHub.playerMovementSync.RealModelPosition.y >= 200f
+				|| referenceHub.playerMovementSync.RealModelPosition.y <= -200f)
+				return false;
+			referenceHub.playerEffectsController.EnableEffect<Decontaminating>(0f, false);
+			return false;
+		}
+	}
+
+	//not override - Fix maingame(10.2.2)
+	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.ForceLastSafePosition))]
+	public static class AntiCheatCheckPatch
+	{
+		public static bool Prefix(PlayerMovementSync __instance)
+		{
+			if(__instance._hub.characterClassManager.CurClass == RoleType.Scp173
+				&& Scp173PlayerScript._blinkTimeRemaining > 0f)
+			{
+				__instance.RealModelPosition = __instance._receivedPosition;
+				__instance._lastSafePosition = __instance._receivedPosition;
+				__instance._lastSafePosition2 = __instance._receivedPosition;
+				__instance._lastSafePosition3 = __instance._receivedPosition;
+				__instance._lastSafePositionDistance = 0f;
+				return false;
+			}
+			return true;
+		}
+	}
+
+	//not override - Fix Usable(10.2.2)
+	[HarmonyPatch(typeof(AmbientSoundPlayer), nameof(AmbientSoundPlayer.GenerateRandom))]
+	public static class PreventAmbientSoundPatch
+	{
+		public static bool Prefix(AmbientSoundPlayer __instance) => RoundSummary.RoundInProgress();
+	}
+
+	//transpiler - Fix Usable(10.2.2)
+	[HarmonyPatch(typeof(Decontaminating), nameof(Decontaminating.PublicUpdate))]
+	public static class RemoveDecontPosCheckPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldfld && x.operand is FieldInfo fieldInfo && fieldInfo.Name == nameof(PlayerEffect.Hub)) - 1;
+
+			newInst.RemoveRange(index, 15);
+
+			for(int i = 0; i < newInst.Count; i++)
+				yield return newInst[i];
+		}
+	}
+
+	//transpiler - Fix Usable(10.2.2)
+	[HarmonyPatch(typeof(Scp207), nameof(Scp207.PublicUpdate))]
+	public static class Scp207PreventDamageForScpPatch
+	{
+		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+		{
+			var newInst = instructions.ToList();
+
+			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ret);
+			var brindex = newInst.FindIndex(x => x.opcode == OpCodes.Brtrue_S);
+			var exitlabel = newInst[index + 1].labels[0];
+			var retlabel = newInst[index].labels[0];
+
+			newInst[brindex].opcode = OpCodes.Brfalse_S;
+			newInst[brindex].operand = retlabel;
+
+			newInst.InsertRange(index, new[]{
+				new CodeInstruction(OpCodes.Ldarg_0),
+				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlayerEffect),nameof(PlayerEffect.Hub))),
+				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub),nameof(ReferenceHub.characterClassManager))),
+				new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(CharacterClassManager),nameof(CharacterClassManager.IsAnyScp))),
+				new CodeInstruction(OpCodes.Brfalse_S, exitlabel)
 			});
 
 			for(int i = 0; i < newInst.Count; i++)
@@ -222,7 +335,7 @@ namespace SanyaPlugin.Patches
 			if(PlayerManager.localPlayer == null || SeedSynchronizer.Seed == 0) return;
 			Log.Debug($"[NTFUnitPatch] unit:{regular}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(SanyaPlugin.Instance.Config.CassieSubtitle && !SanyaPlugin.Instance.Config.DisableEntranceAnnounce)
+			if(SanyaPlugin.Instance.Config.CassieSubtitle)
 			{
 				int SCPCount = 0;
 
@@ -246,7 +359,6 @@ namespace SanyaPlugin.Patches
 		{
 			Log.Debug($"[RespawnEffectPatch] {type}:{team}", SanyaPlugin.Instance.Config.IsDebugged);
 			if(SanyaPlugin.Instance.Config.StopRespawnAfterDetonated && AlphaWarheadController.Host.detonated && type == RespawnEffectsController.EffectType.Selection) return false;
-			if(SanyaPlugin.Instance.Config.DisableEntranceAnnounce && type == RespawnEffectsController.EffectType.UponRespawn) return false;
 			else return true;
 		}
 	}
@@ -706,16 +818,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//not override
-	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.AdjustShield))]
-	public static class Scp096ShieldPatch
-	{
-		public static void Prefix(PlayableScps.Scp096 __instance, ref int amt)
-		{
-			amt = SanyaPlugin.Instance.Config.Scp096ShieldPerTargets;
-		}
-	}
-
 	//notify
 	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.AntiCheatKillPlayer))]
 	public static class AntiCheatNotifyPatch
@@ -923,31 +1025,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//transpiler
-	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.CallCmdRegisterEscape))]
-	public static class RemoveEscapeCounterPatch
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-		{
-			var newInst = instructions.ToList();
-
-			var cuffedClassDindex = newInst.FindIndex(x => x.opcode == OpCodes.Ldsfld
-				&& x.operand is FieldInfo fieldInfo
-				&& fieldInfo.Name == nameof(RoundSummary.escaped_scientists)
-			);
-			newInst.RemoveRange(cuffedClassDindex, 4);
-
-			var cuffedScientistindex = newInst.FindLastIndex(x => x.opcode == OpCodes.Ldsfld
-				&& x.operand is FieldInfo fieldInfo
-				&& fieldInfo.Name == nameof(RoundSummary.escaped_ds)
-			);
-			newInst.RemoveRange(cuffedScientistindex, 4);
-
-			for(int i = 0; i < newInst.Count; i++)
-				yield return newInst[i];
-		}
-	}
-
 	//not override
 	[HarmonyPatch(typeof(Lift), nameof(Lift.MovePlayers))]
 	public static class MoveSinkholePatch
@@ -971,35 +1048,6 @@ namespace SanyaPlugin.Patches
 		{
 			if(SanyaPlugin.Instance.Handlers.Overrided?.ReferenceHub.nicknameSync.Network_myNickSync == scp939._hub.nicknameSync.Network_myNickSync)
 				__result = true;
-		}
-	}
-
-	//transpiler
-	[HarmonyPatch(typeof(Scp207), nameof(Scp207.PublicUpdate))]
-	public static class Scp207PreventDamageForScpPatch
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-		{
-			var newInst = instructions.ToList();
-
-			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ret);
-			var brindex = newInst.FindIndex(x => x.opcode == OpCodes.Brtrue_S);
-			var exitlabel = newInst[index + 1].labels[0];
-			var retlabel = newInst[index].labels[0];
-
-			newInst[brindex].opcode = OpCodes.Brfalse_S;
-			newInst[brindex].operand = retlabel;
-
-			newInst.InsertRange(index, new[]{
-				new CodeInstruction(OpCodes.Ldarg_0),
-				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PlayerEffect),nameof(PlayerEffect.Hub))),
-				new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ReferenceHub),nameof(ReferenceHub.characterClassManager))),
-				new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(CharacterClassManager),nameof(CharacterClassManager.IsAnyScp))),
-				new CodeInstruction(OpCodes.Brfalse_S, exitlabel)
-			});
-
-			for(int i = 0; i < newInst.Count; i++)
-				yield return newInst[i];
 		}
 	}
 
@@ -1114,58 +1162,6 @@ namespace SanyaPlugin.Patches
 
 			RandomItemSpawner.singleton.pickups = list.ToArray();
 			Log.Debug($"SpawnerItem added.", SanyaPlugin.Instance.Config.IsDebugged);
-		}
-	}
-
-	//transpiler
-	[HarmonyPatch(typeof(Decontaminating), nameof(Decontaminating.PublicUpdate))]
-	public static class RemoveDecontPosCheckPatch
-	{
-		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-		{
-			var newInst = instructions.ToList();
-
-			var index = newInst.FindIndex(x => x.opcode == OpCodes.Ldfld && x.operand is FieldInfo fieldInfo && fieldInfo.Name == nameof(PlayerEffect.Hub)) - 1;
-
-			newInst.RemoveRange(index, 15);
-
-			for(int i = 0; i < newInst.Count; i++)
-				yield return newInst[i];
-		}
-	}
-
-	//override
-	[HarmonyPatch(typeof(Lift), nameof(Lift.CheckMeltPlayer))]
-	public static class CheckDecontLiftPatch
-	{
-		public static bool Prefix(Lift __instance, GameObject ply)
-		{
-			if(!ReferenceHub.TryGetHub(ply, out var referenceHub) 
-				|| referenceHub.playerMovementSync.RealModelPosition.y >= 200f 
-				|| referenceHub.playerMovementSync.RealModelPosition.y <= -200f)
-				return false;
-			referenceHub.playerEffectsController.EnableEffect<Decontaminating>(0f, false);
-			return false;
-		}
-	}
-
-	//not override
-	[HarmonyPatch(typeof(PlayerMovementSync), nameof(PlayerMovementSync.ForceLastSafePosition))]
-	public static class AntiCheatCheckPatch
-	{
-		public static bool Prefix(PlayerMovementSync __instance)
-		{
-			if(__instance._hub.characterClassManager.CurClass == RoleType.Scp173 
-				&& Scp173PlayerScript._blinkTimeRemaining > 0f)
-			{
-				__instance.RealModelPosition = __instance._receivedPosition;
-				__instance._lastSafePosition = __instance._receivedPosition;
-				__instance._lastSafePosition2 = __instance._receivedPosition;
-				__instance._lastSafePosition3 = __instance._receivedPosition;
-				__instance._lastSafePositionDistance = 0f;
-				return false;
-			}
-			return true;
 		}
 	}
 
@@ -1329,104 +1325,6 @@ namespace SanyaPlugin.Patches
 		}
 	}
 
-	//override
-	[HarmonyPatch(typeof(Inventory), nameof(Inventory.AddNewItem))]
-	public static class AttachmentRandomizerPatch
-	{
-		public static bool Prefix(Inventory __instance, ItemType id, float dur = -4.6566467E+11f, int s = 0, int b = 0, int o = 0)
-		{
-			if(id < ItemType.KeycardJanitor)
-			{
-				throw new Exception("Invalid item ID.");
-			}
-			Inventory._uniqId++;
-			Item item = new Item(__instance.GetItemByID(id));
-			if(__instance.items.Count >= 8 && !item.noEquipable)
-			{
-				return false;
-			}
-			Inventory.SyncItemInfo item2 = new Inventory.SyncItemInfo
-			{
-				id = item.id,
-				durability = item.durability,
-				uniq = Inventory._uniqId
-			};
-			if(Math.Abs(dur - -4.6566467E+11f) > 0.05f)
-			{
-				item2.durability = dur;
-				item2.modSight = s;
-				item2.modBarrel = b;
-				item2.modOther = o;
-			}
-			else
-			{
-				for(int i = 0; i < __instance._weaponManager.weapons.Length; i++)
-				{
-					if(__instance._weaponManager.weapons[i].inventoryID == id)
-					{
-						if(SanyaPlugin.Instance.Config.RandomAttachments)
-						{
-							var modSight = 0;
-							var modBarrel = 0;
-							var modOther = 0;
-							switch(__instance._weaponManager.weapons[i].inventoryID)
-							{
-								case ItemType.GunCOM15:
-									modSight = 0;
-									modBarrel = UnityEngine.Random.Range(0, 1 + 1);
-									modOther = UnityEngine.Random.Range(0, 1 + 1);
-									break;
-								case ItemType.GunProject90:
-									modSight = UnityEngine.Random.Range(0, 2 + 1);
-									modBarrel = UnityEngine.Random.Range(0, 3 + 1);
-									modOther = UnityEngine.Random.Range(0, 3 + 1);
-									break;
-								case ItemType.GunE11SR:
-									modSight = UnityEngine.Random.Range(0, 4 + 1);
-									modBarrel = UnityEngine.Random.Range(0, 4 + 1);
-									modOther = UnityEngine.Random.Range(0, 4 + 1);
-									break;
-								case ItemType.GunMP7:
-									modSight = UnityEngine.Random.Range(0, 2 + 1);
-									modBarrel = UnityEngine.Random.Range(0, 1 + 1);
-									modOther = UnityEngine.Random.Range(0, 1 + 1);
-									break;
-								case ItemType.GunLogicer:
-									break;
-								case ItemType.GunUSP:
-									modSight = UnityEngine.Random.Range(0, 1 + 1);
-									modBarrel = UnityEngine.Random.Range(0, 2 + 1);
-									modOther = UnityEngine.Random.Range(0, 1 + 1);
-									break;
-							}
-							item2.modSight = modSight;
-							item2.modBarrel = modBarrel;
-							item2.modOther = modOther;
-						}
-						else
-						{
-							item2.modSight = __instance._weaponManager.modPreferences[i, 0];
-							item2.modBarrel = __instance._weaponManager.modPreferences[i, 1];
-							item2.modOther = __instance._weaponManager.modPreferences[i, 2];
-						}
-					}
-				}
-			}
-			if(!__instance._gotO5 && id == ItemType.KeycardO5)
-			{
-				__instance._gotO5 = true;
-				__instance._hub.playerStats.TargetAchieve(__instance.connectionToClient, "power");
-			}
-			if(!__instance._gotFirearm && __instance._ccm.CurClass == RoleType.ClassD && __instance.IsFirearm(id))
-			{
-				__instance._gotFirearm = true;
-				__instance._hub.playerStats.TargetAchieve(__instance.connectionToClient, "thatcanbeusefull");
-			}
-			__instance.items.Add(item2);
-			return false;
-		}
-	}
-
 	//transpiler
 	[HarmonyPatch(typeof(PlayableScps.Scp096), nameof(PlayableScps.Scp096.Charge))]
 	public static class Scp096ChargePatch
@@ -1440,12 +1338,5 @@ namespace SanyaPlugin.Patches
 			for(int i = 0; i < newInst.Count; i++)
 				yield return newInst[i];
 		}
-	}
-
-	//not override
-	[HarmonyPatch(typeof(AmbientSoundPlayer), nameof(AmbientSoundPlayer.GenerateRandom))]
-	public static class PreventAmbientSoundPatch
-	{
-		public static bool Prefix(AmbientSoundPlayer __instance) => RoundSummary.RoundInProgress();
 	}
 }

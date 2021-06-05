@@ -98,9 +98,6 @@ namespace SanyaPlugin
 		[Description("プレイヤー情報のMTF関係を無効にする")]
 		public bool PlayersInfoDisableFollow { get; set; } = false;
 
-		[Description("リスポーンアナウンスを無効にする")]
-		public bool DisableEntranceAnnounce { get; set; } = false;
-
 		[Description("発電機のアンロックと同時にドアを開ける")]
 		public bool GeneratorUnlockOpen { get; set; } = false;
 
@@ -134,9 +131,6 @@ namespace SanyaPlugin
 		[Description("リスポーン場所をランダムにする")]
 		public int RandomRespawnPosPercent { get; set; } = -1;
 
-		[Description("初回リスポーンの秒数の乗数")]
-		public float FirstRespawnTimeMultiplier { get; set; } = 1f;
-
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public readonly List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
@@ -144,23 +138,17 @@ namespace SanyaPlugin
 		[Description("核起爆後の増援を停止する")]
 		public bool StopRespawnAfterDetonated { get; set; } = false;
 
-		[Description("追加で地上にドアを設置する")]
-		public bool AddDoorsOnSurface { get; set; } = false;
+		[Description("地上のドアなどを改装する")]
+		public bool EditMapOnSurface { get; set; } = false;
 
 		[Description("ランダムでキーカードが不要なドアが開いているようになる確率")]
 		public float RandomOpenNotPermissionDoors { get; set; } = -1f;
 
-		[Description("インベントリ内のキーカードが効果を発揮するようになる")]
-		public bool InventoryKeycardActivation { get; set; } = false;
-
-		[Description("フラッシュバンが壁にぶつかると起爆する")]
+		[Description("フラッシュバンが壁にぶつかった後1秒で起爆する")]
 		public bool FlashbangFuseWithCollision { get; set; } = false;
 
 		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
 		public string TeslaDisabledPermission { get; set; } = "None";
-
-		[Description("リスポーン時のアタッチメントをランダムにする")]
-		public bool RandomAttachments { get; set; } = false;
 
 		[Description("グレネードが命中するとヒットマークが出るように")]
 		public bool HitmarkGrenade { get; set; } = false;
@@ -168,17 +156,8 @@ namespace SanyaPlugin
 		[Description("キルすると大きいヒットマークが出るように")]
 		public bool HitmarkKilled { get; set; } = false;
 
-		[Description("エレベーターの速度")]
-		public float LiftMovingSpeed { get; set; } = 5f;
-
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
-
-		[Description("USPのダメージ乗数(対人間)")]
-		public float UspDamageMultiplierHuman { get; set; } = 1f;
-
-		[Description("USPのダメージ乗数(対SCP)")]
-		public float UspDamageMultiplierScp { get; set; } = 1f;
 
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
@@ -213,9 +192,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-049-2がHPの量に応じて加速する")]
 		public bool Scp0492SpeedupByHealthAmount { get; set; } = false;
-
-		[Description("SCP-096の一人当たりの増加AHP量")]
-		public int Scp096ShieldPerTargets { get; set; } = 70;
 
 		[Description("SCP-096に触れると発狂するようになる距離")]
 		public float Scp096TouchEnrageDistance { get; set; } = -1f;
@@ -255,9 +231,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXがHPの量で加速する")]
 		public bool Scp939SpeedupByHealthAmount { get; set; } = false;
-
-		[Description("SCP-939-XXの攻撃にエフェクトを追加する")]
-		public bool Scp939AttackEffect { get; set; } = false;
 
 		[Description("SCP-939-XXが人間の視認数に応じてAHPを持つ際の一人当たりの量")]
 		public int Scp939SeeingAhpAmount { get; set; } = 0;

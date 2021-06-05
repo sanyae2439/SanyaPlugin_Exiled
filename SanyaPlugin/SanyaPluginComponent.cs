@@ -34,8 +34,6 @@ namespace SanyaPlugin
 		private float _hudBottomDownTime = -1f;
 		private float _hudBottomDownTimer = 0f;
 		private int _prevHealth = -1;
-		private byte _prevPreset = 0;
-		
 
 		private void Start()
 		{
@@ -57,19 +55,22 @@ namespace SanyaPlugin
 			_timer += Time.deltaTime;
 
 			UpdateTimers();
-
-			CheckHighPing();
-			CheckVoiceChatting();
-			CheckRadioRader();
-			CheckSinkholeDistance();
-
-			UpdateMyCustomText();
-			UpdateRespawnCounter();
 			UpdateScpLists();
-			UpdateExHud();
 
+			CheckVoiceChatting();				
+
+			//EverySeconds
 			if(_timer > 1f)
+			{
+				CheckHighPing();
+				CheckSinkholeDistance();
+
+				UpdateMyCustomText();
+				UpdateRespawnCounter();
+				UpdateExHud();
+
 				_timer = 0f;
+			}				
 		}
 
 		public void AddHudCenterDownText(string text, ulong timer)
@@ -111,7 +112,7 @@ namespace SanyaPlugin
 
 		private void CheckHighPing()
 		{
-			if(_plugin.Config.PingLimit <= 0 || !(_timer > 1f) || _detectHighPing) return;
+			if(_plugin.Config.PingLimit <= 0 || _detectHighPing) return;
 
 			if(LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping > _plugin.Config.PingLimit)
 			{
@@ -128,49 +129,11 @@ namespace SanyaPlugin
 			if(player.IsHuman()
 				&& player.GameObject.TryGetComponent(out Radio radio)
 				&& (radio.isVoiceChatting || radio.isTransmitting))
-				player.ReferenceHub.footstepSync._visionController.MakeNoise(25f);
-		}
-
-		private void CheckRadioRader()
-		{
-			if(!(_timer > 1f) || !player.IsAlive || !player.IsHuman) return;
-
-			if(player.CurrentItem != null && player.CurrentItem.id == ItemType.Radio && player.ReferenceHub.TryGetComponent<Radio>(out var radio) && radio.CheckRadio())
-			{
-				if(radio.curPreset != _prevPreset)
-				{
-					_prevPreset = radio.curPreset;
-					return;
-				}
-
-				switch(radio.curPreset)
-				{
-					case 2:
-						{
-							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone radiowave:{Player.List.Count(x => x.IsAlive && x.CurrentRoom?.Zone == player.CurrentRoom?.Zone && x.Inventory.items.Any(y => y.id == ItemType.Radio))}</color>", 5);
-							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 5f, 0, 100));
-							break;
-						}
-					case 3:
-						{
-							AddHudCenterDownText($"<color=#bbee00>Detected {player.CurrentRoom?.Zone}Zone bio-signal:{Player.List.Count(x => x.IsAlive && x.CurrentRoom?.Zone == player.CurrentRoom?.Zone)}</color>", 5);
-							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 10f, 0, 100));
-							break;
-						}
-					case 4:
-						{
-							AddHudCenterDownText($"<color=#bbee00>Detected facility's bio-signal:{Player.List.Count(x => x.IsAlive)}</color>", 5);
-							player.ReferenceHub.inventory.items.ModifyDuration(radio.myRadio, Mathf.Clamp(player.ReferenceHub.inventory.items[radio.myRadio].durability - 20f, 0, 100));
-							break;
-						}
-				}
-			}
+				player.ReferenceHub.footstepSync._visionController.MakeNoise(35f);
 		}
 
 		private void CheckSinkholeDistance()
 		{
-			if(!(_timer > 1f)) return;
-
 			bool inRange = false;
 			foreach(var sinkhole in UnityEngine.Object.FindObjectsOfType<SinkholeEnvironmentalHazard>())
 				if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 7f)
@@ -182,7 +145,7 @@ namespace SanyaPlugin
 
 		private void UpdateMyCustomText()
 		{
-			if(!(_timer > 1f) || !player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
+			if(!player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
 			if(_prevHealth != player.Health) 
 			{
 				_prevHealth = (int)player.Health;
@@ -192,7 +155,7 @@ namespace SanyaPlugin
 
 		private void UpdateRespawnCounter()
 		{
-			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || player.Role != RoleType.Spectator || _timer < 1f) return;
+			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || player.Role != RoleType.Spectator) return;
 
 			if(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown || RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.PlayingEntryAnimations)
 				_respawnCounter = (int)Math.Truncate(RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds);
@@ -219,7 +182,6 @@ namespace SanyaPlugin
 		private void UpdateExHud()
 		{
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
-			if(!(_timer > 1f)) return;
 
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"St:{DateTime.Now:HH:mm:ss} " +
