@@ -298,7 +298,7 @@ namespace SanyaPlugin
 
 				var gate = DoorNametagExtension.NamedDoors["SURFACE_GATE"].TargetDoor;
 				gate.transform.localRotation = Quaternion.Euler(Vector3.up * 90f);
-				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 998f, -24f));
+				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 1000f, -24f));
 
 				var station = UnityEngine.Object.FindObjectsOfType<WorkStation>().First(x => x.transform.parent?.name == "GateA");
 				station.transform.localRotation = Quaternion.Euler(Vector3.up);
