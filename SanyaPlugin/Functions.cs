@@ -414,6 +414,10 @@ namespace SanyaPlugin.Functions
 					Methods.SpawnGrenade(pos, GRENADE_ID.FRAG_NADE, 0.1f);
 					yield return Timing.WaitForSeconds(0.25f);
 				}
+
+				if(UnityEngine.Random.Range(0, 100) < 50 && Player.List.Any())
+					Methods.SpawnGrenade(Player.List.Random().Position, GRENADE_ID.FRAG_NADE, 0.1f);
+
 				throwcount++;
 				Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
 				if(limit != -1 && limit <= throwcount)
