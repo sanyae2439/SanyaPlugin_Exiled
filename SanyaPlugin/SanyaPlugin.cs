@@ -29,31 +29,29 @@ namespace SanyaPlugin
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
 		public override Version RequiredExiledVersion => new Version(2, 10, 0);
 
+		//インスタンス
 		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
 		public Harmony Harmony { get; private set; }
-		public Random Random { get; } = new Random();
 		private int patchCounter;
-
-		public SanyaPlugin() => Instance = this;
 
 		public override void OnEnabled()
 		{
-			if(!Config.IsEnabled) return;
-
 			base.OnEnabled();
+			SanyaPlugin.Instance = this;
 
 			Log.Info("[OnEnabled] Registing events...");
-			RegistEvents();
+			this.RegistEvents();
 
 			Log.Info("[OnEnabled] Parse configs...");
 			Config.ParseConfig();
 
-			if(!string.IsNullOrEmpty(Config.KickVpnApikey)) ShitChecker.LoadLists();
-			if(Config.InfosenderIp != "none" && Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
+			Log.Info("[OnEnabled] Loading extra functions...");
+			if(!string.IsNullOrEmpty(this.Config.KickVpnApikey)) ShitChecker.LoadLists();
+			if(this.Config.InfosenderIp != "none" && this.Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
 
-			Log.Info("[OnEnabled] Regist patches...");
-			RegistPatch();
+			Log.Info("[OnEnabled] Patching...");
+			this.Patch();
 
 			Log.Info($"[OnEnabled] SanyaPlugin(Ver{Version}) Enabled Complete.");
 		}
@@ -61,15 +59,20 @@ namespace SanyaPlugin
 		public override void OnDisabled()
 		{
 			base.OnDisabled();
+			SanyaPlugin.Instance = null;
 
+			Log.Info("[OnDisabled] Cleanup coroutines...");
 			foreach(var cor in Handlers.roundCoroutines)
 				Timing.KillCoroutines(cor);
-			Handlers.roundCoroutines.Clear();
+			this.Handlers.roundCoroutines.Clear();
 
-			UnRegistEvents();
-			UnRegistPatch();
+			Log.Info("[OnDisabled] Unregisting events...");
+			this.UnRegistEvents();
 
-			Log.Info($"[OnDisable] SanyaPlugin(Ver{Version}) Disabled Complete.");
+			Log.Info("[OnDisabled] Unpatching...");
+			this.Unpatch();
+
+			Log.Info($"[OnDisabled] SanyaPlugin(Ver{Version}) Disabled Complete.");
 		}
 
 		private void RegistEvents()
@@ -148,7 +151,7 @@ namespace SanyaPlugin
 			Handlers = null;
 		}
 
-		private void RegistPatch()
+		private void Patch()
 		{
 			try
 			{
@@ -158,13 +161,20 @@ namespace SanyaPlugin
 			}
 			catch(Exception ex)
 			{
-				Log.Error($"[RegistPatch] Patching Failed : {ex}");
+				Log.Error($"[Patch] Patching Failed : {ex}");
 			}
 		}
 
-		private void UnRegistPatch()
+		private void Unpatch()
 		{
-			Harmony.UnpatchAll();
+			try
+			{
+				Harmony.UnpatchAll();
+			}
+			catch(Exception ex)
+			{
+				Log.Error($"[Unpatch] Unpatching Failed : {ex}");
+			}
 		}
 	}
 }

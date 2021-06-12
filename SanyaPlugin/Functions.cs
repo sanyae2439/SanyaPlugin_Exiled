@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
@@ -631,6 +633,79 @@ namespace SanyaPlugin.Functions
 	{
 		public static HttpClient httpClient = new HttpClient();
 
+		public static string ToStringPropertiesAndFields(object instance)
+		{
+			string returned = "\n";
+
+			foreach(PropertyInfo info in instance.GetType().GetProperties())
+				if(info.PropertyType.IsList())
+				{
+					returned += $"{info.Name}:\n";
+					if(info.GetValue(instance) is IEnumerable list)
+						foreach(var i in list) returned += $"{i}\n";
+				}
+				else if(info.PropertyType.IsDictionary())
+				{
+					returned += $"{info.Name}: ";
+
+					var obj = info.GetValue(instance);
+
+					IDictionary dict = (IDictionary)obj;
+
+					var key = obj.GetType().GetProperty("Keys");
+					var value = obj.GetType().GetProperty("Values");
+					var keyObj = key.GetValue(obj, null);
+					var valueObj = value.GetValue(obj, null);
+					var keyEnum = keyObj as IEnumerable;
+
+					foreach(var i in dict.Keys)
+						returned += $"[{i}:{dict[i]}]";
+
+					returned += "\n";
+				}
+				else
+					returned += $"{info.Name}: {info.GetValue(instance)}\n";
+
+			foreach(FieldInfo info in instance.GetType().GetFields())
+				if(info.FieldType.IsList())
+				{
+					returned += $"{info.Name}:\n";
+					if(info.GetValue(instance) is IEnumerable list)
+						foreach(var i in list) returned += $"{i}\n";
+				}
+				else if(info.FieldType.IsDictionary())
+				{
+					returned += $"{info.Name}: ";
+
+					var obj = info.GetValue(instance);
+
+					IDictionary dict = (IDictionary)obj;
+
+					var key = obj.GetType().GetProperty("Keys");
+					var value = obj.GetType().GetProperty("Values");
+					var keyObj = key.GetValue(obj, null);
+					var valueObj = value.GetValue(obj, null);
+					var keyEnum = keyObj as IEnumerable;
+
+					foreach(var i in dict.Keys)
+						if(dict[i].GetType().IsList())
+						{
+							returned += $"[{i}:";
+							if(dict[i] is IEnumerable list)
+								foreach(var x in list) returned += $"{x},";
+							returned += "]";
+						}
+						else
+							returned += $"[{i}:{dict[i]}]";
+
+					returned += "\n";
+				}
+				else
+					returned += $"{info.Name}: {info.GetValue(instance)}\n";
+
+			return returned;
+		}
+
 		public static void SpawnGrenade(Vector3 position, GRENADE_ID id, float fusedur = -1, ReferenceHub player = null)
 		{
 			if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
@@ -978,7 +1053,7 @@ namespace SanyaPlugin.Functions
 		public static T Random<T>(this IEnumerable<T> ie)
 		{
 			if(!ie.Any()) return default;
-			return ie.ElementAt(SanyaPlugin.Instance.Random.Next(ie.Count()));
+			return ie.ElementAt(UnityEngine.Random.Range(0, ie.Count()));
 		}
 	}
 }

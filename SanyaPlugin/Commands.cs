@@ -45,7 +45,7 @@ namespace SanyaPlugin.Commands
 
 			if(arguments.Count == 0)
 			{
-				response = "sanya plugins command. params: <hud/ping/override/actwatch/airbomb/106/914/nukecap/nukelock/lure/femur/blackout/addscps/ammo/forrcend/now/config>";
+				response = "sanya plugins command. params: <hud/ping/override/actwatch/airbomb/106/914/nukecap/nukelock/lure/femur/blackout/addscps/ammo/forrcend/now/configs>";
 				return true;
 			}
 
@@ -423,9 +423,9 @@ namespace SanyaPlugin.Commands
 						PlayerDataManager.ReloadParams();
 						return true;
 					}
-				case "config":
+				case "configs":
 					{
-						response = SanyaPlugin.Instance.Config.GetConfigs();
+						response = Methods.ToStringPropertiesAndFields(SanyaPlugin.Instance.Config);
 						return true;
 					}
 				default:

@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Exiled.API.Features;
 using Exiled.API.Interfaces;
-using SanyaPlugin.Functions;
-
 
 namespace SanyaPlugin
 {
 	public sealed class Configs : IConfig
 	{
-		public Configs()
-		{
-			DataDirectory = Path.Combine(Paths.Configs, "SanyaPlugin");
-		}
+		public Configs() => DataDirectory = Path.Combine(Paths.Configs, "SanyaPlugin");
 
 		[Description("さにゃぷらぐいんの有効化")]
 		public bool IsEnabled { get; set; } = true;
@@ -296,99 +289,6 @@ namespace SanyaPlugin
 		[Description("SCP-079のExモードでの地上ターゲット起爆の必要コスト")]
 		public float Scp079ExtendCostTargetBomb { get; set; } = 75f;
 
-		public string GetConfigs()
-		{
-			string returned = "\n";
-
-			PropertyInfo[] infoArray = typeof(Configs).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-			foreach(PropertyInfo info in infoArray)
-			{
-				if(info.PropertyType.IsList())
-				{
-					var list = info.GetValue(this) as IEnumerable;
-					returned += $"{info.Name}:\n";
-					if(list != null)
-						foreach(var i in list) returned += $"{i}\n";
-				}
-				else if(info.PropertyType.IsDictionary())
-				{
-					returned += $"{info.Name}: ";
-
-					var obj = info.GetValue(this);
-
-					IDictionary dict = (IDictionary)obj;
-
-					var key = obj.GetType().GetProperty("Keys");
-					var value = obj.GetType().GetProperty("Values");
-					var keyObj = key.GetValue(obj, null);
-					var valueObj = value.GetValue(obj, null);
-					var keyEnum = keyObj as IEnumerable;
-
-					foreach(var i in dict.Keys)
-					{
-						returned += $"[{i}:{dict[i]}]";
-					}
-
-					returned += "\n";
-				}
-				else
-				{
-					returned += $"{info.Name}: {info.GetValue(this)}\n";
-				}
-			}
-
-			FieldInfo[] fieldInfos = typeof(Configs).GetFields(BindingFlags.Public | BindingFlags.Instance);
-
-			foreach(var info in fieldInfos)
-			{
-				if(info.FieldType.IsList())
-				{
-					var list = info.GetValue(this) as IEnumerable;
-					returned += $"{info.Name}:\n";
-					if(list != null)
-						foreach(var i in list) returned += $"{i}\n";
-				}
-				else if(info.FieldType.IsDictionary())
-				{
-					returned += $"{info.Name}: ";
-
-					var obj = info.GetValue(this);
-
-					IDictionary dict = (IDictionary)obj;
-
-					var key = obj.GetType().GetProperty("Keys");
-					var value = obj.GetType().GetProperty("Values");
-					var keyObj = key.GetValue(obj, null);
-					var valueObj = value.GetValue(obj, null);
-					var keyEnum = keyObj as IEnumerable;
-
-					foreach(var i in dict.Keys)
-					{
-						if(dict[i].GetType().IsList())
-						{
-							var list = dict[i] as IEnumerable;
-							returned += $"[{i}:";
-							if(list != null)
-								foreach(var x in list) returned += $"{x},";
-							returned += "]";
-						}
-						else
-						{
-							returned += $"[{i}:{dict[i]}]";
-						}
-					}
-
-					returned += "\n";
-				}
-				else
-				{
-					returned += $"{info.Name}: {info.GetValue(this)}\n";
-				}
-			}
-
-			return returned;
-		}
 		public void ParseConfig()
 		{
 			try
