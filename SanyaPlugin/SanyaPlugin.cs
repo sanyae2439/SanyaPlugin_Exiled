@@ -77,6 +77,7 @@ namespace SanyaPlugin
 
 		private void RegistEvents()
 		{
+			Events.DisabledPatchesHashSet.Add(typeof(FragGrenade).GetMethod(nameof(FragGrenade.ServersideExplosion)));
 			Events.DisabledPatchesHashSet.Add(typeof(FlashGrenade).GetMethod(nameof(FlashGrenade.ServersideExplosion)));
 			Events.DisabledPatchesHashSet.Add(typeof(Handcuffs).GetMethod(nameof(Handcuffs.CallCmdCuffTarget)));
 			Events.Instance.ReloadDisabledPatches();

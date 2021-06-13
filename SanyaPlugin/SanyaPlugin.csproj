@@ -134,7 +134,7 @@
     <Compile Include="Patches\FixFlashablePatch.cs" />
     <Compile Include="Patches\FlashGrenadeFriendlyPatch.cs" />
     <Compile Include="Patches\FlashGrenadeFusePatch.cs" />
-    <Compile Include="Patches\FragGrenadePryGatePatch.cs" />
+    <Compile Include="Patches\FragGrenadePatch.cs" />
     <Compile Include="Patches\IdleModePatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\ItemSpawnerAddPatch.cs" />

@@ -963,6 +963,21 @@ namespace SanyaPlugin.Functions
 			foreach(var cont in EventHandlers.flickerableLightControllers)
 				cont.ServerSetLightIntensity(intensity);
 		}
+
+		public static void SpawnRagdoll(Vector3 pos, Quaternion rot, RoleType roleType, string deathCause, Player owner = null)
+		{
+			ReferenceHub target = owner?.ReferenceHub ?? ReferenceHub.HostHub;
+			target.GetComponent<RagdollManager>().SpawnRagdoll(
+				pos,
+				rot,
+				Vector3.zero,
+				(int)roleType,
+				new PlayerStats.HitInfo(32813f, $"*{deathCause}", DamageTypes.Flying, 0),
+				false,
+				target.GetComponent<MirrorIgnorancePlayer>().PlayerId,
+				target.nicknameSync.DisplayName,
+				target.queryProcessor.PlayerId);
+		}
 	}
 
 	internal static class Extensions
