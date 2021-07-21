@@ -847,7 +847,7 @@ namespace SanyaPlugin.Functions
 				bool flag = collider.name.Contains("Hitbox") || collider.name.Contains("mixamorig") || collider.name.Equals("Player") || collider.name.Equals("PlyCenter") || collider.name.Equals("Antijumper");
 				if(!flag)
 				{
-					Log.Warn($"Detect:{collider.name}");
+					Log.Debug($"Detect:{collider.name}", SanyaPlugin.Instance.Config.IsDebugged);
 					result = true;
 				}
 			}

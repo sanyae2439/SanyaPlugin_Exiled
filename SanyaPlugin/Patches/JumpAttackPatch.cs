@@ -13,10 +13,10 @@ namespace SanyaPlugin.Patches
 		{
 			if(!SanyaPlugin.Instance.Config.JumpingKickAttack || __instance.curAnim != 2 || __instance._curMoveState == newState || newState != 1 || !__instance.ccm.IsHuman())
 				return;
-
-			Log.Debug($"Attack:{__instance.ccm._hub.nicknameSync.MyNick}", SanyaPlugin.Instance.Config.IsDebugged);
+	
 			var player = Player.Get(__instance.gameObject);
 			if(player.SessionVariables.TryGetValue("sanya_kickattack_lasttime", out object time) && (NetworkTime.time - (double)time) < 0.5) return;
+			Log.Debug($"Attack:{player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 			foreach(var hits in Physics.RaycastAll(__instance.ccm._hub.PlayerCameraReference.position, __instance.ccm._hub.PlayerCameraReference.forward, 2f, 4))
 			{
 				var target = Player.Get(hits.transform.gameObject);
