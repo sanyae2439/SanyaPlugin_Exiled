@@ -265,6 +265,9 @@ namespace SanyaPlugin
 				Log.Info($"[RandomDoorOpener] {counter} doors opened.");
 			}
 
+			if(plugin.Config.UnlockedGenerators)
+				foreach(var i in Generator079.Generators)
+					i.NetworkisDoorUnlocked = true;
 
 			if(plugin.Config.EditMapOnSurface)
 			{

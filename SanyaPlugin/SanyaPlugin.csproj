@@ -138,6 +138,7 @@
     <Compile Include="Patches\IdleModePatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\ItemSpawnerAddPatch.cs" />
+    <Compile Include="Patches\JumpAttackPatch.cs" />
     <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\LockerAddItemPatch.cs" />
     <Compile Include="Patches\NTFUnitPatch.cs" />

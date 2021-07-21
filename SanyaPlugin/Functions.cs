@@ -1045,6 +1045,8 @@ namespace SanyaPlugin.Functions
 
 		public static bool IsExmode(this Player player) => player.ReferenceHub.animationController.curAnim == 1;
 
+		public static void SendReportText(this Player player, string text) => player.SendConsoleMessage($"[REPORTING] {text}", "white");
+
 		public static bool IsList(this Type type)
 		{
 			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);

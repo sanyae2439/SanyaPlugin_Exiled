@@ -91,6 +91,9 @@ namespace SanyaPlugin
 		[Description("プレイヤー情報のMTF関係を無効にする")]
 		public bool PlayersInfoDisableFollow { get; set; } = false;
 
+		[Description("発電機のロックが解除された状態になる")]
+		public bool UnlockedGenerators { get; set; } = false;
+
 		[Description("発電機のアンロックと同時にドアを開ける")]
 		public bool GeneratorUnlockOpen { get; set; } = false;
 
@@ -151,6 +154,9 @@ namespace SanyaPlugin
 
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
+
+		[Description("ジャンプ中にスニークキーで蹴りを出せるように")]
+		public bool JumpingKickAttack { get; set; } = false;
 
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
