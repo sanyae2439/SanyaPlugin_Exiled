@@ -265,10 +265,6 @@ namespace SanyaPlugin
 				Log.Info($"[RandomDoorOpener] {counter} doors opened.");
 			}
 
-			if(plugin.Config.UnlockedGenerators)
-				foreach(var i in Generator079.Generators)
-					i.NetworkisDoorUnlocked = true;
-
 			if(plugin.Config.EditMapOnSurface)
 			{
 				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
@@ -897,9 +893,9 @@ namespace SanyaPlugin
 			//SCP-049-2 Effect
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
 			{
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Blinded>(2f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(2f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(2f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(5f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(5f);
 			}
 
 			//SCP-106 AHP

@@ -26,7 +26,7 @@ namespace SanyaPlugin.Patches
 				{
 					Log.Debug($"Attack:{player.Nickname} -> {target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 					target.ReferenceHub.falldamage.RpcDoSound();
-					target.Hurt(3f, player, DamageTypes.Scp0492);
+					target.Hurt(5f, player, DamageTypes.Scp0492);
 					player.ShowHitmarker();
 
 					Vector3 vec = __instance.ccm._hub.PlayerCameraReference.forward * 0.5f;

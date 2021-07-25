@@ -91,9 +91,6 @@ namespace SanyaPlugin
 		[Description("プレイヤー情報のMTF関係を無効にする")]
 		public bool PlayersInfoDisableFollow { get; set; } = false;
 
-		[Description("発電機のロックが解除された状態になる")]
-		public bool UnlockedGenerators { get; set; } = false;
-
 		[Description("発電機のアンロックと同時にドアを開ける")]
 		public bool GeneratorUnlockOpen { get; set; } = false;
 
