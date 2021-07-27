@@ -672,7 +672,7 @@ namespace SanyaPlugin
 			}
 
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
-				Methods.SendSubtitle(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
+				ev.Player.SendReportText(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname));
 			else if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
 				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
 
