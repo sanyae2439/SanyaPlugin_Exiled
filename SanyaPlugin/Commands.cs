@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
@@ -14,6 +15,7 @@ using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
 using SanyaPlugin.Functions;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace SanyaPlugin.Commands
 {
@@ -61,6 +63,11 @@ namespace SanyaPlugin.Commands
 						// testing zone end
 						response = response.TrimEnd('\n');
 
+						return true;
+					}
+				case "frametime":
+					{
+						response = $"frametime:{Time.deltaTime}";
 						return true;
 					}
 				case "coroutines":
@@ -223,6 +230,14 @@ namespace SanyaPlugin.Commands
 						response = $"ok.{comp.DisableHud} -> ";
 						comp.DisableHud = !comp.DisableHud;
 						response += $"{comp.DisableHud}";
+						return true;
+					}
+				case "hudall":
+					{
+						foreach(var i in Player.List)
+							if(i.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
+								sanya.DisableHud = bool.Parse(arguments.At(1));
+						response = $"set to {bool.Parse(arguments.At(1))}";
 						return true;
 					}
 				case "lightint":
