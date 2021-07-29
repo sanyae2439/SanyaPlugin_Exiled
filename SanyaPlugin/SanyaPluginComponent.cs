@@ -186,7 +186,7 @@ namespace SanyaPlugin
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"St:{DateTime.Now:HH:mm:ss} " +
 				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
-				$"Ft:{Mathf.RoundToInt(Time.deltaTime * 1000)} " +
+				$"Sft:{Mathf.RoundToInt(Time.deltaTime * 1000)}ms " +
 				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
 				$"Em:{(int)EventHandlers.eventmode} " +
 				$"Ti:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}/{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)} " +
