@@ -706,6 +706,34 @@ namespace SanyaPlugin
 					}
 			}
 		}
+		public void OnLeft(LeftEventArgs ev)
+		{
+			Log.Info($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
+
+			if(plugin.Config.ReplaceScpsWhenDisconnect && ev.Player.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492)
+			{
+				Log.Info($"[ReplaceScps] Role:{ev.Player.Role} Health:{ev.Player.Health} Pos:{ev.Player.Position} Level079:{ev.Player.Level} Mana079:{ev.Player.Energy}/{ev.Player.MaxEnergy}");
+				if(RoundSummary.singleton.CountRole(RoleType.Spectator) > 0)
+				{
+					Player target = Player.Get(RoleType.Spectator).Random();
+					Log.Info($"[ReplaceScps] target found:{target.Nickname}/{target.Role}");
+					target.SetRole(ev.Player.Role, true, false);
+					target.Health = ev.Player.Health;
+					target.Position = ev.Player.Position;
+					if(ev.Player.Role == RoleType.Scp079)
+					{
+						target.Level = ev.Player.Level;
+						target.Energy = ev.Player.Energy;
+						target.MaxEnergy = ev.Player.MaxEnergy;
+						target.Camera = ev.Player.Camera;
+					}
+					if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
+						sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
+				}
+				else
+					Log.Warn("[ReplaceScps] No target spectators, skipped");
+			}
+		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
 			Log.Debug($"[OnDestroying] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})", SanyaPlugin.Instance.Config.IsDebugged);

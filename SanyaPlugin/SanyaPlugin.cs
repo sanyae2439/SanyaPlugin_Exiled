@@ -97,6 +97,7 @@ namespace SanyaPlugin
 			WarheadEvents.Detonated += Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating += Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified += Handlers.OnVerified;
+			PlayerEvents.Left += Handlers.OnLeft;
 			PlayerEvents.Destroying += Handlers.OnDestroying;
 			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
 			PlayerEvents.Spawning += Handlers.OnSpawning;
@@ -132,6 +133,7 @@ namespace SanyaPlugin
 			WarheadEvents.Detonated -= Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating -= Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified -= Handlers.OnVerified;
+			PlayerEvents.Left -= Handlers.OnLeft;
 			PlayerEvents.Destroying -= Handlers.OnDestroying;
 			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
 			PlayerEvents.Spawning -= Handlers.OnSpawning;

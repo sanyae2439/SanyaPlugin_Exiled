@@ -109,6 +109,9 @@ namespace SanyaPlugin
 		[Description("ラウンド終了後に無敵になる")]
 		public bool GodmodeAfterEndround { get; set; } = false;
 
+		[Description("SCPが切断時に観戦プレイヤーをSCPに代替する")]
+		public bool ReplaceScpsWhenDisconnect { get; set; } = false;
+
 		[Description("全プレイヤーのボイスチャットを無効化する")]
 		public bool DisableAllChat { get; set; } = false;
 
