@@ -172,7 +172,7 @@ namespace SanyaPlugin
 		{
 			try
 			{
-				Harmony.UnpatchAll();
+				Harmony.UnpatchAll(this.Harmony.Id);
 			}
 			catch(Exception ex)
 			{
