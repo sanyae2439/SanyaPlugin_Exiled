@@ -27,7 +27,7 @@ namespace SanyaPlugin.Patches
 					pryableDoor.TryPryGate();
 
 				DoorVariant door = collider.GetComponentInParent<DoorVariant>();
-				if(door != null && !door.NetworkTargetState && door is IDamageableDoor) 
+				if(door != null && !door.NetworkTargetState && door is IDamageableDoor && door.RequiredPermissions.RequiredPermissions != KeycardPermissions.ContainmentLevelThree) 
 				{
 					door.NetworkTargetState = true;
 					door.ServerChangeLock(DoorLockReason.Lockdown079, true);

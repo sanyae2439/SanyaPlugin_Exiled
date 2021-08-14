@@ -752,12 +752,12 @@ namespace SanyaPlugin.Functions
 			if(target != null)
 			{
 				target.ClearBroadcasts();
-				target.Broadcast(time, text);
+				target.Broadcast(time, text, Broadcast.BroadcastFlags.Normal, false);
 			}
 			else
 			{
 				Map.ClearBroadcasts();
-				Map.Broadcast(time, text);
+				Map.Broadcast(time, text, Broadcast.BroadcastFlags.Normal, false);
 			}
 		}
 
