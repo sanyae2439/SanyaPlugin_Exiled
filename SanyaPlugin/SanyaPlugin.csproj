@@ -147,7 +147,6 @@
     <Compile Include="Patches\PreventAmbientSoundPatch.cs" />
     <Compile Include="Patches\PreventGeneratorReductPatch.cs" />
     <Compile Include="Patches\PreventGrenadeLogPatch.cs" />
-    <Compile Include="Patches\PreventRagdollPatch.cs" />
     <Compile Include="Patches\PreventVCPatch.cs" />
     <Compile Include="Patches\RemoveDecontPosCheckPatch.cs" />
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />

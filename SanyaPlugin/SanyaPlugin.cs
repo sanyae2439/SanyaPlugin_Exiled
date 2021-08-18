@@ -103,6 +103,7 @@ namespace SanyaPlugin
 			PlayerEvents.Spawning += Handlers.OnSpawning;
 			PlayerEvents.Hurting += Handlers.OnHurting;
 			PlayerEvents.Died += Handlers.OnDied;
+			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemDequipped += Handlers.OnDequippedMedicalItem;
@@ -139,6 +140,7 @@ namespace SanyaPlugin
 			PlayerEvents.Spawning -= Handlers.OnSpawning;
 			PlayerEvents.Hurting -= Handlers.OnHurting;
 			PlayerEvents.Died -= Handlers.OnDied;
+			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.MedicalItemDequipped -= Handlers.OnDequippedMedicalItem;

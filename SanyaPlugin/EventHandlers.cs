@@ -709,7 +709,7 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnLeft] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
-			if(plugin.Config.ReplaceScpsWhenDisconnect && ev.Player.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492)
+			if(plugin.Config.ReplaceScpsWhenDisconnect && ev.Player.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492 && RoundSummary.RoundInProgress())
 			{
 				Log.Info($"[ReplaceScps] Role:{ev.Player.Role} Health:{ev.Player.Health} Pos:{ev.Player.Position} Level079:{ev.Player.Level} Mana079:{ev.Player.Energy}/{ev.Player.MaxEnergy}");
 				if(RoundSummary.singleton.CountRole(RoleType.Spectator) > 0)
@@ -1056,6 +1056,14 @@ namespace SanyaPlugin
 			if(!RoundSummary.singleton._roundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Team))
 				KillsDict[ev.Killer.Nickname] += 1;
 		}
+		public void OnSpawningRagdoll(SpawningRagdollEventArgs ev)
+		{
+			Log.Debug($"[OnSpawningRagdoll] {ev.Owner.Nickname}:{ev.HitInformations.GetDamageName()}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(SanyaPlugin.Instance.Config.TeslaDeleteObjects && ev.HitInformations.GetDamageType() == DamageTypes.Tesla 
+				|| SanyaPlugin.Instance.Config.Scp049StackBody && ev.HitInformations.GetDamageType() == DamageTypes.Scp049) 
+				ev.IsAllowed = false;
+		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{
 			Log.Debug($"[OnFailingEscapePocketDimension] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
@@ -1080,7 +1088,8 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp049StackBody
 				&& ev.Player.Role == RoleType.Scp049
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
+				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs
+				&& !ev.Player.GetEffectActive<Decontaminating>())
 				if(scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled)
 					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
 
@@ -1206,7 +1215,7 @@ namespace SanyaPlugin
 		public void OnBlinking(BlinkingEventArgs ev)
 		{
 			//Fix maingame(10.2.2)
-			ev.Player.ReferenceHub?.playerMovementSync?.AddSafeTime(0.5f);
+			ev.Player?.ReferenceHub?.playerMovementSync?.AddSafeTime(0.5f);
 		}
 
 		//Scp914
