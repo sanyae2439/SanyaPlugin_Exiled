@@ -240,27 +240,6 @@ namespace SanyaPlugin.Commands
 						response = $"set to {bool.Parse(arguments.At(1))}";
 						return true;
 					}
-				case "lightint":
-					{
-						if(arguments.Count < 2)
-						{
-							response = "need args. <float>";
-							return false;
-						}
-
-						if(float.TryParse(arguments.At(1), out float arg))
-						{
-							response = "ok.";
-							foreach(var cont in UnityEngine.Object.FindObjectsOfType<FlickerableLightController>())
-								cont.ServerSetLightIntensity(arg);
-							return true;
-						}
-						else
-						{
-							response = "invalid args.";
-							return false;
-						}
-					}
 				case "ping":
 					{
 						response = "Pings:\n";
@@ -274,7 +253,7 @@ namespace SanyaPlugin.Commands
 				case "acwh":
 					{
 						response = "ok.";
-						player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
+						player.ReferenceHub.playerMovementSync.NoclipWhitelisted = true;
 						return true;
 					}
 				case "override":
@@ -291,30 +270,31 @@ namespace SanyaPlugin.Commands
 							return false;
 						}
 
-						if(!isActwatchEnabled)
-						{
-							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-							{
-								writer.WritePackedUInt64(1ul);
-								writer.WritePackedUInt32((uint)1);
-								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WritePackedUInt32((uint)3);
-								writer.WriteByte((byte)1);
-							});
-							isActwatchEnabled = true;
-						}
-						else
-						{
-							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-							{
-								writer.WritePackedUInt64(1ul);
-								writer.WritePackedUInt32((uint)1);
-								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WritePackedUInt32((uint)3);
-								writer.WriteByte((byte)0);
-							});
-							isActwatchEnabled = false;
-						}
+						//if(!isActwatchEnabled)
+						//{
+						//	MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+						//	{
+						//		writer.WritePackedUInt64(1ul);
+						//		writer.WritePackedUInt32((uint)1);
+						//		writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+						//		writer.WritePackedUInt32((uint)3);
+						//		writer.WriteByte((byte)1);
+						//	});
+						//	isActwatchEnabled = true;
+						//}
+						//else
+						//{
+						//	MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+						//	{
+						//		writer.WritePackedUInt64(1ul);
+						//		writer.WritePackedUInt32((uint)1);
+						//		writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+						//		writer.WritePackedUInt32((uint)3);
+						//		writer.WriteByte((byte)0);
+						//	});
+						//	isActwatchEnabled = false;
+						//}
+
 
 						response = $"ok. [{isActwatchEnabled}]";
 						return true;
@@ -327,44 +307,6 @@ namespace SanyaPlugin.Commands
 						}
 						response = "ok.";
 						return true;
-					}
-				case "914":
-					{
-						if(arguments.Count > 1)
-						{
-							if(arguments.At(1).ToLower() == "use")
-							{
-								if(!Scp914.Scp914Machine.singleton.working)
-								{
-									Scp914.Scp914Machine.singleton.RpcActivate(NetworkTime.time);
-									response = "ok.";
-									return true;
-								}
-								else
-								{
-									response = "Scp914 now working.";
-									return false;
-								}
-
-							}
-							else if(arguments.At(1).ToLower() == "knob")
-							{
-								response = $"ok. [{Scp914.Scp914Machine.singleton.knobState}] -> ";
-								Scp914.Scp914Machine.singleton.ChangeKnobStatus();
-								response += $"[{Scp914.Scp914Machine.singleton.knobState}]";
-								return true;
-							}
-							else
-							{
-								response = "invalid parameters. (use/knob)";
-								return false;
-							}
-						}
-						else
-						{
-							response = "invalid parameters. (need params)";
-							return false;
-						}
 					}
 				case "nukecap":
 					{
@@ -395,30 +337,11 @@ namespace SanyaPlugin.Commands
 						response = "ok.";
 						return true;
 					}
-				case "blackout":
-					{
-						Generator079.mainGenerator.ServerOvercharge(8f, false);
-						response = "ok.";
-						return true;
-					}
 				case "addscps":
 					{
 						response = $"ok.{RoundSummary.singleton.classlistStart.scps_except_zombies} -> ";
 						RoundSummary.singleton.classlistStart.scps_except_zombies++;
 						response += $"[{RoundSummary.singleton.classlistStart.scps_except_zombies}]";
-						return true;
-					}
-				case "ammo":
-					{
-						if(player == null)
-						{
-							response = "Only can use with RemoteAdmin.";
-							return false;
-						}
-						player.Ammo[(int)AmmoType.Nato556] = 200;
-						player.Ammo[(int)AmmoType.Nato762] = 200;
-						player.Ammo[(int)AmmoType.Nato9] = 200;
-						response = "ok.";
 						return true;
 					}
 				case "forceend":

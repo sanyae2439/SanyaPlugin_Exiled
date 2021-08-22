@@ -2,7 +2,6 @@
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.Events;
-using Grenades;
 using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
@@ -27,7 +26,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(2, 13, 0);
+		public override Version RequiredExiledVersion => new Version(3, 0, 0);
 
 		//インスタンス
 		public static SanyaPlugin Instance { get; private set; }
@@ -77,11 +76,6 @@ namespace SanyaPlugin
 
 		private void RegistEvents()
 		{
-			Events.DisabledPatchesHashSet.Add(typeof(FragGrenade).GetMethod(nameof(FragGrenade.ServersideExplosion)));
-			Events.DisabledPatchesHashSet.Add(typeof(FlashGrenade).GetMethod(nameof(FlashGrenade.ServersideExplosion)));
-			Events.DisabledPatchesHashSet.Add(typeof(Handcuffs).GetMethod(nameof(Handcuffs.CallCmdCuffTarget)));
-			Events.Instance.ReloadDisabledPatches();
-
 			Handlers = new EventHandlers(this);
 			ServerEvents.WaitingForPlayers += Handlers.OnWaintingForPlayers;
 			ServerEvents.RoundStarted += Handlers.OnRoundStarted;
@@ -91,7 +85,6 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
-			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
 			WarheadEvents.Detonated += Handlers.OnDetonated;
@@ -106,16 +99,8 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
-			PlayerEvents.MedicalItemDequipped += Handlers.OnDequippedMedicalItem;
-			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
-			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
-			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
-			PlayerEvents.ChangingItem += Handlers.OnChangingItem;
-			Scp049Events.FinishingRecall += Handlers.OnFinishingRecall;
-			Scp079Events.GainingLevel += Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp173Events.Blinking += Handlers.OnBlinking;
-			Scp914Events.UpgradingItems += Handlers.OnUpgradingItems;
 		}
 
 		private void UnRegistEvents()
@@ -128,7 +113,6 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
-			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
 			WarheadEvents.Detonated -= Handlers.OnDetonated;
@@ -143,16 +127,8 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
-			PlayerEvents.MedicalItemDequipped -= Handlers.OnDequippedMedicalItem;
-			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
-			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
-			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
-			PlayerEvents.ChangingItem -= Handlers.OnChangingItem;
-			Scp049Events.FinishingRecall -= Handlers.OnFinishingRecall;
-			Scp079Events.GainingLevel -= Handlers.OnGainingLevel;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp173Events.Blinking -= Handlers.OnBlinking;
-			Scp914Events.UpgradingItems -= Handlers.OnUpgradingItems;
 			Handlers = null;
 		}
 

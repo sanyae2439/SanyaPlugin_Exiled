@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Features;
+using MapGeneration.Distributors;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
 using SanyaPlugin.Data;
@@ -128,7 +129,7 @@ namespace SanyaPlugin
 
 			if(player.IsHuman()
 				&& player.GameObject.TryGetComponent(out Radio radio)
-				&& (radio.isVoiceChatting || radio.isTransmitting))
+				&& (radio._syncPrimaryVoicechatButton || radio._syncAltVoicechatButton))
 				player.ReferenceHub.footstepSync._visionController.MakeNoise(35f);
 		}
 
@@ -139,7 +140,7 @@ namespace SanyaPlugin
 				if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 7f)
 					inRange = true;
 
-			if(!inRange && player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().Enabled)
+			if(!inRange && player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled)
 				player.DisableEffect<SinkHole>();
 		}
 
@@ -186,14 +187,12 @@ namespace SanyaPlugin
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"St:{DateTime.Now:HH:mm:ss} " +
 				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
-				$"Sft:{Mathf.RoundToInt(Time.deltaTime * 1000)}ms " +
 				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
-				$"Em:{(int)EventHandlers.eventmode} " +
 				$"Ti:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}/{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)} " +
 				$"Vc:{(player.IsMuted ? "D" : "E")}");
 
 			//[SCPLIST]
-			if(RoundSummary.singleton._roundEnded && EventHandlers.sortedDamages != null)
+			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedDamages != null)
 			{
 				int rankcounter = 1;
 				string resultList = string.Empty;
@@ -230,7 +229,7 @@ namespace SanyaPlugin
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript.curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP/{Generator079.mainGenerator.totalVoltage}Gens\n";
+						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
 					else
 						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
 				if(scp0492counter > 0)
@@ -243,10 +242,10 @@ namespace SanyaPlugin
 			{
 				string MtfList = string.Empty;
 				MtfList += $"<color=#5b6370>FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}</color>\n";
-				MtfList += $"<color=#003eca>Commander:{RoundSummary.singleton.CountRole(RoleType.NtfCommander)}</color>\n";
-				MtfList += $"<color=#0096ff>Lieutenant:{RoundSummary.singleton.CountRole(RoleType.NtfLieutenant)}</color>\n";
-				MtfList += $"<color=#6fc3ff>Cadet:{RoundSummary.singleton.CountRole(RoleType.NtfCadet)}</color>\n";
-				MtfList += $"<color=#0096ff>NTFScientist:{RoundSummary.singleton.CountRole(RoleType.NtfScientist)}</color>\n";
+				MtfList += $"<color=#003eca>Captain:{RoundSummary.singleton.CountRole(RoleType.NtfCaptain)}</color>\n";
+				MtfList += $"<color=#0096ff>Sergeant:{RoundSummary.singleton.CountRole(RoleType.NtfSergeant)}</color>\n";
+				MtfList += $"<color=#6fc3ff>Private:{RoundSummary.singleton.CountRole(RoleType.NtfPrivate)}</color>\n";
+				MtfList += $"<color=#0096ff>Specialist:{RoundSummary.singleton.CountRole(RoleType.NtfSpecialist)}</color>\n";
 				MtfList += $"<color=#ffff7c>Scientist:{RoundSummary.singleton.CountRole(RoleType.Scientist)}</color>\n";
 				MtfList = MtfList.TrimEnd('\n');
 
@@ -255,7 +254,9 @@ namespace SanyaPlugin
 			else if(player.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
-				CiList += $"<color=#008f1e>ChaosInsurgency:{RoundSummary.singleton.CountRole(RoleType.ChaosInsurgency)}</color>\n";
+				CiList += $"<color=#008f1e>Rifleman:{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}</color>\n";
+				CiList += $"<color=#008f1e>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
+				CiList += $"<color=#008f1e>Marauder:{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}</color>\n";
 				CiList += $"<color=#ff8e00>ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}</color>\n";
 				CiList = CiList.TrimEnd('\n');
 
@@ -316,13 +317,13 @@ namespace SanyaPlugin
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 				}
-			else if(!RoundSummary.singleton._roundEnded && EventHandlers.sortedKills != null)
+			else if(!RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
-			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton._roundEnded)
+			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton.RoundEnded)
 			{
 				int TargettMinus = AlphaWarheadController._resumeScenario == -1
 						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
@@ -333,19 +334,11 @@ namespace SanyaPlugin
 				else
 					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>\n{Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) / 60:00} : {Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) % 60:00}</color>", 6));
 			}
-			else if(player.Role == RoleType.Scp079 && Generator079.Generators.Any(x => x.isTabletConnected))
-			{
-				string CounterList = "\n";
-				foreach(var i in Generator079.Generators.Where(x => x.isTabletConnected).OrderBy(x => x.remainingPowerup))
-					CounterList += $"<color=#ffff00>({i.CurRoom}){Mathf.FloorToInt(i.remainingPowerup) / 60:00} : {Mathf.FloorToInt(i.remainingPowerup) % 60:00}</color>\n";
-				CounterList = CounterList.TrimEnd('\n');
-				curText = curText.Replace("[CENTER]", FormatStringForHud(CounterList, 6));
-			}
 			else
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated && !RoundSummary.singleton._roundEnded)
+			if(player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)

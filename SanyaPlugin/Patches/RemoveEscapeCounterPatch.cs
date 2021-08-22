@@ -6,7 +6,7 @@ using HarmonyLib;
 
 namespace SanyaPlugin.Patches
 {
-	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.CallCmdRegisterEscape))]
+	[HarmonyPatch(typeof(CharacterClassManager), nameof(CharacterClassManager.UserCode_CmdRegisterEscape))]
 	public static class RemoveEscapeCounterPatch
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

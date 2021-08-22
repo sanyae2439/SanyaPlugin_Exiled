@@ -53,13 +53,7 @@ namespace SanyaPlugin
 		{
 			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
 		};
-		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
-
-		[Description("テスラで死亡した際の死体やアイテムを削除する")]
-		public bool TeslaDeleteObjects { get; set; } = false;
-
-		[Description("追加でアイテムを設置する")]
-		public bool SpawnAddItems { get; set; } = false;
+		public readonly Dictionary<RoleType, List<Exiled.API.Enums.ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<Exiled.API.Enums.ItemType>>();
 
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
@@ -90,22 +84,6 @@ namespace SanyaPlugin
 
 		[Description("プレイヤー情報のMTF関係を無効にする")]
 		public bool PlayersInfoDisableFollow { get; set; } = false;
-
-		[Description("発電機のアンロックと同時にドアを開ける")]
-		public bool GeneratorUnlockOpen { get; set; } = false;
-
-		[Description("発電機の終了時にドアを閉じてロックする")]
-		public bool GeneratorFinishLock { get; set; } = false;
-
-		[Description("核の初期カウントダウン時間(30-120)")]
-		public int WarheadInitCountdown { get; set; } = -1;
-
-		[Description("SCPが0になった際に自動核を起爆するまでの時間")]
-		public int WarheadAutoWhenNoScps { get; set; } = -1;
-
-		[Description("核起爆後に地上エリアの空爆が開始するまでの秒数")]
-		public int OutsidezoneTerminationTimeAfterNuke { get; set; } = -1;
-
 		[Description("ラウンド終了後に無敵になる")]
 		public bool GodmodeAfterEndround { get; set; } = false;
 
@@ -137,35 +115,11 @@ namespace SanyaPlugin
 		[Description("地上のドアなどを改装する")]
 		public bool EditMapOnSurface { get; set; } = false;
 
-		[Description("ランダムでキーカードが不要なドアが開いているようになる確率")]
-		public float RandomOpenNotPermissionDoors { get; set; } = -1f;
-
-		[Description("フラッシュバンが壁にぶつかった後1秒で起爆する")]
-		public bool FlashbangFuseWithCollision { get; set; } = false;
-
-		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
-		public string TeslaDisabledPermission { get; set; } = "None";
-
-		[Description("グレネードが命中するとヒットマークが出るように")]
-		public bool HitmarkGrenade { get; set; } = false;
-
-		[Description("キルすると大きいヒットマークが出るように")]
-		public bool HitmarkKilled { get; set; } = false;
-
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 
-		[Description("ジャンプ中にスニークキーで蹴りを出せるように")]
-		public bool JumpingKickAttack { get; set; } = false;
-
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-914に入ると悪影響を受ける")]
-		public bool Scp914Debuff { get; set; } = false;
-
-		[Description("SCP-018のダメージ乗数")]
-		public float Scp018DamageMultiplier { get; set; } = 1f;
 
 		[Description("SCPの被ダメージ乗数")]
 		public Dictionary<string, float> ScpTakenDamageMultiplier { get; set; } = new Dictionary<string, float>()
@@ -225,9 +179,6 @@ namespace SanyaPlugin
 		[Description("SCP-173のまばたきのの最大間隔")]
 		public float Scp173MaxBlinktime { get; set; } = 3.5f;
 
-		[Description("SCP-939-XXのサイズ")]
-		public float Scp939ScaleMultiplier { get; set; } = 1f;
-
 		[Description("SCP-939-XXがHPの量で加速する")]
 		public bool Scp939SpeedupByHealthAmount { get; set; } = false;
 
@@ -236,9 +187,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
-
-		[Description("SCP-079がゲートと914操作に必要なTier")]
-		public int Scp079NeedInteractTierGateand914 { get; set; } = -1;
 
 		[Description("SCP-079の消費コスト")]
 		public Dictionary<string, float> Scp079ManaCost { get; set; } = new Dictionary<string, float>()
@@ -265,36 +213,6 @@ namespace SanyaPlugin
 			{"Speaker Update",                0.8f }
 		};
 
-		[Description("SCP-079のExモードを有効化")]
-		public bool Scp079ExtendEnabled { get; set; } = false;
-
-		[Description("SCP-079のExモードでのスポットの必要レベル")]
-		public int Scp079ExtendLevelSpot { get; set; } = 1;
-
-		[Description("SCP-079のExモードでのSCPの位置へカメラ移動の必要レベル")]
-		public int Scp079ExtendLevelFindscp { get; set; } = 2;
-
-		[Description("SCP-079のExモードでのSCPの位置へカメラ移動のコスト")]
-		public float Scp079ExtendCostFindscp { get; set; } = 10f;
-
-		[Description("SCP-079のExモードでの核の操作の必要レベル")]
-		public int Scp079ExtendLevelNuke { get; set; } = 3;
-
-		[Description("SCP-079のExモードでの核の操作のコスト")]
-		public float Scp079ExtendCostNuke { get; set; } = 50f;
-
-		[Description("SCP-079のExモードでの爆発物起爆の必要レベル")]
-		public int Scp079ExtendLevelBomb { get; set; } = 4;
-
-		[Description("SCP-079のExモードでの爆発物起爆の必要コスト")]
-		public float Scp079ExtendCostBomb { get; set; } = 50f;
-
-		[Description("SCP-079のExモードでの地上ターゲット起爆の必要レベル")]
-		public int Scp079ExtendLevelTargetBomb { get; set; } = 5;
-
-		[Description("SCP-079のExモードでの地上ターゲット起爆の必要コスト")]
-		public float Scp079ExtendCostTargetBomb { get; set; } = 75f;
-
 		public void ParseConfig()
 		{
 			try
@@ -305,7 +223,7 @@ namespace SanyaPlugin
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
-						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
+						DefaultitemsParsed.Add(role, new List<Exiled.API.Enums.ItemType>(key.Value.Split(',').Select((string x) => (Exiled.API.Enums.ItemType)Enum.Parse(typeof(Exiled.API.Enums.ItemType), x))));
 
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))

@@ -2,6 +2,7 @@
 using Exiled.API.Features;
 using HarmonyLib;
 using LightContainmentZoneDecontamination;
+using MapGeneration.Distributors;
 using Respawning;
 using UnityEngine;
 
@@ -22,19 +23,11 @@ namespace SanyaPlugin.Patches
 
 			leftdecont = Mathf.Clamp(leftdecont, 0, leftdecont);
 
-			float totalvoltagefloat = 0f;
-			foreach(var i in Generator079.Generators)
-			{
-				totalvoltagefloat += i.localVoltage;
-			}
-			totalvoltagefloat *= 1000f;
-
 			string contentfix = string.Concat(
 				$"作戦経過時間 : {RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}\n",
 				$"残存SCPオブジェクト : {RoundSummary.singleton.CountTeam(Team.SCP):00}/{RoundSummary.singleton.classlistStart.scps_except_zombies:00}\n",
 				$"残存Dクラス職員 : {RoundSummary.singleton.CountTeam(Team.CDP):00}/{RoundSummary.singleton.classlistStart.class_ds:00}\n",
 				$"残存研究員 : {RoundSummary.singleton.CountTeam(Team.RSC):00}/{RoundSummary.singleton.classlistStart.scientists:00}\n",
-				$"施設内余剰電力 : {totalvoltagefloat:0000}kVA\n",
 				$"AlphaWarheadのステータス : {(AlphaWarheadOutsitePanel.nukeside.enabled ? "READY" : "DISABLED")}\n",
 				$"SCP-106再収容設備：{(isContain ? (isAlreadyUsed ? "使用済み" : "準備完了") : "人員不在")}\n",
 				$"軽度収容区画閉鎖まで : {leftdecont / 60:00}:{leftdecont % 60:00}\n",

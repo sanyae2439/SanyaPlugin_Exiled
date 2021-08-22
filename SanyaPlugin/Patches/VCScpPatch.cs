@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace SanyaPlugin.Patches
 {
-	[HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.CallCmdAltIsActive))]
+	[HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.UserCode_CmdAltIsActive))]
 	public static class VCScpPatch
 	{
 		public static void Prefix(DissonanceUserSetup __instance, bool value)

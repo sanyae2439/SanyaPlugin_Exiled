@@ -373,13 +373,6 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> BigHitmark(MicroHID microHID)
-		{
-			yield return Timing.WaitForSeconds(0.1f);
-			microHID.TargetSendHitmarker(false);
-			yield break;
-		}
-
 		public static IEnumerator<float> AirSupportBomb(int waitforready = 5, int limit = -1)
 		{
 			Log.Info($"[AirSupportBomb] booting...");
@@ -440,193 +433,6 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
-		public static IEnumerator<float> Scp049CureFromStack(Player player)
-		{
-			yield return Timing.WaitForOneFrame;
-
-			if(player.Role != RoleType.Scp049 || SanyaPlugin.Instance.Handlers.scp049stackAmount <= 0 || player.ReferenceHub.fpc.forceStopInputs) yield break;
-
-			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-			player.EnableEffect<Amnesia>();
-			yield return Timing.WaitForSeconds(2f);
-
-			var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
-			var target = Player.List.Where(x => x.IsDead && x.MaxHealth != 0).Random();
-			if(target != null)
-			{
-				target.SetRole(RoleType.Scp0492, true);
-				target.Position = player.Position;
-				SanyaPlugin.Instance.Handlers.scp049stackAmount--;
-				comp?.AddHudCenterDownText("Success!", 3);
-			}
-			else
-			{
-				comp?.AddHudCenterDownText("Failed...", 3);
-			}
-			player.DisableEffect<Amnesia>();
-			player.ReferenceHub.fpc.NetworkforceStopInputs = false;
-		}
-
-		public static IEnumerator<float> Scp106WalkingThrough(Player player)
-		{
-			yield return Timing.WaitForOneFrame;
-
-			if(!Physics.Raycast(player.Position, -Vector3.up, 50f, player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
-			{
-				player.Position = RoleType.Scp106.GetRandomSpawnPointForConflict();
-				yield break;
-			}
-
-			Vector3 forward = player.CameraTransform.forward;
-			forward.Set(forward.x * 0.1f, 0f, forward.z * 0.1f);
-
-			var hits = Physics.RaycastAll(player.Position, forward, 50f, 1);
-			if(hits.Length < 2) yield break;
-			if(hits[0].distance > 1f) yield break;
-
-			if(!Physics.Raycast(hits.Last().point + forward, forward * -1f, out var BackHits, 50f, 1)) yield break;
-
-			if(!PlayerMovementSync.FindSafePosition(BackHits.point, out var pos, true)) yield break;
-			player.ReferenceHub.playerMovementSync.WhitelistPlayer = true;
-			yield return Timing.WaitForOneFrame;
-			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-			player.AddItem(ItemType.SCP268);
-			player.ReferenceHub.playerEffectsController.EnableEffect<Scp268>();
-			player.ReferenceHub.playerEffectsController.EnableEffect<Deafened>();
-			player.ReferenceHub.playerEffectsController.ChangeEffectIntensity<Visuals939>(1);
-			//SanyaPlugin.Instance.Handlers.last106walkthrough.Restart();
-
-			while(true)
-			{
-				if(player.Position == pos || player.Role != RoleType.Scp106)
-				{
-					player.ReferenceHub.fpc.NetworkforceStopInputs = false;
-					player.ClearInventory();
-					player.ReferenceHub.playerEffectsController.DisableEffect<Deafened>();
-					player.ReferenceHub.playerEffectsController.DisableEffect<Visuals939>();
-					yield return Timing.WaitForOneFrame;
-					player.ReferenceHub.playerMovementSync.WhitelistPlayer = false;
-					yield break;
-				}
-				player.Position = Vector3.MoveTowards(player.Position, pos, 0.25f);
-				yield return Timing.WaitForOneFrame;
-			}
-		}
-
-		public static IEnumerator<float> Scp106CustomTeleport(Scp106PlayerScript scp106PlayerScript, Vector3 position)
-		{
-			if(!scp106PlayerScript.goingViaThePortal)
-			{
-				scp106PlayerScript.RpcTeleportAnimation();
-				scp106PlayerScript.goingViaThePortal = true;
-				yield return Timing.WaitForSeconds(3.5f);
-				scp106PlayerScript._hub.playerMovementSync.OverridePosition(position, 0f, false);
-				yield return Timing.WaitForSeconds(7.5f);
-				if(AlphaWarheadController.Host.detonated && scp106PlayerScript.transform.position.y < 800f)
-					scp106PlayerScript._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(9000f, "WORLD", DamageTypes.Nuke, 0), scp106PlayerScript.gameObject, true);
-				scp106PlayerScript.goingViaThePortal = false;
-			}
-		}
-
-		public static IEnumerator<float> Scp939SetFake(ReferenceHub human, ReferenceHub scp939, RoleType targetRole, ItemType targetItem)
-		{
-			var Phuman = Player.Get(human);
-			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(CharacterClassManager), nameof(CharacterClassManager.NetworkCurClass), (sbyte)targetRole);
-			yield return Timing.WaitForSeconds(0.25f);
-			MirrorExtensions.SendFakeSyncVar(Phuman, scp939.networkIdentity, typeof(Inventory), nameof(Inventory.Network_curItemSynced), (int)targetItem);
-			yield break;
-		}
-
-
-		public static IEnumerator<float> NightModeInit()
-		{
-			yield return Timing.WaitForSeconds(10f);
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
-				Methods.SendSubtitle(Subtitles.StartNightMode, 20);
-			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			SanyaPlugin.Instance.Handlers.IsEnableBlackout = true;
-			Methods.SetAllIntensity(EventHandlers.currentIntensity);
-			yield break;
-		}
-
-		public static IEnumerator<float> ClassDInsurgencyInit()
-		{
-			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
-			var doors = room.Doors;
-			room.TurnOffLights(10f);
-			foreach(var i in doors)
-			{
-				i.ServerChangeLock(DoorLockReason.AdminCommand, true);
-				if(i.Type() == Exiled.API.Enums.DoorType.PrisonDoor)
-					i.NetworkTargetState = true;
-			}		
-			yield return Timing.WaitForSeconds(10f);
-			Methods.SendSubtitle(Subtitles.ClassDInsurgencyFirst, 10);
-			RespawnEffectsController.PlayCassieAnnouncement("danger . Detected security warning in classD containment chamber.", false, true);
-			foreach(var i in doors)
-			{
-				i.ServerChangeLock(DoorLockReason.AdminCommand, false);
-				if(i.Type() != Exiled.API.Enums.DoorType.PrisonDoor)
-					i.NetworkTargetState = true;
-			}	
-			yield break;
-		}
-
-		public static IEnumerator<float> AlreadyBreakInit()
-		{
-			yield return Timing.WaitForSeconds(3f);
-			Methods.SendSubtitle(Subtitles.AlreadyBreakFirst, 20);
-			RespawnEffectsController.PlayCassieAnnouncement("attention all personnel . facility guards HasEntered . AllRemaining .", false, true);
-			yield break;
-		}
-
-		public static IEnumerator<float> _106PortalAnimation(Player player, Vector3 portalpos, bool isAnim = false, bool isHurt = false)
-		{
-			if(player.ReferenceHub.scp106PlayerScript.goingViaThePortal) yield break;
-
-			player.ReferenceHub.scp106PlayerScript.goingViaThePortal = true;
-
-			if(isAnim)
-			{
-				player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-				player.SendFakeSyncVar(player.ReferenceHub.networkIdentity, typeof(Scp106PlayerScript), nameof(Scp106PlayerScript.NetworkportalPosition), portalpos);
-
-				yield return Timing.WaitForOneFrame;
-				player.ReferenceHub.scp106PlayerScript.RpcTeleportAnimation();
-
-				for(int i = 0; i < 230; i++)
-				{
-					var pos = player.ReferenceHub.playerMovementSync.RealModelPosition;
-					pos.y -= 0.01f;
-					player.ReferenceHub.playerMovementSync.OverridePosition(pos, 0f);
-					yield return Timing.WaitForOneFrame;
-				}
-
-				if(player.Team != Team.SCP && isHurt)
-					if(AlphaWarheadController.Host.doorsClosed)
-						player.Kill(DamageTypes.Pocket);
-					else
-						player.Hurt(40f, DamageTypes.Scp106);
-
-				player.ReferenceHub.playerMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, true);
-				player.ReferenceHub.fpc.NetworkforceStopInputs = false;
-			}
-			else
-			{
-				if(player.Team != Team.SCP && isHurt)
-					if(AlphaWarheadController.Host.doorsClosed)
-						player.Kill(DamageTypes.Pocket);
-					else
-						player.Hurt(40f, DamageTypes.Scp106);
-
-				player.ReferenceHub.playerMovementSync.OverridePosition(Vector3.down * 1998.5f, 0f, true);
-			}
-
-			player.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
-			yield return Timing.WaitForSeconds(3f);
-			player.ReferenceHub.scp106PlayerScript.goingViaThePortal = false;
-			yield break;
-		}
 	}
 
 	internal static class Methods
@@ -708,19 +514,19 @@ namespace SanyaPlugin.Functions
 
 		public static void SpawnGrenade(Vector3 position, GRENADE_ID id, float fusedur = -1, ReferenceHub player = null)
 		{
-			if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
-			var gm = player.GetComponent<Grenades.GrenadeManager>();
-			Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[(int)id].grenadeInstance).GetComponent<Grenades.Grenade>();
-			if(fusedur != -1) component.fuseDuration = fusedur;
-			component.FullInitData(
-				gm, 
-				position, 
-				Quaternion.Euler(component.throwStartAngle), 
-				Vector3.zero + component.throwForce * 0.5f * (new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)) + component.throwLinearVelocityOffset).normalized,
-				component.throwAngularVelocity, 
-				player == null ? Team.TUT : player.characterClassManager.CurRole.team
-			);
-			NetworkServer.Spawn(component.gameObject);
+			//if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
+			//var gm = player.GetComponent<Grenades.GrenadeManager>();
+			//Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[(int)id].grenadeInstance).GetComponent<Grenades.Grenade>();
+			//if(fusedur != -1) component.fuseDuration = fusedur;
+			//component.FullInitData(
+			//	gm, 
+			//	position, 
+			//	Quaternion.Euler(component.throwStartAngle), 
+			//	Vector3.zero + component.throwForce * 0.5f * (new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)) + component.throwLinearVelocityOffset).normalized,
+			//	component.throwAngularVelocity, 
+			//	player == null ? Team.TUT : player.characterClassManager.CurRole.team
+			//);
+			//NetworkServer.Spawn(component.gameObject);
 		}
 
 		public static int GetRandomIndexFromWeight(int[] list)
@@ -780,21 +586,6 @@ namespace SanyaPlugin.Functions
 			return result.Trim();
 		}
 
-		public static void AddDeathTimeForScp049(this Player target)
-		{
-			PlayerManager.localPlayer.GetComponent<RagdollManager>().SpawnRagdoll(
-				Vector3.zero,
-				target.GameObject.transform.rotation,
-				Vector3.zero,
-				(int)RoleType.ClassD,
-				new PlayerStats.HitInfo(-1, "Scp049Reviver", DamageTypes.Scp049, -1),
-				true,
-				target.GameObject.GetComponent<MirrorIgnorancePlayer>().PlayerId,
-				target.Nickname,
-				target.Id
-			);
-		}
-
 		public static bool CanLookToPlayer(this Camera079 camera, Player player)
 		{
 			if(player.Role == RoleType.Spectator || player.Role == RoleType.Scp079 || player.Role == RoleType.None)
@@ -805,12 +596,6 @@ namespace SanyaPlugin.Functions
 			return (num >= 0f && num * num / (player.Position - camera.transform.position).sqrMagnitude > 0.4225f)
 				&& Physics.Raycast(camera.transform.position, player.Position - camera.transform.position, out RaycastHit raycastHit, 100f, -117407543)
 				&& raycastHit.transform.name == player.GameObject.name;
-		}
-
-		public static void Blink()
-		{
-			foreach(var scp173 in UnityEngine.Object.FindObjectsOfType<Scp173PlayerScript>())
-				scp173.RpcBlinkTime();
 		}
 
 		public static GameObject SpawnDummy(RoleType role, Vector3 pos, Quaternion rot)
@@ -854,81 +639,6 @@ namespace SanyaPlugin.Functions
 			return result;
 		}
 
-		public static void Remove914Item(ItemType type)
-		{
-			foreach(var i in Scp914.Scp914Machine.singleton.recipesDict)
-				foreach(var j in i.Value)
-					for(int k = 0; k < j.Value.Length; k++)
-						if(j.Value[k] == type)
-							j.Value[k] = i.Key;
-		}
-
-		public static void Add914RecipeCoin()
-		{
-			Scp914.Scp914Machine.singleton.recipesDict.Add(ItemType.Coin, new System.Collections.Generic.Dictionary<Scp914.Scp914Knob, ItemType[]>()
-						{
-							{ Scp914.Scp914Knob.Rough, new[]{ItemType.None } },
-							{ Scp914.Scp914Knob.Coarse, new[]{ItemType.None } },
-							{ Scp914.Scp914Knob.OneToOne, new[]{ItemType.Coin } },
-							{ Scp914.Scp914Knob.Fine, new[]{
-								ItemType.KeycardJanitor,
-								ItemType.KeycardScientist,
-								ItemType.KeycardScientistMajor,
-								ItemType.KeycardZoneManager,
-								ItemType.KeycardGuard,
-								ItemType.KeycardSeniorGuard,
-								ItemType.KeycardContainmentEngineer,
-								ItemType.KeycardNTFLieutenant,
-								ItemType.KeycardNTFCommander,
-								ItemType.KeycardFacilityManager,
-								ItemType.KeycardChaosInsurgency,
-								ItemType.KeycardO5,
-								ItemType.GunCOM15,
-								ItemType.MicroHID,
-								ItemType.SCP207,
-								ItemType.WeaponManagerTablet,
-								ItemType.GunE11SR,
-								ItemType.GunProject90,
-								ItemType.GunMP7,
-								ItemType.GunLogicer,
-								ItemType.GrenadeFrag,
-								ItemType.GrenadeFlash,
-								ItemType.GunUSP,
-								ItemType.SCP018,
-								ItemType.SCP268,
-								ItemType.Ammo556,
-								ItemType.Ammo762,
-								ItemType.Ammo9mm,
-								ItemType.Medkit,
-								ItemType.Adrenaline,
-								ItemType.Painkillers,
-								ItemType.SCP500,
-								ItemType.Flashlight,
-								ItemType.Radio,
-								ItemType.Disarmer
-							} },
-							{ Scp914.Scp914Knob.VeryFine, new[]{
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.None,
-								ItemType.KeycardFacilityManager,
-								ItemType.KeycardContainmentEngineer,
-								ItemType.KeycardO5,
-								ItemType.MicroHID,
-								ItemType.GunE11SR,
-								ItemType.SCP500,
-								ItemType.SCP018
-							} }
-						});
-		}
-
 		public static void MoveNetworkIdentityObject(NetworkIdentity identity, Vector3 pos)
 		{
 			identity.gameObject.transform.position = pos;
@@ -956,27 +666,6 @@ namespace SanyaPlugin.Functions
 				((AlphaWarheadController._resumeScenario >= 0) 
 				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime 
 				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
-		}
-
-		public static void SetAllIntensity(float intensity)
-		{
-			foreach(var cont in EventHandlers.flickerableLightControllers)
-				cont.ServerSetLightIntensity(intensity);
-		}
-
-		public static void SpawnRagdoll(Vector3 pos, Quaternion rot, RoleType roleType, string deathCause, Player owner = null)
-		{
-			ReferenceHub target = owner?.ReferenceHub ?? ReferenceHub.HostHub;
-			target.GetComponent<RagdollManager>().SpawnRagdoll(
-				pos,
-				rot,
-				Vector3.zero,
-				(int)roleType,
-				new PlayerStats.HitInfo(32813f, $"*{deathCause}", DamageTypes.Flying, 0),
-				false,
-				target.GetComponent<MirrorIgnorancePlayer>().PlayerId,
-				target.nicknameSync.DisplayName,
-				target.queryProcessor.PlayerId);
 		}
 	}
 
@@ -1009,16 +698,6 @@ namespace SanyaPlugin.Functions
 			return (int)(100f - (player.ReferenceHub.playerStats.GetHealthPercent() * 100f));
 		}
 
-		public static void ShowHitmarker(this Player player)
-		{
-			player.ReferenceHub.GetComponent<Scp173PlayerScript>().TargetHitMarker(player.Connection);
-		}
-
-		public static void SendToTargetSound(this Player player)
-		{
-			NetworkServer.SendToClientOfPlayer(player.ReferenceHub.networkIdentity, new PlayableScps.Messages.Scp096ToTargetMessage(player.ReferenceHub));
-		}
-
 		public static void SendTextHint(this Player player, string text, float time)
 		{
 			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
@@ -1028,8 +707,6 @@ namespace SanyaPlugin.Functions
 		{
 			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, null, time));
 		}
-
-		public static Vector3 GetRandomSpawnPointForConflict(this RoleType role) => Exiled.API.Extensions.Role.GetRandomSpawnPoint(role);
 
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
 		{
