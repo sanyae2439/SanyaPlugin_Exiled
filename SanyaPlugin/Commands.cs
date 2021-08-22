@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using CommandSystem;
-using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
@@ -15,7 +13,6 @@ using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
 using SanyaPlugin.Functions;
 using UnityEngine;
-using UnityEngine.Profiling;
 
 namespace SanyaPlugin.Commands
 {
@@ -105,6 +102,39 @@ namespace SanyaPlugin.Commands
 							{
 								Log.Warn($"    {i.name}:{i.GetType()}");
 							}
+						}
+						return true;
+					}
+				case "identitytree":
+					{
+						response = "ok.";
+						foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
+						{
+							Log.Warn($"{identity.transform.name} (layer{identity.transform.gameObject.layer})");
+							Log.Warn($"HasComponents:");
+							foreach(var i in identity.transform.gameObject.GetComponents<Component>())
+							{
+								Log.Warn($"    {i?.name}:{i?.GetType()}");
+							}
+							Log.Warn($"HasComponentsInChildren:");
+							foreach(var i in identity.transform.gameObject.GetComponentsInChildren<Component>())
+							{
+								Log.Warn($"    {i?.name}:{i?.GetType()}");
+							}
+							Log.Warn($"HasComponentsInParent:");
+							foreach(var i in identity.transform.gameObject.GetComponentsInParent<Component>())
+							{
+								Log.Warn($"    {i?.name}:{i?.GetType()}");
+							}
+						}
+						return true;
+					}
+				case "identitypos":
+					{
+						response = "ok.";
+						foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
+						{
+							Log.Warn($"{identity.transform.name}{identity.transform.position}");
 						}
 						return true;
 					}
@@ -220,7 +250,8 @@ namespace SanyaPlugin.Commands
 					}
 				case "htest":
 					{
-						player.SendTextHintNotEffect(arguments.Skip(1).Join(delimiter: " ").Replace("\\n", "\n"), 5);
+						foreach(var i in Player.List)
+							i.SendTextHintNotEffect(arguments.Skip(1).Join(delimiter: " ").Replace("\\n", "\n"), 5);
 						response = "ok.";
 						return true;
 					}
@@ -270,30 +301,30 @@ namespace SanyaPlugin.Commands
 							return false;
 						}
 
-						//if(!isActwatchEnabled)
-						//{
-						//	MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-						//	{
-						//		writer.WritePackedUInt64(1ul);
-						//		writer.WritePackedUInt32((uint)1);
-						//		writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-						//		writer.WritePackedUInt32((uint)3);
-						//		writer.WriteByte((byte)1);
-						//	});
-						//	isActwatchEnabled = true;
-						//}
-						//else
-						//{
-						//	MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-						//	{
-						//		writer.WritePackedUInt64(1ul);
-						//		writer.WritePackedUInt32((uint)1);
-						//		writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-						//		writer.WritePackedUInt32((uint)3);
-						//		writer.WriteByte((byte)0);
-						//	});
-						//	isActwatchEnabled = false;
-						//}
+						if(!isActwatchEnabled)
+						{
+							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							{
+								writer.WriteUInt64(1ul);
+								writer.WriteUInt32((uint)1);
+								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+								writer.WriteUInt32((uint)19);
+								writer.WriteByte((byte)1);
+							});
+							isActwatchEnabled = true;
+						}
+						else
+						{
+							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
+							{
+								writer.WriteUInt64(1ul);
+								writer.WriteUInt32(1);
+								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
+								writer.WriteUInt32(19);
+								writer.WriteByte(0);
+							});
+							isActwatchEnabled = false;
+						}
 
 
 						response = $"ok. [{isActwatchEnabled}]";

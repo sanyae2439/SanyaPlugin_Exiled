@@ -23,7 +23,7 @@ namespace SanyaPlugin
 
 		private SanyaPlugin _plugin;
 
-		private string _hudTemplate = "<align=left><voffset=38em><size=50%><alpha=#44>SanyaPlugin Ex-HUD [VERSION] ([STATS])\n<alpha=#ff></size></align><align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]</align></voffset>";
+		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
 		private float _timer = 0f;
 		private bool _detectHighPing = false;
 		private int _respawnCounter = -1;
@@ -219,7 +219,7 @@ namespace SanyaPlugin
 				}
 				resultList = resultList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 12));
+				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 13));
 			}
 			else if(player.Team == Team.SCP)
 			{
@@ -236,7 +236,7 @@ namespace SanyaPlugin
 					scpList += $"SCP-049-2:({scp0492counter})\n";
 				scpList = scpList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 7));
 			}
 			else if(player.Team == Team.MTF)
 			{
@@ -249,18 +249,18 @@ namespace SanyaPlugin
 				MtfList += $"<color=#ffff7c>Scientist:{RoundSummary.singleton.CountRole(RoleType.Scientist)}</color>\n";
 				MtfList = MtfList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 7));
 			}
 			else if(player.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
 				CiList += $"<color=#008f1e>Rifleman:{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}</color>\n";
-				CiList += $"<color=#008f1e>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
-				CiList += $"<color=#008f1e>Marauder:{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}</color>\n";
+				CiList += $"<color=#0a7d34>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
+				CiList += $"<color=#006728>Marauder:{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}</color>\n";
 				CiList += $"<color=#ff8e00>ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}</color>\n";
 				CiList = CiList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 7));
 			}
 			else if(player.Role == RoleType.Spectator)
 			{
@@ -279,13 +279,15 @@ namespace SanyaPlugin
 
 				RespawnList = RespawnList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(RespawnList, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(RespawnList, 7));
 			}
 			else
-				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 6));
+				curText = curText.Replace("[LIST]", FormatStringForHud(string.Empty, 7));
 
 			//[CENTER_UP]
-			if(player.Role == RoleType.Scp079)
+			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
+				curText = curText.Replace("[CENTER_UP]", string.Empty);
+			else if(player.Role == RoleType.Scp079)
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled", 6));
 			else if(player.Role == RoleType.Scp049)
 				if(!player.ReferenceHub.fpc.NetworkforceStopInputs)
@@ -317,8 +319,6 @@ namespace SanyaPlugin
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 				}
-			else if(!RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
-				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
@@ -342,16 +342,16 @@ namespace SanyaPlugin
 			{
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンチケットがありません", 6));
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンチケットがありません", 7));
 				else if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"突入まで{_respawnCounter}秒\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 6));
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"突入まで{_respawnCounter}秒\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 7));
 				else
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 6));
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 7));
 			}
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
-				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(_hudCenterDownString, 6));
+				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(_hudCenterDownString, 7));
 			else
-				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(string.Empty, 6));
+				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(string.Empty, 7));
 
 			//[BOTTOM]
 			if(!string.IsNullOrEmpty(_hudBottomDownString))
@@ -359,7 +359,7 @@ namespace SanyaPlugin
 			else if(Intercom.host.speaking && Intercom.host.speaker != null)
 				curText = curText.Replace("[BOTTOM]", $"{Player.Get(Intercom.host.speaker)?.Nickname}が放送中...");
 			else
-				curText = curText.Replace("[BOTTOM]", string.Empty);
+				curText = curText.Replace("[BOTTOM]", "　");
 
 			_hudText = curText;
 			player.SendTextHintNotEffect(_hudText, 2);
