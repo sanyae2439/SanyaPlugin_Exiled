@@ -6,6 +6,7 @@ using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
+using InventorySystem.Items.Firearms.Attachments;
 using MapGeneration;
 using MEC;
 using Mirror;

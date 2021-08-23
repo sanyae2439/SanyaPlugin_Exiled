@@ -433,6 +433,48 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
+		public static IEnumerator<float> Scp049CureFromStack(Player player)
+		{
+			yield return Timing.WaitForOneFrame;
+
+			if(player.Role != RoleType.Scp049 || SanyaPlugin.Instance.Handlers.scp049stackAmount <= 0 || player.ReferenceHub.fpc.forceStopInputs) yield break;
+
+			player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+			player.EnableEffect<Amnesia>();
+			yield return Timing.WaitForSeconds(2f);
+
+			var comp = player.GameObject.GetComponent<SanyaPluginComponent>();
+			var target = Player.List.Where(x => x.IsDead && x.MaxHealth != 0).Random();
+			if(target != null)
+			{
+				target.SetRole(RoleType.Scp0492, Exiled.API.Enums.SpawnReason.ForceClass, true);
+				target.Position = player.Position;
+				SanyaPlugin.Instance.Handlers.scp049stackAmount--;
+				comp?.AddHudCenterDownText("Success!", 3);
+			}
+			else
+			{
+				comp?.AddHudCenterDownText("Failed...", 3);
+			}
+			player.DisableEffect<Amnesia>();
+			player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+		}
+
+		public static IEnumerator<float> Scp106CustomTeleport(Scp106PlayerScript scp106PlayerScript, Vector3 position)
+		{
+			if(!scp106PlayerScript.goingViaThePortal)
+			{
+				scp106PlayerScript.RpcTeleportAnimation();
+				scp106PlayerScript.goingViaThePortal = true;
+				yield return Timing.WaitForSeconds(3.5f);
+				scp106PlayerScript._hub.playerMovementSync.OverridePosition(position, 0f, false);
+				yield return Timing.WaitForSeconds(7.5f);
+				if(AlphaWarheadController.Host.detonated && scp106PlayerScript.transform.position.y < 800f)
+					scp106PlayerScript._hub.playerStats.HurtPlayer(new PlayerStats.HitInfo(9000f, "WORLD", DamageTypes.Nuke, 0, true), scp106PlayerScript.gameObject, true, true);
+				scp106PlayerScript.goingViaThePortal = false;
+			}
+		}
+
 	}
 
 	internal static class Methods
@@ -666,6 +708,21 @@ namespace SanyaPlugin.Functions
 				((AlphaWarheadController._resumeScenario >= 0) 
 				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime 
 				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
+		}
+
+		public static void SetAmmoConfigs()
+		{
+			foreach(var role in CharacterClassManager._staticClasses.Where(x => x.team != Team.SCP && x.team != Team.RIP))
+				if(SanyaPlugin.Instance.Config.DefaultammosParsed.TryGetValue(role.roleId, out var value2))
+				{
+					if(!InventorySystem.Configs.StartingInventories.DefinedInventories.TryGetValue(role.roleId, out var value))
+						InventorySystem.Configs.StartingInventories.DefinedInventories.Add(role.roleId, new InventorySystem.InventoryRoleInfo(new ItemType[] { }, new Dictionary<ItemType, ushort>()));
+					else
+						value.Ammo.Clear();
+
+					foreach(var ammo in value2)
+						InventorySystem.Configs.StartingInventories.DefinedInventories[role.roleId].Ammo[ammo.Key] = ammo.Value;
+				}
 		}
 	}
 

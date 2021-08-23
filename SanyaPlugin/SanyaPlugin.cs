@@ -1,17 +1,12 @@
 ﻿using System;
 using Exiled.API.Enums;
 using Exiled.API.Features;
-using Exiled.Events;
 using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
-using Scp049Events = Exiled.Events.Handlers.Scp049;
-using Scp079Events = Exiled.Events.Handlers.Scp079;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
-using Scp173Events = Exiled.Events.Handlers.Scp173;
-using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
 
@@ -90,7 +85,6 @@ namespace SanyaPlugin
 			WarheadEvents.Detonated += Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating += Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified += Handlers.OnVerified;
-			PlayerEvents.Left += Handlers.OnLeft;
 			PlayerEvents.Destroying += Handlers.OnDestroying;
 			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
 			PlayerEvents.Spawning += Handlers.OnSpawning;
@@ -100,7 +94,6 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
-			Scp173Events.Blinking += Handlers.OnBlinking;
 		}
 
 		private void UnRegistEvents()
@@ -118,7 +111,6 @@ namespace SanyaPlugin
 			WarheadEvents.Detonated -= Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating -= Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified -= Handlers.OnVerified;
-			PlayerEvents.Left -= Handlers.OnLeft;
 			PlayerEvents.Destroying -= Handlers.OnDestroying;
 			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
 			PlayerEvents.Spawning -= Handlers.OnSpawning;
@@ -128,7 +120,6 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
-			Scp173Events.Blinking -= Handlers.OnBlinking;
 			Handlers = null;
 		}
 

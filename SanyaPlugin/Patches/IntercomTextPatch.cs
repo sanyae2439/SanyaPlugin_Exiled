@@ -2,7 +2,6 @@
 using Exiled.API.Features;
 using HarmonyLib;
 using LightContainmentZoneDecontamination;
-using MapGeneration.Distributors;
 using Respawning;
 using UnityEngine;
 
@@ -11,6 +10,7 @@ namespace SanyaPlugin.Patches
 	[HarmonyPatch(typeof(Intercom), nameof(Intercom.UpdateText))]
 	public static class IntercomTextPatch
 	{
+		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static void Prefix(Intercom __instance)
 		{
 			if(!SanyaPlugin.Instance.Config.IntercomInformation) return;

@@ -8,10 +8,7 @@ namespace SanyaPlugin.Data
 	public enum SANYA_GAME_MODE
 	{
 		NULL = -1,
-		NORMAL = 0,
-		NIGHT,
-		CLASSD_INSURGENCY,
-		ALREADY_BREAKED
+		NORMAL = 0
 	}
 
 	public enum GRENADE_ID

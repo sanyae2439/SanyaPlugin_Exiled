@@ -214,62 +214,6 @@
 
 	internal static class HintTexts
 	{
-		internal static readonly string ExtendEnabled = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードが有効になりました. スプリントキーで切り替えられます.\n",
-			"</size><size=20>",
-			"Extend mode Enabled. You can toggle by sprint keys.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string ExtendDisabled = string.Concat(
-			"<size=25>",
-			"拡張モードが無効になりました. スプリントキーで切り替えられます.\n",
-			"</size><size=20>",
-			"Extend mode Disabled. You can toggle by sprint keys.\n",
-			"</size>"
-		);
-
-		internal static readonly string Extend079First = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1では見ている部屋にいる生存者の場所を伝えることができます.\n",
-			"</size><size=20>",
-			"You can use Extend mode. You can toggle by sprint keys.\nYou can spot living humans on current watching room.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend079Lv2 = string.Concat(
-			"<color=#bbee00><size=25>",
-			"Tier2になりました. 拡張モードにてカメラ操作でSCPのもとへカメラ移動ができます.\n",
-			"</size><size=20>",
-			"You got to Tier2. On Extend mode, You can move to SCPs by camera interacts.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend079Lv3 = string.Concat(
-			"<color=#bbee00><size=25>",
-			"Tier3になりました. 拡張モードにて格納庫のスピーカーでAlphaWarheadを操作できるようになります.\n",
-			"</size><size=20>",
-			"You got to Tier3. On Extend mode, You can control AlphaWarhead by Silo-Speaker.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend079Lv4 = string.Concat(
-			"<color=#bbee00><size=25>",
-			"Tier4になりました. 拡張モードにて停電マークを押すと部屋の特定位置で爆発を起こせるようになります.\n",
-			"</size><size=20>",
-			"You got to Tier3. On Extend mode, You can explode where press LockDown button.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend079Lv5 = string.Concat(
-			"<color=#bbee00><size=25>",
-			"Tier5になりました. 拡張モードにて地上ゲートを操作することにより人間陣営の爆発物を起爆できます.\n",
-			"</size><size=20>",
-			"You got to Tier3. On Extend mode, You can explode on humans inventory press Gate Door button.\n",
-			"</size></color>"
-		);
-
 		internal static readonly string Error079NotEnoughTier = string.Concat(
 			"<color=#bbee00><size=25>",
 			"このドアを操作するにはTierが足りません。\n",
@@ -291,15 +235,6 @@
 			"拡張モードを使用可能です. スプリントキーで使用可能です.\n収容室の前に戻ることができます。\n",
 			"</size><size=20>",
 			"You can use Extend mode. Use by sprint keys.\nYou can return to containment room.\n",
-			"</size></color>"
-		);
-
-
-		internal static readonly string Extend106First_Obsoleted = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで使用可能です.\n壁を通り抜けて移動することができます。\n",
-			"</size><size=20>",
-			"You can use Extend mode. Use by sprint keys.\nYou can walkthrough on walls.\n",
 			"</size></color>"
 		);
 	}
