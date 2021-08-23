@@ -770,7 +770,11 @@ namespace SanyaPlugin
 					, Segment.FixedUpdate));
 
 			//ジャンプ時スタミナ消費
-			if(plugin.Config.StaminaCostJump > 0 && ev.CurrentAnimation == 2 && ev.Player.ReferenceHub.characterClassManager.IsHuman())
+			if(plugin.Config.StaminaCostJump > 0 
+				&& ev.CurrentAnimation == 2 
+				&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
+				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
+				&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
 			{
 				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
 				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
