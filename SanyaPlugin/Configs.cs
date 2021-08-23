@@ -120,6 +120,9 @@ namespace SanyaPlugin
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 
+		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
+		public string TeslaDisabledPermission { get; set; } = "None";
+
 		[Description("地上のドアなどを改装する")]
 		public bool EditMapOnSurface { get; set; } = false;
 

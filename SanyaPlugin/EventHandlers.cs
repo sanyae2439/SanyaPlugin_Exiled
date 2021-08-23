@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CustomPlayerEffects;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
-using Exiled.API.Features.Items;
 using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
+using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MEC;
@@ -780,6 +779,15 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
 			}
 
+		}
+		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
+		{
+			if(plugin.Config.TeslaDisabledPermission != "None"
+				&& ev.Player.IsHuman()
+				&& ev.Player.CurrentItem != null
+				&& (ev.Player.CurrentItem.Base is KeycardItem keycardItem)
+				&& keycardItem.Permissions.ToString().Contains(plugin.Config.TeslaDisabledPermission))
+				ev.IsTriggerable = false;
 		}
 
 		//Scp106

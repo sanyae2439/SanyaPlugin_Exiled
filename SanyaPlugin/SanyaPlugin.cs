@@ -93,6 +93,7 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
+			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 		}
 
@@ -119,6 +120,7 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
+			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Handlers = null;
 		}
