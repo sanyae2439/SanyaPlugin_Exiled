@@ -164,6 +164,40 @@ namespace SanyaPlugin.Commands
 						response = $"doortest.";
 						return true;
 					}
+				case "lightcolor":
+					{
+						if(arguments.Count == 1)
+						{
+							response = "Usage: lightcolor <r> <g> <b> or lightcolor reset";
+							return false;
+						}
+
+						if(arguments.Count == 2 && arguments.At(1) == "reset")
+						{
+							foreach(var i in FlickerableLightController.Instances)
+							{
+								i.WarheadLightColor = FlickerableLightController.DefaultWarheadColor;
+								i.WarheadLightOverride = false;
+							}
+							response = "reset ok.";
+						}
+
+						if(arguments.Count == 4 
+							&& float.TryParse(arguments.At(1), out var r) 
+							&& float.TryParse(arguments.At(2), out var g) 
+							&& float.TryParse(arguments.At(3), out var b))
+						{
+							foreach(var i in FlickerableLightController.Instances)
+							{
+								i.WarheadLightColor = new Color(r / 255f, g / 255f, b / 255f);
+								i.WarheadLightOverride = true;
+							}
+							response = $"color set:{r},{g},{b}";
+							return true;
+						}
+						response = $"lightcolor: invalid params.";
+						return false;
+					}
 				case "sinkhole":
 					{
 						if(SanyaPlugin.Instance.Handlers.Sinkhole == null)
