@@ -168,7 +168,7 @@ namespace SanyaPlugin.Commands
 					{
 						if(arguments.Count == 1)
 						{
-							response = "Usage: lightcolor <r> <g> <b> or lightcolor reset";
+							response = "Usage: lightcolor r g b or lightcolor reset";
 							return false;
 						}
 
@@ -180,6 +180,7 @@ namespace SanyaPlugin.Commands
 								i.WarheadLightOverride = false;
 							}
 							response = "reset ok.";
+							return true;
 						}
 
 						if(arguments.Count == 4 
