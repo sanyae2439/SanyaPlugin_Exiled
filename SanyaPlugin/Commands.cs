@@ -290,8 +290,13 @@ namespace SanyaPlugin.Commands
 					}
 				case "override":
 					{
+						
+						if(SanyaPlugin.Instance.Handlers.Overrided != null)
+							SanyaPlugin.Instance.Handlers.Overrided = null;
+						else
+							SanyaPlugin.Instance.Handlers.Overrided = player;
+
 						response = "ok.";
-						SanyaPlugin.Instance.Handlers.Overrided = player;
 						return true;
 					}
 				case "actwatch":
