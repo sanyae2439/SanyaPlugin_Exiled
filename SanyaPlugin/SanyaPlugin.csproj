@@ -129,7 +129,6 @@
     <Compile Include="Patches\AutoNukeReEnablePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\FixDefaultSegmentPatch.cs" />
-    <Compile Include="Patches\FixWeaponStatusDesync.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\NTFUnitPatch.cs" />
@@ -140,6 +139,7 @@
     <Compile Include="Patches\Scp173BreakneckPatch.cs" />
     <Compile Include="Patches\Scp173TantrumPatch.cs" />
     <Compile Include="Patches\ScpArmorEfficacyPatch.cs" />
+    <Compile Include="Patches\TestPatch1.cs" />
     <Compile Include="Patches\VCPreventNormalChatPatch.cs" />
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />
     <Compile Include="Patches\PreventRespawnEffectPatch.cs" />
