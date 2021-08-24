@@ -514,11 +514,8 @@ namespace SanyaPlugin
 
 			//VCLimitter
 			if(plugin.Config.DisableAllChat)
-			{
-				ev.Player.IsMuted = true;
-				if(plugin.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(ev.Player.UserId) && !MuteHandler.QueryPersistentMute(ev.Player.UserId))
-					roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () => { ev.Player.IsMuted = false; }));
-			}
+				if(!plugin.Config.DisableChatBypassWhitelist || !WhiteList.IsOnWhitelist(ev.Player.UserId))
+					ev.Player.IsMuted = true;
 
 			//MOTD
 			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
@@ -755,8 +752,8 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp049StackBody
 				&& ev.Player.Role == RoleType.Scp049
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs)
-				if(scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled)
+				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs
+				&& (scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled))
 					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
 
 			if(plugin.Config.Scp106Exmode
@@ -764,9 +761,9 @@ namespace SanyaPlugin
 				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
 				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
 				&& !Warhead.IsDetonated)
-				roundCoroutines.Add(Timing.RunCoroutine(
-					Coroutines.Scp106CustomTeleport(ev.Player.ReferenceHub.characterClassManager.Scp106, DoorNametagExtension.NamedDoors.First(x => x.Key == "106_PRIMARY").Value.TargetDoor.transform.position + Vector3.up * 1.5f)
-					, Segment.FixedUpdate));
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(
+					ev.Player.ReferenceHub.characterClassManager.Scp106,
+					DoorNametagExtension.NamedDoors.First(x => x.Key == "106_PRIMARY").Value.TargetDoor.transform.position + Vector3.up * 1.5f), Segment.FixedUpdate));
 
 			//ジャンプ時スタミナ消費
 			if(plugin.Config.StaminaCostJump > 0 

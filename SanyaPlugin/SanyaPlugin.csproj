@@ -128,11 +128,9 @@
     <Compile Include="Patches\AutoNukePatch.cs" />
     <Compile Include="Patches\AutoNukeReEnablePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
-    <Compile Include="Patches\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\NTFUnitPatch.cs" />
-    <Compile Include="Patches\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\PreventAmbientSoundPatch.cs" />
     <Compile Include="Patches\Scp173BlinkPatch.cs" />
@@ -143,7 +141,6 @@
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />
     <Compile Include="Patches\PreventRespawnEffectPatch.cs" />
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
-    <Compile Include="Patches\FixGetVisionInformationPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />
     <Compile Include="Patches\VCPreventTransmitChatPatch.cs" />

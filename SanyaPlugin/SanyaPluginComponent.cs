@@ -340,7 +340,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(player.Team == Team.RIP && _respawnCounter != -1 && !Warhead.IsDetonated && !RoundSummary.singleton.RoundEnded)
+			if(player.Team == Team.RIP && _respawnCounter != -1 && (!SanyaPlugin.Instance.Config.StopRespawnAfterDetonated || !Warhead.IsDetonated) && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
