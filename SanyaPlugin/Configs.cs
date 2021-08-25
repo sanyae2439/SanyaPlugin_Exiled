@@ -71,11 +71,11 @@ namespace SanyaPlugin
 		[Description("VPN検知に使用するIPHubのAPIキー")]
 		public string KickVpnApikey { get; set; } = string.Empty;
 
-		[Description("指定されたPingを超えたプレイヤーはキックされる")]
-		public int PingLimit { get; set; } = -1;
-
 		[Description("サーバー参加者に表示するブロードキャスト")]
 		public string MotdMessage { get; set; } = string.Empty;
+
+		[Description("Sinkholeの修正を有効にする")]
+		public bool FixSinkhole { get; set; } = false;
 
 		[Description("ExHudの有効化")]
 		public bool ExHudEnabled { get; set; } = false;

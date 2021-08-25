@@ -348,7 +348,7 @@ namespace SanyaPlugin
 					foreach(GameObject roomid in GameObject.FindGameObjectsWithTag("RoomID"))
 					{
 						Rid rid = roomid.GetComponent<Rid>();
-						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter" || rid.id == "nukesite"))
+						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter"))
 						{
 							poslist.Add(roomid.transform.position);
 						}

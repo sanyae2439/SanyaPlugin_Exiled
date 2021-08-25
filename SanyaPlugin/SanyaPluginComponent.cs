@@ -24,7 +24,6 @@ namespace SanyaPlugin
 
 		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
 		private float _timer = 0f;
-		private bool _detectHighPing = false;
 		private int _respawnCounter = -1;
 		private string _hudText = string.Empty;
 		private string _hudCenterDownString = string.Empty;
@@ -51,23 +50,21 @@ namespace SanyaPlugin
 		private void FixedUpdate()
 		{
 			if(!_plugin.Config.IsEnabled) return;
+			if(!_plugin.Config.ExHudEnabled) return;
 
 			_timer += Time.deltaTime;
 
 			UpdateTimers();
-			UpdateScpLists();
-
 			CheckVoiceChatting();				
 
 			//EverySeconds
 			if(_timer > 1f)
 			{
-				CheckHighPing();
-				CheckSinkholeDistance();
-
+				UpdateScpLists();
 				UpdateMyCustomText();
 				UpdateRespawnCounter();
 				UpdateExHud();
+				CheckSinkholeDistance();
 
 				_timer = 0f;
 			}				
@@ -110,18 +107,6 @@ namespace SanyaPlugin
 				_hudBottomDownString = string.Empty;
 		}
 
-		private void CheckHighPing()
-		{
-			if(_plugin.Config.PingLimit <= 0 || _detectHighPing) return;
-
-			if(LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping > _plugin.Config.PingLimit)
-			{
-				_detectHighPing = true;
-				player.Kick(Subtitles.PingLimittedMessage, "SanyaPlugin_Exiled");
-				Log.Warn($"[PingChecker] Kicked:{player.Nickname}({player.UserId}) Ping:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}");
-			}
-		}
-
 		private void CheckVoiceChatting()
 		{
 			if(!_plugin.Config.Scp939CanSeeVoiceChatting) return;
@@ -134,6 +119,8 @@ namespace SanyaPlugin
 
 		private void CheckSinkholeDistance()
 		{
+			if(!_plugin.Config.FixSinkhole) return;
+
 			bool inRange = false;
 			foreach(var sinkhole in UnityEngine.Object.FindObjectsOfType<SinkholeEnvironmentalHazard>())
 				if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 7f)
@@ -155,7 +142,7 @@ namespace SanyaPlugin
 
 		private void UpdateRespawnCounter()
 		{
-			if(!RoundSummary.RoundInProgress() || Warhead.IsDetonated || player.Role != RoleType.Spectator) return;
+			if(!RoundSummary.RoundInProgress() || player.Role != RoleType.Spectator) return;
 
 			if(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown || RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.PlayingEntryAnimations)
 				_respawnCounter = (int)Math.Truncate(RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds);
