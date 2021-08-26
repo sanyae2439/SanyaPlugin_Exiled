@@ -119,14 +119,11 @@ namespace SanyaPlugin
 
 		private void CheckSinkholeDistance()
 		{
-			if(!_plugin.Config.FixSinkhole) return;
+			if(!_plugin.Config.FixSinkhole || SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
 
-			bool inRange = false;
-			foreach(var sinkhole in UnityEngine.Object.FindObjectsOfType<SinkholeEnvironmentalHazard>())
-				if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 7f)
-					inRange = true;
-
-			if(!inRange && player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled)
+			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f) 
+				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled
+				)
 				player.DisableEffect<SinkHole>();
 		}
 
