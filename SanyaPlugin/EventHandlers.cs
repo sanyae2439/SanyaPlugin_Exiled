@@ -12,6 +12,7 @@ using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem;
+using InventorySystem.Items.Armor;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
@@ -181,8 +182,8 @@ namespace SanyaPlugin
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
-			//地上の改装（ドア置いたりゲート置いたり）
-			if(plugin.Config.EditMapOnSurface)
+			//地上の改装（ドア置く）
+			if(plugin.Config.AddDoorsOnSurface)
 			{
 				//Prefabの準備
 				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
@@ -212,17 +213,46 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(door4.gameObject);
 				NetworkServer.Spawn(door5.gameObject);
 				NetworkServer.Spawn(door6.gameObject);
+			}
 
+			//地上の改装（ゲート移動したりステーション置いたり）
+			if(plugin.Config.EditObjectsOnSurface)
+			{
 				//ゲートはスポーンできないので元あるやつを移動させる
 				var gate = DoorNametagExtension.NamedDoors["SURFACE_GATE"].TargetDoor;
 				gate.transform.localRotation = Quaternion.Euler(Vector3.up * 90f);
 				(gate as PryableDoor).PrySpeed = new Vector2(1f, 0f);
 				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 1000f, -24f));
 
-				//ステーションの移動（実装予定）
-				//var station = UnityEngine.Object.FindObjectsOfType<MapGeneration.Distributors.>().First(x => x.transform.parent?.name == "GateA");
-				//station.transform.localRotation = Quaternion.Euler(Vector3.up);
-				//Methods.MoveNetworkIdentityObject(station.netIdentity, new UnityEngine.Vector3(86.69f, 988.37f, -70.4f));
+				//ステーションのスポーン
+				var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
+
+				//エレベーターA前
+				var station1 = UnityEngine.Object.Instantiate(prefab, new Vector3(-0.15f, 1000f, 9.75f), Quaternion.Euler(Vector3.up * 180f));
+				//エレベーターB正面ドア前
+				var station2 = UnityEngine.Object.Instantiate(prefab, new Vector3(86.69f, 987.2f, -70.85f), Quaternion.Euler(Vector3.up));
+				//MTFスポーン前
+				var station3 = UnityEngine.Object.Instantiate(prefab, new Vector3(147.9f, 992.77f, -46.2f), Quaternion.Euler(Vector3.up * 90f));
+				//エレベーターB前
+				var station4 = UnityEngine.Object.Instantiate(prefab, new Vector3(83f, 992.77f, -46.35f), Quaternion.Euler(Vector3.up * 90f));
+				//CIスポーン前
+				var station5 = UnityEngine.Object.Instantiate(prefab, new Vector3(10.37f, 987.5f, -47.5f), Quaternion.Euler(Vector3.up * 180f));
+				//ゲート上
+				var station6 = UnityEngine.Object.Instantiate(prefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
+				var station7 = UnityEngine.Object.Instantiate(prefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
+
+
+				var station_bigger = UnityEngine.Object.Instantiate(prefab, new Vector3(64.6f, 1000f, -68.5f), Quaternion.Euler(Vector3.zero));
+				station_bigger.transform.localScale = new Vector3(10f, 6f, 15f);
+
+				NetworkServer.Spawn(station1);
+				NetworkServer.Spawn(station2);
+				NetworkServer.Spawn(station3);
+				NetworkServer.Spawn(station4);
+				NetworkServer.Spawn(station5);
+				NetworkServer.Spawn(station6);
+				NetworkServer.Spawn(station7);
+				NetworkServer.Spawn(station_bigger);
 			}
 
 			//イベント設定
@@ -613,7 +643,7 @@ namespace SanyaPlugin
 					ev.Items.Clear();
 					ev.Items.AddRange(itemconfig);
 				}
-			}
+			}	
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
@@ -625,6 +655,11 @@ namespace SanyaPlugin
 				&& (ev.RoleType.GetTeam() == Team.MTF || ev.RoleType.GetTeam() == Team.CHI)
 				&& nextRespawnPos != Vector3.zero)
 				ev.Position = nextRespawnPos;
+
+
+			//Fix maingame(11.x)
+			foreach(var i in ev.Player.Inventory.UserInventory.Items.Values.Where(x => x.ItemTypeId.IsArmor()).Select(x => x as BodyArmor))
+				i.DontRemoveExcessOnDrop = true;
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
@@ -640,7 +675,7 @@ namespace SanyaPlugin
 			}
 
 			//被拘束時のダメージ
-			if(ev.Target.IsCuffed && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
+			if(ev.Target.IsCuffed && ev.Attacker.IsHuman && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
 
 			//SCPのダメージ

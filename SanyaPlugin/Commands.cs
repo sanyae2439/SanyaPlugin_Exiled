@@ -6,8 +6,10 @@ using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
-using InventorySystem.Items.Firearms.Attachments;
+using InventorySystem;
+using InventorySystem.Items.Pickups;
 using MapGeneration;
+using MapGeneration.Distributors;
 using MEC;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
@@ -29,6 +31,8 @@ namespace SanyaPlugin.Commands
 
 		private bool isActwatchEnabled = false;
 		private DoorVariant targetdoor = null;
+		private ItemPickupBase targetitem = null;
+		private GameObject targetstation = null;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -144,6 +148,52 @@ namespace SanyaPlugin.Commands
 						response = "Available colors:\n";
 						foreach(var i in ReferenceHub.HostHub.serverRoles.NamedColors.OrderBy(x => x.Restricted))
 							response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
+						return true;
+					}
+				case "itemtest":
+					{
+						if(targetitem == null)
+						{
+							var itemtype = (ItemType)Enum.Parse(typeof(ItemType), arguments.At(1));
+							var itemBase = InventoryItemLoader.AvailableItems[itemtype];
+							var pickup = UnityEngine.Object.Instantiate(itemBase.PickupDropModel,
+								new UnityEngine.Vector3(float.Parse(arguments.At(2)), float.Parse(arguments.At(3)), float.Parse(arguments.At(4))),
+								Quaternion.Euler(Vector3.up * float.Parse(arguments.At(5))));
+							pickup.Info.ItemId = itemtype;
+							pickup.Info.Weight = itemBase.Weight;
+							pickup.Info.Locked = true;
+							pickup.GetComponent<Rigidbody>().useGravity = false;
+							pickup.transform.localScale = new UnityEngine.Vector3(float.Parse(arguments.At(6)), float.Parse(arguments.At(7)), float.Parse(arguments.At(8)));
+
+							targetitem = pickup;
+							ItemDistributor.SpawnPickup(pickup);
+						}
+						else
+						{
+							NetworkServer.Destroy(targetitem.gameObject);
+							targetitem = null;
+						}
+						response = $"itemtest.";
+						return true;
+					}
+				case "worktest":
+					{
+						if(targetstation == null)
+						{
+							var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
+							var station = UnityEngine.Object.Instantiate(prefab, 
+								new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))), 
+								Quaternion.Euler(Vector3.up * float.Parse(arguments.At(4))));
+							station.transform.localScale = new UnityEngine.Vector3(float.Parse(arguments.At(5)), float.Parse(arguments.At(6)), float.Parse(arguments.At(7)));
+							targetstation = station;
+							NetworkServer.Spawn(station);
+						}
+						else
+						{
+							NetworkServer.Destroy(targetstation);
+							targetstation = null;
+						}
+						response = $"worktest.";
 						return true;
 					}
 				case "doortest":

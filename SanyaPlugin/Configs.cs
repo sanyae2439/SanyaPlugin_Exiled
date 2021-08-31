@@ -123,8 +123,11 @@ namespace SanyaPlugin
 		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
 		public string TeslaDisabledPermission { get; set; } = "None";
 
-		[Description("地上のドアなどを改装する")]
-		public bool EditMapOnSurface { get; set; } = false;
+		[Description("地上にドアを追加する")]
+		public bool AddDoorsOnSurface { get; set; } = false;
+
+		[Description("地上のオブジェクトを編集する")]
+		public bool EditObjectsOnSurface { get; set; } = false;
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
@@ -234,8 +237,6 @@ namespace SanyaPlugin
 						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 					else
 						Log.Error($"Defaultitems parse error: {key.Key} is not valid RoleType");
-				foreach(var i in DefaultitemsParsed.Values)
-					i.Reverse();
 
 				foreach(var key in DefaultAmmos)
 				{
