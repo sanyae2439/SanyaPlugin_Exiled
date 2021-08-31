@@ -11,6 +11,7 @@ using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
+using InventorySystem;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
@@ -795,6 +796,49 @@ namespace SanyaPlugin
 			//SinkholeをPortalに同期させる
 			if(plugin.Config.Scp106PortalWithSinkhole && Sinkhole != null)
 				Methods.MoveNetworkIdentityObject(Sinkhole, ev.Position);
+		}
+
+		//Scp914
+		public void OnUpgradingPlayer(UpgradingPlayerEventArgs ev)
+		{
+			Log.Debug($"[OnUpgradingPlayer] {ev.KnobSetting} Players:{ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.Scp914Debuff)
+			{
+				if(ev.Player.IsScp)
+				{
+					while(ev.Player.Inventory.UserInventory.Items.Count > 0)
+						ev.Player.Inventory.ServerRemoveItem(ev.Player.Inventory.UserInventory.Items.ElementAt(0).Key, null);
+
+					ev.Player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0, true), ev.Player.GameObject);
+				}
+				else
+				{
+					ev.Player.Inventory.ServerDropEverything();
+
+					ev.Player.SetRole(RoleType.Scp0492, Exiled.API.Enums.SpawnReason.ForceClass, true);
+					roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+					{
+						ev.Player.Health = ev.Player.Health / 5f;
+						ev.Player.EnableEffect<Disabled>();
+						ev.Player.EnableEffect<Poisoned>();
+						ev.Player.EnableEffect<Concussed>();
+						ev.Player.EnableEffect<Exhausted>();
+					}));
+				}
+
+				var coliders = Physics.OverlapBox(ev.OutputPosition, Vector3.one * Exiled.API.Features.Scp914.Scp914Controller._chamberSize / 2f);
+				foreach(var colider in coliders)
+				{
+					if(colider.TryGetComponent(out CharacterClassManager ccm))
+					{
+						ccm._hub.playerEffectsController.EnableEffect<Disabled>();
+						ccm._hub.playerEffectsController.EnableEffect<Poisoned>();
+						ccm._hub.playerEffectsController.EnableEffect<Concussed>();
+						ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
+					}
+				}
+			}
 		}
 	}
 }

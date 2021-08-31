@@ -250,15 +250,15 @@ namespace SanyaPlugin
 				string RespawnList = string.Empty;
 				RespawnList += $"Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>:";
 				RespawnList += $"<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>";
-				RespawnList += $" Next({RoundSummary.singleton.CountRole(RoleType.Spectator)} Spectators)\n";
+				RespawnList += $"({RoundSummary.singleton.CountRole(RoleType.Spectator)} Spectators)\n";
 
 				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None && RespawnWaveGenerator.SpawnableTeams.TryGetValue(RespawnManager.Singleton.NextKnownTeam, out var spawnableTeamHandlerBase))
 				{
 					if(RespawnManager.Singleton._prioritySpawn)
 						if(Player.List.Where(x => x.Role == RoleType.Spectator && !x.IsOverwatchEnabled).OrderBy(x => x.ReferenceHub.characterClassManager.DeathTime).Take(spawnableTeamHandlerBase.MaxWaveSize).Contains(player))
-							RespawnList += $"次でリスポーンします";
+							RespawnList += $"あなたは次でリスポーンします";
 						else
-							RespawnList += $"対象ではありません";
+							RespawnList += $"あなたは対象ではありません";
 					else
 						RespawnList += $"Random!";
 				}

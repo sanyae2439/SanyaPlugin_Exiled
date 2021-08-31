@@ -4,9 +4,11 @@ using Exiled.API.Features;
 using HarmonyLib;
 using MEC;
 using SanyaPlugin.Functions;
+using Scp914;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
+using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
 
@@ -95,6 +97,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
+			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
 
 		private void UnRegistEvents()
@@ -122,6 +125,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
+			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;
 		}
 
