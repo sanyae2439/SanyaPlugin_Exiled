@@ -776,9 +776,16 @@ namespace SanyaPlugin
 
 			//ポケディメデス時SCP-106へ経験値
 			if(plugin.Config.DataEnabled)
-				foreach(var player in Player.List)
-					if(player.Role == RoleType.Scp106 && PlayerDataManager.playersData.ContainsKey(player.UserId))
+				foreach(var player in Player.Get(RoleType.Scp106))
+					if(PlayerDataManager.playersData.ContainsKey(player.UserId))
 						PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpKill);
+
+
+			foreach(var player in Player.Get(RoleType.Scp106))
+			{
+				player.SendHitmarker();
+				if(!RoundSummary.singleton.RoundEnded) KillsDict[player.Nickname] += 1;
+			}
 		}
 		public void OnSyncingData(SyncingDataEventArgs ev)
 		{
