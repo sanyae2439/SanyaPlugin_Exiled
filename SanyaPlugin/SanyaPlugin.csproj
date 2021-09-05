@@ -54,6 +54,7 @@
     </Reference>
     <Reference Include="DissonanceVoip-Publicized">
       <HintPath>References\DissonanceVoip-Publicized.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Exiled.API">
       <HintPath>References\Exiled.API.dll</HintPath>
