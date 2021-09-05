@@ -543,13 +543,8 @@ namespace SanyaPlugin
 				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate));
 
-			//VCLimitter
-			if(plugin.Config.DisableAllChat)
-				if(!plugin.Config.DisableChatBypassWhitelist || !WhiteList.IsOnWhitelist(ev.Player.UserId))
-					ev.Player.IsMuted = true;
-
 			//MOTD
-			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId) && ev.Player.IsMuted)
+			if(!string.IsNullOrEmpty(plugin.Config.MotdMessageOnDisabledChat) && plugin.Config.DisableChatBypassWhitelist && !WhiteList.IsOnWhitelist(ev.Player.UserId))
 				ev.Player.SendReportText(plugin.Config.MotdMessageOnDisabledChat.Replace("[name]", ev.Player.Nickname));
 			else if(!string.IsNullOrEmpty(plugin.Config.MotdMessage))
 				Methods.SendSubtitle(plugin.Config.MotdMessage.Replace("[name]", ev.Player.Nickname), 10, ev.Player);
@@ -559,7 +554,7 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.nicknameSync.Network_playerInfoToShow = PlayerInfoArea.Nickname | PlayerInfoArea.Badge | PlayerInfoArea.CustomInfo | PlayerInfoArea.Role;
 
 			//MuteFixer
-			foreach(var player in Player.List.Where(x => x.IsMuted))
+			foreach(var player in Player.List)
 				player.ReferenceHub.characterClassManager.SetDirtyBit(2uL);
 
 			//Component
@@ -677,6 +672,10 @@ namespace SanyaPlugin
 			//被拘束時のダメージ
 			if(ev.Target.IsCuffed && ev.Attacker.IsHuman && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
+
+			//SCP-106 Shotgun fix(11.x)
+			if(ev.Target.Role == RoleType.Scp106 && ev.DamageType == DamageTypes.Shotgun)
+				ev.Amount *= 0.1f;
 
 			//SCPのダメージ
 			if(ev.Attacker != ev.Target && ev.Target.IsScp)
@@ -806,7 +805,7 @@ namespace SanyaPlugin
 				&& !Warhead.IsDetonated)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(
 					ev.Player.ReferenceHub.characterClassManager.Scp106,
-					DoorNametagExtension.NamedDoors.First(x => x.Key == "106_PRIMARY").Value.TargetDoor.transform.position + Vector3.up * 1.5f), Segment.FixedUpdate));
+					RoleType.Scp106.GetRandomSpawnProperties().Item1), Segment.FixedUpdate));
 
 			//ジャンプ時スタミナ消費
 			if(plugin.Config.StaminaCostJump > 0 

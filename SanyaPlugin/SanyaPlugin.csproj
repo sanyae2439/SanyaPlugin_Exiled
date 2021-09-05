@@ -52,6 +52,9 @@
       <HintPath>References\CommandSystem.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="DissonanceVoip-Publicized">
+      <HintPath>References\DissonanceVoip-Publicized.dll</HintPath>
+    </Reference>
     <Reference Include="Exiled.API">
       <HintPath>References\Exiled.API.dll</HintPath>
       <Private>False</Private>
@@ -127,6 +130,7 @@
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\AutoNukePatch.cs" />
     <Compile Include="Patches\AutoNukeReEnablePatch.cs" />
+    <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
@@ -139,15 +143,12 @@
     <Compile Include="Patches\Scp173BreakneckPatch.cs" />
     <Compile Include="Patches\Scp173TantrumPatch.cs" />
     <Compile Include="Patches\ScpArmorEfficacyPatch.cs" />
-    <Compile Include="Patches\VCPreventNormalChatPatch.cs" />
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />
     <Compile Include="Patches\PreventRespawnEffectPatch.cs" />
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />
-    <Compile Include="Patches\VCPreventTransmitChatPatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
-    <Compile Include="Patches\VCTeamPatch.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Subtitles.cs" />
     <Compile Include="Configs.cs" />
