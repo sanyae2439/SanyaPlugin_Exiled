@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using Dissonance.Integrations.MirrorIgnorance;
+﻿using Dissonance.Integrations.MirrorIgnorance;
 using Dissonance.Networking;
-using Exiled.API.Features;
 using HarmonyLib;
 using Mirror;
 
@@ -15,9 +13,8 @@ namespace SanyaPlugin.Patches
 			PacketReader newreader = new PacketReader(msg.Data);
 			if(newreader.ReadPacketHeader(out var messageTypes) && (messageTypes == MessageTypes.ServerRelayReliable || messageTypes == MessageTypes.ServerRelayUnreliable))
 			{
-				var player = Player.List.First(x => x.Connection.connectionId == source.connectionId);
-				if(player == null) return true;
-				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(player.UserId)) return true;
+				if(!EventHandlers.connIdToUserIds.TryGetValue(source.connectionId, out var userid)) return true;
+				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.Users != null && WhiteList.IsOnWhitelist(userid)) return true;
 				if(SanyaPlugin.Instance.Config.DisableAllChat) return false;
 			}
 			return true;

@@ -143,6 +143,7 @@
     <Compile Include="Patches\Scp173BlinkPatch.cs" />
     <Compile Include="Patches\Scp173BreakneckPatch.cs" />
     <Compile Include="Patches\Scp173TantrumPatch.cs" />
+    <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\ScpArmorEfficacyPatch.cs" />
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />
     <Compile Include="Patches\PreventRespawnEffectPatch.cs" />

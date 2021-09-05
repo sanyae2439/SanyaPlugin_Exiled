@@ -95,6 +95,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
+			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
@@ -123,6 +124,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;

@@ -172,7 +172,7 @@ namespace SanyaPlugin
 				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
 				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
 				$"Ti:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}/{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)} " +
-				$"Vc:{(player.IsMuted ? "D" : "E")}");
+				$"Vc:{(WhiteList.IsOnWhitelist(player.UserId) ? "Y" : "N")}");
 
 			//[SCPLIST]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedDamages != null)

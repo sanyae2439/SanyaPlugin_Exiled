@@ -126,6 +126,7 @@ namespace SanyaPlugin
 		}
 
 		//ラウンドごとの変数
+		public readonly static Dictionary<int, string> connIdToUserIds = new Dictionary<int, string>();
 		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
 		public readonly static Dictionary<string, uint> KillsDict = new Dictionary<string, uint>();
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
@@ -326,6 +327,9 @@ namespace SanyaPlugin
 			foreach(var cor in roundCoroutines)
 				Timing.KillCoroutines(cor);
 			roundCoroutines.Clear();
+
+			//Connidのリセット
+			connIdToUserIds.Clear();
 
 			//ランキングのリセット
 			sortedDamages = null;
@@ -561,6 +565,10 @@ namespace SanyaPlugin
 			if(!ev.Player.GameObject.TryGetComponent<SanyaPluginComponent>(out _))
 				ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
 
+			//ConnId
+			if(!connIdToUserIds.TryGetValue(ev.Player.Connection.connectionId, out _))
+				connIdToUserIds.Add(ev.Player.Connection.connectionId, ev.Player.UserId);
+
 			//DamageDict
 			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
 				DamagesDict.Add(ev.Player.Nickname, 0);
@@ -577,7 +585,9 @@ namespace SanyaPlugin
 			if(plugin.Config.ReplaceScpsWhenDisconnect && ev.Player.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492 && RoundSummary.RoundInProgress())
 			{
 				Log.Info($"[ReplaceScps] Role:{ev.Player.Role} Health:{ev.Player.Health} Pos:{ev.Player.Position}{(ev.Player.Role == RoleType.Scp079 ? $" Level079:{ev.Player.Level} Mana079:{ev.Player.Energy}/{ev.Player.MaxEnergy}" : string.Empty)}");
-				if(RoundSummary.singleton.CountRole(RoleType.Spectator) > 0)
+				if(ev.Player.Role == RoleType.Scp106 && OneOhSixContainer.used)
+					Log.Warn($"[ReplaceScps] Contained SCP-106, skipped");
+				else if(RoundSummary.singleton.CountRole(RoleType.Spectator) > 0)
 				{
 					Player target = Player.Get(RoleType.Spectator).Random();
 					Log.Info($"[ReplaceScps] target found:{target.Nickname}/{target.Role}");
@@ -828,6 +838,23 @@ namespace SanyaPlugin
 				&& keycardItem.Permissions.ToString().Contains(plugin.Config.TeslaDisabledPermission))
 				ev.IsTriggerable = false;
 		}
+		public void OnUsedItem(UsedItemEventArgs ev)
+		{
+			Log.Debug($"[OnUsedItem] {ev.Player.Nickname} / {ev.Item.Type}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(ev.Item.Type == ItemType.SCP500)
+			{
+				ev.Player.ReferenceHub.playerStats.NetworkArtificialHpDecay = 1.2f;
+				ev.Player.ReferenceHub.playerStats.AddAhpValue(ev.Player.ReferenceHub.playerStats.MaxArtificialHealth);
+				ev.Player.ReferenceHub.fpc.ResetStamina();
+				ev.Player.EnableEffect<Invigorated>(30f);
+			}
+
+			if(ev.Item.Type == ItemType.Adrenaline || ev.Item.Type == ItemType.Painkillers)
+			{
+				ev.Player.ReferenceHub.fpc.ResetStamina();
+			}
+		}
 
 		//Scp106
 		public void OnCreatingPortal(CreatingPortalEventArgs ev)
@@ -866,18 +893,6 @@ namespace SanyaPlugin
 						ev.Player.EnableEffect<Concussed>();
 						ev.Player.EnableEffect<Exhausted>();
 					}));
-				}
-
-				var coliders = Physics.OverlapBox(ev.OutputPosition, Vector3.one * Exiled.API.Features.Scp914.Scp914Controller._chamberSize / 2f);
-				foreach(var colider in coliders)
-				{
-					if(colider.TryGetComponent(out CharacterClassManager ccm))
-					{
-						ccm._hub.playerEffectsController.EnableEffect<Disabled>();
-						ccm._hub.playerEffectsController.EnableEffect<Poisoned>();
-						ccm._hub.playerEffectsController.EnableEffect<Concussed>();
-						ccm._hub.playerEffectsController.EnableEffect<Exhausted>();
-					}
 				}
 			}
 		}
