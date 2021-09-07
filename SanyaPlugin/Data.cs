@@ -11,13 +11,6 @@ namespace SanyaPlugin.Data
 		NORMAL = 0
 	}
 
-	public enum GRENADE_ID
-	{
-		FRAG_NADE = 0,
-		FLASH_NADE = 1,
-		SCP018_NADE = 2
-	}
-
 	public static class OutsideRandomAirbombPos
 	{
 		public static List<Vector3> Load()

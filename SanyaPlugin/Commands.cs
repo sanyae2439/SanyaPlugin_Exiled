@@ -60,7 +60,14 @@ namespace SanyaPlugin.Commands
 						response = $"test ok.\n";
 						// testing zone start
 
-
+						//if(player.CurrentRoom != null)
+						//{
+						//	Methods.SpawnGrenade(player.CurrentRoom.Position + (Vector3.up * 10f), ItemType.GrenadeFlash, 0.2f);
+						//	player.EnableEffect<Poisoned>(15f);
+						//	player.EnableEffect<Burned>(15f);
+						//	player.EnableEffect<Concussed>(15f);
+						//	player.EnableEffect<Disabled>(15f);
+						//}
 
 						// testing zone end
 						response = response.TrimEnd('\n');
@@ -269,7 +276,7 @@ namespace SanyaPlugin.Commands
 
 						if(target != null)
 						{
-							Methods.SpawnGrenade(target.Position, Data.GRENADE_ID.FRAG_NADE, -1, target.ReferenceHub);
+							Methods.SpawnGrenade(target.Position, ItemType.GrenadeHE, -1, target.ReferenceHub);
 							response = $"{target.Nickname} ok.";
 							return true;
 						}
@@ -285,7 +292,7 @@ namespace SanyaPlugin.Commands
 
 						if(target != null)
 						{
-							Methods.SpawnGrenade(target.Position, Data.GRENADE_ID.FLASH_NADE, -1, target.ReferenceHub);
+							Methods.SpawnGrenade(target.Position, ItemType.GrenadeFlash, -1, target.ReferenceHub);
 							response = $"{target.Nickname} ok.";
 							return true;
 						}
@@ -301,7 +308,7 @@ namespace SanyaPlugin.Commands
 
 						if(target != null)
 						{
-							Methods.SpawnGrenade(target.Position + Vector3.up, Data.GRENADE_ID.SCP018_NADE, -1, target.ReferenceHub);
+							Methods.SpawnGrenade(target.Position + Vector3.up, ItemType.SCP018, -1, target.ReferenceHub);
 							response = $"{target.Nickname} ok.";
 							return true;
 						}

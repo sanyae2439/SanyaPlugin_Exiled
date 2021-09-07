@@ -151,19 +151,6 @@ namespace SanyaPlugin
 		};
 		public readonly Dictionary<RoleType, float> ScpTakenDamageMultiplierParsed = new Dictionary<RoleType, float>();
 
-		[Description("SCPのアーマー有効性")]
-		public Dictionary<string, int> ScpArmorEfficacy { get; set; } = new Dictionary<string, int>()
-		{
-			{ nameof(RoleType.Scp049), 0 },
-			{ nameof(RoleType.Scp0492), 0 },
-			{ nameof(RoleType.Scp096), 0 },
-			{ nameof(RoleType.Scp106), 0 },
-			{ nameof(RoleType.Scp173), 60 },
-			{ nameof(RoleType.Scp93953), 0 },
-			{ nameof(RoleType.Scp93989), 0 },
-		};
-		public readonly Dictionary<RoleType, int> ScpArmorEfficacyParsed = new Dictionary<RoleType, int>();
-
 		[Description("SCP-049が殺害時に死体をスタックできるように")]
 		public bool Scp049StackBody { get; set; } = false;
 
@@ -185,17 +172,14 @@ namespace SanyaPlugin
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
-		[Description("SCP-173の瞬きクールダウン(-1の場合動的)")]
-		public float Scp173BlinkCooldown { get; set; } = -1f;
-
-		[Description("SCP-173の移動スキルクールダウン")]
-		public float Scp173BreakneckCooldown { get; set; } = 40f;
-
-		[Description("SCP-173のトラップスキルクールダウン")]
-		public float Scp173TantrumCooldown { get; set; } = 30f;
+		[Description("SCP-173の移動スキルのクールダウンを削除")]
+		public bool Scp173RemoveBreakneckCooldown { get; set; } = false;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
+
+		[Description("SCP-079のExモードを有効化")]
+		public bool Scp079ExtendEnabled { get; set; } = false;
 
 		[Description("SCP-079の消費コスト")]
 		public Dictionary<string, float> Scp079ManaCost { get; set; } = new Dictionary<string, float>()
@@ -230,7 +214,6 @@ namespace SanyaPlugin
 				DefaultammosParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 				ScpTakenDamageMultiplierParsed.Clear();
-				ScpArmorEfficacyParsed.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -265,14 +248,6 @@ namespace SanyaPlugin
 						ScpTakenDamageMultiplierParsed.Add(role, key.Value);
 					else
 						Log.Error($"ScpTakenDamageMultiplier parse error: {key.Key} is not valid RoleType");
-
-				foreach(var key in ScpArmorEfficacy)
-					if(Enum.TryParse(key.Key, out RoleType role))
-						ScpArmorEfficacyParsed.Add(role, key.Value);
-					else
-						Log.Error($"ScpArmorEfficacy parse error: {key.Key} is not valid RoleType");
-
-
 			}
 			catch(Exception ex)
 			{

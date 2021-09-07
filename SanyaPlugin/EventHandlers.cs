@@ -178,6 +178,7 @@ namespace SanyaPlugin
 
 			//Fix maingame(11.0)
 			Methods.SetAmmoConfigs();
+			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 
 			//地上脱出口の二つのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
@@ -845,7 +846,7 @@ namespace SanyaPlugin
 			if(ev.Item.Type == ItemType.SCP500)
 			{
 				ev.Player.ReferenceHub.playerStats.NetworkArtificialHpDecay = 1.2f;
-				ev.Player.ReferenceHub.playerStats.AddAhpValue(ev.Player.ReferenceHub.playerStats.MaxArtificialHealth);
+				ev.Player.ReferenceHub.playerStats.SafeSetAhpValue(ev.Player.ReferenceHub.playerStats.MaxArtificialHealth);
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 				ev.Player.EnableEffect<Invigorated>(30f);
 			}

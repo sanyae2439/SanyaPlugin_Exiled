@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Features;
+using MapGeneration.Distributors;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
-using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using UnityEngine;
 
@@ -33,6 +33,7 @@ namespace SanyaPlugin
 		private float _hudBottomDownTime = -1f;
 		private float _hudBottomDownTimer = 0f;
 		private int _prevHealth = -1;
+		private Camera079 _lastcam = null;
 
 		private void Start()
 		{
@@ -60,12 +61,13 @@ namespace SanyaPlugin
 			//EverySeconds
 			if(_timer > 1f)
 			{
+				CheckSinkholeDistance();
+				Check079Spot();
+
 				UpdateScpLists();
 				UpdateMyCustomText();
 				UpdateRespawnCounter();
 				UpdateExHud();
-				CheckSinkholeDistance();
-
 				_timer = 0f;
 			}				
 		}
@@ -125,6 +127,29 @@ namespace SanyaPlugin
 				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled
 				)
 				player.DisableEffect<SinkHole>();
+		}
+
+		private void Check079Spot()
+		{
+			if(!SanyaPlugin.Instance.Config.Scp079ExtendEnabled || player.Role != RoleType.Scp079 || player.CurrentRoom == null || !player.IsExmode() || player.Camera == _lastcam) return;
+
+			string message = string.Empty;
+			if(player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
+				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{player.CurrentRoom.Type}</color></size>\n";
+			else
+			{
+				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Team != Team.SCP && x.Team != Team.RIP);
+				if(target != null)
+					message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
+			}
+
+			if(!string.IsNullOrEmpty(message))
+				foreach(var scp in Player.Get(Team.SCP))
+					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
+			else
+				AddHudCenterDownText($"<color=#bbee00><size=25>{player.CurrentRoom.Type}には何も見つかりませんでした</color></size>", 5);
+
+			_lastcam = player.Camera;
 		}
 
 		private void UpdateMyCustomText()
@@ -212,9 +237,9 @@ namespace SanyaPlugin
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
+						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP:{scp.CurrentRoom?.Type}\n";
 					else
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%\n";
+						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}:{scp.CurrentRoom?.Type}\n";
 				if(scp0492counter > 0)
 					scpList += $"SCP-049-2:({scp0492counter})\n";
 				scpList = scpList.TrimEnd('\n');

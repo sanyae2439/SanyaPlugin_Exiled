@@ -13,7 +13,9 @@ using CustomPlayerEffects;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using Hints;
+using InventorySystem;
 using InventorySystem.Items.Firearms.BasicMessages;
+using InventorySystem.Items.ThrowableProjectiles;
 using MEC;
 using Mirror;
 using RemoteAdmin;
@@ -404,12 +406,12 @@ namespace SanyaPlugin.Functions
 				List<Vector3> randampos = OutsideRandomAirbombPos.Load().OrderBy(x => Guid.NewGuid()).ToList();
 				foreach(var pos in randampos)
 				{
-					Methods.SpawnGrenade(pos, GRENADE_ID.FRAG_NADE, 0.1f);
+					Methods.SpawnGrenade(pos, ItemType.GrenadeHE, 0.1f);
 					yield return Timing.WaitForSeconds(0.25f);
 				}
 
 				if(UnityEngine.Random.Range(0, 100) < 50 && Player.List.Any())
-					Methods.SpawnGrenade(Player.List.Random().Position, GRENADE_ID.FRAG_NADE, 0.1f);
+					Methods.SpawnGrenade(Player.List.Random().Position, ItemType.GrenadeHE, 0.1f);
 
 				throwcount++;
 				Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
@@ -552,21 +554,25 @@ namespace SanyaPlugin.Functions
 			return returned;
 		}
 
-		public static void SpawnGrenade(Vector3 position, GRENADE_ID id, float fusedur = -1, ReferenceHub player = null)
+		public static void SpawnGrenade(Vector3 position, ItemType id, float fusedur = -1, ReferenceHub player = null)
 		{
-			//if(player == null) player = ReferenceHub.GetHub(PlayerManager.localPlayer);
-			//var gm = player.GetComponent<Grenades.GrenadeManager>();
-			//Grenades.Grenade component = UnityEngine.Object.Instantiate(gm.availableGrenades[(int)id].grenadeInstance).GetComponent<Grenades.Grenade>();
-			//if(fusedur != -1) component.fuseDuration = fusedur;
-			//component.FullInitData(
-			//	gm, 
-			//	position, 
-			//	Quaternion.Euler(component.throwStartAngle), 
-			//	Vector3.zero + component.throwForce * 0.5f * (new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1f, 1f)) + component.throwLinearVelocityOffset).normalized,
-			//	component.throwAngularVelocity, 
-			//	player == null ? Team.TUT : player.characterClassManager.CurRole.team
-			//);
-			//NetworkServer.Spawn(component.gameObject);
+			if(!InventoryItemLoader.AvailableItems.TryGetValue(id, out var itemBase) || !(itemBase is ThrowableItem throwableItem))
+				return;
+
+			ThrownProjectile thrownProjectile = UnityEngine.Object.Instantiate(throwableItem.Projectile);
+			TimeGrenade timeGrenade = thrownProjectile as TimeGrenade;
+
+			if(thrownProjectile.TryGetComponent<Rigidbody>(out var rigidbody))
+				rigidbody.position = position;
+
+			thrownProjectile.PreviousOwner = new Footprinting.Footprint(player ?? ReferenceHub.HostHub);
+
+			if(fusedur != -1)
+				timeGrenade._fuseTime = fusedur;
+
+			NetworkServer.Spawn(thrownProjectile.gameObject);
+
+			thrownProjectile.ServerActivate();
 		}
 
 		public static int GetRandomIndexFromWeight(int[] list)
@@ -751,6 +757,11 @@ namespace SanyaPlugin.Functions
 		public static int GetHealthAmountPercent(this Player player)
 		{
 			return (int)(100f - (player.ReferenceHub.playerStats.GetHealthPercent() * 100f));
+		}
+
+		public static int GetAHPAmountPercent(this Player player)
+		{
+			return (int)(100f - (Mathf.Clamp01(1f - player.ArtificialHealth / (float)player.MaxArtificialHealth) * 100f));
 		}
 
 		public static void SendTextHint(this Player player, string text, float time)
