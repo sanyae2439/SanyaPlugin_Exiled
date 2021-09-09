@@ -237,9 +237,9 @@ namespace SanyaPlugin
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP:{scp.CurrentRoom?.Type}\n";
+						scpList += $"[{scp.CurrentRoom?.Type}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
 					else
-						scpList += $"{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}:{scp.CurrentRoom?.Type}\n";
+						scpList += $"[{scp.CurrentRoom?.Type}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
 				if(scp0492counter > 0)
 					scpList += $"SCP-049-2:({scp0492counter})\n";
 				scpList = scpList.TrimEnd('\n');

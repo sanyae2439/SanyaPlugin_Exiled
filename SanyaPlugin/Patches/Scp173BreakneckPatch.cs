@@ -7,11 +7,9 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(PlayableScps.Scp173 __instance)
 		{
-			if(__instance._breakneckSpeedsCooldownRemaining > 0f)
-				return false;
+			if(!SanyaPlugin.Instance.Config.Scp173RemoveBreakneckCooldown) return true;
 			__instance.BreakneckSpeedsActive = !__instance.BreakneckSpeedsActive;
-			if(!__instance.BreakneckSpeedsActive)
-				__instance._breakneckSpeedsCooldownRemaining = SanyaPlugin.Instance.Config.Scp173RemoveBreakneckCooldown ? 0f : 40f;
+			__instance._breakneckSpeedsCooldownRemaining = 0f;
 			return false;
 		}
 	}

@@ -107,24 +107,6 @@ namespace SanyaPlugin
 		internal static readonly NetDataWriter writer = new NetDataWriter();
 		internal static readonly Dictionary<string, string> kickedbyChecker = new Dictionary<string, string>();
 
-		//毎秒コルーチン
-		private IEnumerator<float> EverySecond()
-		{
-			while(true)
-			{
-				try
-				{
-
-				}
-				catch(Exception e)
-				{
-					Log.Error($"[EverySecond] {e}");
-				}
-				//毎秒
-				yield return Timing.WaitForSeconds(1f);
-			}
-		}
-
 		//ラウンドごとの変数
 		public readonly static Dictionary<int, string> connIdToUserIds = new Dictionary<int, string>();
 		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
@@ -150,9 +132,6 @@ namespace SanyaPlugin
 			if(sendertask?.Status != TaskStatus.Running && sendertask?.Status != TaskStatus.WaitingForActivation
 				&& plugin.Config.InfosenderIp != "none" && plugin.Config.InfosenderPort != -1)
 				sendertask = SenderAsync().StartSender();
-
-			//毎秒フラグ
-			roundCoroutines.Add(Timing.RunCoroutine(EverySecond(), Segment.FixedUpdate));
 
 			//プレイヤーデータの初期化
 			PlayerDataManager.playersData.Clear();
@@ -592,18 +571,24 @@ namespace SanyaPlugin
 				{
 					Player target = Player.Get(RoleType.Spectator).Random();
 					Log.Info($"[ReplaceScps] target found:{target.Nickname}/{target.Role}");
-					target.SetRole(ev.Player.Role, Exiled.API.Enums.SpawnReason.ForceClass, true);
-					target.Health = ev.Player.Health;
-					target.Position = ev.Player.Position;
-					if(ev.Player.Role == RoleType.Scp079)
-					{
-						target.Level = ev.Player.Level;
-						target.Energy = ev.Player.Energy;
-						target.MaxEnergy = ev.Player.MaxEnergy;
-						target.Camera = ev.Player.Camera;
-					}
-					if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
-						sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
+
+					roundCoroutines.Add(Timing.CallDelayed(0.25f, () => {
+						if(target == null) return;
+
+						target.SetRole(ev.Player.Role, Exiled.API.Enums.SpawnReason.ForceClass);
+						target.Health = ev.Player.Health;
+						target.Position = ev.Player.Position;
+						if(ev.Player.Role == RoleType.Scp079)
+						{
+							target.Level = ev.Player.Level;
+							target.Energy = ev.Player.Energy;
+							target.MaxEnergy = ev.Player.MaxEnergy;
+							target.Camera = ev.Player.Camera;
+						}
+						if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
+							sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
+						Log.Info($"[ReplaceScps] Replaced.{target.Nickname}/{target.Role}");
+					}));
 				}
 				else
 					Log.Warn("[ReplaceScps] No target spectators, skipped");
