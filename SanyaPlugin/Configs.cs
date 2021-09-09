@@ -62,6 +62,10 @@ namespace SanyaPlugin
 		};
 		public readonly Dictionary<RoleType, Dictionary<ItemType, ushort>> DefaultammosParsed = new Dictionary<RoleType, Dictionary<ItemType, ushort>>();
 
+		[Description("Dクラスへのロールごとの追加アイテム")]
+		public Dictionary<string, string> ClassdBonusitemsForRole { get; set; } = new Dictionary<string, string>();
+		public readonly Dictionary<string, List<ItemType>> ClassdBonusitemsForRoleParsed = new Dictionary<string, List<ItemType>>();
+
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
@@ -212,6 +216,7 @@ namespace SanyaPlugin
 			{
 				DefaultitemsParsed.Clear();
 				DefaultammosParsed.Clear();
+				ClassdBonusitemsForRoleParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 				ScpTakenDamageMultiplierParsed.Clear();
 
@@ -220,6 +225,9 @@ namespace SanyaPlugin
 						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 					else
 						Log.Error($"Defaultitems parse error: {key.Key} is not valid RoleType");
+
+				foreach(var key in ClassdBonusitemsForRole)
+					ClassdBonusitemsForRoleParsed.Add(key.Key, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 
 				foreach(var key in DefaultAmmos)
 				{
