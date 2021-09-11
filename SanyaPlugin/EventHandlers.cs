@@ -158,6 +158,7 @@ namespace SanyaPlugin
 			//Fix maingame(11.0)
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
+			ReferenceHub.HostHub.playerMovementSync.ForcePosition(RoleType.Tutorial.GetRandomSpawnProperties().Item1);
 
 			//地上脱出口の二つのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
