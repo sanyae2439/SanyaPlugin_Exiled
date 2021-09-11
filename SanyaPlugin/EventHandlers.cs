@@ -165,7 +165,12 @@ namespace SanyaPlugin
 
 			//AlphaWarheadの設定
 			if(plugin.Config.AlphaWarheadLockAlways)
+			{
 				AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
+				Warhead.OutsitePanel.NetworkkeycardEntered = true;
+				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.NetworkTargetState = true;
+				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
+			}
 
 			//地上の改装（ドア置く）
 			if(plugin.Config.AddDoorsOnSurface)
