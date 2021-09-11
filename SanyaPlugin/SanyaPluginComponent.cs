@@ -195,9 +195,7 @@ namespace SanyaPlugin
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"St:{DateTime.Now:HH:mm:ss} " +
 				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
-				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots} " +
-				$"Ti:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}/{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)} " +
-				$"Vc:{(WhiteList.IsOnWhitelist(player.UserId) ? "Y" : "N")}");
+				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots}");
 
 			//[SCPLIST]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedDamages != null)
@@ -349,7 +347,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(player.Team == Team.RIP && _respawnCounter != -1 && (!SanyaPlugin.Instance.Config.StopRespawnAfterDetonated || !Warhead.IsDetonated) && !RoundSummary.singleton.RoundEnded)
+			if(player.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)

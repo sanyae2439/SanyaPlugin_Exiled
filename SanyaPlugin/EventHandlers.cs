@@ -163,6 +163,10 @@ namespace SanyaPlugin
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
+			//AlphaWarheadの設定
+			if(plugin.Config.AlphaWarheadLockAlways)
+				AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
+
 			//地上の改装（ドア置く）
 			if(plugin.Config.AddDoorsOnSurface)
 			{
@@ -252,6 +256,12 @@ namespace SanyaPlugin
 		public void OnRoundStarted()
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
+
+			if(plugin.Config.AlphaWarheadNeedElapsedSeconds != 1)
+			{
+				AlphaWarheadController.Host.cooldown = plugin.Config.AlphaWarheadNeedElapsedSeconds;
+				AlphaWarheadController.Host.NetworktimeToDetonation += (float)AlphaWarheadController.Host.cooldown;
+			}	
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
@@ -334,8 +344,8 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			//AlphaWarhead起爆後/ラウンド終了後にリスポーンを停止する
-			if(plugin.Config.StopRespawnAfterDetonated && Warhead.IsDetonated || plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
+			//ラウンド終了後にリスポーンを停止する
+			if(plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
 
 			//ランダムでリスポーン位置を変更する
@@ -437,7 +447,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//字幕用
-			if(plugin.Config.CassieSubtitle)
+			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
 			{
 				bool isresumed = AlphaWarheadController._resumeScenario != -1;
 				double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
@@ -453,9 +463,20 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStopping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			//サーバー以外が止められないようにする
+			if(plugin.Config.AlphaWarheadLockAlways && !ev.Player.IsHost)
+				ev.IsAllowed = false;
+
 			//字幕用
-			if(plugin.Config.CassieSubtitle)
+			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
 				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
+		}
+		public void OnChangingLeverStatus(ChangingLeverStatusEventArgs ev)
+		{
+			Log.Debug($"[OnChangingLeverStatus] {ev.Player.Nickname} {ev.CurrentState} -> {!ev.CurrentState}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.AlphaWarheadLockAlways)
+				ev.IsAllowed = false;
 		}
 		public void OnDetonated()
 		{
@@ -615,7 +636,23 @@ namespace SanyaPlugin
 				Overrided = null;
 			}
 
+			//Effect
+			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+				{
+					ev.Player.EnableEffect<Disabled>();
+				}));
+			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+				{
+					ev.Player.EnableEffect<Poisoned>();
+					ev.Player.EnableEffect<Concussed>();
+					ev.Player.EnableEffect<Amnesia>();
+				}));
+
 			//ExModeの通知
+			if(plugin.Config.ExHudEnabled && plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
+				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
 			if(plugin.Config.ExHudEnabled && plugin.Config.Scp049StackBody && ev.NewRole == RoleType.Scp049)
 				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend049First, 10)));
 			if(plugin.Config.ExHudEnabled && plugin.Config.Scp106Exmode && ev.NewRole == RoleType.Scp106)
@@ -669,6 +706,10 @@ namespace SanyaPlugin
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(5f);
 			}
 
+			//SCP-939-XXの即死攻撃
+			if(plugin.Config.Scp939InstaKill && ev.DamageType == DamageTypes.Scp939)
+				ev.Amount = 93900f;
+
 			//被拘束時のダメージ
 			if(ev.Target.IsCuffed && ev.Attacker.IsHuman && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
@@ -682,10 +723,6 @@ namespace SanyaPlugin
 			{
 				switch(ev.Target.Role)
 				{
-					case RoleType.Scp106:
-						if(ev.DamageType == DamageTypes.Grenade)
-							ev.Amount *= plugin.Config.Scp106GrenadeMultiplier;
-						break;
 					case RoleType.Scp096:
 						if(ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.PlayerState == PlayableScps.Scp096PlayerState.Enraging)
 							ev.Amount *= plugin.Config.Scp096EnragingDamageMultiplier;
@@ -697,7 +734,7 @@ namespace SanyaPlugin
 			}
 
 			//ダメージランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess)
+			if(!RoundSummary.singleton.RoundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess && ev.DamageType != DamageTypes.Recontainment)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.Name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
@@ -844,6 +881,20 @@ namespace SanyaPlugin
 			{
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 			}
+		}
+
+		//Scp079
+		public void OnTriggeringDoor(TriggeringDoorEventArgs ev)
+		{
+			Log.Debug($"[OnTriggeringDoor] {ev.Player.Nickname} -> {ev.Door.Type}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.Scp079NeedInteractGateTier != -1 
+				&& (ev.Door.Type == Exiled.API.Enums.DoorType.Scp914 || ev.Door.Type == Exiled.API.Enums.DoorType.GateA || ev.Door.Type == Exiled.API.Enums.DoorType.GateB)
+				&& ev.Player.Level + 1 < plugin.Config.Scp079NeedInteractGateTier)
+			{
+				ev.IsAllowed = false;
+				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
+			}	
 		}
 
 		//Scp106

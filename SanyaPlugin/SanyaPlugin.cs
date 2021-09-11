@@ -6,6 +6,7 @@ using MEC;
 using SanyaPlugin.Functions;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
+using Scp079Events = Exiled.Events.Handlers.Scp079;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
@@ -83,6 +84,7 @@ namespace SanyaPlugin
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
+			WarheadEvents.ChangingLeverStatus += Handlers.OnChangingLeverStatus;
 			WarheadEvents.Detonated += Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating += Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified += Handlers.OnVerified;
@@ -96,6 +98,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
+			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
@@ -112,6 +115,7 @@ namespace SanyaPlugin
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
+			WarheadEvents.ChangingLeverStatus -= Handlers.OnChangingLeverStatus;
 			WarheadEvents.Detonated -= Handlers.OnDetonated;
 			PlayerEvents.PreAuthenticating -= Handlers.OnPreAuthenticating;
 			PlayerEvents.Verified -= Handlers.OnVerified;
@@ -125,6 +129,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
+			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;

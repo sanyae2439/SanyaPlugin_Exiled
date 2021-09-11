@@ -118,8 +118,14 @@ namespace SanyaPlugin
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public readonly List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
 
-		[Description("核起爆後の増援を停止する")]
-		public bool StopRespawnAfterDetonated { get; set; } = false;
+		[Description("AlphaWarheadがカウントダウン開始できるようになるまでの時間")]
+		public int AlphaWarheadNeedElapsedSeconds { get; set; } = -1;
+
+		[Description("AlphaWarheadを停止できないようにする")]
+		public bool AlphaWarheadLockAlways { get; set; } = false;
+
+		[Description("AlphaWarhead起爆後のリスポーン時間")]
+		public int TimeToRespawnAfterDetonated { get; set; } = -1;
 
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
@@ -161,14 +167,14 @@ namespace SanyaPlugin
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
 
+		[Description("SCP-049-2のスポーン時にエフェクトを追加する")]
+		public bool Scp0492GiveEffectOnSpawn { get; set; } = false;
+
 		[Description("SCP-096に触れると発狂するようになる距離")]
 		public float Scp096TouchEnrageDistance { get; set; } = -1f;
 
 		[Description("SCP-096の発狂時のダメージ乗数")]
 		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-106のグレネードの被ダメージ乗数")]
-		public float Scp106GrenadeMultiplier { get; set; } = 1f;
 
 		[Description("SCP-106のExモードで収容室に帰還できるように")]
 		public bool Scp106Exmode { get; set; } = false;
@@ -182,8 +188,14 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
 
+		[Description("SCP-939-XXの攻撃で即死するようにして移動速度を低下させる")]
+		public bool Scp939InstaKill { get; set; } = false;
+
 		[Description("SCP-079のExモードを有効化")]
 		public bool Scp079ExtendEnabled { get; set; } = false;
+
+		[Description("SCP-079がゲートを操作するのに必要なTier")]
+		public int Scp079NeedInteractGateTier { get; set; } = -1;
 
 		[Description("SCP-079の消費コスト")]
 		public Dictionary<string, float> Scp079ManaCost { get; set; } = new Dictionary<string, float>()

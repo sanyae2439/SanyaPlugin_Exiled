@@ -222,6 +222,14 @@
 			"</size></color>"
 		);
 
+		internal static readonly string Extend079First = string.Concat(
+			"<color=#bbee00><size=25>",
+			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1では見ている部屋にいる生存者の場所を伝えることができます.\n",
+			"</size><size=20>",
+			"You can use Extend mode. You can toggle by sprint keys.\nYou can spot living humans on current watching room.\n",
+			"</size></color>"
+		);
+
 		internal static readonly string Extend049First = string.Concat(
 			"<color=#bbee00><size=25>",
 			"人間を殺害時に死体は収納され、スプリントキーで治療することができます。\n",

@@ -141,10 +141,10 @@
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\PreventAmbientSoundPatch.cs" />
+    <Compile Include="Patches\RestartSequencePatch.cs" />
     <Compile Include="Patches\Scp173BreakneckPatch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\RemoveEscapeCounterPatch.cs" />
-    <Compile Include="Patches\PreventRespawnEffectPatch.cs" />
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />
