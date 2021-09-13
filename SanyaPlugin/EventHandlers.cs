@@ -452,6 +452,9 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			if(AlphaWarheadController.Host.RealDetonationTime() < AlphaWarheadController.Host.timeToDetonation)
+				ev.IsAllowed = false;
+
 			//字幕用
 			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
 			{
@@ -598,24 +601,18 @@ namespace SanyaPlugin
 				{
 					Player target = Player.Get(RoleType.Spectator).Random();
 					Log.Info($"[ReplaceScps] target found:{target.Nickname}/{target.Role}");
-
-					roundCoroutines.Add(Timing.CallDelayed(0.25f, () => {
-						if(target == null) return;
-
-						target.SetRole(ev.Player.Role, Exiled.API.Enums.SpawnReason.ForceClass);
-						target.Health = ev.Player.Health;
-						target.Position = ev.Player.Position;
-						if(ev.Player.Role == RoleType.Scp079)
-						{
-							target.Level = ev.Player.Level;
-							target.Energy = ev.Player.Energy;
-							target.MaxEnergy = ev.Player.MaxEnergy;
-							target.Camera = ev.Player.Camera;
-						}
-						if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
-							sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
-						Log.Info($"[ReplaceScps] Replaced.{target.Nickname}/{target.Role}");
-					}));
+					target.SetRole(ev.Player.Role, Exiled.API.Enums.SpawnReason.ForceClass, true);
+					target.Health = ev.Player.Health;
+					target.Position = ev.Player.Position;
+					if(ev.Player.Role == RoleType.Scp079)
+					{
+						target.Level = ev.Player.Level;
+						target.Energy = ev.Player.Energy;
+						target.MaxEnergy = ev.Player.MaxEnergy;
+						target.Camera = ev.Player.Camera;
+					}
+					if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
+						sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
 				}
 				else
 					Log.Warn("[ReplaceScps] No target spectators, skipped");
@@ -646,14 +643,13 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
-					ev.Player.EnableEffect<Disabled>();
+					ev.Player.EnableEffect<Hemorrhage>();
+					ev.Player.EnableEffect<Amnesia>();
 				}));
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
 					ev.Player.EnableEffect<Poisoned>();
-					ev.Player.EnableEffect<Concussed>();
-					ev.Player.EnableEffect<Amnesia>();
 				}));
 
 			//ExModeの通知

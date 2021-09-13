@@ -15,6 +15,8 @@ using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
 using SanyaPlugin.Functions;
+using Scp914;
+using Scp914.Processors;
 using UnityEngine;
 
 namespace SanyaPlugin.Commands
@@ -435,6 +437,105 @@ namespace SanyaPlugin.Commands
 							pocketteleport.SetType(PocketDimensionTeleport.PDTeleportType.Exit);
 						}
 						response = "ok.";
+						return true;
+					}
+				case "recipes":
+					{
+						response = "SCP-914 Recipes:\n";
+
+						foreach(var itemtype in Enum.GetValues(typeof(ItemType)))
+							if(Scp914Upgrader.TryGetProcessor((ItemType)itemtype, out var processor))
+							{
+								if(processor is StandardItemProcessor standard)
+								{
+									response += $"{itemtype}:\n";
+
+									response += $"    Rough:\n";
+									foreach(var i in standard._roughOutputs)
+										response += $"        {i}\n";
+
+									response += $"    Coarse:\n";
+									foreach(var i in standard._coarseOutputs)
+										response += $"        {i}\n";
+
+									response += $"    1to1:\n";
+									foreach(var i in standard._oneToOneOutputs)
+										response += $"        {i}\n";
+
+									response += $"    Fine:\n";
+									foreach(var i in standard._fineOutputs)
+										response += $"        {i}\n";
+
+									response += $"    VeryFine:\n";
+									foreach(var i in standard._veryFineOutputs)
+										response += $"        {i}\n";
+
+									response = response.TrimEnd('\n');
+								}
+								else if(processor is AmmoItemProcessor ammo)
+								{
+									response += $"{itemtype}:\n";
+
+									response += $"    Rough:\n";
+									response += $"        {ammo._previousAmmo}\n";
+
+									response += $"    Coarse:\n";
+									response += $"        {ammo._previousAmmo}\n";
+
+									response += $"    1to1:\n";
+									response += $"        {ammo._oneToOne}\n";
+
+									response += $"    Fine:\n";
+									response += $"        {ammo._nextAmmo}\n";
+
+									response += $"    VeryFine:\n";
+									response += $"        {ammo._nextAmmo}\n";
+
+									response = response.TrimEnd('\n');
+								}
+								else if(processor is FirearmItemProcessor firearm)
+								{
+									response += $"{itemtype}:\n";
+
+									response += $"    Rough:\n";
+									foreach(var i in firearm._roughOutputs)
+									{
+										response += $"        [{i.Chance * 100f}]\n";
+										foreach(var o in i.TargetItems)
+											response += $"           {o}\n";
+									}
+
+									response += $"    Coarse:\n";
+									foreach(var i in firearm._coarseOutputs)
+									{
+										response += $"        [{i.Chance * 100f}]\n";
+										foreach(var o in i.TargetItems)
+											response += $"           {o}\n";
+									}
+
+									response += $"    1to1:\n";
+									response += $"        {itemtype}\n";
+
+									response += $"    Fine:\n";
+									foreach(var i in firearm._fineOutputs)
+									{
+										response += $"        [{i.Chance * 100f}]\n";
+										foreach(var o in i.TargetItems)
+											response += $"           {o}\n";
+									}
+
+									response += $"    VeryFine:\n";
+									foreach(var i in firearm._veryFineOutputs)
+									{
+										response += $"        [{i.Chance * 100f}]\n";
+										foreach(var o in i.TargetItems)
+											response += $"           {o}\n";
+									}
+
+									response = response.TrimEnd('\n');
+								}
+								response += "\n";
+							}
 						return true;
 					}
 				case "nukecap":
