@@ -247,12 +247,12 @@ namespace SanyaPlugin
 			else if(player.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
-				MtfList += $"<color=#5b6370>FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}</color>\n";
+				MtfList += $"MTF Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>\n";
+				MtfList += $"<color=#0096ff>Specialist:{RoundSummary.singleton.CountRole(RoleType.NtfSpecialist)}</color>\n";
 				MtfList += $"<color=#003eca>Captain:{RoundSummary.singleton.CountRole(RoleType.NtfCaptain)}</color>\n";
 				MtfList += $"<color=#0096ff>Sergeant:{RoundSummary.singleton.CountRole(RoleType.NtfSergeant)}</color>\n";
 				MtfList += $"<color=#6fc3ff>Private:{RoundSummary.singleton.CountRole(RoleType.NtfPrivate)}</color>\n";
-				MtfList += $"<color=#0096ff>Specialist:{RoundSummary.singleton.CountRole(RoleType.NtfSpecialist)}</color>\n";
-				MtfList += $"<color=#ffff7c>Scientist:{RoundSummary.singleton.CountRole(RoleType.Scientist)}</color>\n";
+				MtfList += $"<color=#5b6370>FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}</color>\n";
 				MtfList = MtfList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 7));
@@ -260,10 +260,11 @@ namespace SanyaPlugin
 			else if(player.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
-				CiList += $"<color=#008f1e>Rifleman:{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}</color>\n";
-				CiList += $"<color=#0a7d34>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
+				CiList += $"CI Tickets:<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>\n";
+				CiList += $"<color=#008f1e>Conscript:{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}</color>\n";
 				CiList += $"<color=#006728>Marauder:{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}</color>\n";
-				CiList += $"<color=#ff8e00>ClassD:{RoundSummary.singleton.CountRole(RoleType.ClassD)}</color>\n";
+				CiList += $"<color=#0a7d34>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
+				CiList += $"<color=#008f1e>Rifleman:{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}</color>\n";
 				CiList = CiList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 7));
