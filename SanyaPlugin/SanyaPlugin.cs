@@ -99,6 +99,7 @@ namespace SanyaPlugin
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
+			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
@@ -130,6 +131,7 @@ namespace SanyaPlugin
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
+			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;

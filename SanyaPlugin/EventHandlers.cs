@@ -898,6 +898,27 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
 			}	
 		}
+		public void OnLockingDown(LockingDownEventArgs ev)
+		{
+			Log.Debug($"[OnLockingDown] {ev.Player.Nickname} -> {ev.RoomGameObject.Name}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			bool isDestroyed = false;
+			foreach(var i in Scp079Interactable.InteractablesByRoomId[ev.RoomGameObject.UniqueId].Where(x => x.type == Scp079Interactable.InteractableType.Door))
+				if(i.TryGetComponent<DoorVariant>(out var door) && (door is IDamageableDoor damageableDoor) && damageableDoor.IsDestroyed)
+					isDestroyed = true;
+
+			if(isDestroyed && ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f)
+			{
+				foreach(var i in ev.RoomGameObject.GetComponentsInChildren<FlickerableLightController>())
+					i?.ServerFlickerLights(8f);
+
+				ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown = ev.Player.ReferenceHub.scp079PlayerScript.LockdownCooldown + ev.Player.ReferenceHub.scp079PlayerScript.LockdownDuration;
+
+				foreach(var referenceHub in ev.Player.ReferenceHub.scp079PlayerScript._referenceHub.spectatorManager.ServerCurrentSpectatingPlayers)
+					ev.Player.ReferenceHub.scp079PlayerScript.TargetSetLockdownCooldown(referenceHub.networkIdentity.connectionToClient, ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown);
+			}
+
+		}
 
 		//Scp106
 		public void OnCreatingPortal(CreatingPortalEventArgs ev)

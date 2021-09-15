@@ -298,7 +298,15 @@ namespace SanyaPlugin
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			else if(player.Role == RoleType.Scp079)
-				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled", 6));
+			{
+				string text = string.Empty;
+
+				text += (player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled") + "\n";
+				if(player.Level > 0)
+					text += player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f ? "LockDown:Ready" : $"LockDown:Cooldown({Mathf.RoundToInt(player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown)})";
+
+				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
+			}
 			else if(player.Role == RoleType.Scp049)
 				if(!player.ReferenceHub.fpc.NetworkforceStopInputs)
 					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
