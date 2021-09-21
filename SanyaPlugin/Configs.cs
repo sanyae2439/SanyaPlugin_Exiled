@@ -127,6 +127,9 @@ namespace SanyaPlugin
 		[Description("AlphaWarhead起爆後のリスポーン時間")]
 		public int TimeToRespawnAfterDetonated { get; set; } = -1;
 
+		[Description("キルヒットマークの表示")]
+		public bool HitmarkKilled { get; set; } = false;
+
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 

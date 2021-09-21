@@ -62,14 +62,6 @@ namespace SanyaPlugin.Commands
 						response = $"test ok.\n";
 						// testing zone start
 
-						//if(player.CurrentRoom != null)
-						//{
-						//	Methods.SpawnGrenade(player.CurrentRoom.Position + (Vector3.up * 10f), ItemType.GrenadeFlash, 0.2f);
-						//	player.EnableEffect<Poisoned>(15f);
-						//	player.EnableEffect<Burned>(15f);
-						//	player.EnableEffect<Concussed>(15f);
-						//	player.EnableEffect<Disabled>(15f);
-						//}
 
 						// testing zone end
 						response = response.TrimEnd('\n');
@@ -405,10 +397,10 @@ namespace SanyaPlugin.Commands
 						{
 							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
-								writer.WriteUInt64(1ul);
-								writer.WriteUInt32((uint)1);
+								writer.WriteULong(1ul);
+								writer.WriteUInt((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt32((uint)19);
+								writer.WriteUInt((uint)19);
 								writer.WriteByte((byte)1);
 							});
 							isActwatchEnabled = true;
@@ -417,10 +409,10 @@ namespace SanyaPlugin.Commands
 						{
 							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
-								writer.WriteUInt64(1ul);
-								writer.WriteUInt32(1);
+								writer.WriteULong(1ul);
+								writer.WriteUInt(1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt32(19);
+								writer.WriteUInt(19);
 								writer.WriteByte(0);
 							});
 							isActwatchEnabled = false;

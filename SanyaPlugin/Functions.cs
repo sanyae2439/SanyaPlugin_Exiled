@@ -14,7 +14,7 @@ using Exiled.API.Features;
 using Exiled.Events.EventArgs;
 using Hints;
 using InventorySystem;
-using InventorySystem.Items.Firearms.BasicMessages;
+using InventorySystem.Items.Firearms;
 using InventorySystem.Items.ThrowableProjectiles;
 using MEC;
 using Mirror;
@@ -433,6 +433,13 @@ namespace SanyaPlugin.Functions
 			yield break;
 		}
 
+		public static IEnumerator<float> BigHitmarker(Player player, float size = 1f)
+		{
+			yield return Timing.WaitForSeconds(0.1f);
+			player.SendHitmarker(size);
+			yield break;
+		}
+
 		public static IEnumerator<float> Scp049CureFromStack(Player player)
 		{
 			yield return Timing.WaitForOneFrame;
@@ -786,7 +793,7 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
-		public static void SendHitmarker(this Player player) => player.Connection.Send(new RequestMessage(0, RequestType.Hitmarker));
+		public static void SendHitmarker(this Player player, float size = 1f) => Hitmarker.SendHitmarker(player.Connection, size);
 
 		public static void SendGunAudio(this Player player, Vector3 position, ItemType itemType, byte volume, byte audioClipId = 0)
 		{

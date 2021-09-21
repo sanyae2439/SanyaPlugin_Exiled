@@ -758,6 +758,10 @@ namespace SanyaPlugin
 					PlayerDataManager.playersData[ev.Target.UserId].AddExp(plugin.Config.LevelExpDeath);
 			}
 
+			//キルヒットマーク
+			if(plugin.Config.HitmarkKilled && ev.Killer != ev.Target)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(ev.Killer, 2f), Segment.FixedUpdate));
+
 			//SCP-049 ExMode
 			if(plugin.Config.Scp049StackBody && ev.HitInformations.Tool == DamageTypes.Scp049)
 			{
@@ -821,7 +825,7 @@ namespace SanyaPlugin
 
 			foreach(var player in Player.Get(RoleType.Scp106))
 			{
-				player.SendHitmarker();
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(player, 2f), Segment.FixedUpdate));
 				if(!RoundSummary.singleton.RoundEnded) KillsDict[player.Nickname] += 1;
 			}
 		}

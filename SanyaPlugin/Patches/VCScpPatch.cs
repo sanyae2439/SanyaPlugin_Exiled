@@ -3,14 +3,14 @@ using HarmonyLib;
 
 namespace SanyaPlugin.Patches
 {
-	[HarmonyPatch(typeof(DissonanceUserSetup), nameof(DissonanceUserSetup.UserCode_CmdAltIsActive))]
+	[HarmonyPatch(typeof(Radio), nameof(Radio.UserCode_CmdSyncTransmissionStatus))]
 	public static class VCScpPatch
 	{
-		public static void Prefix(DissonanceUserSetup __instance, bool value)
+		public static void Prefix(Radio __instance, bool b)
 		{
-			if(__instance.gameObject.TryGetComponent<CharacterClassManager>(out CharacterClassManager ccm))
-				if(ccm.IsAnyScp() && (ccm.CurClass.Is939() || SanyaPlugin.Instance.Config.AltvoicechatScpsParsed.Contains(ccm.CurClass)))
-					__instance.MimicAs939 = value;
+			if(__instance._hub.characterClassManager.IsAnyScp() && (__instance._hub.characterClassManager.CurClass.Is939() 
+				|| SanyaPlugin.Instance.Config.AltvoicechatScpsParsed.Contains(__instance._hub.characterClassManager.CurClass)))
+				__instance._dissonanceSetup.MimicAs939 = b;
 		}
 	}
 }
