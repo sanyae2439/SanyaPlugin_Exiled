@@ -213,25 +213,32 @@ namespace SanyaPlugin
 				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 1000f, -24f));
 
 				//ステーションのスポーン
-				var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
+				var stationPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
+				var sportPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("sportTarget"));
+				var dboyPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("dboyTarget"));
 
 				//エレベーターA前
-				var station1 = UnityEngine.Object.Instantiate(prefab, new Vector3(-0.15f, 1000f, 9.75f), Quaternion.Euler(Vector3.up * 180f));
+				var station1 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(-0.15f, 1000f, 9.75f), Quaternion.Euler(Vector3.up * 180f));
 				//エレベーターB正面ドア前
-				var station2 = UnityEngine.Object.Instantiate(prefab, new Vector3(86.69f, 987.2f, -70.85f), Quaternion.Euler(Vector3.up));
+				var station2 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(86.69f, 987.2f, -70.85f), Quaternion.Euler(Vector3.up));
 				//MTFスポーン前
-				var station3 = UnityEngine.Object.Instantiate(prefab, new Vector3(147.9f, 992.77f, -46.2f), Quaternion.Euler(Vector3.up * 90f));
+				var station3 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(147.9f, 992.77f, -46.2f), Quaternion.Euler(Vector3.up * 90f));
 				//エレベーターB前
-				var station4 = UnityEngine.Object.Instantiate(prefab, new Vector3(83f, 992.77f, -46.35f), Quaternion.Euler(Vector3.up * 90f));
+				var station4 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(83f, 992.77f, -46.35f), Quaternion.Euler(Vector3.up * 90f));
 				//CIスポーン前
-				var station5 = UnityEngine.Object.Instantiate(prefab, new Vector3(10.37f, 987.5f, -47.5f), Quaternion.Euler(Vector3.up * 180f));
+				var station5 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(10.37f, 987.5f, -47.5f), Quaternion.Euler(Vector3.up * 180f));
 				//ゲート上
-				var station6 = UnityEngine.Object.Instantiate(prefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
-				var station7 = UnityEngine.Object.Instantiate(prefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
+				var station6 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
+				var station7 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
 
-
-				var station_bigger = UnityEngine.Object.Instantiate(prefab, new Vector3(64.6f, 1000f, -68.5f), Quaternion.Euler(Vector3.zero));
+				//埋め立て
+				var station_bigger = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(64.6f, 1000f, -68.5f), Quaternion.Euler(Vector3.zero));
 				station_bigger.transform.localScale = new Vector3(10f, 6f, 15f);
+
+				//的の設置
+				var target1 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -68f), Quaternion.Euler(Vector3.up * 180f));
+				var target2 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -72.5f), Quaternion.Euler(Vector3.up * 180f));
+				var target3 = UnityEngine.Object.Instantiate(dboyPrefab, new Vector3(-24.5f, 1000f, -70.25f), Quaternion.Euler(Vector3.up * 180f));
 
 				NetworkServer.Spawn(station1);
 				NetworkServer.Spawn(station2);
@@ -241,6 +248,9 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(station6);
 				NetworkServer.Spawn(station7);
 				NetworkServer.Spawn(station_bigger);
+				NetworkServer.Spawn(target1);
+				NetworkServer.Spawn(target2);
+				NetworkServer.Spawn(target3);
 			}
 
 			//イベント設定
@@ -845,6 +855,13 @@ namespace SanyaPlugin
 			{
 				ev.Player.ReferenceHub.fpc.ResetStamina();
 			}
+		}
+		public void OnInteractingShootingTarget(InteractingShootingTargetEventArgs ev)
+		{
+			Log.Debug($"[OnInteractingShootingTarget] {ev.Player.Nickname} -> {ev.TargetButton}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.Remove || ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.ToggleSync)
+				ev.IsAllowed = false;
 		}
 
 		//Scp079

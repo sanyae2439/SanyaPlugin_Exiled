@@ -35,6 +35,7 @@ namespace SanyaPlugin.Commands
 		private DoorVariant targetdoor = null;
 		private ItemPickupBase targetitem = null;
 		private GameObject targetstation = null;
+		private GameObject targetTarget = null;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -61,6 +62,7 @@ namespace SanyaPlugin.Commands
 					{
 						response = $"test ok.\n";
 						// testing zone start
+
 
 
 						// testing zone end
@@ -140,6 +142,24 @@ namespace SanyaPlugin.Commands
 						response = "Available colors:\n";
 						foreach(var i in ReferenceHub.HostHub.serverRoles.NamedColors.OrderBy(x => x.Restricted))
 							response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
+						return true;
+					}
+				case "targettest":
+					{
+						if(targetTarget == null)
+						{
+							var gameObject = UnityEngine.Object.Instantiate(CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("dboyTarget")), 
+								new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))),
+								Quaternion.Euler(Vector3.up * float.Parse(arguments.At(4))));
+							targetTarget = gameObject;
+							NetworkServer.Spawn(gameObject);
+						}
+						else
+						{
+							NetworkServer.Destroy(targetTarget);
+							targetTarget = null;
+						}
+						response = $"targettest.";
 						return true;
 					}
 				case "itemtest":

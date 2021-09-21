@@ -98,6 +98,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData += Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
+			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
 			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
@@ -130,6 +131,7 @@ namespace SanyaPlugin
 			PlayerEvents.SyncingData -= Handlers.OnSyncingData;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
+			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;
 			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;

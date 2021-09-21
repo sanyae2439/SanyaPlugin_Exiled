@@ -193,9 +193,8 @@ namespace SanyaPlugin
 			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
 
 			string curText = _hudTemplate.Replace("[STATS]",
-				$"St:{DateTime.Now:HH:mm:ss} " +
-				$"Rtt:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms " +
-				$"Ps:{ServerConsole.PlayersAmount}/{CustomNetworkManager.slots}");
+				$"ServerTime:{DateTime.Now:HH:mm:ss} " +
+				$"Ping:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms");
 
 			//[SCPLIST]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedDamages != null)
