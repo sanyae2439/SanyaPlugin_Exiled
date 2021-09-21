@@ -99,9 +99,6 @@ namespace SanyaPlugin
 		[Description("ラウンド終了後に無敵になる")]
 		public bool GodmodeAfterEndround { get; set; } = false;
 
-		[Description("SCPが切断時に観戦プレイヤーをSCPに代替する")]
-		public bool ReplaceScpsWhenDisconnect { get; set; } = false;
-
 		[Description("全プレイヤーのボイスチャットを無効化する")]
 		public bool DisableAllChat { get; set; } = false;
 
@@ -184,9 +181,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
-
-		[Description("SCP-173の移動スキルのクールダウンを削除")]
-		public bool Scp173RemoveBreakneckCooldown { get; set; } = false;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;

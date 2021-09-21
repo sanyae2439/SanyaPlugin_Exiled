@@ -247,12 +247,12 @@ namespace SanyaPlugin
 			else if(player.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
-				MtfList += $"MTF Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>\n";
-				MtfList += $"<color=#0096ff>Specialist:{RoundSummary.singleton.CountRole(RoleType.NtfSpecialist)}</color>\n";
-				MtfList += $"<color=#003eca>Captain:{RoundSummary.singleton.CountRole(RoleType.NtfCaptain)}</color>\n";
-				MtfList += $"<color=#0096ff>Sergeant:{RoundSummary.singleton.CountRole(RoleType.NtfSergeant)}</color>\n";
-				MtfList += $"<color=#6fc3ff>Private:{RoundSummary.singleton.CountRole(RoleType.NtfPrivate)}</color>\n";
-				MtfList += $"<color=#5b6370>FacilityGuard:{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}</color>\n";
+				MtfList += $"MTF Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}\n";
+				MtfList += $"<color=#0096ff>Specialist:</color>{RoundSummary.singleton.CountRole(RoleType.NtfSpecialist)}\n";
+				MtfList += $"<color=#003eca>Captain:</color>{RoundSummary.singleton.CountRole(RoleType.NtfCaptain)}\n";
+				MtfList += $"<color=#0096ff>Sergeant:</color>{RoundSummary.singleton.CountRole(RoleType.NtfSergeant)}\n";
+				MtfList += $"<color=#6fc3ff>Private:</color>{RoundSummary.singleton.CountRole(RoleType.NtfPrivate)}\n";
+				MtfList += $"<color=#5b6370>FacilityGuard:</color>{RoundSummary.singleton.CountRole(RoleType.FacilityGuard)}\n";
 				MtfList = MtfList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 7));
@@ -260,11 +260,11 @@ namespace SanyaPlugin
 			else if(player.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
-				CiList += $"CI Tickets:<color=#008f1e>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}</color>\n";
-				CiList += $"<color=#008f1e>Conscript:{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}</color>\n";
-				CiList += $"<color=#006728>Marauder:{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}</color>\n";
-				CiList += $"<color=#0a7d34>Repressor:{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}</color>\n";
-				CiList += $"<color=#008f1e>Rifleman:{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}</color>\n";
+				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
+				CiList += $"<color=#008f1e>Conscript:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}\n";
+				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";
+				CiList += $"<color=#0a7d34>Repressor:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}\n";
+				CiList += $"<color=#008f1e>Rifleman:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}\n";
 				CiList = CiList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 7));

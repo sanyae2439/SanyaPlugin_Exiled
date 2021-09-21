@@ -51,7 +51,7 @@ namespace SanyaPlugin.Commands
 
 			if(arguments.Count == 0)
 			{
-				response = "sanya plugins command. params: <hud/ping/override/actwatch/airbomb/106/914/nukecap/nukelock/lure/femur/blackout/addscps/ammo/forrcend/now/configs>";
+				response = "sanya plugins command. params: <hud/ping/override/actwatch/106/914/nukecap/nukelock/lure/femur/blackout/addscps/ammo/forrcend/now/configs>";
 				return true;
 			}
 
@@ -76,15 +76,6 @@ namespace SanyaPlugin.Commands
 				case "coroutines":
 					{
 						response = $"FixedUpdate:{Timing.Instance.FixedUpdateCoroutines} Update:{Timing.Instance.UpdateCoroutines}";
-						return true;
-					}
-				case "airbomb":
-					{
-						response = "ok.";
-						if(!Coroutines.isAirBombGoing)
-							SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.AirSupportBomb(), Segment.FixedUpdate));
-						else
-							Coroutines.isAirBombGoing = false;
 						return true;
 					}
 				case "checkobj":

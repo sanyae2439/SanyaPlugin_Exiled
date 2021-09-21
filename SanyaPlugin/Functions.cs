@@ -296,8 +296,6 @@ namespace SanyaPlugin.Functions
 
 	internal static class Coroutines
 	{
-		public static bool isAirBombGoing = false;
-
 		public static IEnumerator<float> GrantedLevel(Player player, PlayerData data)
 		{
 			yield return Timing.WaitForSeconds(1f);
@@ -370,66 +368,6 @@ namespace SanyaPlugin.Functions
 
 			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level} : DNT={player.DoNotTrack}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			yield break;
-		}
-
-		public static IEnumerator<float> AirSupportBomb(int waitforready = 5, int limit = -1)
-		{
-			Log.Info($"[AirSupportBomb] booting...");
-			if(isAirBombGoing)
-			{
-				Log.Info($"[Airbomb] already booted, cancel.");
-				yield break;
-			}
-			else
-				isAirBombGoing = true;
-
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
-			{
-				Methods.SendSubtitle(Subtitles.AirbombStarting, 10);
-				RespawnEffectsController.PlayCassieAnnouncement("danger . outside zone emergency termination sequence activated .", false, true);
-				yield return Timing.WaitForSeconds(5f);
-			}
-
-			Log.Info($"[AirSupportBomb] charging...");
-			while(waitforready > 0)
-			{
-				Methods.PlayAmbientSound(7);
-				waitforready--;
-				yield return Timing.WaitForSeconds(1f);
-			}
-
-			Log.Info($"[AirSupportBomb] throwing...");
-			int throwcount = 0;
-			while(isAirBombGoing)
-			{
-				List<Vector3> randampos = OutsideRandomAirbombPos.Load().OrderBy(x => Guid.NewGuid()).ToList();
-				foreach(var pos in randampos)
-				{
-					Methods.SpawnGrenade(pos, ItemType.GrenadeHE, 0.1f);
-					yield return Timing.WaitForSeconds(0.25f);
-				}
-
-				if(UnityEngine.Random.Range(0, 100) < 50 && Player.List.Any())
-					Methods.SpawnGrenade(Player.List.Random().Position, ItemType.GrenadeHE, 0.1f);
-
-				throwcount++;
-				Log.Info($"[AirSupportBomb] throwcount:{throwcount}");
-				if(limit != -1 && limit <= throwcount)
-				{
-					isAirBombGoing = false;
-					break;
-				}
-				yield return Timing.WaitForSeconds(0.5f);
-			}
-
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
-			{
-				Methods.SendSubtitle(Subtitles.AirbombEnded, 10);
-				RespawnEffectsController.PlayCassieAnnouncement("outside zone termination completed .", false, true);
-			}
-
-			Log.Info($"[AirSupportBomb] Ended.");
 			yield break;
 		}
 

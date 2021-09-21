@@ -136,9 +136,6 @@ namespace SanyaPlugin
 			//プレイヤーデータの初期化
 			PlayerDataManager.playersData.Clear();
 
-			//(廃止予定)
-			Coroutines.isAirBombGoing = false;
-
 			//SCP-049の死体スタック量初期化
 			scp049stackAmount = 0;
 
@@ -271,7 +268,7 @@ namespace SanyaPlugin
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
-			Log.Info($"[OnRoundEnded] Round Ended.");
+			Log.Info($"[OnRoundEnded] Round Ended. Win:{ev.LeadingTeam}");
 
 			//プレイヤーデータの書き込み！
 			if(plugin.Config.DataEnabled)
@@ -301,9 +298,6 @@ namespace SanyaPlugin
 			if(plugin.Config.GodmodeAfterEndround)
 				foreach(var player in Player.List)
 					player.IsGodModeEnabled = true;
-
-			//？
-			Coroutines.isAirBombGoing = false;
 
 			//ランキングの作成/並び替え
 			sortedDamages = DamagesDict.OrderByDescending(x => x.Value);
@@ -567,56 +561,21 @@ namespace SanyaPlugin
 			if(plugin.Config.PlayersInfoDisableFollow)
 				ev.Player.ReferenceHub.nicknameSync.Network_playerInfoToShow = PlayerInfoArea.Nickname | PlayerInfoArea.Badge | PlayerInfoArea.CustomInfo | PlayerInfoArea.Role;
 
-			//MuteFixer
-			foreach(var player in Player.List)
-				player.ReferenceHub.characterClassManager.SetDirtyBit(2uL);
-
 			//Component
 			if(!ev.Player.GameObject.TryGetComponent<SanyaPluginComponent>(out _))
 				ev.Player.GameObject.AddComponent<SanyaPluginComponent>();
 
-			//ConnId
+			//各種Dict
 			if(!connIdToUserIds.TryGetValue(ev.Player.Connection.connectionId, out _))
 				connIdToUserIds.Add(ev.Player.Connection.connectionId, ev.Player.UserId);
-
-			//DamageDict
 			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
 				DamagesDict.Add(ev.Player.Nickname, 0);
-
-			//KillDict
 			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
 				KillsDict.Add(ev.Player.Nickname, 0);
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
 		{
 			Log.Info($"[OnDestroying] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
-
-			//SCPが抜けると観戦者の誰かに置き換える
-			if(plugin.Config.ReplaceScpsWhenDisconnect && ev.Player.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492 && RoundSummary.RoundInProgress())
-			{
-				Log.Info($"[ReplaceScps] Role:{ev.Player.Role} Health:{ev.Player.Health} Pos:{ev.Player.Position}{(ev.Player.Role == RoleType.Scp079 ? $" Level079:{ev.Player.Level} Mana079:{ev.Player.Energy}/{ev.Player.MaxEnergy}" : string.Empty)}");
-				if(ev.Player.Role == RoleType.Scp106 && OneOhSixContainer.used)
-					Log.Warn($"[ReplaceScps] Contained SCP-106, skipped");
-				else if(RoundSummary.singleton.CountRole(RoleType.Spectator) > 0)
-				{
-					Player target = Player.Get(RoleType.Spectator).Random();
-					Log.Info($"[ReplaceScps] target found:{target.Nickname}/{target.Role}");
-					target.SetRole(ev.Player.Role, Exiled.API.Enums.SpawnReason.ForceClass, true);
-					target.Health = ev.Player.Health;
-					target.Position = ev.Player.Position;
-					if(ev.Player.Role == RoleType.Scp079)
-					{
-						target.Level = ev.Player.Level;
-						target.Energy = ev.Player.Energy;
-						target.MaxEnergy = ev.Player.MaxEnergy;
-						target.Camera = ev.Player.Camera;
-					}
-					if(target.ReferenceHub.TryGetComponent<SanyaPluginComponent>(out var sanya))
-						sanya.AddHudBottomText($"<color=#bbee00><size=25>{ev.Player.ReferenceHub.characterClassManager.CurRole.fullName}のプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
-				}
-				else
-					Log.Warn("[ReplaceScps] No target spectators, skipped");
-			}
 
 			//プレイヤーデータのアンロード
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
@@ -639,6 +598,8 @@ namespace SanyaPlugin
 				Overrided = null;
 			}
 
+			ev.Reason = Exiled.API.Enums.SpawnReason.ForceClass;
+
 			//Effect
 			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
@@ -649,7 +610,10 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
-					ev.Player.EnableEffect<Poisoned>();
+					ev.Player.ChangeEffectIntensity<Scp207>(1);
+					ev.Player.EnableEffect<Bleeding>();
+					ev.Player.EnableEffect<Deafened>();
+					ev.Player.EnableEffect<Concussed>();
 				}));
 
 			//ExModeの通知
@@ -716,10 +680,6 @@ namespace SanyaPlugin
 			if(ev.Target.IsCuffed && ev.Attacker.IsHuman && (ev.Target.Team == Team.CDP || ev.Target.Team == Team.RSC))
 				ev.Amount *= plugin.Config.CuffedDamageMultiplier;
 
-			//SCP-106 Shotgun fix(11.x)
-			if(ev.Target.Role == RoleType.Scp106 && ev.DamageType == DamageTypes.Shotgun)
-				ev.Amount *= 0.1f;
-
 			//SCPのダメージ
 			if(ev.Attacker != ev.Target && ev.Target.IsScp)
 			{
@@ -764,9 +724,7 @@ namespace SanyaPlugin
 
 			//SCP-049 ExMode
 			if(plugin.Config.Scp049StackBody && ev.HitInformations.Tool == DamageTypes.Scp049)
-			{
 				scp049stackAmount++;
-			}
 
 			//字幕
 			if(plugin.Config.CassieSubtitle && targetteam == Team.SCP && targetrole != RoleType.Scp0492 && targetrole != RoleType.Scp079)
