@@ -16,8 +16,10 @@ using InventorySystem.Items.Armor;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
+using MapGeneration;
 using MEC;
 using Mirror;
+using Respawning;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using UnityEngine;
@@ -114,7 +116,6 @@ namespace SanyaPlugin
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private Vector3 nextRespawnPos = Vector3.zero;
-		internal int scp049stackAmount = 0;
 		internal Player Overrided = null;
 		internal NetworkIdentity Sinkhole = null;
 
@@ -135,9 +136,6 @@ namespace SanyaPlugin
 
 			//プレイヤーデータの初期化
 			PlayerDataManager.playersData.Clear();
-
-			//SCP-049の死体スタック量初期化
-			scp049stackAmount = 0;
 
 			//SinkholeHazardオブジェクトの保存(いろいろ使う)
 			Sinkhole = Methods.GetSinkHoleHazard();
@@ -450,6 +448,19 @@ namespace SanyaPlugin
 			if(plugin.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
 		}
+		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
+		{
+			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Map.ActivatedGenerators + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.GeneratorFix)
+				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, false);
+
+			if(plugin.Config.CassieSubtitle)
+				if(Map.ActivatedGenerators == 2)
+					Methods.SendSubtitle(Subtitles.GeneratorComplete, 15);
+				else
+					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
+		}
 
 		//WarheadEvents
 		public void OnStarting(StartingEventArgs ev)
@@ -598,7 +609,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.Reason})", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//おーばーらいど！
-			if(Overrided != null && Overrided == ev.Player)
+			if(Overrided != null && Overrided == ev.Player && RoundSummary.roundTime < 3)
 			{
 				if(ev.NewRole.GetTeam() != Team.SCP)
 				{
@@ -607,8 +618,6 @@ namespace SanyaPlugin
 				}
 				Overrided = null;
 			}
-
-			ev.Reason = Exiled.API.Enums.SpawnReason.ForceClass;
 
 			//Effect
 			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
@@ -623,16 +632,7 @@ namespace SanyaPlugin
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 					ev.Player.EnableEffect<Bleeding>();
 					ev.Player.EnableEffect<Deafened>();
-					ev.Player.EnableEffect<Concussed>();
 				}));
-
-			//ExModeの通知
-			if(plugin.Config.ExHudEnabled && plugin.Config.Scp079ExtendEnabled && ev.NewRole == RoleType.Scp079)
-				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend079First, 10)));
-			if(plugin.Config.ExHudEnabled && plugin.Config.Scp049StackBody && ev.NewRole == RoleType.Scp049)
-				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend049First, 10)));
-			if(plugin.Config.ExHudEnabled && plugin.Config.Scp106Exmode && ev.NewRole == RoleType.Scp106)
-				roundCoroutines.Add(Timing.CallDelayed(3f, Segment.FixedUpdate, () => ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(HintTexts.Extend106First, 10)));
 
 			//SCP-106のExMode用初期化
 			if(ev.NewRole == RoleType.Scp106)
@@ -679,8 +679,11 @@ namespace SanyaPlugin
 			{
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(5f);
 				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Disabled>(5f);
 			}
+
+			//SCP-049-2の攻撃力
+			if(ev.DamageType == DamageTypes.Scp0492)
+				ev.Amount = plugin.Config.Scp0492Damage;
 
 			//SCP-939-XXの即死攻撃
 			if(plugin.Config.Scp939InstaKill && ev.DamageType == DamageTypes.Scp939)
@@ -706,7 +709,8 @@ namespace SanyaPlugin
 			}
 
 			//ダメージランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.DamageType != DamageTypes.RagdollLess && ev.DamageType != DamageTypes.Recontainment)
+			if(!RoundSummary.singleton.RoundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && 
+				ev.DamageType != DamageTypes.RagdollLess && ev.DamageType != DamageTypes.Recontainment)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 
 			Log.Debug($"[OnHurting:After] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.Name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
@@ -726,15 +730,19 @@ namespace SanyaPlugin
 
 				if(PlayerDataManager.playersData.ContainsKey(ev.Target.UserId))
 					PlayerDataManager.playersData[ev.Target.UserId].AddExp(plugin.Config.LevelExpDeath);
+			}		
+
+			//SCP-049-2キルボーナス
+			if(plugin.Config.Scp0492KillStreak && ev.Killer.Role == RoleType.Scp0492)
+			{
+				ev.Killer.ChangeEffectIntensity<Scp207>((byte)Mathf.Clamp(ev.Killer.GetEffectIntensity<Scp207>() + 1, 0, 4));
+				ev.Killer.EnableEffect<Invigorated>(5f, true);
+				ev.Killer.Heal(ev.Killer.MaxHealth);
 			}
 
 			//キルヒットマーク
 			if(plugin.Config.HitmarkKilled && ev.Killer != ev.Target)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(ev.Killer, 2f), Segment.FixedUpdate));
-
-			//SCP-049 ExMode
-			if(plugin.Config.Scp049StackBody && ev.HitInformations.Tool == DamageTypes.Scp049)
-				scp049stackAmount++;
 
 			//字幕
 			if(plugin.Config.CassieSubtitle && targetteam == Team.SCP && targetrole != RoleType.Scp0492 && targetrole != RoleType.Scp079)
@@ -772,12 +780,34 @@ namespace SanyaPlugin
 			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Team))
 				KillsDict[ev.Killer.Nickname] += 1;
 		}
+		public void OnHandcuffing(HandcuffingEventArgs ev)
+		{
+			Log.Debug($"[OnHandcuffing] {ev.Cuffer.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//キル&チケットボーナス
+			if(plugin.Config.CuffedTicketDeathToMtfCi != 0 && (ev.Target.Team == Team.MTF || ev.Target.Team == Team.CHI))
+			{
+				ev.IsAllowed = false;
+				SpawnableTeamType team = SpawnableTeamType.None;
+				switch(ev.Target.Team)
+				{
+					case Team.MTF:
+						team = SpawnableTeamType.ChaosInsurgency;
+						break;
+					case Team.CHI:
+						team = SpawnableTeamType.NineTailedFox;
+						break;
+				}
+				RespawnTickets.Singleton.GrantTickets(team, plugin.Config.CuffedTicketDeathToMtfCi);
+				ev.Target.Hurt(5000f, ev.Cuffer, DamageTypes.Recontainment);
+			}
+		}
 		public void OnSpawningRagdoll(SpawningRagdollEventArgs ev)
 		{
 			Log.Debug($"[OnSpawningRagdoll] {ev.Owner.Nickname}:{ev.HitInformations.Tool.Name}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//死体削除
-			if(SanyaPlugin.Instance.Config.Scp049StackBody && ev.HitInformations.Tool == DamageTypes.Scp049 || SanyaPlugin.Instance.Config.TeslaDeleteObjects && ev.HitInformations.Tool == DamageTypes.Tesla)
+			if(SanyaPlugin.Instance.Config.TeslaDeleteObjects && ev.HitInformations.Tool == DamageTypes.Tesla)
 				ev.IsAllowed = false;
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
@@ -796,39 +826,6 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(player, 2f), Segment.FixedUpdate));
 				if(!RoundSummary.singleton.RoundEnded) KillsDict[player.Nickname] += 1;
 			}
-		}
-		public void OnSyncingData(SyncingDataEventArgs ev)
-		{
-			////同じアニメーションは無視する
-			//if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.MoveState == ev.CurrentAnimation) return;
-
-			//if(plugin.Config.Scp049StackBody
-			//	&& ev.Player.Role == RoleType.Scp049
-			//	&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-			//	&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs
-			//	&& (scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled))
-			//		roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
-
-			//if(plugin.Config.Scp106Exmode
-			//	&& ev.Player.Role == RoleType.Scp106
-			//	&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-			//	&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
-			//	&& !Warhead.IsDetonated)
-			//	roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(
-			//		ev.Player.ReferenceHub.characterClassManager.Scp106,
-			//		RoleType.Scp106.GetRandomSpawnProperties().Item1), Segment.FixedUpdate));
-
-			////ジャンプ時スタミナ消費
-			//if(plugin.Config.StaminaCostJump > 0 
-			//	&& ev.CurrentAnimation == 2 
-			//	&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
-			//	&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
-			//	&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
-			//{
-			//	ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
-			//	ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
-			//}
-
 		}
 		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
 		{
@@ -861,6 +858,27 @@ namespace SanyaPlugin
 			Log.Debug($"[OnInteractingShootingTarget] {ev.Player.Nickname} -> {ev.TargetButton}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.Remove || ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.ToggleSync)
+				ev.IsAllowed = false;
+		}
+		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
+		{
+			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.GeneratorFix)
+				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, true);
+		}
+		public void OnOpeningGenerator(OpeningGeneratorEventArgs ev)
+		{
+			Log.Debug($"[OnOpeningGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.GeneratorFix && ev.Generator.Engaged)
+				ev.IsAllowed = false;
+		}
+		public void OnClosingGenerator(ClosingGeneratorEventArgs ev)
+		{
+			Log.Debug($"[OnClosingGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.GeneratorFix && ev.Generator.Activating)
 				ev.IsAllowed = false;
 		}
 

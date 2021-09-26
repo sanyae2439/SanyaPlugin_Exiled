@@ -131,6 +131,7 @@
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\StopRagdollDecayedPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixGrenadeDestroyPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />
+    <Compile Include="Patches\JumpingStaminaPatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Subtitles.cs" />

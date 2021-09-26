@@ -93,14 +93,6 @@
 			"</size></color>"
 		);
 
-		internal static readonly string StartNightMode = string.Concat(
-			"<color=#ff0000><size=25>",
-			"《警告。施設の電源供給システムが攻撃を受けました。\nほぼ全ての部屋の照明は、発電機が作動するまで利用できません。》\n",
-			"</size><size=20>",
-			"《Warning. Facility power system has been attacked. \nAll most containment zones light does not available until generator activated.》\n",
-			"</size></color>"
-		);
-
 		internal static readonly string DecontaminationInit = string.Concat(
 			"<color=#bbee00><size=25>",
 			"《全ての職員へ通達。軽度収容区画の「除染」プロトコルが15分以内に実施されます。\n対象区画の生体物質は、破滅を避けるためにすべて除去されます。》\n",
@@ -133,17 +125,17 @@
 
 		internal static readonly string GeneratorFinish = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《5つ中{0}つ目の発電機の起動が完了しました。》\n",
+			"《3つ中{0}つ目の発電機の起動が完了しました。》\n",
 			"</size><size=20>",
-			"《{0} out of 5 generators activated. 》\n",
+			"《{0} out of 3 generators activated. 》\n",
 			"</size></color>"
 		);
 
 		internal static readonly string GeneratorComplete = string.Concat(
 			"<color=#bbee00><size=25>",
-			"《5つ中5つ目の発電機の起動が完了しました。\n全ての発電機が起動されました。最終再収容手順を開始します。\n重度収容区画は約一分後にオーバーチャージされます。》\n",
+			"《3つ中3つ目の発電機の起動が完了しました。全ての発電機が起動されました。》\n",
 			"</size><size=20>",
-			"《5 out of 5 generators activated.\nAll generators has been sucessfully engaged.\nFinalizing recontainment sequence.\nHeavy containment zone will overcharge in t-minus 1 minutes.》\n",
+			"《3 out of 3 generators activated. All generators has been sucessfully engaged.》\n",
 			"</size></color>"
 		);
 
@@ -171,43 +163,11 @@
 			"</size></color>"
 		);
 
-		internal static readonly string AirbombStarting = string.Concat(
-			"<color=#ff0000><size=25>",
-			"《警告。地上エリアの緊急終了シーケンスが開始されます。》\n",
-			"</size><size=20>",
-			"《Danger, Outside Zone emergency termination sequence activated.》\n",
-			"</size></color>"
-		);
-
-		internal static readonly string AirbombEnded = string.Concat(
-			"<color=#ff0000><size=25>",
-			"《地上エリアの緊急終了シーケンスが完了しました。》\n",
-			"</size><size=20>",
-			"《Outside Zone emergency termination completed.》\n",
-			"</size></color>"
-		);
-
 		internal static readonly string DecontEvent = string.Concat(
 			"<color=#bbee00><size=25>",
 			"《軽度収容区画の「除染」プロトコルが開始されました。対象区画のSCPオブジェクトは破壊されます。》\n",
 			"</size><size=20>",
 			"《Decontamination process for Light Containment Zone has been started. SCP subject in zone will be destroyed.》\n",
-			"</size></color>"
-		);
-
-		internal static readonly string ClassDInsurgencyFirst = string.Concat(
-			"<color=#ff0000><size=25>",
-			"《警告。Dクラス収容室にてセキュリティ違反を検知しました。》\n",
-			"</size><size=20>",
-			"《Danger. Detected security warning in Class-D containment chamber.》\n",
-			"</size></color>"
-		);
-
-		internal static readonly string AlreadyBreakFirst = string.Concat(
-			"<color=#6c80ff><size=25>",
-			"《通達。施設警備員がサイトに到着しました。\n生存中の職員は、警備員が貴方の場所へ到着するまで「標準避難プロトコル」の続行を推奨します。》\n",
-			"</size><size=20>",
-			"《Attention all personnel. Facility guards has entered the facility.\nAll remaining personnel are advised to proceed with standard evacuation protocols until an MTF squad reaches your destination.》\n",
 			"</size></color>"
 		);
 	}
@@ -219,30 +179,6 @@
 			"このドアを操作するにはTierが足りません。\n",
 			"</size><size=20>",
 			"Not enough Tier on interact it.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend079First = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで切り替えられます.\nTier1では見ている部屋にいる生存者の場所を伝えることができます.\n",
-			"</size><size=20>",
-			"You can use Extend mode. You can toggle by sprint keys.\nYou can spot living humans on current watching room.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend049First = string.Concat(
-			"<color=#bbee00><size=25>",
-			"人間を殺害時に死体は収納され、スプリントキーで治療することができます。\n",
-			"</size><size=20>",
-			"When you killed humans, Corpse is stocked and can be cure with sprint key.\n",
-			"</size></color>"
-		);
-
-		internal static readonly string Extend106First = string.Concat(
-			"<color=#bbee00><size=25>",
-			"拡張モードを使用可能です. スプリントキーで使用可能です.\n収容室の前に戻ることができます。\n",
-			"</size><size=20>",
-			"You can use Extend mode. Use by sprint keys.\nYou can return to containment room.\n",
 			"</size></color>"
 		);
 	}

@@ -131,7 +131,7 @@ namespace SanyaPlugin
 
 		private void Check079Spot()
 		{
-			if(!SanyaPlugin.Instance.Config.Scp079ExtendEnabled || player.Role != RoleType.Scp079 || player.CurrentRoom == null || !player.IsExmode() || player.Camera == _lastcam) return;
+			if(!SanyaPlugin.Instance.Config.Scp079ScanRoom || player.Role != RoleType.Scp079 || player.CurrentRoom == null || player.Camera == _lastcam) return;
 
 			string message = string.Empty;
 			if(player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
@@ -146,8 +146,6 @@ namespace SanyaPlugin
 			if(!string.IsNullOrEmpty(message))
 				foreach(var scp in Player.Get(Team.SCP))
 					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
-			else
-				AddHudCenterDownText($"<color=#bbee00><size=25>{player.CurrentRoom.Type}には何も見つかりませんでした</color></size>", 5);
 
 			_lastcam = player.Camera;
 		}
@@ -296,21 +294,23 @@ namespace SanyaPlugin
 			//[CENTER_UP]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
+			else if(player.Role == RoleType.Scp0492)
+			{
+				string text = string.Empty;
+
+				text += $"Adrenaline Level:{player.GetEffectIntensity<Scp207>()}/4";
+
+				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
+			}
 			else if(player.Role == RoleType.Scp079)
 			{
 				string text = string.Empty;
 
-				text += (player.ReferenceHub.animationController.MoveState == PlayerMovementState.Sprinting ? "Extend:Enabled" : "Extend:Disabled") + "\n";
 				if(player.Level > 0)
 					text += player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f ? "LockDown:Ready" : $"LockDown:Cooldown({Mathf.RoundToInt(player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown)})";
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
-			else if(player.Role == RoleType.Scp049)
-				if(!player.ReferenceHub.fpc.NetworkforceStopInputs)
-					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Corpse in stack:{SanyaPlugin.Instance.Handlers.scp049stackAmount}", 6));
-				else
-					curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Trying to cure...", 6));
 			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
 				switch(scp096.PlayerState)
 				{

@@ -124,8 +124,12 @@ namespace SanyaPlugin
 		[Description("AlphaWarhead起爆後のリスポーン時間")]
 		public int TimeToRespawnAfterDetonated { get; set; } = -1;
 
+
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;
+
+		[Description("発電機の使用を細かく修正する")]
+		public bool GeneratorFix { get; set; } = false;
 
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
@@ -145,6 +149,9 @@ namespace SanyaPlugin
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 
+		[Description("MTF/CIが武装解除されると死亡し、相手チームのチケットを加算させる量")]
+		public int CuffedTicketDeathToMtfCi { get; set; } = 0;
+
 		[Description("武装解除時の被ダメージ乗数")]
 		public float CuffedDamageMultiplier { get; set; } = 1f;
 
@@ -161,8 +168,8 @@ namespace SanyaPlugin
 		};
 		public readonly Dictionary<RoleType, float> ScpTakenDamageMultiplierParsed = new Dictionary<RoleType, float>();
 
-		[Description("SCP-049が殺害時に死体をスタックできるように")]
-		public bool Scp049StackBody { get; set; } = false;
+		[Description("SCP-049-2の攻撃力")]
+		public float Scp0492Damage { get; set; } = 40f;
 
 		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
 		public bool Scp0492AttackEffect { get; set; } = false;
@@ -170,14 +177,14 @@ namespace SanyaPlugin
 		[Description("SCP-049-2のスポーン時にエフェクトを追加する")]
 		public bool Scp0492GiveEffectOnSpawn { get; set; } = false;
 
+		[Description("SCP-049-2がキルするたびにHPが回復し、追加効果を得る")]
+		public bool Scp0492KillStreak { get; set; } = false;
+
 		[Description("SCP-096に触れると発狂するようになる距離")]
 		public float Scp096TouchEnrageDistance { get; set; } = -1f;
 
 		[Description("SCP-096の発狂時のダメージ乗数")]
 		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
-
-		[Description("SCP-106のExモードで収容室に帰還できるように")]
-		public bool Scp106Exmode { get; set; } = false;
 
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
@@ -188,8 +195,8 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXの攻撃で即死するようにして移動速度を低下させる")]
 		public bool Scp939InstaKill { get; set; } = false;
 
-		[Description("SCP-079のExモードを有効化")]
-		public bool Scp079ExtendEnabled { get; set; } = false;
+		[Description("SCP-079が部屋を移動した際にスキャンするように")]
+		public bool Scp079ScanRoom { get; set; } = false;
 
 		[Description("SCP-079がゲートを操作するのに必要なTier")]
 		public int Scp079NeedInteractGateTier { get; set; } = -1;
