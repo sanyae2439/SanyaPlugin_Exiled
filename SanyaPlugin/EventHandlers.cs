@@ -12,6 +12,7 @@ using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem;
+using InventorySystem.Configs;
 using InventorySystem.Items.Armor;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
@@ -122,6 +123,7 @@ namespace SanyaPlugin
 		//イベント用の変数
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private List<Team> prevSpawnQueue = null;
+		private Vector3 RangePos = new Vector3(50f, 1001f, -70f);
 
 		//ServerEvents系
 		public void OnWaintingForPlayers()
@@ -154,6 +156,8 @@ namespace SanyaPlugin
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(RoleType.Tutorial.GetRandomSpawnProperties().Item1);
+			foreach(var gen in Recontainer079.AllGenerators)
+				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 
 			//地上脱出口の二つのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
@@ -261,6 +265,12 @@ namespace SanyaPlugin
 						break;
 					}
 			}
+
+			if(plugin.Config.EnabledShootingRange)
+				roundCoroutines.Add(Timing.CallDelayed(3f, () => {
+					RoundSummary.RoundLock = true;
+					CharacterClassManager.ForceRoundStart();
+				}));
 
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
@@ -448,6 +458,13 @@ namespace SanyaPlugin
 			if(plugin.Config.CassieSubtitle)
 				Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
 		}
+		public void OnAnnouncingNtfEntrance(AnnouncingNtfEntranceEventArgs ev)
+		{
+			Log.Debug($"[OnAnnouncingNtfEntrance] {ev.UnitName}-{ev.UnitNumber} {ev.ScpsLeft}left", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.EnabledShootingRange)
+				ev.IsAllowed = false;
+		}
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
 			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Map.ActivatedGenerators + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
@@ -461,6 +478,13 @@ namespace SanyaPlugin
 				else
 					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
 		}
+		public void OnPlacingBulletHole(PlacingBulletHole ev)
+		{
+			Log.Debug($"[OnPlacingBulletHole]", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.EnabledShootingRange)
+				ev.IsAllowed = false;
+		}
 
 		//WarheadEvents
 		public void OnStarting(StartingEventArgs ev)
@@ -468,6 +492,10 @@ namespace SanyaPlugin
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(AlphaWarheadController.Host.RealDetonationTime() < AlphaWarheadController.Host.timeToDetonation)
+				ev.IsAllowed = false;
+
+			//ホスト以外が開始できないように
+			if(plugin.Config.EnabledShootingRange && !ev.Player.IsHost)
 				ev.IsAllowed = false;
 
 			//字幕用
@@ -505,6 +533,11 @@ namespace SanyaPlugin
 		public void OnDetonated()
 		{
 			Log.Info($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
+
+			if(plugin.Config.EnabledShootingRange)
+			{
+				PlayerStats._singleton.Roundrestart();
+			}
 		}
 
 		//PlayerEvents
@@ -652,6 +685,9 @@ namespace SanyaPlugin
 			//Dクラスロールボーナス
 			if(!string.IsNullOrEmpty(ev.Player.GroupName) && plugin.Config.ClassdBonusitemsForRoleParsed.TryGetValue(ev.Player.GroupName, out List<ItemType> bonusitems) && ev.NewRole == RoleType.ClassD)
 				ev.Items.InsertRange(0, bonusitems);
+
+			if(plugin.Config.EnabledShootingRange)
+				ev.Player.IsGodModeEnabled = true;
 		}
 		public void OnSpawning(SpawningEventArgs ev)
 		{
@@ -664,6 +700,8 @@ namespace SanyaPlugin
 				&& nextRespawnPos != Vector3.zero)
 				ev.Position = nextRespawnPos;
 
+			if(plugin.Config.EnabledShootingRange)
+				ev.Position = RangePos;
 
 			//Fix maingame(11.x)
 			foreach(var i in ev.Player.Inventory.UserInventory.Items.Values.Where(x => x.ItemTypeId.IsArmor()).Select(x => x as BodyArmor))
@@ -836,6 +874,72 @@ namespace SanyaPlugin
 				&& keycardItem.Permissions.ToString().Contains(plugin.Config.TeslaDisabledPermission))
 				ev.IsTriggerable = false;
 		}
+		public void OnDroppingAmmo(DroppingAmmoEventArgs ev)
+		{
+			Log.Debug($"[OnDroppingAmmo] {ev.Player.Nickname} -> {ev.AmmoType}({ev.Amount})", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.EnabledShootingRange)
+				ev.IsAllowed = false;
+		}
+		public void OnDroppingItem(DroppingItemEventArgs ev)
+		{
+			Log.Debug($"[OnDroppingAmmo] {ev.Player.Nickname} -> {ev.Item.Type}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.EnabledShootingRange)
+				ev.IsAllowed = false;
+		}
+		public void OnUsingItem(UsingItemEventArgs ev)
+		{
+			Log.Debug($"[OnUsingItem] {ev.Player.Nickname} / {ev.Item.Type}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(plugin.Config.EnabledShootingRange)
+			{
+				ev.IsAllowed = false;
+
+				if(ev.Item.Type == ItemType.Adrenaline)
+				{
+					ev.Player.IsGodModeEnabled = false;
+					foreach(var i in ev.Player.Inventory.UserInventory.ReserveAmmo.Keys.ToList())
+						ev.Player.Inventory.UserInventory.ReserveAmmo[i] = 0;
+					ev.Player.ClearInventory();
+					ev.Player.Kill(DamageTypes.RagdollLess);
+				}
+				else if(ev.Item.Type == ItemType.Medkit)
+				{
+					foreach(var pair in InventoryItemLoader.AvailableItems.Where(x => x.Key.IsAmmo()))
+						if(ev.Player.Inventory.UserInventory.ReserveAmmo.TryGetValue(pair.Key, out _))
+							ev.Player.Inventory.UserInventory.ReserveAmmo[pair.Key] = InventoryLimits.GetAmmoLimit(pair.Key, ev.Player.ReferenceHub);
+						else
+							ev.Player.Inventory.UserInventory.ReserveAmmo.Add(pair.Key, InventoryLimits.GetAmmoLimit(pair.Key, ev.Player.ReferenceHub));
+					ev.Player.Inventory.SendAmmoNextFrame = true;
+				}
+				else if(ev.Item.Type == ItemType.Painkillers)
+					if(ev.Player.HasItem(ItemType.Adrenaline))
+						ev.Player.ResetInventory(new List<ItemType>()
+						{
+							ItemType.GunE11SR,
+							ItemType.GunCrossvec,
+							ItemType.GunFSP9,
+							ItemType.GunAK,
+							ItemType.GunLogicer,
+							ItemType.GunShotgun,
+							ItemType.Medkit,
+							ItemType.Painkillers
+						});
+					else
+						ev.Player.ResetInventory(new List<ItemType>()
+						{
+							ItemType.GunRevolver,
+							ItemType.GunCOM18,
+							ItemType.GunCOM15,
+							ItemType.KeycardO5,
+							ItemType.GrenadeHE,
+							ItemType.Medkit,
+							ItemType.Adrenaline,
+							ItemType.Painkillers
+						});
+			}
+		}
 		public void OnUsedItem(UsedItemEventArgs ev)
 		{
 			Log.Debug($"[OnUsedItem] {ev.Player.Nickname} / {ev.Item.Type}", SanyaPlugin.Instance.Config.IsDebugged);
@@ -864,7 +968,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.GeneratorFix)
+			if(plugin.Config.GeneratorFix && ev.IsAllowed)
 				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, true);
 		}
 		public void OnOpeningGenerator(OpeningGeneratorEventArgs ev)

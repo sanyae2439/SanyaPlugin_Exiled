@@ -48,6 +48,9 @@ namespace SanyaPlugin
 		[Description("イベントモードのウェイト設定")]
 		public List<int> EventModeWeight { get; set; } = new List<int>() { 0 };
 
+		[Description("ShootingRangeモード")]
+		public bool EnabledShootingRange { get; set; } = false;
+
 		[Description("各ロールの初期装備")]
 		public Dictionary<string, string> Defaultitems { get; set; } = new Dictionary<string, string>()
 		{
@@ -123,7 +126,6 @@ namespace SanyaPlugin
 
 		[Description("AlphaWarhead起爆後のリスポーン時間")]
 		public int TimeToRespawnAfterDetonated { get; set; } = -1;
-
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;

@@ -82,7 +82,9 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
+			MapEvents.AnnouncingNtfEntrance += Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
+			MapEvents.PlacingBulletHole += Handlers.OnPlacingBulletHole;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus += Handlers.OnChangingLeverStatus;
@@ -98,6 +100,9 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
+			PlayerEvents.DroppingAmmo += Handlers.OnDroppingAmmo;
+			PlayerEvents.DroppingItem += Handlers.OnDroppingItem;
+			PlayerEvents.UsingItem += Handlers.OnUsingItem;
 			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
@@ -119,7 +124,9 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
+			MapEvents.AnnouncingNtfEntrance -= Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
+			MapEvents.PlacingBulletHole -= Handlers.OnPlacingBulletHole;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus -= Handlers.OnChangingLeverStatus;
@@ -135,6 +142,9 @@ namespace SanyaPlugin
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			PlayerEvents.DroppingAmmo -= Handlers.OnDroppingAmmo;
+			PlayerEvents.DroppingItem -= Handlers.OnDroppingItem;
+			PlayerEvents.UsingItem -= Handlers.OnUsingItem;
 			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
