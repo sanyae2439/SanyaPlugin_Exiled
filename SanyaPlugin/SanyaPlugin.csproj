@@ -44,8 +44,8 @@
       <HintPath>References\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp_publicized">
-      <HintPath>References\Assembly-CSharp_publicized.dll</HintPath>
+    <Reference Include="Assembly-CSharp-Publicized">
+      <HintPath>References\Assembly-CSharp-Publicized.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CommandSystem.Core">

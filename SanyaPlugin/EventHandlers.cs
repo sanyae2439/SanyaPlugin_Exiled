@@ -799,35 +799,35 @@ namespace SanyaPlugin
 		}
 		public void OnSyncingData(SyncingDataEventArgs ev)
 		{
-			//同じアニメーションは無視する
-			if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.curAnim == ev.CurrentAnimation) return;
+			////同じアニメーションは無視する
+			//if(ev.Player == null || ev.Player.IsHost || !ev.Player.ReferenceHub.Ready || ev.Player.ReferenceHub.animationController.MoveState == ev.CurrentAnimation) return;
 
-			if(plugin.Config.Scp049StackBody
-				&& ev.Player.Role == RoleType.Scp049
-				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-				&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs
-				&& (scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled))
-					roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
+			//if(plugin.Config.Scp049StackBody
+			//	&& ev.Player.Role == RoleType.Scp049
+			//	&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
+			//	&& !ev.Player.ReferenceHub.fpc.NetworkforceStopInputs
+			//	&& (scp049stackAmount > 0 || ev.Player.IsBypassModeEnabled))
+			//		roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp049CureFromStack(ev.Player), Segment.FixedUpdate));
 
-			if(plugin.Config.Scp106Exmode
-				&& ev.Player.Role == RoleType.Scp106
-				&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
-				&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
-				&& !Warhead.IsDetonated)
-				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(
-					ev.Player.ReferenceHub.characterClassManager.Scp106,
-					RoleType.Scp106.GetRandomSpawnProperties().Item1), Segment.FixedUpdate));
+			//if(plugin.Config.Scp106Exmode
+			//	&& ev.Player.Role == RoleType.Scp106
+			//	&& ev.CurrentAnimation == 1 && ev.Player.ReferenceHub.animationController.curAnim != 2
+			//	&& !ev.Player.ReferenceHub.characterClassManager.Scp106.goingViaThePortal
+			//	&& !Warhead.IsDetonated)
+			//	roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(
+			//		ev.Player.ReferenceHub.characterClassManager.Scp106,
+			//		RoleType.Scp106.GetRandomSpawnProperties().Item1), Segment.FixedUpdate));
 
-			//ジャンプ時スタミナ消費
-			if(plugin.Config.StaminaCostJump > 0 
-				&& ev.CurrentAnimation == 2 
-				&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
-				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
-				&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
-			{
-				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
-				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
-			}
+			////ジャンプ時スタミナ消費
+			//if(plugin.Config.StaminaCostJump > 0 
+			//	&& ev.CurrentAnimation == 2 
+			//	&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
+			//	&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
+			//	&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
+			//{
+			//	ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= plugin.Config.StaminaCostJump;
+			//	ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+			//}
 
 		}
 		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)

@@ -733,24 +733,7 @@ namespace SanyaPlugin.Functions
 
 		public static void SendHitmarker(this Player player, float size = 1f) => Hitmarker.SendHitmarker(player.Connection, size);
 
-		public static void SendGunAudio(this Player player, Vector3 position, ItemType itemType, byte volume, byte audioClipId = 0)
-		{
-			var message = new GunAudioMessage();
-			message.Weapon = itemType;
-			message.AudioClipId = audioClipId;
-			message.MaxDistance = volume;
-			message.ShooterNetId = 0U;
-
-			var to = position - player.Position;
-			var angle = Vector3.Angle(Vector3.forward, to);
-			if(Vector3.Dot(to.normalized, Vector3.left) > 0f) angle = 360f - angle;
-			message.ShooterDirection = (byte)Mathf.RoundToInt(angle / 1.44f);
-			message.ShooterRealDistance = (byte)Mathf.RoundToInt(Mathf.Min(to.magnitude, 255f));
-
-			player.Connection.Send(message);
-		}
-
-		public static bool IsExmode(this Player player) => player.ReferenceHub.animationController.curAnim == 1;
+		public static bool IsExmode(this Player player) => player.ReferenceHub.animationController.MoveState == PlayerMovementState.Sprinting;
 
 		public static void SendReportText(this Player player, string text) => player.SendConsoleMessage($"[REPORTING] {text}", "white");
 

@@ -300,7 +300,7 @@ namespace SanyaPlugin
 			{
 				string text = string.Empty;
 
-				text += (player.ReferenceHub.animationController.curAnim == 1 ? "Extend:Enabled" : "Extend:Disabled") + "\n";
+				text += (player.ReferenceHub.animationController.MoveState == PlayerMovementState.Sprinting ? "Extend:Enabled" : "Extend:Disabled") + "\n";
 				if(player.Level > 0)
 					text += player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f ? "LockDown:Ready" : $"LockDown:Cooldown({Mathf.RoundToInt(player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown)})";
 

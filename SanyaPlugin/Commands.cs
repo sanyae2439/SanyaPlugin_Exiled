@@ -408,10 +408,10 @@ namespace SanyaPlugin.Commands
 						{
 							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
-								writer.WriteULong(1ul);
-								writer.WriteUInt((uint)1);
+								writer.WriteUInt64(1ul);
+								writer.WriteUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt((uint)19);
+								writer.WriteUInt32((uint)19);
 								writer.WriteByte((byte)1);
 							});
 							isActwatchEnabled = true;
@@ -420,10 +420,10 @@ namespace SanyaPlugin.Commands
 						{
 							MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
 							{
-								writer.WriteULong(1ul);
-								writer.WriteUInt(1);
+								writer.WriteUInt64(1ul);
+								writer.WriteUInt32(1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt(19);
+								writer.WriteUInt32(19);
 								writer.WriteByte(0);
 							});
 							isActwatchEnabled = false;
