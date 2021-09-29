@@ -46,7 +46,7 @@ namespace SanyaPlugin
 		public int InfosenderPort { get; set; } = -1;
 
 		[Description("イベントモードのウェイト設定")]
-		public List<int> EventModeWeight { get; set; } = new List<int>() { 0 };
+		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0 };
 
 		[Description("ShootingRangeモード")]
 		public bool EnabledShootingRange { get; set; } = false;

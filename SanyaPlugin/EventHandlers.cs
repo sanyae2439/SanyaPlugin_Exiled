@@ -360,7 +360,7 @@ namespace SanyaPlugin
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
-			Log.Debug($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Info($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}");
 
 			//ラウンド終了後にリスポーンを停止する
 			if(plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
@@ -664,6 +664,7 @@ namespace SanyaPlugin
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 					ev.Player.EnableEffect<Bleeding>();
+					ev.Player.EnableEffect<Burned>();
 					ev.Player.EnableEffect<Deafened>();
 				}));
 
@@ -715,8 +716,8 @@ namespace SanyaPlugin
 			//SCP-049-2の打撃エフェクト付与
 			if(plugin.Config.Scp0492AttackEffect && ev.DamageType == DamageTypes.Scp0492)
 			{
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(5f);
-				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(5f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Concussed>(3f);
+				ev.Target.ReferenceHub.playerEffectsController.EnableEffect<Deafened>(3f);
 			}
 
 			//SCP-049-2の攻撃力

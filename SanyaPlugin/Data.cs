@@ -8,7 +8,8 @@ namespace SanyaPlugin.Data
 	public enum SANYA_GAME_MODE
 	{
 		NULL = -1,
-		NORMAL = 0
+		NORMAL = 0,
+		BLACKOUT = 1,
 	}
 
 	public static class OutsideRandomAirbombPos
