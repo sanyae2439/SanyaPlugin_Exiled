@@ -172,6 +172,17 @@
 		);
 	}
 
+	internal static class EventTexts
+	{
+		internal static readonly string BlackoutInit = string.Concat(
+			"<color=#ff0000><size=25>",
+			"《警告。施設の電源供給システムが攻撃を受けました。\nほぼ全ての部屋の照明は、発電機が2つ作動するまで利用できません。》\n",
+			"</size><size=20>",
+			"《Warning. Facility power system has been attacked. \nAll most containment zones light does not available until 2 generator activated.》\n",
+			"</size></color>"
+		);
+	}
+
 	internal static class HintTexts
 	{
 		internal static readonly string Error079NotEnoughTier = string.Concat(

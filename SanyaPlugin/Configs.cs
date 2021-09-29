@@ -145,6 +145,9 @@ namespace SanyaPlugin
 		[Description("地上のオブジェクトを編集する")]
 		public bool EditObjectsOnSurface { get; set; } = false;
 
+		[Description("地上の明るさ")]
+		public float LightIntensitySurface { get; set; } = 1f;
+
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 

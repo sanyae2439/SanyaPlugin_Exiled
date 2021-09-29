@@ -255,10 +255,17 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(target3);
 			}
 
+			if(plugin.Config.LightIntensitySurface != 1f)
+			{
+				UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>().LightIntensityMultiplier = plugin.Config.LightIntensitySurface;
+			}
+
 			//イベント設定
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
 			{
+				case SANYA_GAME_MODE.BLACKOUT:
+					break;
 				default:
 					{
 						eventmode = SANYA_GAME_MODE.NORMAL;
@@ -282,7 +289,16 @@ namespace SanyaPlugin
 			{
 				AlphaWarheadController.Host.cooldown = plugin.Config.AlphaWarheadNeedElapsedSeconds;
 				AlphaWarheadController.Host.NetworktimeToDetonation += (float)AlphaWarheadController.Host.cooldown;
-			}	
+			}
+
+			switch(eventmode)
+			{
+				case SANYA_GAME_MODE.BLACKOUT:
+					{
+						roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitBlackout(), Segment.FixedUpdate));
+						break;
+					}
+			}
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
@@ -469,6 +485,10 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Map.ActivatedGenerators + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
 
+			//強制再収容のとき
+			if(UnityEngine.Object.FindObjectOfType<Recontainer079>()._alreadyRecontained) 
+				return;
+
 			if(plugin.Config.GeneratorFix)
 				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, false);
 
@@ -477,6 +497,22 @@ namespace SanyaPlugin
 					Methods.SendSubtitle(Subtitles.GeneratorComplete, 15);
 				else
 					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
+
+			switch(eventmode)
+			{
+				case SANYA_GAME_MODE.BLACKOUT:
+					{
+						if(Map.ActivatedGenerators == 1)
+						{
+							foreach(var i in FlickerableLightController.Instances)
+								i.LightIntensityMultiplier = 1f;
+							if(plugin.Config.LightIntensitySurface != 1f)
+								UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>().LightIntensityMultiplier = plugin.Config.LightIntensitySurface;
+						}
+
+						break;
+					}
+			}
 		}
 		public void OnPlacingBulletHole(PlacingBulletHole ev)
 		{
