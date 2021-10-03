@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
 using MapGeneration.Distributors;
 using MEC;
@@ -88,9 +89,39 @@ namespace SanyaPlugin
 			}				
 		}
 
-		public void OnChangingRole(RoleType newRole)
+		public void OnChangingRole(RoleType newRole, RoleType prevRole)
 		{
-			if(_shieldEnabled)
+			bool needSetup = false;
+			if(newRole == RoleType.Scp049 && SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
+			{
+				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+				_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
+				_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+				needSetup = true;
+			}
+			else if(newRole == RoleType.Scp106 && SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
+			{
+				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+				_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
+				_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
+				needSetup = true;
+			}
+
+			if(needSetup)
+			{
+				if(prevRole.GetTeam() != Team.SCP)
+				{
+					_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
+					_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
+					_prevAHPMax = player.ReferenceHub.playerStats.MaxArtificialHealth;
+				}
+				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _currentMaxAHP;
+				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
+				_shouldInitAHP = true;
+				_shieldEnabled = true;
+			}
+			
+			if(newRole.GetTeam() != Team.SCP && prevRole.GetTeam() == Team.SCP)
 			{
 				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
 				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
@@ -103,33 +134,6 @@ namespace SanyaPlugin
 				_currentMaxAHP = 0;
 				_shieldEnabled = false;
 			}
-
-			if(newRole == RoleType.Scp049 && SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
-			{
-				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
-				_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
-				_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
-				_shieldEnabled = true;
-			}
-			else if(newRole == RoleType.Scp106 && SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
-			{
-				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
-				_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
-				_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
-				_shieldEnabled = true;
-			}
-
-			if(_shieldEnabled)
-			{
-				_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
-				_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
-				_prevAHPMax = player.ReferenceHub.playerStats.MaxArtificialHealth;
-				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _currentMaxAHP;
-				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
-				_shouldInitAHP = true;
-				_shieldEnabled = true;
-			}
-
 		}
 
 		public void OnDamage()
