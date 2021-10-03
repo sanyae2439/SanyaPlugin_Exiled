@@ -700,6 +700,7 @@ namespace SanyaPlugin
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 					ev.Player.EnableEffect<Burned>();
+					ev.Player.EnableEffect<Concussed>();
 					ev.Player.EnableEffect<Deafened>();
 				}));
 

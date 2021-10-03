@@ -89,6 +89,19 @@ namespace SanyaPlugin
 
 		public void OnChangingRole(RoleType newRole, RoleType prevRole)
 		{
+			if(_currentMaxAHP > 0)
+			{
+				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
+				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
+				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _prevAHPMax;
+				_prevAHPDelay = 0f;
+				_prevAHPRatio = 0f;
+				_prevAHPMax = 0;
+				_currentRegenRate = 0f;
+				_currentRegenTime = 0f;
+				_currentMaxAHP = 0;
+			}
+
 			if(newRole == RoleType.Scp049)
 			{
 				if(SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
@@ -108,7 +121,7 @@ namespace SanyaPlugin
 					_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
 			}
 
-			if(newRole == RoleType.Scp049 || newRole == RoleType.Scp106 && _currentMaxAHP > 0)
+			if(_currentMaxAHP > 0)
 			{
 				_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
 				_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
@@ -118,15 +131,6 @@ namespace SanyaPlugin
 				_shouldInitAHP = true;
 			}
 
-			if(prevRole == RoleType.Scp049 || prevRole == RoleType.Scp106 && !_shouldInitAHP)
-			{
-				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
-				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
-				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _prevAHPMax;
-				_prevAHPDelay = 0f;
-				_prevAHPRatio = 0f;
-				_prevAHPMax = 0;
-			}
 		}
 
 		public void OnDamage()
