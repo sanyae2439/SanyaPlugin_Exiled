@@ -117,7 +117,8 @@ namespace SanyaPlugin
 				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
 				_shouldInitAHP = true;
 			}
-			else if(prevRole == RoleType.Scp049 || prevRole == RoleType.Scp106)
+
+			if(prevRole == RoleType.Scp049 || prevRole == RoleType.Scp106 && !_shouldInitAHP)
 			{
 				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
 				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
