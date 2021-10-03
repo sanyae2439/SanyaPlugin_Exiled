@@ -173,6 +173,15 @@ namespace SanyaPlugin
 		};
 		public readonly Dictionary<RoleType, float> ScpTakenDamageMultiplierParsed = new Dictionary<RoleType, float>();
 
+		[Description("SCP-049のシールド最大値")]
+		public int Scp049MaxAhp { get; set; } = 0;
+
+		[Description("SCP-049のシールド回復速度")]
+		public float Scp049RegenRate { get; set; } = 0f;
+
+		[Description("SCP-049のシールド回復までの時間")]
+		public float Scp049TimeUntilRegen { get; set; } = 0f;
+
 		[Description("SCP-049-2の攻撃力")]
 		public float Scp0492Damage { get; set; } = 40f;
 
@@ -190,6 +199,15 @@ namespace SanyaPlugin
 
 		[Description("SCP-096の発狂時のダメージ乗数")]
 		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
+
+		[Description("SCP-106のシールド最大値")]
+		public int Scp106MaxAhp { get; set; } = 0;
+
+		[Description("SCP-106のシールド回復速度")]
+		public float Scp106RegenRate { get; set; } = 0f;
+
+		[Description("SCP-106のシールド回復までの時間")]
+		public float Scp106TimeUntilRegen { get; set; } = 0f;
 
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;

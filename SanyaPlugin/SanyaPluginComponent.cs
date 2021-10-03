@@ -4,6 +4,7 @@ using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Features;
 using MapGeneration.Distributors;
+using MEC;
 using Mirror.LiteNetLib4Mirror;
 using Respawning;
 using SanyaPlugin.Functions;
@@ -14,13 +15,11 @@ namespace SanyaPlugin
 	public class SanyaPluginComponent : MonoBehaviour
 	{
 
+		public static readonly Dictionary<Player, SanyaPluginComponent> Instances = new Dictionary<Player, SanyaPluginComponent>();
 		public static readonly HashSet<Player> scplists = new HashSet<Player>();
-		private static Vector3 _espaceArea = new Vector3(177.5f, 985.0f, 29.0f);
 
 		public Player player { get; private set; }
 		public bool DisableHud = false;
-
-		private SanyaPlugin _plugin;
 
 		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
 		private float _timer = 0f;
@@ -32,13 +31,26 @@ namespace SanyaPlugin
 		private string _hudBottomDownString = string.Empty;
 		private float _hudBottomDownTime = -1f;
 		private float _hudBottomDownTimer = 0f;
+
+		//Shields
+		private float _regenTimer = 0f;
+		private bool _shouldInitAHP = false;
+		private int _currentMaxAHP = 0;
+		private float _currentRegenRate = 0f;
+		private float _currentRegenTime = 0f;
 		private int _prevHealth = -1;
+		private float _prevAHPDelay;
+		private float _prevAHPRatio;
+		private int _prevAHPMax;
+
+		//Scan
 		private Camera079 _lastcam = null;
 
 		private void Start()
 		{
-			_plugin = SanyaPlugin.Instance;
 			player = Player.Get(gameObject);
+			if(!Instances.TryGetValue(player, out _))
+				Instances.Add(player, this);
 			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
 		}
 
@@ -46,16 +58,19 @@ namespace SanyaPlugin
 		{
 			if(scplists.Contains(player)) 
 				scplists.Remove(player);
+			if(Instances.TryGetValue(player, out _))
+				Instances.Remove(player);
 		}
 
 		private void FixedUpdate()
 		{
-			if(!_plugin.Config.IsEnabled) return;
-			if(!_plugin.Config.ExHudEnabled) return;
+			if(!SanyaPlugin.Instance.Config.IsEnabled) return;
+			if(!SanyaPlugin.Instance.Config.ExHudEnabled) return;
 
 			_timer += Time.deltaTime;
 
 			UpdateTimers();
+			UpdateShields();
 			CheckVoiceChatting();				
 
 			//EverySeconds
@@ -70,6 +85,53 @@ namespace SanyaPlugin
 				UpdateExHud();
 				_timer = 0f;
 			}				
+		}
+
+		public void OnChangingRole(RoleType newRole, RoleType prevRole)
+		{
+			if(newRole == RoleType.Scp049)
+			{
+				if(SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
+					_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+				if(SanyaPlugin.Instance.Config.Scp049RegenRate > 0f)
+					_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
+				if(SanyaPlugin.Instance.Config.Scp049TimeUntilRegen > 0f)
+					_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+			}
+			else if(newRole == RoleType.Scp106)
+			{
+				if(SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
+					_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+				if(SanyaPlugin.Instance.Config.Scp106RegenRate > 0f)
+					_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
+				if(SanyaPlugin.Instance.Config.Scp106TimeUntilRegen > 0f)
+					_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
+			}
+
+			if(newRole == RoleType.Scp049 || newRole == RoleType.Scp106 && _currentMaxAHP > 0)
+			{
+				_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
+				_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
+				_prevAHPMax = player.ReferenceHub.playerStats.MaxArtificialHealth;
+				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _currentMaxAHP;
+				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
+				_shouldInitAHP = true;
+			}
+			else if(prevRole == RoleType.Scp049 || prevRole == RoleType.Scp106)
+			{
+				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
+				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
+				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _prevAHPMax;
+				_prevAHPDelay = 0f;
+				_prevAHPRatio = 0f;
+				_prevAHPMax = 0;
+			}
+		}
+
+		public void OnDamage()
+		{
+			if(_prevAHPDelay == 0f || _prevAHPRatio == 0f || _prevAHPMax == 0) return;
+			_regenTimer = _currentRegenTime;
 		}
 
 		public void AddHudCenterDownText(string text, ulong timer)
@@ -96,8 +158,12 @@ namespace SanyaPlugin
 			_hudBottomDownTime = -1f;
 		}
 
-		public void UpdateTimers()
+		private void UpdateTimers()
 		{
+			_regenTimer -= Time.deltaTime;
+			if(_regenTimer < 0f)
+				_regenTimer = 0f;
+
 			if(_hudCenterDownTimer < _hudCenterDownTime)
 				_hudCenterDownTimer += Time.deltaTime;
 			else
@@ -111,7 +177,7 @@ namespace SanyaPlugin
 
 		private void CheckVoiceChatting()
 		{
-			if(!_plugin.Config.Scp939CanSeeVoiceChatting) return;
+			if(!SanyaPlugin.Instance.Config.Scp939CanSeeVoiceChatting) return;
 
 			if(player.IsHuman()
 				&& player.GameObject.TryGetComponent(out Radio radio)
@@ -121,7 +187,7 @@ namespace SanyaPlugin
 
 		private void CheckSinkholeDistance()
 		{
-			if(!_plugin.Config.FixSinkhole || SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
+			if(!SanyaPlugin.Instance.Config.FixSinkhole || SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
 
 			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f) 
 				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled
@@ -148,6 +214,22 @@ namespace SanyaPlugin
 					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
 
 			_lastcam = player.Camera;
+		}
+
+		private void UpdateShields()
+		{
+			if(_prevAHPDelay == 0f || _prevAHPRatio == 0f || _prevAHPMax == 0) return;
+
+			if(_shouldInitAHP)
+			{
+				player.ReferenceHub.playerStats.ForceAhpValue(_currentMaxAHP);
+				_shouldInitAHP = false;
+			}
+
+			if(_regenTimer <= 0f)
+				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = -_currentRegenRate;
+			else
+				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = 0f;
 		}
 
 		private void UpdateMyCustomText()
@@ -188,7 +270,7 @@ namespace SanyaPlugin
 
 		private void UpdateExHud()
 		{
-			if(DisableHud || !_plugin.Config.ExHudEnabled) return;
+			if(DisableHud || !SanyaPlugin.Instance.Config.ExHudEnabled) return;
 
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"ServerTime:{DateTime.Now:HH:mm:ss} " +

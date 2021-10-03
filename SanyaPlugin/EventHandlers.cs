@@ -699,7 +699,6 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
-					ev.Player.EnableEffect<Bleeding>();
 					ev.Player.EnableEffect<Burned>();
 					ev.Player.EnableEffect<Deafened>();
 				}));
@@ -722,6 +721,10 @@ namespace SanyaPlugin
 			//Dクラスロールボーナス
 			if(!string.IsNullOrEmpty(ev.Player.GroupName) && plugin.Config.ClassdBonusitemsForRoleParsed.TryGetValue(ev.Player.GroupName, out List<ItemType> bonusitems) && ev.NewRole == RoleType.ClassD)
 				ev.Items.InsertRange(0, bonusitems);
+
+			//こんぽーねんと
+			if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))
+				component.OnChangingRole(ev.NewRole, ev.Player.ReferenceHub.characterClassManager._prevId);
 
 			if(plugin.Config.EnabledShootingRange)
 				ev.Player.IsGodModeEnabled = true;
@@ -746,7 +749,7 @@ namespace SanyaPlugin
 		}
 		public void OnHurting(HurtingEventArgs ev)
 		{
-			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Attacker.Role == RoleType.Spectator || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
+			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
 			Log.Debug($"[OnHurting:Before] {ev.Attacker.Nickname}[{ev.Attacker.Role}] -{ev.Amount}({ev.DamageType.Name})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//SCP-049-2の打撃エフェクト付与
@@ -782,6 +785,10 @@ namespace SanyaPlugin
 				if(plugin.Config.ScpTakenDamageMultiplierParsed.TryGetValue(ev.Target.Role, out var value))
 					ev.Amount *= value;
 			}
+
+			//こんぽーねんと
+			if(SanyaPluginComponent.Instances.TryGetValue(ev.Target, out var component))
+				component.OnDamage();
 
 			//ダメージランキング
 			if(!RoundSummary.singleton.RoundEnded && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && 
