@@ -725,7 +725,7 @@ namespace SanyaPlugin
 
 			//こんぽーねんと
 			if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))
-				component.OnChangingRole(ev.NewRole, ev.Player.ReferenceHub.characterClassManager._prevId);
+				component.OnChangingRole(ev.NewRole);
 
 			if(plugin.Config.EnabledShootingRange)
 				ev.Player.IsGodModeEnabled = true;

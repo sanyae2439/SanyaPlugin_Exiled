@@ -33,8 +33,9 @@ namespace SanyaPlugin
 		private float _hudBottomDownTimer = 0f;
 
 		//Shields
-		private float _regenTimer = 0f;
+		private bool _shieldEnabled = false;
 		private bool _shouldInitAHP = false;
+		private float _regenTimer = 0f;
 		private int _currentMaxAHP = 0;
 		private float _currentRegenRate = 0f;
 		private float _currentRegenTime = 0f;
@@ -87,9 +88,9 @@ namespace SanyaPlugin
 			}				
 		}
 
-		public void OnChangingRole(RoleType newRole, RoleType prevRole)
+		public void OnChangingRole(RoleType newRole)
 		{
-			if(_currentMaxAHP > 0)
+			if(_shieldEnabled)
 			{
 				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
 				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
@@ -100,28 +101,25 @@ namespace SanyaPlugin
 				_currentRegenRate = 0f;
 				_currentRegenTime = 0f;
 				_currentMaxAHP = 0;
+				_shieldEnabled = false;
 			}
 
-			if(newRole == RoleType.Scp049)
+			if(newRole == RoleType.Scp049 && SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
 			{
-				if(SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
-					_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
-				if(SanyaPlugin.Instance.Config.Scp049RegenRate > 0f)
-					_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
-				if(SanyaPlugin.Instance.Config.Scp049TimeUntilRegen > 0f)
-					_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+				_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
+				_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+				_shieldEnabled = true;
 			}
-			else if(newRole == RoleType.Scp106)
+			else if(newRole == RoleType.Scp106 && SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
 			{
-				if(SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
-					_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
-				if(SanyaPlugin.Instance.Config.Scp106RegenRate > 0f)
-					_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
-				if(SanyaPlugin.Instance.Config.Scp106TimeUntilRegen > 0f)
-					_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
+				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+				_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
+				_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
+				_shieldEnabled = true;
 			}
 
-			if(_currentMaxAHP > 0)
+			if(_shieldEnabled)
 			{
 				_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
 				_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
@@ -129,13 +127,14 @@ namespace SanyaPlugin
 				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _currentMaxAHP;
 				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
 				_shouldInitAHP = true;
+				_shieldEnabled = true;
 			}
 
 		}
 
 		public void OnDamage()
 		{
-			if(_prevAHPDelay == 0f || _prevAHPRatio == 0f || _prevAHPMax == 0) return;
+			if(!_shieldEnabled) return;
 			_regenTimer = _currentRegenTime;
 		}
 
@@ -223,7 +222,7 @@ namespace SanyaPlugin
 
 		private void UpdateShields()
 		{
-			if(_prevAHPDelay == 0f || _prevAHPRatio == 0f || _prevAHPMax == 0) return;
+			if(!_shieldEnabled) return;
 
 			if(_shouldInitAHP)
 			{
