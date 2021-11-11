@@ -151,6 +151,9 @@ namespace SanyaPlugin
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 
+		[Description("SCP-018がドアを破壊しないようにする")]
+		public bool Scp018DisableDestroyingDoor { get; set; } = false;
+
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 
