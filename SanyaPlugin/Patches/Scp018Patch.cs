@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Reflection;
 using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
+using SanyaPlugin.Functions;
 using UnityEngine;
 
 namespace SanyaPlugin.Patches
@@ -13,7 +13,7 @@ namespace SanyaPlugin.Patches
 	{
 		public static bool Prefix(Scp018Projectile __instance, Collision collision)
 		{
-			((Action<Collision>)Activator.CreateInstance(typeof(Action<Collision>),__instance, typeof(CollisionDetectionPickup).GetMethod(nameof(CollisionDetectionPickup.ProcessCollision), BindingFlags.NonPublic | BindingFlags.Instance).MethodHandle.GetFunctionPointer()))(collision);
+			__instance.CallBaseMethod<Action<Collision>>(typeof(CollisionDetectionPickup), nameof(CollisionDetectionPickup.ProcessCollision))(collision);
 			__instance.RpcMakeSound(collision.relativeVelocity.sqrMagnitude);
 
 			if(__instance._activatedTime == 0f)

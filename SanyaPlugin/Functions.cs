@@ -18,6 +18,7 @@ using InventorySystem.Items.Firearms;
 using InventorySystem.Items.ThrowableProjectiles;
 using MEC;
 using Mirror;
+using PlayerStatsSystem;
 using RemoteAdmin;
 using Respawning;
 using SanyaPlugin.Data;
@@ -648,6 +649,11 @@ namespace SanyaPlugin.Functions
 
 	internal static class Extensions
 	{
+		public static T CallBaseMethod<T>(this object instance, Type targetType, string methodName) => (T)Activator.CreateInstance(
+				typeof(T),
+				instance,
+				targetType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).MethodHandle.GetFunctionPointer());
+
 		public static Task StartSender(this Task task)
 		{
 			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
@@ -672,7 +678,8 @@ namespace SanyaPlugin.Functions
 
 		public static int GetHealthAmountPercent(this Player player)
 		{
-			return (int)(100f - (player.ReferenceHub.playerStats.GetHealthPercent() * 100f));
+			//return (int)(100f - (player.ReferenceHub.playerStats.GetModule<HealthStat>(). * 100f));
+			return 0;
 		}
 
 		public static int GetAHPAmountPercent(this Player player)

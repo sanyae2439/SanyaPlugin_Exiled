@@ -141,7 +141,6 @@
     <Compile Include="Patches\RestartSequencePatch.cs" />
     <Compile Include="Patches\Scp018Patch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\RemoveEscapeCounterPatch.cs" />
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />

@@ -7,6 +7,7 @@ using Exiled.API.Features;
 using MapGeneration.Distributors;
 using MEC;
 using Mirror.LiteNetLib4Mirror;
+using PlayerStatsSystem;
 using Respawning;
 using SanyaPlugin.Functions;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace SanyaPlugin
 		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
 		private float _timer = 0f;
 		private int _respawnCounter = -1;
+		private int _prevHealth = -1;
 		private string _hudText = string.Empty;
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
@@ -32,18 +34,6 @@ namespace SanyaPlugin
 		private string _hudBottomDownString = string.Empty;
 		private float _hudBottomDownTime = -1f;
 		private float _hudBottomDownTimer = 0f;
-
-		//Shields
-		private bool _shieldEnabled = false;
-		private bool _shouldInitAHP = false;
-		private float _regenTimer = 0f;
-		private int _currentMaxAHP = 0;
-		private float _currentRegenRate = 0f;
-		private float _currentRegenTime = 0f;
-		private int _prevHealth = -1;
-		private float _prevAHPDelay;
-		private float _prevAHPRatio;
-		private int _prevAHPMax;
 
 		//Scan
 		private Camera079 _lastcam = null;
@@ -72,7 +62,6 @@ namespace SanyaPlugin
 			_timer += Time.deltaTime;
 
 			UpdateTimers();
-			UpdateShields();
 			CheckVoiceChatting();				
 
 			//EverySeconds
@@ -87,59 +76,6 @@ namespace SanyaPlugin
 				UpdateExHud();
 				_timer = 0f;
 			}				
-		}
-
-		public void OnChangingRole(RoleType newRole, RoleType prevRole)
-		{
-			bool needSetup = false;
-			if(newRole == RoleType.Scp049 && SanyaPlugin.Instance.Config.Scp049MaxAhp > 0)
-			{
-				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp049MaxAhp;
-				_currentRegenRate = SanyaPlugin.Instance.Config.Scp049RegenRate;
-				_currentRegenTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
-				needSetup = true;
-			}
-			else if(newRole == RoleType.Scp106 && SanyaPlugin.Instance.Config.Scp106MaxAhp > 0)
-			{
-				_currentMaxAHP = SanyaPlugin.Instance.Config.Scp106MaxAhp;
-				_currentRegenRate = SanyaPlugin.Instance.Config.Scp106RegenRate;
-				_currentRegenTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
-				needSetup = true;
-			}
-
-			if(needSetup)
-			{
-				if(prevRole.GetTeam() != Team.SCP)
-				{
-					_prevAHPDelay = player.ReferenceHub.playerStats.ArtificialHpDecay;
-					_prevAHPRatio = player.ReferenceHub.playerStats.ArtificialNormalRatio;
-					_prevAHPMax = player.ReferenceHub.playerStats.MaxArtificialHealth;
-				}
-				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _currentMaxAHP;
-				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = 1f;
-				_shouldInitAHP = true;
-				_shieldEnabled = true;
-			}
-			
-			if(newRole.GetTeam() != Team.SCP && prevRole.GetTeam() == Team.SCP)
-			{
-				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = _prevAHPDelay;
-				player.ReferenceHub.playerStats.NetworkArtificialNormalRatio = _prevAHPRatio;
-				player.ReferenceHub.playerStats.NetworkMaxArtificialHealth = _prevAHPMax;
-				_prevAHPDelay = 0f;
-				_prevAHPRatio = 0f;
-				_prevAHPMax = 0;
-				_currentRegenRate = 0f;
-				_currentRegenTime = 0f;
-				_currentMaxAHP = 0;
-				_shieldEnabled = false;
-			}
-		}
-
-		public void OnDamage()
-		{
-			if(!_shieldEnabled) return;
-			_regenTimer = _currentRegenTime;
 		}
 
 		public void AddHudCenterDownText(string text, ulong timer)
@@ -168,10 +104,6 @@ namespace SanyaPlugin
 
 		private void UpdateTimers()
 		{
-			_regenTimer -= Time.deltaTime;
-			if(_regenTimer < 0f)
-				_regenTimer = 0f;
-
 			if(_hudCenterDownTimer < _hudCenterDownTime)
 				_hudCenterDownTimer += Time.deltaTime;
 			else
@@ -222,22 +154,6 @@ namespace SanyaPlugin
 					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
 
 			_lastcam = player.Camera;
-		}
-
-		private void UpdateShields()
-		{
-			if(!_shieldEnabled) return;
-
-			if(_shouldInitAHP)
-			{
-				player.ReferenceHub.playerStats.ForceAhpValue(_currentMaxAHP);
-				_shouldInitAHP = false;
-			}
-
-			if(_regenTimer <= 0f)
-				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = -_currentRegenRate;
-			else
-				player.ReferenceHub.playerStats.NetworkArtificialHpDecay = 0f;
 		}
 
 		private void UpdateMyCustomText()

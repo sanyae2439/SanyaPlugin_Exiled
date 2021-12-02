@@ -23,7 +23,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(3, 0, 0);
+		public override Version RequiredExiledVersion => new Version(4, 0, 0);
 
 		//インスタンス
 		public static SanyaPlugin Instance { get; private set; }
@@ -82,9 +82,7 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
-			MapEvents.AnnouncingNtfEntrance += Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
-			MapEvents.PlacingBulletHole += Handlers.OnPlacingBulletHole;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus += Handlers.OnChangingLeverStatus;
@@ -94,16 +92,12 @@ namespace SanyaPlugin
 			PlayerEvents.Destroying += Handlers.OnDestroying;
 			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
 			PlayerEvents.Spawning += Handlers.OnSpawning;
-			PlayerEvents.Hurting += Handlers.OnHurting;
-			PlayerEvents.Died += Handlers.OnDied;
+			//PlayerEvents.Hurting += Handlers.OnHurting;
+			//PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
-			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
+			//PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
-			PlayerEvents.DroppingAmmo += Handlers.OnDroppingAmmo;
-			PlayerEvents.DroppingItem += Handlers.OnDroppingItem;
-			PlayerEvents.UsingItem += Handlers.OnUsingItem;
-			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
@@ -124,9 +118,7 @@ namespace SanyaPlugin
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
-			MapEvents.AnnouncingNtfEntrance -= Handlers.OnAnnouncingNtfEntrance;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
-			MapEvents.PlacingBulletHole -= Handlers.OnPlacingBulletHole;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus -= Handlers.OnChangingLeverStatus;
@@ -136,16 +128,12 @@ namespace SanyaPlugin
 			PlayerEvents.Destroying -= Handlers.OnDestroying;
 			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
 			PlayerEvents.Spawning -= Handlers.OnSpawning;
-			PlayerEvents.Hurting -= Handlers.OnHurting;
-			PlayerEvents.Died -= Handlers.OnDied;
+			//PlayerEvents.Hurting -= Handlers.OnHurting;
+			//PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
-			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
+			//PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
-			PlayerEvents.DroppingAmmo -= Handlers.OnDroppingAmmo;
-			PlayerEvents.DroppingItem -= Handlers.OnDroppingItem;
-			PlayerEvents.UsingItem -= Handlers.OnUsingItem;
-			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
