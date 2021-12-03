@@ -80,6 +80,7 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
+			MapEvents.AnnouncingScpTermination += Handlers.OnAnnouncingScpTermination;
 			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
@@ -92,10 +93,11 @@ namespace SanyaPlugin
 			PlayerEvents.Destroying += Handlers.OnDestroying;
 			PlayerEvents.ChangingRole += Handlers.OnChangingRole;
 			PlayerEvents.Spawning += Handlers.OnSpawning;
-			//PlayerEvents.Hurting += Handlers.OnHurting;
-			//PlayerEvents.Died += Handlers.OnDied;
+			PlayerEvents.Hurting += Handlers.OnHurting;
+			PlayerEvents.Dying += Handlers.OnDying;
+			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
-			//PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
+			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
@@ -116,6 +118,7 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
+			MapEvents.AnnouncingScpTermination -= Handlers.OnAnnouncingScpTermination;
 			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
 			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
@@ -128,10 +131,11 @@ namespace SanyaPlugin
 			PlayerEvents.Destroying -= Handlers.OnDestroying;
 			PlayerEvents.ChangingRole -= Handlers.OnChangingRole;
 			PlayerEvents.Spawning -= Handlers.OnSpawning;
-			//PlayerEvents.Hurting -= Handlers.OnHurting;
-			//PlayerEvents.Died -= Handlers.OnDied;
+			PlayerEvents.Hurting -= Handlers.OnHurting;
+			PlayerEvents.Dying -= Handlers.OnDying;
+			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
-			//PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
+			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;

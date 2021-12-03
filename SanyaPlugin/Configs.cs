@@ -130,6 +130,9 @@ namespace SanyaPlugin
 		[Description("発電機の使用を細かく修正する")]
 		public bool GeneratorFix { get; set; } = false;
 
+		[Description("ポケットディメンションの死体やアイテムを発生させない")]
+		public bool PocketdimensionClean { get; set; } = false;
+
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 
@@ -156,9 +159,6 @@ namespace SanyaPlugin
 
 		[Description("MTF/CIが武装解除されると死亡し、相手チームのチケットを加算させる量")]
 		public int CuffedTicketDeathToMtfCi { get; set; } = 0;
-
-		[Description("武装解除時の被ダメージ乗数")]
-		public float CuffedDamageMultiplier { get; set; } = 1f;
 
 		[Description("SCPの被ダメージ乗数")]
 		public Dictionary<string, float> ScpTakenDamageMultiplier { get; set; } = new Dictionary<string, float>()
