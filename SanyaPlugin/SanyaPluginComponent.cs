@@ -21,6 +21,7 @@ namespace SanyaPlugin
 		public static readonly HashSet<Player> scplists = new HashSet<Player>();
 
 		public Player player { get; private set; }
+		public AhpStat.AhpProcess Shield { get; private set; }
 		public bool DisableHud = false;
 
 		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
@@ -48,7 +49,7 @@ namespace SanyaPlugin
 
 		private void OnDestroy()
 		{
-			if(scplists.Contains(player)) 
+			if(scplists.Contains(player))
 				scplists.Remove(player);
 			if(Instances.TryGetValue(player, out _))
 				Instances.Remove(player);
@@ -62,7 +63,7 @@ namespace SanyaPlugin
 			_timer += Time.deltaTime;
 
 			UpdateTimers();
-			CheckVoiceChatting();				
+			CheckVoiceChatting();
 
 			//EverySeconds
 			if(_timer > 1f)
@@ -75,7 +76,7 @@ namespace SanyaPlugin
 				UpdateRespawnCounter();
 				UpdateExHud();
 				_timer = 0f;
-			}				
+			}
 		}
 
 		public void AddHudCenterDownText(string text, ulong timer)
@@ -100,6 +101,55 @@ namespace SanyaPlugin
 		public void ClearHudBottomText()
 		{
 			_hudBottomDownTime = -1f;
+		}
+
+		public void OnChangingRole(RoleType newRole, RoleType prevRole)
+		{
+			if(newRole == RoleType.Scp049 || newRole == RoleType.Scp106)
+				Timing.CallDelayed(Timing.WaitForOneFrame, () => SetupShield(newRole));
+			else
+				ResetShield();
+		}
+
+		public void OnDamage()
+		{
+			if(Shield != null)
+			{
+				if(player.Role == RoleType.Scp049)
+					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+				else if(player.Role == RoleType.Scp106)
+					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
+			}
+		}
+
+		private void SetupShield(RoleType roleType)
+		{
+			Log.Warn($"SetupShield:{player.Nickname}");
+
+			Shield = player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerAddProcess(0f, 0f, 0f, 1f, 0f, true);
+
+			if(roleType == RoleType.Scp049)
+			{
+				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp049RegenRate;
+				Shield.Limit = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+			}
+			else if(roleType == RoleType.Scp106)
+			{
+				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp106RegenRate;
+				Shield.Limit = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+			}
+		}
+
+		private void ResetShield()
+		{
+			Log.Warn($"ResetShield:{player.Nickname}");
+
+			if(Shield != null)
+				player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(Shield.KillCode);
+
+			Shield = null;
 		}
 
 		private void UpdateTimers()
@@ -129,7 +179,7 @@ namespace SanyaPlugin
 		{
 			if(!SanyaPlugin.Instance.Config.FixSinkhole || SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
 
-			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f) 
+			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f)
 				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled
 				)
 				player.DisableEffect<SinkHole>();
@@ -159,7 +209,7 @@ namespace SanyaPlugin
 		private void UpdateMyCustomText()
 		{
 			if(!player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
-			if(_prevHealth != player.Health) 
+			if(_prevHealth != player.Health)
 			{
 				_prevHealth = (int)player.Health;
 				player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP";

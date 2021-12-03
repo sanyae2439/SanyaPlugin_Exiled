@@ -97,6 +97,7 @@ namespace SanyaPlugin
 			PlayerEvents.Dying += Handlers.OnDying;
 			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
+			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
@@ -135,6 +136,7 @@ namespace SanyaPlugin
 			PlayerEvents.Dying -= Handlers.OnDying;
 			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
+			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;

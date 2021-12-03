@@ -678,8 +678,7 @@ namespace SanyaPlugin.Functions
 
 		public static int GetHealthAmountPercent(this Player player)
 		{
-			//return (int)(100f - (player.ReferenceHub.playerStats.GetModule<HealthStat>(). * 100f));
-			return 0;
+			return (int)(100f - (Mathf.Clamp01(1f - player.Health / (float)player.MaxHealth) * 100f));
 		}
 
 		public static int GetAHPAmountPercent(this Player player)
