@@ -123,7 +123,6 @@ namespace SanyaPlugin
 		//イベント用の変数
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
 		private List<Team> prevSpawnQueue = null;
-		private Vector3 RangePos = new Vector3(50f, 1001f, -70f);
 
 		//ServerEvents系
 		public void OnWaintingForPlayers()
@@ -139,10 +138,12 @@ namespace SanyaPlugin
 			//プレイヤーデータの初期化
 			PlayerDataManager.playersData.Clear();
 
+			//初期スポーンデータのロード(Fix maingame 11.x)
+			SpawnpointManager.FillSpawnPoints();
+
 			//SinkholeHazardオブジェクトの保存(いろいろ使う)
 			Sinkhole = Methods.GetSinkHoleHazard();
 			//SinkholeのSCP-106スポーン位置への移動(上記フィールド用に確保しておく)
-			SpawnpointManager.FillSpawnPoints();
 			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnProperties().Item1 - (-Vector3.down * 4));
 
 			//前ラウンドでスポーンキューを上書きした時に戻しておく
