@@ -124,7 +124,8 @@ namespace SanyaPlugin
 
 		private void SetupShield(RoleType roleType)
 		{
-			Log.Warn($"SetupShield:{player.Nickname}");
+			if(Shield != null)
+				ResetShield();
 
 			Shield = player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerAddProcess(0f, 0f, 0f, 1f, 0f, true);
 
@@ -144,8 +145,6 @@ namespace SanyaPlugin
 
 		private void ResetShield()
 		{
-			Log.Warn($"ResetShield:{player.Nickname}");
-
 			if(Shield != null)
 				player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(Shield.KillCode);
 
