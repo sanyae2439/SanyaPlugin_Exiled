@@ -131,6 +131,7 @@
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\FixEscapeCounterPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixGrenadeDestroyPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />

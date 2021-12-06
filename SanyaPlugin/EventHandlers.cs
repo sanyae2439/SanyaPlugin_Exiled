@@ -153,6 +153,8 @@ namespace SanyaPlugin
 			}
 
 			//Fix maingame(11.0)
+			if(RoundRestarting.RoundRestart.UptimeRounds == 0)
+				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(RoleType.Tutorial.GetRandomSpawnProperties().Item1);
