@@ -158,7 +158,7 @@ namespace SanyaPlugin
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
-			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, -3000f, 0f));
+			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
 			foreach(var gen in Recontainer079.AllGenerators)
 				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 
