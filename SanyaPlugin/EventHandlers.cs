@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using AdminToys;
 using CustomPlayerEffects;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
@@ -157,7 +158,7 @@ namespace SanyaPlugin
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
-			ReferenceHub.HostHub.playerMovementSync.ForcePosition(RoleType.Tutorial.GetRandomSpawnProperties().Item1);
+			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, -3000f, 0f));
 			foreach(var gen in Recontainer079.AllGenerators)
 				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 
@@ -216,7 +217,8 @@ namespace SanyaPlugin
 				(gate as PryableDoor).PrySpeed = new Vector2(1f, 0f);
 				Methods.MoveNetworkIdentityObject(gate.netIdentity, new UnityEngine.Vector3(0f, 1000f, -24f));
 
-				//ステーションのスポーン
+				//Prefabの確保
+				var primitivePrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Primitive"));
 				var stationPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
 				var sportPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("sportTarget"));
 				var dboyPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("dboyTarget"));
@@ -235,14 +237,53 @@ namespace SanyaPlugin
 				var station6 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
 				var station7 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
 
-				//埋め立て
-				var station_bigger = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(64.6f, 1000f, -68.5f), Quaternion.Euler(Vector3.zero));
-				station_bigger.transform.localScale = new Vector3(10f, 6f, 15f);
-
 				//的の設置
 				var target1 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -68f), Quaternion.Euler(Vector3.up * 180f));
 				var target2 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -72.5f), Quaternion.Euler(Vector3.up * 180f));
 				var target3 = UnityEngine.Object.Instantiate(dboyPrefab, new Vector3(-24.5f, 1000f, -70.25f), Quaternion.Euler(Vector3.up * 180f));
+
+				//Bゲートの保護壁
+				var wall1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall1.transform.position = new Vector3(115.31f, 994f, -51.7f);
+				wall1.transform.localScale = new Vector3(65f, 5f, 0.1f);
+				wall1.UpdatePositionServer();
+				wall1.NetworkMaterialColor = Color.black;
+				wall1.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				var wall2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall2.transform.position = new Vector3(82.86f, 994f, -49.2f);
+				wall2.transform.localScale = new Vector3(0.1f, 5f, 5f);
+				wall2.UpdatePositionServer();
+				wall2.NetworkMaterialColor = Color.black;
+				wall2.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				var wall3 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall3.transform.position = new Vector3(30f, 999.949f, -57f);
+				wall3.transform.localScale = new Vector3(50f, 0.1f, 19.25f);
+				wall3.UpdatePositionServer();
+				wall3.NetworkMaterialColor = Color.black;
+				wall3.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				//SCP-106のコンテナ壁
+				var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
+
+				var wall4 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall4.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
+				wall4.transform.localScale = new Vector3(32f, 11f, 0.5f);
+				if(room106.transform.forward == Vector3.left || room106.transform.forward == Vector3.right)
+					wall4.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
+				wall4.UpdatePositionServer();
+				wall4.NetworkMaterialColor = Color.gray;
+				wall4.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				var wall5 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall5.transform.SetParentAndOffset(room106.transform, new Vector3(-6.5f, 5f, -16.5f));
+				wall5.transform.localScale = new Vector3(1f, 11f, 24f);
+				if(room106.transform.forward == Vector3.left || room106.transform.forward == Vector3.right)
+					wall5.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
+				wall5.UpdatePositionServer();
+				wall5.NetworkMaterialColor = Color.gray;
+				wall5.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				NetworkServer.Spawn(station1);
 				NetworkServer.Spawn(station2);
@@ -251,10 +292,14 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(station5);
 				NetworkServer.Spawn(station6);
 				NetworkServer.Spawn(station7);
-				NetworkServer.Spawn(station_bigger);
 				NetworkServer.Spawn(target1);
 				NetworkServer.Spawn(target2);
 				NetworkServer.Spawn(target3);
+				NetworkServer.Spawn(wall1.gameObject);
+				NetworkServer.Spawn(wall2.gameObject);
+				NetworkServer.Spawn(wall3.gameObject);
+				NetworkServer.Spawn(wall4.gameObject);
+				NetworkServer.Spawn(wall5.gameObject);
 			}
 
 			if(plugin.Config.LightIntensitySurface != 1f)

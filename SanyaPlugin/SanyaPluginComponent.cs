@@ -176,7 +176,7 @@ namespace SanyaPlugin
 
 		private void CheckSinkholeDistance()
 		{
-			if(!SanyaPlugin.Instance.Config.FixSinkhole || SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
+			if(SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
 
 			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f)
 				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled

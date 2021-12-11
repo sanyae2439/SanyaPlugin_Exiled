@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using AdminToys;
 using CommandSystem;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
@@ -36,6 +37,7 @@ namespace SanyaPlugin.Commands
 		private ItemPickupBase targetitem = null;
 		private GameObject targetstation = null;
 		private GameObject targetTarget = null;
+		private PrimitiveObjectToy targetPrimitive = null;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -142,6 +144,29 @@ namespace SanyaPlugin.Commands
 						response = "Available colors:\n";
 						foreach(var i in ReferenceHub.HostHub.serverRoles.NamedColors.OrderBy(x => x.Restricted))
 							response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
+						return true;
+					}
+				case "walltest":
+					{
+						var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
+						if(targetPrimitive == null)
+						{
+							var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Primitive"));
+							var pobject = UnityEngine.Object.Instantiate(prefab.GetComponent<PrimitiveObjectToy>());
+							
+							pobject.NetworkScale = Vector3.one;
+							pobject.NetworkMaterialColor = Color.black;
+							targetPrimitive = pobject;
+
+							NetworkServer.Spawn(pobject.gameObject, ownerConnection: null);
+						}
+
+						targetPrimitive.NetworkPrimitiveType = PrimitiveType.Cube;
+
+						targetPrimitive.transform.SetParentAndOffset(room106.transform, new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))));
+
+						targetPrimitive.transform.localScale = new UnityEngine.Vector3(float.Parse(arguments.At(4)), float.Parse(arguments.At(5)), float.Parse(arguments.At(6)));
+						response = $"walltest.";
 						return true;
 					}
 				case "targettest":

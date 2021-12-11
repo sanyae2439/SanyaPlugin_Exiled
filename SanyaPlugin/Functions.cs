@@ -696,6 +696,16 @@ namespace SanyaPlugin.Functions
 			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, null, time));
 		}
 
+		public static void SetParentAndOffset(this Transform target, Transform parent, Vector3 local)
+		{
+			target.SetParent(parent);
+			target.position = parent.position;
+			target.transform.localPosition = local;
+			var localoffset = parent.transform.TransformVector(target.localPosition);
+			target.localPosition = Vector3.zero;
+			target.position += localoffset;
+		}
+
 		public static IEnumerable<Camera079> GetNearCams(this Player player)
 		{
 			foreach(var cam in Scp079PlayerScript.allCameras)

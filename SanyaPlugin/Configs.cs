@@ -78,9 +78,6 @@ namespace SanyaPlugin
 		[Description("サーバー参加者に表示するブロードキャスト")]
 		public string MotdMessage { get; set; } = string.Empty;
 
-		[Description("Sinkholeの修正を有効にする")]
-		public bool FixSinkhole { get; set; } = false;
-
 		[Description("ExHudの有効化")]
 		public bool ExHudEnabled { get; set; } = false;
 
