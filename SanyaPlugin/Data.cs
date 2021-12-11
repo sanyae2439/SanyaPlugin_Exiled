@@ -60,6 +60,26 @@ namespace SanyaPlugin.Data
 		}
 	}
 
+	public class SColor
+	{
+		public SColor()
+		{
+			this.r = 0f;
+			this.g = 0f;
+			this.b = 0f;
+		}
+		public SColor(float r, float g, float b)
+		{
+			this.r = r;
+			this.g = g;
+			this.b = b;
+		}
+		public override string ToString() => $"({r}, {g}, {b})";
+		public float r { get; set; }
+		public float g { get; set; }
+		public float b { get; set; }
+	}
+
 	public class VPNData
 	{
 		public string ip { get; set; }

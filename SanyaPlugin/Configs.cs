@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using Exiled.API.Features;
 using Exiled.API.Interfaces;
+using SanyaPlugin.Data;
+using UnityEngine;
 
 namespace SanyaPlugin
 {
@@ -142,8 +144,8 @@ namespace SanyaPlugin
 		[Description("地上のオブジェクトを編集する")]
 		public bool EditObjectsOnSurface { get; set; } = false;
 
-		[Description("地上の明るさ")]
-		public float LightIntensitySurface { get; set; } = 1f;
+		[Description("地上の色")]
+		public SColor LightColorSurface { get; set; } = new SColor() { r = 255f, g = 255f, b = 255f };
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;

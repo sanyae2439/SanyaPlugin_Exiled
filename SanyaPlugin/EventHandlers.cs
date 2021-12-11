@@ -219,6 +219,7 @@ namespace SanyaPlugin
 
 				//Prefabの確保
 				var primitivePrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Primitive"));
+				var lightPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("LightSource"));
 				var stationPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Station"));
 				var sportPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("sportTarget"));
 				var dboyPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("dboyTarget"));
@@ -242,48 +243,63 @@ namespace SanyaPlugin
 				var target2 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -72.5f), Quaternion.Euler(Vector3.up * 180f));
 				var target3 = UnityEngine.Object.Instantiate(dboyPrefab, new Vector3(-24.5f, 1000f, -70.25f), Quaternion.Euler(Vector3.up * 180f));
 
-				//Bゲートの保護壁
-				var wall1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall1.transform.position = new Vector3(115.31f, 994f, -51.7f);
-				wall1.transform.localScale = new Vector3(65f, 5f, 0.1f);
-				wall1.UpdatePositionServer();
-				wall1.NetworkMaterialColor = Color.black;
-				wall1.NetworkPrimitiveType = PrimitiveType.Cube;
+				//核起爆室のライト
+				var light_nuke = UnityEngine.Object.Instantiate(lightPrefab.GetComponent<LightSourceToy>());
+				light_nuke.transform.position = new Vector3(40.75f, 991f, -35.75f);
+				light_nuke.NetworkLightRange = 4.5f;
+				light_nuke.NetworkLightIntensity = 2f;
+				light_nuke.NetworkLightColor = new Color(1f, 0f, 0f);
 
-				var wall2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall2.transform.position = new Vector3(82.86f, 994f, -49.2f);
-				wall2.transform.localScale = new Vector3(0.1f, 5f, 5f);
-				wall2.UpdatePositionServer();
-				wall2.NetworkMaterialColor = Color.black;
-				wall2.NetworkPrimitiveType = PrimitiveType.Cube;
+				//Bゲートエレベーターの保護壁
+				var wall_bgate = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_bgate.transform.position = new Vector3(115.31f, 994f, -51.7f);
+				wall_bgate.transform.localScale = new Vector3(65f, 5f, 0.1f);
+				wall_bgate.UpdatePositionServer();
+				wall_bgate.NetworkMaterialColor = Color.black;
+				wall_bgate.NetworkPrimitiveType = PrimitiveType.Cube;
 
-				var wall3 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall3.transform.position = new Vector3(30f, 999.949f, -57f);
-				wall3.transform.localScale = new Vector3(50f, 0.1f, 19.25f);
-				wall3.UpdatePositionServer();
-				wall3.NetworkMaterialColor = Color.black;
-				wall3.NetworkPrimitiveType = PrimitiveType.Cube;
+				//核起動室上のフェンス
+				var wall_fence1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_fence1.transform.position = new Vector3(5.5f, 1002f, -57f);
+				wall_fence1.transform.localScale = new Vector3(0.5f, 5f, 19.7f);
+				wall_fence1.UpdatePositionServer();
+				wall_fence1.NetworkMaterialColor = Color.white;
+				wall_fence1.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				var wall_fence2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_fence2.transform.position = new Vector3(27.88f, 1002f, -66.65f);
+				wall_fence2.transform.localScale = new Vector3(45.25f, 5f, 0.5f);
+				wall_fence2.UpdatePositionServer();
+				wall_fence2.NetworkMaterialColor = Color.white;
+				wall_fence2.NetworkPrimitiveType = PrimitiveType.Cube;
+
+				var wall_fence3 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_fence3.transform.position = new Vector3(27.88f, 1002f, -47.43f);
+				wall_fence3.transform.localScale = new Vector3(45.25f, 5f, 0.5f);
+				wall_fence3.UpdatePositionServer();
+				wall_fence3.NetworkMaterialColor = Color.white;
+				wall_fence3.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-106のコンテナ壁
 				var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
 
-				var wall4 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall4.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
-				wall4.transform.localScale = new Vector3(32f, 11f, 0.5f);
+				var wall_106_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_106_1.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
+				wall_106_1.transform.localScale = new Vector3(32f, 11f, 0.5f);
 				if(room106.transform.forward == Vector3.left || room106.transform.forward == Vector3.right)
-					wall4.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
-				wall4.UpdatePositionServer();
-				wall4.NetworkMaterialColor = Color.gray;
-				wall4.NetworkPrimitiveType = PrimitiveType.Cube;
+					wall_106_1.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
+				wall_106_1.UpdatePositionServer();
+				wall_106_1.NetworkMaterialColor = Color.gray;
+				wall_106_1.NetworkPrimitiveType = PrimitiveType.Cube;
 
-				var wall5 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall5.transform.SetParentAndOffset(room106.transform, new Vector3(-6.5f, 5f, -16.5f));
-				wall5.transform.localScale = new Vector3(1f, 11f, 24f);
+				var wall_106_2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_106_2.transform.SetParentAndOffset(room106.transform, new Vector3(-6.5f, 5f, -16.5f));
+				wall_106_2.transform.localScale = new Vector3(1f, 11f, 24f);
 				if(room106.transform.forward == Vector3.left || room106.transform.forward == Vector3.right)
-					wall5.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
-				wall5.UpdatePositionServer();
-				wall5.NetworkMaterialColor = Color.gray;
-				wall5.NetworkPrimitiveType = PrimitiveType.Cube;
+					wall_106_2.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
+				wall_106_2.UpdatePositionServer();
+				wall_106_2.NetworkMaterialColor = Color.gray;
+				wall_106_2.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				NetworkServer.Spawn(station1);
 				NetworkServer.Spawn(station2);
@@ -295,17 +311,19 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(target1);
 				NetworkServer.Spawn(target2);
 				NetworkServer.Spawn(target3);
-				NetworkServer.Spawn(wall1.gameObject);
-				NetworkServer.Spawn(wall2.gameObject);
-				NetworkServer.Spawn(wall3.gameObject);
-				NetworkServer.Spawn(wall4.gameObject);
-				NetworkServer.Spawn(wall5.gameObject);
+				NetworkServer.Spawn(light_nuke.gameObject);
+				NetworkServer.Spawn(wall_bgate.gameObject);
+				NetworkServer.Spawn(wall_fence1.gameObject);
+				NetworkServer.Spawn(wall_fence2.gameObject);
+				NetworkServer.Spawn(wall_fence3.gameObject);
+				NetworkServer.Spawn(wall_106_1.gameObject);
+				NetworkServer.Spawn(wall_106_2.gameObject);
 			}
 
-			if(plugin.Config.LightIntensitySurface != 1f)
-			{
-				UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>().LightIntensityMultiplier = plugin.Config.LightIntensitySurface;
-			}
+			var surfaceLight = UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>();
+			surfaceLight.Network_warheadLightOverride = true;
+			surfaceLight.Network_warheadLightColor = new Color(plugin.Config.LightColorSurface.r / 255f, plugin.Config.LightColorSurface.g / 255f, plugin.Config.LightColorSurface.b / 255f);
+
 
 			//イベント設定
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
@@ -574,10 +592,11 @@ namespace SanyaPlugin
 					{
 						if(Map.ActivatedGenerators == 1)
 						{
-							foreach(var i in FlickerableLightController.Instances)
-								i.LightIntensityMultiplier = 1f;
-							if(plugin.Config.LightIntensitySurface != 1f)
-								UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>().LightIntensityMultiplier = plugin.Config.LightIntensitySurface;
+							foreach(var i in FlickerableLightController.Instances.Where(x => x.transform.root?.name != "Outside"))
+							{
+								i.WarheadLightColor = FlickerableLightController.DefaultWarheadColor;
+								i.WarheadLightOverride = false;
+							}	
 						}
 
 						break;

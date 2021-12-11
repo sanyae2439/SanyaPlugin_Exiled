@@ -38,6 +38,7 @@ namespace SanyaPlugin.Commands
 		private GameObject targetstation = null;
 		private GameObject targetTarget = null;
 		private PrimitiveObjectToy targetPrimitive = null;
+		private LightSourceToy targetLight = null;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -146,14 +147,31 @@ namespace SanyaPlugin.Commands
 							response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
 						return true;
 					}
+				case "lighttest":
+					{
+						if(targetLight == null)
+						{
+							var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("LightSource"));
+							var pobject = UnityEngine.Object.Instantiate(prefab.GetComponent<LightSourceToy>());
+							targetLight = pobject;
+
+							NetworkServer.Spawn(pobject.gameObject, ownerConnection: null);
+						}
+
+						targetLight.transform.position = new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3)));
+						targetLight.NetworkLightIntensity = float.Parse(arguments.At(4));
+						targetLight.NetworkLightRange = float.Parse(arguments.At(5));
+						targetLight.NetworkLightShadows = bool.Parse(arguments.At(6));
+						response = $"lighttest.";
+						return true;
+					}
 				case "walltest":
 					{
-						var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
 						if(targetPrimitive == null)
 						{
 							var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Primitive"));
 							var pobject = UnityEngine.Object.Instantiate(prefab.GetComponent<PrimitiveObjectToy>());
-							
+
 							pobject.NetworkScale = Vector3.one;
 							pobject.NetworkMaterialColor = Color.black;
 							targetPrimitive = pobject;
@@ -162,9 +180,7 @@ namespace SanyaPlugin.Commands
 						}
 
 						targetPrimitive.NetworkPrimitiveType = PrimitiveType.Cube;
-
-						targetPrimitive.transform.SetParentAndOffset(room106.transform, new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))));
-
+						targetPrimitive.transform.position = new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3)));
 						targetPrimitive.transform.localScale = new UnityEngine.Vector3(float.Parse(arguments.At(4)), float.Parse(arguments.At(5)), float.Parse(arguments.At(6)));
 						response = $"walltest.";
 						return true;
