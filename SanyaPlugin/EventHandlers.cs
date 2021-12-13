@@ -250,32 +250,24 @@ namespace SanyaPlugin
 				light_nuke.NetworkLightIntensity = 2f;
 				light_nuke.NetworkLightColor = new Color(1f, 0f, 0f);
 
-				//Bゲートエレベーターの保護壁
-				var wall_bgate = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_bgate.transform.position = new Vector3(115.31f, 994f, -51.7f);
-				wall_bgate.transform.localScale = new Vector3(65f, 5f, 0.1f);
-				wall_bgate.UpdatePositionServer();
-				wall_bgate.NetworkMaterialColor = Color.black;
-				wall_bgate.NetworkPrimitiveType = PrimitiveType.Cube;
-
-				//核起動室上のフェンス
+				//核起動室上箱
 				var wall_fence1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence1.transform.position = new Vector3(5.5f, 1002f, -57f);
+				wall_fence1.transform.position = new Vector3(50f, 1002f, -57f);
 				wall_fence1.transform.localScale = new Vector3(0.5f, 5f, 19.7f);
 				wall_fence1.UpdatePositionServer();
 				wall_fence1.NetworkMaterialColor = Color.white;
 				wall_fence1.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				var wall_fence2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence2.transform.position = new Vector3(27.88f, 1002f, -66.65f);
-				wall_fence2.transform.localScale = new Vector3(45.25f, 5f, 0.5f);
+				wall_fence2.transform.position = new Vector3(53.5f, 1002f, -66.61f);
+				wall_fence2.transform.localScale = new Vector3(7f, 5f, 0.5f);
 				wall_fence2.UpdatePositionServer();
 				wall_fence2.NetworkMaterialColor = Color.white;
 				wall_fence2.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				var wall_fence3 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence3.transform.position = new Vector3(27.88f, 1002f, -47.43f);
-				wall_fence3.transform.localScale = new Vector3(45.25f, 5f, 0.5f);
+				wall_fence3.transform.position = new Vector3(52.5f, 1004.24f, -57.59f);
+				wall_fence3.transform.localScale = new Vector3(5f, 0.5f, 18.5f);
 				wall_fence3.UpdatePositionServer();
 				wall_fence3.NetworkMaterialColor = Color.white;
 				wall_fence3.NetworkPrimitiveType = PrimitiveType.Cube;
@@ -312,7 +304,6 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(target2);
 				NetworkServer.Spawn(target3);
 				NetworkServer.Spawn(light_nuke.gameObject);
-				NetworkServer.Spawn(wall_bgate.gameObject);
 				NetworkServer.Spawn(wall_fence1.gameObject);
 				NetworkServer.Spawn(wall_fence2.gameObject);
 				NetworkServer.Spawn(wall_fence3.gameObject);
