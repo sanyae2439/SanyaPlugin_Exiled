@@ -452,7 +452,7 @@ namespace SanyaPlugin.Commands
 								writer.WriteUInt64(1ul);
 								writer.WriteUInt32((uint)1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt32((uint)18);
+								writer.WriteUInt32((uint)19);
 								writer.WriteByte((byte)1);
 							});
 							isActwatchEnabled = true;
@@ -464,7 +464,7 @@ namespace SanyaPlugin.Commands
 								writer.WriteUInt64(1ul);
 								writer.WriteUInt32(1);
 								writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-								writer.WriteUInt32(18);
+								writer.WriteUInt32(19);
 								writer.WriteByte(0);
 							});
 							isActwatchEnabled = false;

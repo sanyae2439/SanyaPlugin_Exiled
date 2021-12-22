@@ -153,6 +153,15 @@ namespace SanyaPlugin
 		[Description("SCP-018がドアを破壊しないようにする")]
 		public bool Scp018DisableDestroyingDoor { get; set; } = false;
 
+		[Description("ショットガンの威力の乗数")]
+		public float ShotgunDamageMultiplier { get; set; } = 1f;
+
+		[Description("リボルバーの威力の乗数")]
+		public float RevolverDamageMultiplier { get; set; } = 1f;
+
+		[Description("ディスラプターの威力の乗数")]
+		public float DisruptorDamageMultiplier { get; set; } = 1f;
+
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 
@@ -195,9 +204,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-096に触れると発狂するようになる距離")]
 		public float Scp096TouchEnrageDistance { get; set; } = -1f;
-
-		[Description("SCP-096の発狂時のダメージ乗数")]
-		public float Scp096EnragingDamageMultiplier { get; set; } = 1f;
 
 		[Description("SCP-106のシールド最大値")]
 		public int Scp106MaxAhp { get; set; } = 0;

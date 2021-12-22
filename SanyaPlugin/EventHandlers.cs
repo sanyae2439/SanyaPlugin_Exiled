@@ -839,7 +839,19 @@ namespace SanyaPlugin
 								ev.Amount = 93900f;
 						}
 
-
+						break;
+					}
+				case FirearmDamageHandler firearm:
+					{
+						if(firearm.WeaponType == ItemType.GunRevolver)
+							ev.Amount *= plugin.Config.RevolverDamageMultiplier;
+						if(firearm.WeaponType == ItemType.GunShotgun)
+							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
+						break;
+					}
+				case DisruptorDamageHandler _:
+					{
+						ev.Amount *= plugin.Config.DisruptorDamageMultiplier;
 						break;
 					}
 			}
@@ -847,14 +859,6 @@ namespace SanyaPlugin
 			//SCPのダメージ
 			if(ev.Attacker != ev.Target && ev.Target.IsScp)
 			{
-				switch(ev.Target.Role)
-				{
-					case RoleType.Scp096:
-						if(ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.PlayerState == PlayableScps.Scp096PlayerState.Enraging)
-							ev.Amount *= plugin.Config.Scp096EnragingDamageMultiplier;
-						break;
-				}
-
 				if(plugin.Config.ScpTakenDamageMultiplierParsed.TryGetValue(ev.Target.Role, out var value))
 					ev.Amount *= value;
 			}
