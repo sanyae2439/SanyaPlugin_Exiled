@@ -132,7 +132,6 @@
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\Debug2536Patch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixEscapeCounterPatch.cs" />
     <Compile Include="Patches\Force2536Patch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
