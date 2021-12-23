@@ -764,7 +764,6 @@ namespace SanyaPlugin
 				{
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 					ev.Player.EnableEffect<Burned>();
-					ev.Player.EnableEffect<Concussed>();
 					ev.Player.EnableEffect<Deafened>();
 				}));
 
@@ -804,6 +803,10 @@ namespace SanyaPlugin
 
 
 			//Fix maingame(11.x)
+			if(ev.RoleType == RoleType.NtfSpecialist || (ev.Player.ReferenceHub.characterClassManager._prevId == RoleType.ClassD && ev.RoleType == RoleType.NtfPrivate))
+				ev.Position = new Vector3(190f, 993.8f, -91.3f);
+			if(ev.RoleType == RoleType.ChaosConscript)
+				ev.Position = new Vector3(-55.7f, 988.9f, -49.4f);
 			foreach(var i in ev.Player.Inventory.UserInventory.Items.Values.Where(x => x.ItemTypeId.IsArmor()).Select(x => x as BodyArmor))
 				i.DontRemoveExcessOnDrop = true;
 		}

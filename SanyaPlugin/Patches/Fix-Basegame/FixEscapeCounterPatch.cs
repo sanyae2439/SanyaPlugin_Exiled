@@ -12,18 +12,17 @@ namespace SanyaPlugin.Patches.Fix_Basegame
 				switch(prevClass)
 				{
 					case RoleType.ClassD:
-						RoundSummary.EscapedClassD++;
+						if(newClass == RoleType.ChaosConscript)
+							RoundSummary.EscapedClassD++;
 						break;
 					case RoleType.Scientist:
-						RoundSummary.EscapedScientists++;
+						if(newClass == RoleType.NtfSpecialist)
+							RoundSummary.EscapedScientists++;
 						break;
 				}
 			}
-			else if(spawnReason == CharacterClassManager.SpawnReason.Revived)
-			{
-				if(prevClass == RoleType.Spectator && newClass == RoleType.Scp0492)
-					RoundSummary.ChangedIntoZombies++;
-			}
+			else if(spawnReason == CharacterClassManager.SpawnReason.Revived && prevClass == RoleType.Spectator && newClass == RoleType.Scp0492)
+				RoundSummary.ChangedIntoZombies++;
 
 			return false;
 		}
