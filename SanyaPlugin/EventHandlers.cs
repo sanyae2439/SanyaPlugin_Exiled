@@ -21,6 +21,7 @@ using MapGeneration;
 using MEC;
 using Mirror;
 using PlayerStatsSystem;
+using Respawning;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using UnityEngine;
@@ -829,6 +830,7 @@ namespace SanyaPlugin
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected || ev.Amount < 0f) return;
 			Log.Debug($"[OnHurting] {ev.Attacker?.Nickname}[{ev.Attacker?.Role}] -({ev.Amount})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
+			//SCP-049の治療中ダメージ
 			if(ev.Attacker != ev.Target && ev.Target.Role == RoleType.Scp049 && ev.Target.CurrentScp is PlayableScps.Scp049 scp049 && scp049._recallInProgressServer)
 			{
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
@@ -948,23 +950,23 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnHandcuffing] {ev.Cuffer.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			////キル&チケットボーナス
-			//if(plugin.Config.CuffedTicketDeathToMtfCi != 0 && (ev.Target.Team == Team.MTF || ev.Target.Team == Team.CHI))
-			//{
-			//	ev.IsAllowed = false;
-			//	SpawnableTeamType team = SpawnableTeamType.None;
-			//	switch(ev.Target.Team)
-			//	{
-			//		case Team.MTF:
-			//			team = SpawnableTeamType.ChaosInsurgency;
-			//			break;
-			//		case Team.CHI:
-			//			team = SpawnableTeamType.NineTailedFox;
-			//			break;
-			//	}
-			//	RespawnTickets.Singleton.GrantTickets(team, plugin.Config.CuffedTicketDeathToMtfCi);
-			//	ev.Target.Hurt(5000f, ev.Cuffer, DamageTypes.Recontainment);
-			//}
+			//キル&チケットボーナス
+			if(plugin.Config.CuffedTicketDeathToMtfCi != 0 && (ev.Target.Team == Team.MTF || ev.Target.Team == Team.CHI))
+			{
+				ev.IsAllowed = false;
+				SpawnableTeamType team = SpawnableTeamType.None;
+				switch(ev.Target.Team)
+				{
+					case Team.MTF:
+						team = SpawnableTeamType.ChaosInsurgency;
+						break;
+					case Team.CHI:
+						team = SpawnableTeamType.NineTailedFox;
+						break;
+				}
+				RespawnTickets.Singleton.GrantTickets(team, plugin.Config.CuffedTicketDeathToMtfCi);
+				ev.Target.ReferenceHub.playerStats.DealDamage(new RecontainmentDamageHandler(new Footprinting.Footprint(ev.Cuffer.ReferenceHub)));
+			}
 		}
 		public void OnUsedItem(UsedItemEventArgs ev)
 		{
