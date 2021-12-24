@@ -1073,7 +1073,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnLockingDown] {ev.Player.Nickname} -> {ev.RoomGameObject.Name}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			bool isDestroyed = false;
-			foreach(var i in Scp079Interactable.InteractablesByRoomId[ev.RoomGameObject.UniqueId].Where(x => x.type == Scp079Interactable.InteractableType.Door))
+			foreach(var i in Scp079Interactable.InteractablesByRoomId[ev.RoomGameObject.UniqueId].Where(x => x.type == Scp079Interactable.InteractableType.Door && x != null))
 				if(i.TryGetComponent<DoorVariant>(out var door) && (door is IDamageableDoor damageableDoor) && damageableDoor.IsDestroyed)
 					isDestroyed = true;
 
