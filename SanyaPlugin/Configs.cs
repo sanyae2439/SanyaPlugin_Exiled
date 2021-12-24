@@ -190,6 +190,12 @@ namespace SanyaPlugin
 		[Description("SCP-049のシールド回復までの時間")]
 		public float Scp049TimeUntilRegen { get; set; } = 0f;
 
+		[Description("SCP-049の治療中に受けるダメージ乗数")]
+		public float Scp049TakenDamageWhenCureMultiplier { get; set; } = 1f;
+
+		[Description("SCP-049の治療が可能な状態を延長する時間")]
+		public double Scp049AddAllowrecallTime { get; set; } = 0;
+
 		[Description("SCP-049-2の攻撃力")]
 		public float Scp0492Damage { get; set; } = 40f;
 

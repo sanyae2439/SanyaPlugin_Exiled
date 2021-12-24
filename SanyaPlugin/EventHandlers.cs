@@ -12,6 +12,7 @@ using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
+using InventorySystem;
 using InventorySystem.Items.Armor;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
@@ -518,33 +519,46 @@ namespace SanyaPlugin
 		}
 		public void OnAnnouncingScpTermination(AnnouncingScpTerminationEventArgs ev)
 		{
-			if(ev.Role.team != Team.SCP || ev.Role.roleId == RoleType.Scp0492 || ev.Role.roleId == RoleType.Scp079) return;
+			if(ev.Role.team != Team.SCP || ev.Role.roleId == RoleType.Scp0492) return;
 			Log.Debug($"[AnnouncingScpTermination] {ev.Killer?.Nickname} -> {ev.Player?.Nickname}({ev.Role.roleId}) Reason:{ev.TerminationCause}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//字幕
 			if(plugin.Config.CassieSubtitle)
 			{
-				string str;
-				UniversalDamageHandler universalHandler = ev.Handler.Base as UniversalDamageHandler;
 
-				if(universalHandler.TranslationId == DeathTranslations.Tesla.Id)
-					str = Subtitles.SCPDeathTesla.Replace("{0}", ev.Role.fullName);
-				else if(universalHandler.TranslationId == DeathTranslations.Warhead.Id)
-					str = Subtitles.SCPDeathWarhead.Replace("{0}", ev.Role.fullName);
-				else if(universalHandler.TranslationId == DeathTranslations.Decontamination.Id)
-					str = Subtitles.SCPDeathDecont.Replace("{0}", ev.Role.fullName);
-				else
+				string str = string.Empty;
+
+
+				switch(ev.Handler.Base)
 				{
-					if(ev.Killer.Team == Team.CDP)
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
-					else if(ev.Killer.Team == Team.CHI)
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
-					else if(ev.Killer.Team == Team.RSC)
-						str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
-					else if(ev.Killer.Team == Team.MTF)
-						str = Subtitles.SCPDeathContainedMTF.Replace("{0}", ev.Role.fullName).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
-					else
+					case WarheadDamageHandler _:
+						str = Subtitles.SCPDeathWarhead.Replace("{0}", ev.Role.fullName);
+						break;
+					case UniversalDamageHandler universal:
+						if(universal.TranslationId == DeathTranslations.Tesla.Id)
+							str = Subtitles.SCPDeathTesla.Replace("{0}", ev.Role.fullName);
+						if(universal.TranslationId == DeathTranslations.Decontamination.Id)
+							str = Subtitles.SCPDeathDecont.Replace("{0}", ev.Role.fullName);
+						break;
+				}
+
+				if(string.IsNullOrEmpty(str))
+				{
+					if(ev.Killer == null)
 						str = Subtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
+					else
+					{
+						if(ev.Killer.Team == Team.CDP)
+							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
+						else if(ev.Killer.Team == Team.CHI)
+							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
+						else if(ev.Killer.Team == Team.RSC)
+							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
+						else if(ev.Killer.Team == Team.MTF)
+							str = Subtitles.SCPDeathContainedMTF.Replace("{0}", ev.Role.fullName).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
+						else
+							str = Subtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
+					}
 				}
 
 				str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
@@ -815,6 +829,11 @@ namespace SanyaPlugin
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected || ev.Amount < 0f) return;
 			Log.Debug($"[OnHurting] {ev.Attacker?.Nickname}[{ev.Attacker?.Role}] -({ev.Amount})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
+			if(ev.Attacker != ev.Target && ev.Target.Role == RoleType.Scp049 && ev.Target.CurrentScp is PlayableScps.Scp049 scp049 && scp049._recallInProgressServer)
+			{
+				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
+			}
+
 			//ダメージタイプ分岐
 			switch(ev.Handler.Base)
 			{
@@ -967,6 +986,8 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnSpawningRagdoll] {ev.Owner.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			ev.Info = new RagdollInfo(ev.Info.OwnerHub, ev.Info.Handler, ev.Info.RoleType, ev.Info.StartPosition, ev.Info.StartRotation, ev.Info.Nickname, ev.Info.CreationTime + plugin.Config.Scp049AddAllowrecallTime);
+
 			//死体削除
 			if(ev.DamageHandlerBase is UniversalDamageHandler universal)
 			{
@@ -1082,30 +1103,30 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnUpgradingPlayer] {ev.KnobSetting} Players:{ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			//if(plugin.Config.Scp914Debuff)
-			//{
-			//	if(ev.Player.IsScp)
-			//	{
-			//		while(ev.Player.Inventory.UserInventory.Items.Count > 0)
-			//			ev.Player.Inventory.ServerRemoveItem(ev.Player.Inventory.UserInventory.Items.ElementAt(0).Key, null);
+			if(plugin.Config.Scp914Debuff)
+			{
+				if(ev.Player.IsScp)
+				{
+					while(ev.Player.Inventory.UserInventory.Items.Count > 0)
+						ev.Player.Inventory.ServerRemoveItem(ev.Player.Inventory.UserInventory.Items.ElementAt(0).Key, null);
 
-			//		ev.Player.ReferenceHub.playerStats.HurtPlayer(new PlayerStats.HitInfo(914914, "WORLD", DamageTypes.RagdollLess, 0, true), ev.Player.GameObject);
-			//	}
-			//	else
-			//	{
-			//		ev.Player.Inventory.ServerDropEverything();
+					ev.Player.ReferenceHub.playerStats.DealDamage(new UniversalDamageHandler(914914f, DeathTranslations.Tesla));
+				}
+				else
+				{
+					ev.Player.Inventory.ServerDropEverything();
 
-			//		ev.Player.SetRole(RoleType.Scp0492, Exiled.API.Enums.SpawnReason.ForceClass, true);
-			//		roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-			//		{
-			//			ev.Player.Health = ev.Player.Health / 5f;
-			//			ev.Player.EnableEffect<Disabled>();
-			//			ev.Player.EnableEffect<Poisoned>();
-			//			ev.Player.EnableEffect<Concussed>();
-			//			ev.Player.EnableEffect<Exhausted>();
-			//		}));
-			//	}
-			//}
+					ev.Player.SetRole(RoleType.Scp0492, Exiled.API.Enums.SpawnReason.ForceClass, true);
+					roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+					{
+						ev.Player.Health = ev.Player.Health / 5f;
+						ev.Player.EnableEffect<Disabled>();
+						ev.Player.EnableEffect<Poisoned>();
+						ev.Player.EnableEffect<Concussed>();
+						ev.Player.EnableEffect<Exhausted>();
+					}));
+				}
+			}
 		}
 	}
 }
