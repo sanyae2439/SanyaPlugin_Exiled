@@ -332,13 +332,6 @@ namespace SanyaPlugin
 					}
 			}
 
-			UnitNamingManager.RolesWithEnforcedDefaultName.Add(RoleType.ClassD, SpawnableTeamType.ChaosInsurgency);
-			Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Clear();
-			Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { SpawnableTeam = (byte)SpawnableTeamType.ChaosInsurgency, UnitName = "TOP1:" });
-			Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { SpawnableTeam = (byte)SpawnableTeamType.ChaosInsurgency, UnitName = "TOP2:" });
-			Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { SpawnableTeam = (byte)SpawnableTeamType.ChaosInsurgency, UnitName = "TOP3:" });
-			Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Add(new SyncUnit() { SpawnableTeam = (byte)SpawnableTeamType.ChaosInsurgency, UnitName = "Time:" });
-
 			Log.Info($"[OnWaintingForPlayers] Waiting for Players... EventMode:{eventmode}");
 		}
 		public void OnRoundStarted()
