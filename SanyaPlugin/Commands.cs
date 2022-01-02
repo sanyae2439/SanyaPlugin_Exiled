@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AdminToys;
 using CommandSystem;
@@ -15,6 +16,8 @@ using MEC;
 using Mirror;
 using Mirror.LiteNetLib4Mirror;
 using RemoteAdmin;
+using Respawning;
+using Respawning.NamingRules;
 using SanyaPlugin.Functions;
 using SanyaPlugin.Patches;
 using Scp914;
@@ -72,40 +75,6 @@ namespace SanyaPlugin.Commands
 						// testing zone end
 						response = response.TrimEnd('\n');
 
-						return true;
-					}
-				case "2536":
-					{
-						var scp2536controller = UnityEngine.Object.FindObjectOfType<Scp2536.Scp2536Controller>();
-
-						if(arguments.Count >= 2 && arguments.At(1) == "f")
-						{
-							if(Force2536Patch.forceTarget == null)
-								Force2536Patch.forceTarget = player.ReferenceHub;
-							else
-							{
-								response = "already forced.";
-								return false;
-							}
-
-							if(scp2536controller != null)
-							{
-								scp2536controller.IdleTimer.Restart();
-								Timing.RunCoroutine(scp2536controller.ServerAttemptSpawn(), Segment.Update);
-								Timing.CallDelayed(0.1f, () => Force2536Patch.forceTarget = null);
-							}
-							response = $"forced. {Force2536Patch.forceTarget.nicknameSync.MyNick}";
-							return true;
-						}
-						else
-						{
-							if(scp2536controller != null)
-							{
-								scp2536controller.IdleTimer.Restart();
-								Timing.RunCoroutine(scp2536controller.ServerAttemptSpawn(), Segment.Update);
-							}
-						}
-						response = "ok";
 						return true;
 					}
 				case "frametime":
