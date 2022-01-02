@@ -338,7 +338,7 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
 
-			if(plugin.Config.ClassdPrisonLock)
+			if(plugin.Config.ClassdPrisonInit)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitClassDPrison(), Segment.FixedUpdate));
 
 			if(plugin.Config.AlphaWarheadNeedElapsedSeconds != 1)

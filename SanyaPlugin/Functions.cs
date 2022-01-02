@@ -400,6 +400,9 @@ namespace SanyaPlugin.Functions
 		{
 			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
 			var doors = room.Doors.Where(x => x.Type == Exiled.API.Enums.DoorType.PrisonDoor);
+
+			room.TurnOffLights(5f);
+
 			foreach(var i in doors)
 			{
 				i.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
@@ -409,9 +412,7 @@ namespace SanyaPlugin.Functions
 			yield return Timing.WaitForSeconds(5f);
 
 			foreach(var j in doors)
-			{
 				j.Base.NetworkTargetState = true;
-			}
 			yield break;
 		}
 	}
