@@ -395,6 +395,25 @@ namespace SanyaPlugin.Functions
 			}	
 			yield break;
 		}
+
+		public static IEnumerator<float> InitClassDPrison()
+		{
+			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
+			var doors = room.Doors.Where(x => x.Type == Exiled.API.Enums.DoorType.PrisonDoor);
+			foreach(var i in doors)
+			{
+				i.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
+				i.Base.NetworkTargetState = false;
+			}
+
+			yield return Timing.WaitForSeconds(5f);
+
+			foreach(var j in doors)
+			{
+				j.Base.NetworkTargetState = true;
+			}
+			yield break;
+		}
 	}
 
 	internal static class Methods

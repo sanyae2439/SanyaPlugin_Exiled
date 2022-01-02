@@ -147,6 +147,9 @@ namespace SanyaPlugin
 		[Description("地上の色")]
 		public SColor LightColorSurface { get; set; } = new SColor() { r = 255f, g = 255f, b = 255f };
 
+		[Description("Dクラス収容房のドア")]
+		public bool ClassdPrisonLock { get; set; } = false;
+
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
 
@@ -195,6 +198,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-049の治療が可能な状態を延長する時間")]
 		public double Scp049AddAllowrecallTime { get; set; } = 0;
+
+		[Description("SCP-049の移動速度バフ")]
+		public byte Scp049SpeedupAmount { get; set; } = 0;
 
 		[Description("SCP-049-2の攻撃力")]
 		public float Scp0492Damage { get; set; } = 40f;

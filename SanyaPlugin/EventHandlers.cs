@@ -338,6 +338,9 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
 
+			if(plugin.Config.ClassdPrisonLock)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitClassDPrison(), Segment.FixedUpdate));
+
 			if(plugin.Config.AlphaWarheadNeedElapsedSeconds != 1)
 			{
 				AlphaWarheadController.Host.cooldown = plugin.Config.AlphaWarheadNeedElapsedSeconds;
@@ -781,6 +784,11 @@ namespace SanyaPlugin
 					ev.Player.ChangeEffectIntensity<Scp207>(1);
 					ev.Player.EnableEffect<Burned>();
 					ev.Player.EnableEffect<Deafened>();
+				}));
+			if(plugin.Config.Scp049SpeedupAmount != 0 && ev.NewRole == RoleType.Scp049)
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+				{
+					ev.Player.ChangeEffectIntensity<Scp207>(plugin.Config.Scp049SpeedupAmount);
 				}));
 
 			//SCP-106のExMode用初期化

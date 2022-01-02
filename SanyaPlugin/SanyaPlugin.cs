@@ -7,6 +7,7 @@ using SanyaPlugin.Functions;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
+using Scp049Events = Exiled.Events.Handlers.Scp049;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
 using Scp914Events = Exiled.Events.Handlers.Scp914;
 using ServerEvents = Exiled.Events.Handlers.Server;
