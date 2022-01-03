@@ -169,6 +169,26 @@ namespace SanyaPlugin.Commands
 						response = $"lighttest.";
 						return true;
 					}
+				case "offtest":
+					{
+						if(targetPrimitive == null)
+						{
+							var prefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("Primitive"));
+							var pobject = UnityEngine.Object.Instantiate(prefab.GetComponent<PrimitiveObjectToy>());
+
+							pobject.NetworkScale = Vector3.one;
+							pobject.NetworkMaterialColor = Color.black;
+							targetPrimitive = pobject;
+
+							NetworkServer.Spawn(pobject.gameObject, ownerConnection: null);
+						}
+
+						targetPrimitive.NetworkPrimitiveType = PrimitiveType.Cube;
+						targetPrimitive.transform.SetParentAndOffset(player.CurrentRoom.transform, new UnityEngine.Vector3(float.Parse(arguments.At(1)), float.Parse(arguments.At(2)), float.Parse(arguments.At(3))));
+						targetPrimitive.transform.localScale = new UnityEngine.Vector3(float.Parse(arguments.At(4)), float.Parse(arguments.At(5)), float.Parse(arguments.At(6)));
+						response = "offtest.";
+						return true;
+					}
 				case "walltest":
 					{
 						if(targetPrimitive == null)

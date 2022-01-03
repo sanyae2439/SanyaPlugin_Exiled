@@ -193,9 +193,9 @@ namespace SanyaPlugin
 				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{player.CurrentRoom.Type}</color></size>\n";
 			else
 			{
-				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Team != Team.SCP && x.Team != Team.RIP);
+				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Team != Team.SCP && x.Team != Team.RIP && x.Team != Team.CHI);
 				if(target != null)
-					message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Type}</color></size>\n";
+					message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Zone}の{player.CurrentRoom.Type}</color></size>\n";
 			}
 
 			if(!string.IsNullOrEmpty(message))

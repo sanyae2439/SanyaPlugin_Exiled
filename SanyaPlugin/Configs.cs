@@ -147,8 +147,17 @@ namespace SanyaPlugin
 		[Description("地上の色")]
 		public SColor LightColorSurface { get; set; } = new SColor() { r = 255f, g = 255f, b = 255f };
 
+		[Description("アイテムを追加する")]
+		public bool AddItemsOnFacility { get; set; } = false;
+
 		[Description("Dクラス収容房の初期動作")]
 		public bool ClassdPrisonInit { get; set; } = false;
+
+		[Description("スポーンしなかったSCP収容房へのドアをロックする")]
+		public bool ScpRoomLockWhenSafe { get; set; } = false;
+
+		[Description("SCPBall")]
+		public bool ScpBall { get; set; } = false;
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;

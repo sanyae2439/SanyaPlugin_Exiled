@@ -14,15 +14,16 @@ using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem;
 using InventorySystem.Items.Armor;
+using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MapGeneration;
+using MapGeneration.Distributors;
 using MEC;
 using Mirror;
 using PlayerStatsSystem;
 using Respawning;
-using Respawning.NamingRules;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
 using UnityEngine;
@@ -165,7 +166,8 @@ namespace SanyaPlugin
 			foreach(var gen in Recontainer079.AllGenerators)
 				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 
-			//地上脱出口の二つのドアにグレネード耐性をつける
+			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
+			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 
@@ -277,7 +279,6 @@ namespace SanyaPlugin
 
 				//SCP-106のコンテナ壁
 				var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
-
 				var wall_106_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
 				wall_106_1.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
 				wall_106_1.transform.localScale = new Vector3(32f, 11f, 0.5f);
@@ -296,6 +297,17 @@ namespace SanyaPlugin
 				wall_106_2.NetworkMaterialColor = Color.gray;
 				wall_106_2.NetworkPrimitiveType = PrimitiveType.Cube;
 
+				//SCP-939スポーン位置の蓋
+				var room939 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz939);
+				var wall_939_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_939_1.transform.SetParentAndOffset(room939.transform, new Vector3(0f, -0.55f, 1.2f));
+				wall_939_1.transform.localScale = new Vector3(16f, 1f, 13f);
+				if(room939.transform.forward == Vector3.left || room939.transform.forward == Vector3.right)
+					wall_939_1.transform.rotation = Quaternion.Euler(Vector3.up * 90f);
+				wall_939_1.UpdatePositionServer();
+				wall_939_1.NetworkMaterialColor = Color.gray;
+				wall_939_1.NetworkPrimitiveType = PrimitiveType.Cube;
+
 				NetworkServer.Spawn(station1);
 				NetworkServer.Spawn(station2);
 				NetworkServer.Spawn(station3);
@@ -312,6 +324,27 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(wall_fence3.gameObject);
 				NetworkServer.Spawn(wall_106_1.gameObject);
 				NetworkServer.Spawn(wall_106_2.gameObject);
+				NetworkServer.Spawn(wall_939_1.gameObject);
+			}
+
+			//アイテム追加
+			if(plugin.Config.AddItemsOnFacility)
+			{
+				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
+				Methods.SpawnItem(ItemType.GunAK, hczcom18);
+				Methods.SpawnItem(ItemType.GunFSP9, hczcom18);
+
+				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
+				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
+				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
+				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
+				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczradio);
+				Methods.SpawnItem(ItemType.ArmorLight, hczradio);
+
+				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
+				Methods.SpawnItem(ItemType.Adrenaline, hczflash);
+				Methods.SpawnItem(ItemType.GrenadeFlash, hczflash);
+
 			}
 
 			var surfaceLight = UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>();
@@ -337,6 +370,9 @@ namespace SanyaPlugin
 		public void OnRoundStarted()
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
+
+			if(plugin.Config.ScpRoomLockWhenSafe)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckScpsRoom(), Segment.FixedUpdate));
 
 			if(plugin.Config.ClassdPrisonInit)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitClassDPrison(), Segment.FixedUpdate));
@@ -446,14 +482,10 @@ namespace SanyaPlugin
 				if(randomnum < plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
-					poslist.Add(RoleType.Scp096.GetRandomSpawnProperties().Item1);
-					poslist.Add(RoleType.Scp049.GetRandomSpawnProperties().Item1);
-					poslist.Add(RoleType.Scp93953.GetRandomSpawnProperties().Item1);
-
 					if(!Map.IsLczDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
 					{
-						poslist.Add(RoleType.Scp173.GetRandomSpawnProperties().Item1);
 						poslist.Add(RoleType.ClassD.GetRandomSpawnProperties().Item1);
+						poslist.Add(RoleType.Scientist.GetRandomSpawnProperties().Item1);
 
 						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
 
@@ -806,6 +838,14 @@ namespace SanyaPlugin
 				}
 			}
 
+			//SCP
+			if(plugin.Config.ScpBall && ev.NewRole != RoleType.Scp0492 && ev.NewRole.GetTeam() == Team.SCP)
+			{
+				ev.Items.Clear();
+				for(int i = 0; i < 8; i++)
+					ev.Items.Add(ItemType.SCP018);
+			}
+
 			//Dクラスロールボーナス
 			if(!string.IsNullOrEmpty(ev.Player.GroupName) && plugin.Config.ClassdBonusitemsForRoleParsed.TryGetValue(ev.Player.GroupName, out List<ItemType> bonusitems) && ev.NewRole == RoleType.ClassD)
 				ev.Items.InsertRange(0, bonusitems);
@@ -1036,6 +1076,13 @@ namespace SanyaPlugin
 
 			if(ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.Remove || ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.ToggleSync)
 				ev.IsAllowed = false;
+		}
+		public void OnInteractingElevator(InteractingElevatorEventArgs ev)
+		{
+			Log.Debug($"[OnInteractingElevator] {ev.Player.Nickname} -> {ev.Lift.elevatorName}({ev.Status}) lock:{ev.Lift.Network_locked}", plugin.Config.IsDebugged);
+
+			if(ev.Lift.Network_locked)
+				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText("<color=#bbee00><size=25>このエレベーターはロックされています</color></size>", 3);
 		}
 		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
 		{

@@ -103,6 +103,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
+			PlayerEvents.InteractingElevator += Handlers.OnInteractingElevator;
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
 			PlayerEvents.ClosingGenerator += Handlers.OnClosingGenerator;
@@ -142,6 +143,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;
+			PlayerEvents.InteractingElevator -= Handlers.OnInteractingElevator;
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			PlayerEvents.ClosingGenerator -= Handlers.OnClosingGenerator;
