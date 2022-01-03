@@ -195,7 +195,12 @@ namespace SanyaPlugin
 			{
 				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Team != Team.SCP && x.Team != Team.RIP && x.Team != Team.CHI);
 				if(target != null)
-					message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{player.CurrentRoom.Zone}の{player.CurrentRoom.Type}</color></size>\n";
+				{
+					if(player.CurrentRoom.Zone == Exiled.API.Enums.ZoneType.Surface)
+						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(player.CurrentRoom.Zone)}</color></size>\n";
+					else
+						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(player.CurrentRoom.Zone)}の{Methods.TranslateRoomName(player.CurrentRoom.Type)}</color></size>\n";
+				}
 			}
 
 			if(!string.IsNullOrEmpty(message))

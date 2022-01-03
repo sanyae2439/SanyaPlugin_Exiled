@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using Exiled.API.Enums;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
 using Exiled.Events.EventArgs;
@@ -148,7 +149,7 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> CheckSteam(string userid)
 		{
 			PlayerData data = null;
-			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data) 
+			if(SanyaPlugin.Instance.Config.DataEnabled && PlayerDataManager.playersData.TryGetValue(userid, out data)
 				&& (!SanyaPlugin.Instance.Config.KickSteamLimited || !data.steamlimited)
 				&& (!SanyaPlugin.Instance.Config.KickSteamVacBanned || !data.steamvacbanned))
 			{
@@ -338,7 +339,7 @@ namespace SanyaPlugin.Functions
 						badge = $"{rolestr} : 認証済み";
 					else
 						badge = $"認証済み";
-				}			
+				}
 			}
 
 			if(group == null)
@@ -391,7 +392,7 @@ namespace SanyaPlugin.Functions
 			{
 				i.Network_warheadLightOverride = true;
 				i.Network_warheadLightColor = new Color(0f, 0f, 0f);
-			}	
+			}
 			yield break;
 		}
 
@@ -721,10 +722,10 @@ namespace SanyaPlugin.Functions
 
 		public static bool IsAlphaWarheadCountdown()
 		{
-			return AlphaWarheadController.Host.timeToDetonation < 
-				AlphaWarheadController.Host.RealDetonationTime() - 
-				((AlphaWarheadController._resumeScenario >= 0) 
-				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime 
+			return AlphaWarheadController.Host.timeToDetonation <
+				AlphaWarheadController.Host.RealDetonationTime() -
+				((AlphaWarheadController._resumeScenario >= 0)
+				? AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime
 				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
 		}
 
@@ -741,6 +742,136 @@ namespace SanyaPlugin.Functions
 					foreach(var ammo in value2)
 						InventorySystem.Configs.StartingInventories.DefinedInventories[role.roleId].Ammo[ammo.Key] = ammo.Value;
 				}
+		}
+
+		public static string TranslateZoneName(ZoneType zone)
+		{
+			switch(zone)
+			{
+				case ZoneType.Surface:
+					return "地上";
+				case ZoneType.Entrance:
+					return "エントランス";
+				case ZoneType.HeavyContainment:
+					return "重度収容区画";
+				case ZoneType.LightContainment:
+					return "軽度収容区画";
+				case ZoneType.Unspecified:
+					return "不明";
+				default:
+					return "エラー";
+			}
+		}
+
+		public static string TranslateRoomName(RoomType room)
+		{
+			switch(room)
+			{
+				case RoomType.Unknown:
+					return "不明";
+				case RoomType.LczArmory:
+					return "武器庫";
+				case RoomType.LczCurve:
+					return "曲がり角";
+				case RoomType.LczStraight:
+					return "直線通路";
+				case RoomType.Lcz012:
+					return "SCP-012収容室";
+				case RoomType.Lcz914:
+					return "SCP-914収容室";
+				case RoomType.LczCrossing:
+					return "交差点";
+				case RoomType.LczTCross:
+					return "三叉路";
+				case RoomType.LczCafe:
+					return "PCルーム";
+				case RoomType.LczPlants:
+					return "栽培室";
+				case RoomType.LczToilets:
+					return "トイレ";
+				case RoomType.LczAirlock:
+					return "エアロック";
+				case RoomType.Lcz173:
+					return "SCP-173収容室";
+				case RoomType.LczClassDSpawn:
+					return "Dクラス職員収容室";
+				case RoomType.LczChkpB:
+					return "チェックポイントB-L";
+				case RoomType.LczGlassBox:
+					return "SCP-372収容室";
+				case RoomType.LczChkpA:
+					return "チェックポイントA-L";
+				case RoomType.Hcz079:
+					return "SCP-079収容室";
+				case RoomType.HczEzCheckpoint:
+					return "チェックポイントE-H";
+				case RoomType.HczArmory:
+					return "武器庫";
+				case RoomType.Hcz939:
+					return "テストルーム";
+				case RoomType.HczHid:
+					return "MicroHID格納庫";
+				case RoomType.Hcz049:
+					return "SCP-049収容室";
+				case RoomType.HczChkpA:
+					return "チェックポイントA-H";
+				case RoomType.HczCrossing:
+					return "交差点";
+				case RoomType.Hcz106:
+					return "SCP-106収容室";
+				case RoomType.HczNuke:
+					return "AlphaWarhead格納庫";
+				case RoomType.HczTesla:
+					return "テスラゲート"; ;
+				case RoomType.HczServers:
+					return "サーバールーム";
+				case RoomType.HczChkpB:
+					return "チェックポントB-H";
+				case RoomType.HczTCross:
+					return "三叉路";
+				case RoomType.HczCurve:
+					return "曲がり角";
+				case RoomType.Hcz096:
+					return "SCP-096収容室";
+				case RoomType.EzVent:
+					return "搬出ゲート";
+				case RoomType.EzIntercom:
+					return "放送室";
+				case RoomType.EzGateA:
+					return "ゲートA";
+				case RoomType.EzDownstairsPcs:
+					return "通路横PCルーム";
+				case RoomType.EzCurve:
+					return "曲がり角";
+				case RoomType.EzPcs:
+					return "PCルーム";
+				case RoomType.EzCrossing:
+					return "三叉路";
+				case RoomType.EzCollapsedTunnel:
+					return "崩壊した通路";
+				case RoomType.EzConference:
+					return "VIPルーム";
+				case RoomType.EzStraight:
+					return "直線通路";
+				case RoomType.EzCafeteria:
+					return "ベンチ付き直線通路";
+				case RoomType.EzUpstairsPcs:
+					return "2階付きPCルーム";
+				case RoomType.EzGateB:
+					return "ゲートB";
+				case RoomType.EzShelter:
+					return "非常用シェルター";
+				case RoomType.Pocket:
+					return "[削除済み]";
+				case RoomType.Surface:
+					return "地上";
+				case RoomType.HczStraight:
+					return "直線通路";
+				case RoomType.EzTCross:
+					return "三叉路";
+				default:
+					return "エラー";
+			}
 		}
 	}
 
