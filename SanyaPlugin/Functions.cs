@@ -417,7 +417,7 @@ namespace SanyaPlugin.Functions
 
 		public static IEnumerator<float> CheckScpsRoom()
 		{
-			yield return Timing.WaitForSeconds(10f);
+			yield return Timing.WaitForSeconds(3f);
 
 			string text = string.Empty;
 			bool detect939 = false;
@@ -465,9 +465,6 @@ namespace SanyaPlugin.Functions
 						}
 				}
 			}
-			Log.Warn(text.TrimEnd('\n'));
-
-
 		}
 	}
 
