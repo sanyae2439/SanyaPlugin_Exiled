@@ -45,22 +45,6 @@ namespace SanyaPlugin.Commands
 
 		//	switch(arguments.FirstElement().ToLower())
 		//	{
-		//		case "identitypos":
-		//			{
-		//				response = "ok.";
-		//				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
-		//				{
-		//					Log.Warn($"{identity.transform.name}{identity.transform.position}");
-		//				}
-		//				return true;
-		//			}
-		//		case "avlcol":
-		//			{
-		//				response = "Available colors:\n";
-		//				foreach(var i in ReferenceHub.HostHub.serverRoles.NamedColors.OrderBy(x => x.Restricted))
-		//					response += $"[#{i.ColorHex}] {i.Name,-13} {(i.Restricted ? "Restricted" : "Not Restricted")}\n";
-		//				return true;
-		//			}
 		//		case "lighttest":
 		//			{
 		//				if(targetLight == null)
@@ -369,43 +353,6 @@ namespace SanyaPlugin.Commands
 		//					SanyaPlugin.Instance.Handlers.Overrided = player;
 
 		//				response = "ok.";
-		//				return true;
-		//			}
-		//		case "actwatch":
-		//			{
-		//				if(player == null)
-		//				{
-		//					response = "Only can use with RemoteAdmin.";
-		//					return false;
-		//				}
-
-		//				if(!isActwatchEnabled)
-		//				{
-		//					MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-		//					{
-		//						writer.WriteUInt64(1ul);
-		//						writer.WriteUInt32(1);
-		//						writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-		//						writer.WriteUInt32(18);
-		//						writer.WriteByte(1);
-		//					});
-		//					isActwatchEnabled = true;
-		//				}
-		//				else
-		//				{
-		//					MirrorExtensions.SendFakeSyncObject(player, player.ReferenceHub.networkIdentity, typeof(PlayerEffectsController), (writer) =>
-		//					{
-		//						writer.WriteUInt64(1ul);
-		//						writer.WriteUInt32(1);
-		//						writer.WriteByte((byte)SyncList<byte>.Operation.OP_SET);
-		//						writer.WriteUInt32(18);
-		//						writer.WriteByte(0);
-		//					});
-		//					isActwatchEnabled = false;
-		//				}
-
-
-		//				response = $"ok. [{isActwatchEnabled}]";
 		//				return true;
 		//			}
 		//		case "106":

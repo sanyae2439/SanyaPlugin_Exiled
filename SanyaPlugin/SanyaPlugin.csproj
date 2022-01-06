@@ -132,6 +132,7 @@
     <Compile Include="Commands\Debugs\CoroutinesCommand.cs" />
     <Compile Include="Commands\SanyaCommand.cs" />
     <Compile Include="Commands\Debugs\TestCommand.cs" />
+    <Compile Include="Commands\Utils\ActWatchCommand.cs" />
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
@@ -163,8 +164,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SanyaPlugin.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Commands\Utils\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
