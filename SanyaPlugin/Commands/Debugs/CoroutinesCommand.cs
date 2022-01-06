@@ -6,7 +6,6 @@ using NorthwoodLib.Pools;
 
 namespace SanyaPlugin.Commands.Debugs
 {
-	[CommandHandler(typeof(SanyaCommand))]
 	public class CoroutinesCommand : ICommand
 	{
 		public string Command { get; } = "coroutines";

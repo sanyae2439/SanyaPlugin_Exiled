@@ -7,8 +7,7 @@ using Mirror;
 
 namespace SanyaPlugin.Commands.Utils
 {
-	[CommandHandler(typeof(SanyaCommand))]
-	public class ActWatchCommand
+	public class ActWatchCommand : ICommand
 	{
 		public string Command { get; } = "actwatch";
 

@@ -4,7 +4,6 @@ using Exiled.Permissions.Extensions;
 
 namespace SanyaPlugin.Commands.Debugs
 {
-	[CommandHandler(typeof(SanyaCommand))]
 	public class TestCommand : ICommand
 	{
 		public string Command { get; } = "test";

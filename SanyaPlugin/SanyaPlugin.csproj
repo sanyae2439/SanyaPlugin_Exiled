@@ -133,6 +133,9 @@
     <Compile Include="Commands\SanyaCommand.cs" />
     <Compile Include="Commands\Debugs\TestCommand.cs" />
     <Compile Include="Commands\Utils\ActWatchCommand.cs" />
+    <Compile Include="Commands\Utils\Scp914Command.cs" />
+    <Compile Include="Commands\Utils\Scp914\KnobCommand.cs" />
+    <Compile Include="Commands\Utils\Scp914\UseCommand.cs" />
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />

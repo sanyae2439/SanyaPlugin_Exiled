@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandSystem;
 using SanyaPlugin.Commands.Debugs;
+using SanyaPlugin.Commands.Utils;
 
 namespace SanyaPlugin.Commands
 {
@@ -15,6 +16,26 @@ namespace SanyaPlugin.Commands
 		public override string[] Aliases { get; }
 
 		public override string Description { get; } = "SanyaPlugin Commands";
+
+		public override void LoadGeneratedCommands()
+		{
+			//Debugs
+			RegisterCommand(new TestCommand());
+			RegisterCommand(new CoroutinesCommand());
+			RegisterCommand(new CheckObjectCommand());
+			RegisterCommand(new CheckComponentsCommand());
+
+			//Utils
+			RegisterCommand(new ActWatchCommand());
+			//Utils.Scp914
+			RegisterCommand(new Scp914Command());
+		}
+
+		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
+		{
+			response = "正しいコマンドを入力してださい。";
+			return false;
+		}
 
 		//private bool isActwatchEnabled = false;
 		//private DoorVariant targetdoor = null;
@@ -529,18 +550,5 @@ namespace SanyaPlugin.Commands
 		//	}
 		//}
 
-		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
-		{
-			response = "正しいコマンドを入力してださい。";
-			return false;
-		}
-
-		public override void LoadGeneratedCommands()
-		{
-			RegisterCommand(new TestCommand());
-			RegisterCommand(new CoroutinesCommand());
-			RegisterCommand(new CheckObjectCommand());
-			RegisterCommand(new CheckComponentsCommand());
-		}
 	}
 }

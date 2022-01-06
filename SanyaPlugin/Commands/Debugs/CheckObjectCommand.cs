@@ -2,12 +2,10 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
-using NorthwoodLib.Pools;
 using UnityEngine;
 
 namespace SanyaPlugin.Commands.Debugs
 {
-	[CommandHandler(typeof(SanyaCommand))]
 	public class CheckObjectCommand : ICommand
 	{
 		public string Command { get; } = "checkobject";

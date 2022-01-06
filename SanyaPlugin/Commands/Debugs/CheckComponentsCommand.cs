@@ -7,7 +7,6 @@ using UnityEngine;
 
 namespace SanyaPlugin.Commands.Debugs
 {
-	[CommandHandler(typeof(SanyaCommand))]
 	public class CheckComponentsCommand : ICommand
 	{
 		public string Command { get; } = "checkcomponents";
