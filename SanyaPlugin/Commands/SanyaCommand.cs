@@ -45,54 +45,6 @@ namespace SanyaPlugin.Commands
 
 		//	switch(arguments.FirstElement().ToLower())
 		//	{
-		//		case "checkobj":
-		//			{
-		//				response = "ok.";
-		//				if(Physics.Raycast(player.Position + player.CameraTransform.forward, player.CameraTransform.forward, out var casy))
-		//				{
-		//					Log.Warn($"{casy.transform.name} (layer{casy.transform.gameObject.layer})");
-		//					Log.Warn($"HasComponents:");
-		//					foreach(var i in casy.transform.gameObject.GetComponents<Component>())
-		//					{
-		//						Log.Warn($"    {i.name}:{i.GetType()}");
-		//					}
-		//					Log.Warn($"HasComponentsInChildren:");
-		//					foreach(var i in casy.transform.gameObject.GetComponentsInChildren<Component>())
-		//					{
-		//						Log.Warn($"    {i.name}:{i.GetType()}");
-		//					}
-		//					Log.Warn($"HasComponentsInParent:");
-		//					foreach(var i in casy.transform.gameObject.GetComponentsInParent<Component>())
-		//					{
-		//						Log.Warn($"    {i.name}:{i.GetType()}");
-		//					}
-		//				}
-		//				return true;
-		//			}
-		//		case "identitytree":
-		//			{
-		//				response = "ok.";
-		//				foreach(var identity in UnityEngine.Object.FindObjectsOfType<NetworkIdentity>())
-		//				{
-		//					Log.Warn($"{identity.transform.name} (layer{identity.transform.gameObject.layer})");
-		//					Log.Warn($"HasComponents:");
-		//					foreach(var i in identity.transform.gameObject.GetComponents<Component>())
-		//					{
-		//						Log.Warn($"    {i?.name}:{i?.GetType()}");
-		//					}
-		//					Log.Warn($"HasComponentsInChildren:");
-		//					foreach(var i in identity.transform.gameObject.GetComponentsInChildren<Component>())
-		//					{
-		//						Log.Warn($"    {i?.name}:{i?.GetType()}");
-		//					}
-		//					Log.Warn($"HasComponentsInParent:");
-		//					foreach(var i in identity.transform.gameObject.GetComponentsInParent<Component>())
-		//					{
-		//						Log.Warn($"    {i?.name}:{i?.GetType()}");
-		//					}
-		//				}
-		//				return true;
-		//			}
 		//		case "identitypos":
 		//			{
 		//				response = "ok.";
@@ -640,7 +592,8 @@ namespace SanyaPlugin.Commands
 		{
 			RegisterCommand(new TestCommand());
 			RegisterCommand(new CoroutinesCommand());
-			RegisterCommand(new CheckObjCommand());
+			RegisterCommand(new CheckObjectCommand());
+			RegisterCommand(new CheckComponentsCommand());
 		}
 	}
 }

@@ -8,15 +8,15 @@ using UnityEngine;
 namespace SanyaPlugin.Commands.Debugs
 {
 	[CommandHandler(typeof(SanyaCommand))]
-	public class CheckObjCommand : ICommand
+	public class CheckObjectCommand : ICommand
 	{
-		public string Command { get; } = "checkobj";
+		public string Command { get; } = "checkobject";
 
-		public string[] Aliases { get; }
+		public string[] Aliases { get; } = new string[] { "chkobj" };
 
 		public string Description { get; } = "プレイヤーが見ているオブジェクトの持つコンポーネントを表示する";
 
-		public string RequiredPermission { get; } = "sanya.debugs.checkobj";
+		public string RequiredPermission { get; } = "sanya.debugs.checkobject";
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{

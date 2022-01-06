@@ -127,7 +127,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\Debugs\CheckObjCommand.cs" />
+    <Compile Include="Commands\Debugs\CheckObjectCommand.cs" />
+    <Compile Include="Commands\Debugs\CheckComponentsCommand.cs" />
     <Compile Include="Commands\Debugs\CoroutinesCommand.cs" />
     <Compile Include="Commands\SanyaCommand.cs" />
     <Compile Include="Commands\Debugs\TestCommand.cs" />
