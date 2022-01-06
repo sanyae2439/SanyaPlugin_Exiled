@@ -48,11 +48,9 @@ namespace SanyaPlugin.Commands.Debugs
 				response = "サーバーログに出力しました。";
 				return true;
 			}
-			else
-			{
-				response = "ターゲットが見つかりません。";
-				return false;
-			}
+
+			response = "ターゲットが見つかりません。";
+			return false;
 		}
 	}
 }
