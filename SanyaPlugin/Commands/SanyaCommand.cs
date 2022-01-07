@@ -27,7 +27,6 @@ namespace SanyaPlugin.Commands
 
 			//Utils
 			RegisterCommand(new ActWatchCommand());
-			//Utils.Scp914
 			RegisterCommand(new Scp914Command());
 		}
 

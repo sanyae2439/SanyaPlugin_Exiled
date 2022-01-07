@@ -165,6 +165,8 @@ namespace SanyaPlugin
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
 			foreach(var gen in Recontainer079.AllGenerators)
 				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
+			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.NineTailedFox] = new NineTailedFoxSpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_MTF_respawn_amount", 15), 1, 17.95f, true);
+			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
 
 			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
