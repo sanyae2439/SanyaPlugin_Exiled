@@ -933,7 +933,7 @@ namespace SanyaPlugin
 
 			//ヘビィアーマーの効果値
 			if(ev.Target.IsHuman() 
-				&& (ev.Handler.Base is FirearmDamageHandler) 
+				&& (ev.Handler.Base is FirearmDamageHandler || ev.Handler.Base is ExplosionDamageHandler || ev.Handler.Base is Scp018DamageHandler)
 				&& ev.Target.ReferenceHub.inventory.TryGetBodyArmor(out var bodyArmor) 
 				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy)
 			{

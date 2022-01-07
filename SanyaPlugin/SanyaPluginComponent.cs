@@ -319,8 +319,8 @@ namespace SanyaPlugin
 				string CiList = string.Empty;
 				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
 				CiList += $"<color=#008f1e>Conscript:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}\n";
-				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";
 				CiList += $"<color=#0a7d34>Repressor:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}\n";
+				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";	
 				CiList += $"<color=#008f1e>Rifleman:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}\n";
 				CiList = CiList.TrimEnd('\n');
 
