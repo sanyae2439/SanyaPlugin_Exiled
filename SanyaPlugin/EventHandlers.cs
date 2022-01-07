@@ -923,7 +923,12 @@ namespace SanyaPlugin
 						if(firearm.WeaponType == ItemType.GunShotgun)
 							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
 						break;
-					}	
+					}
+				case MicroHidDamageHandler microHid:
+					{
+						ev.Amount *= plugin.Config.MicrohidDamageMultiplier;
+						break;
+					}
 			}
 
 			//ヘビィアーマーの効果値

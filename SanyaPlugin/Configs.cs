@@ -168,6 +168,9 @@ namespace SanyaPlugin
 		[Description("ヘビィアーマーのダメージ固定減衰率")]
 		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
 
+		[Description("MicroHIDの威力の乗数")]
+		public float MicrohidDamageMultiplier { get; set; } = 1f;
+
 		[Description("ショットガンの威力の乗数")]
 		public float ShotgunDamageMultiplier { get; set; } = 1f;
 
