@@ -815,14 +815,14 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
-					ev.Player.ChangeEffectIntensity<Scp207>(1);
+					ev.Player.ChangeEffectIntensity<MovementBoost>(20);
 					ev.Player.EnableEffect<Burned>();
 					ev.Player.EnableEffect<Deafened>();
 				}));
 			if(plugin.Config.Scp049SpeedupAmount != 0 && ev.NewRole == RoleType.Scp049)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
-					ev.Player.ChangeEffectIntensity<Scp207>(plugin.Config.Scp049SpeedupAmount);
+					ev.Player.ChangeEffectIntensity<MovementBoost>(plugin.Config.Scp049SpeedupAmount);
 				}));
 
 			//SCP-106のExMode用初期化
@@ -841,11 +841,11 @@ namespace SanyaPlugin
 			}
 
 			//SCP
-			if(plugin.Config.ScpBall && ev.NewRole != RoleType.Scp0492 && ev.NewRole.GetTeam() == Team.SCP)
+			if(plugin.Config.ScpGift != ItemType.None && ev.NewRole != RoleType.Scp0492 && ev.NewRole.GetTeam() == Team.SCP)
 			{
 				ev.Items.Clear();
 				for(int i = 0; i < 8; i++)
-					ev.Items.Add(ItemType.SCP018);
+					ev.Items.Add(plugin.Config.ScpGift);
 			}
 
 			//Dクラスロールボーナス
@@ -923,7 +923,16 @@ namespace SanyaPlugin
 						if(firearm.WeaponType == ItemType.GunShotgun)
 							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
 						break;
-					}
+					}	
+			}
+
+			//ヘビィアーマーの効果値
+			if(ev.Target.IsHuman() 
+				&& (ev.Handler.Base is FirearmDamageHandler) 
+				&& ev.Target.ReferenceHub.inventory.TryGetBodyArmor(out var bodyArmor) 
+				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy)
+			{
+				ev.Amount *= plugin.Config.HeavyArmorDamageEfficacy;
 			}
 
 			//SCPのダメージ
@@ -979,7 +988,7 @@ namespace SanyaPlugin
 			//SCP-049-2キルボーナス
 			if(plugin.Config.Scp0492KillStreak && ev.Killer.Role == RoleType.Scp0492)
 			{
-				ev.Killer.ChangeEffectIntensity<Scp207>((byte)Mathf.Clamp(ev.Killer.GetEffectIntensity<Scp207>() + 1, 0, 4));
+				ev.Killer.ChangeEffectIntensity<MovementBoost>((byte)Mathf.Clamp(ev.Killer.GetEffectIntensity<MovementBoost>() + 10, 0, 50));
 				ev.Killer.EnableEffect<Invigorated>(5f, true);
 				ev.Killer.Heal(ev.Killer.MaxHealth);
 			}

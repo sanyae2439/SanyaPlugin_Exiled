@@ -157,7 +157,7 @@ namespace SanyaPlugin
 		public bool ScpRoomLockWhenSafe { get; set; } = false;
 
 		[Description("SCPBall")]
-		public bool ScpBall { get; set; } = false;
+		public ItemType ScpGift { get; set; } = ItemType.None;
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
@@ -165,14 +165,14 @@ namespace SanyaPlugin
 		[Description("SCP-018がドアを破壊しないようにする")]
 		public bool Scp018DisableDestroyingDoor { get; set; } = false;
 
+		[Description("ヘビィアーマーのダメージ固定減衰率")]
+		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
+
 		[Description("ショットガンの威力の乗数")]
 		public float ShotgunDamageMultiplier { get; set; } = 1f;
 
 		[Description("リボルバーの威力の乗数")]
 		public float RevolverDamageMultiplier { get; set; } = 1f;
-
-		[Description("ディスラプターの威力の乗数")]
-		public float DisruptorDamageMultiplier { get; set; } = 1f;
 
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;

@@ -358,7 +358,7 @@ namespace SanyaPlugin
 			{
 				string text = string.Empty;
 
-				text += $"Adrenaline Level:{player.GetEffectIntensity<Scp207>()}/4";
+				text += $"Adrenaline Level:{(player.GetEffectIntensity<MovementBoost>() / 10) - 1}/4";
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
