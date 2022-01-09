@@ -1084,7 +1084,10 @@ namespace SanyaPlugin
 				&& ev.Player.CurrentItem != null
 				&& (ev.Player.CurrentItem.Base is KeycardItem keycardItem)
 				&& keycardItem.Permissions.ToString().Contains(plugin.Config.TeslaDisabledPermission))
+			{
 				ev.IsTriggerable = false;
+				ev.IsInIdleRange = false;
+			}	
 		}
 		public void OnInteractingShootingTarget(InteractingShootingTargetEventArgs ev)
 		{

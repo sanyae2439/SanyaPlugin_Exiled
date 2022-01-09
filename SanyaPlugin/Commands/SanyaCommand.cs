@@ -27,6 +27,7 @@ namespace SanyaPlugin.Commands
 
 			//Utils
 			RegisterCommand(new ActWatchCommand());
+			RegisterCommand(new OverrideCommand());
 			RegisterCommand(new Scp914Command());
 		}
 
@@ -362,17 +363,6 @@ namespace SanyaPlugin.Commands
 		//			{
 		//				response = "ok.";
 		//				player.ReferenceHub.playerMovementSync.NoclipWhitelisted = true;
-		//				return true;
-		//			}
-		//		case "override":
-		//			{
-
-		//				if(SanyaPlugin.Instance.Handlers.Overrided != null)
-		//					SanyaPlugin.Instance.Handlers.Overrided = null;
-		//				else
-		//					SanyaPlugin.Instance.Handlers.Overrided = player;
-
-		//				response = "ok.";
 		//				return true;
 		//			}
 		//		case "106":
