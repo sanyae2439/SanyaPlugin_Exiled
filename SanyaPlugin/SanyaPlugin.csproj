@@ -143,6 +143,7 @@
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixEscapeCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\ReduceGeneratorPatch.cs" />
+    <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixGrenadeDestroyPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />

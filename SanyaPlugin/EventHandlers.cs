@@ -157,7 +157,7 @@ namespace SanyaPlugin
 				prevSpawnQueue = null;
 			}
 
-			//Fix maingame(11.0)
+			//Fix maingame(11.x)
 			if(RoundRestarting.RoundRestart.UptimeRounds == 0)
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
@@ -167,6 +167,9 @@ namespace SanyaPlugin
 				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.NineTailedFox] = new NineTailedFoxSpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_MTF_respawn_amount", 15), 1, 17.95f, true);
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
+			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).HelmetEfficacy = 100;
+			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).VestEfficacy = 100;
+
 
 			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
