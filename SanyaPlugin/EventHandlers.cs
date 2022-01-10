@@ -337,19 +337,19 @@ namespace SanyaPlugin
 			{
 				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
 				Methods.SpawnItem(ItemType.GunAK, hczcom18);
-				Methods.SpawnItem(ItemType.GunFSP9, hczcom18);
+				Methods.SpawnItem(ItemType.GunCrossvec, hczcom18);
 
 				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
-				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczradio);
-				Methods.SpawnItem(ItemType.ArmorLight, hczradio);
+				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
+				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 
 				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
 				Methods.SpawnItem(ItemType.Adrenaline, hczflash);
 				Methods.SpawnItem(ItemType.GrenadeFlash, hczflash);
-
+				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczflash);
 			}
 
 			var surfaceLight = UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>();
