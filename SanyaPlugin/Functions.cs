@@ -127,7 +127,7 @@ namespace SanyaPlugin.Functions
 						var player = Player.Get(ev.UserId);
 						if(player != null)
 						{
-							ServerConsole.Disconnect(player.Connection, Subtitles.VPNKickMessage);
+							ServerConsole.Disconnect(player.Connection, LocalSubtitles.VPNKickMessage);
 						}
 						if(!EventHandlers.kickedbyChecker.ContainsKey(ev.UserId))
 							EventHandlers.kickedbyChecker.Add(ev.UserId, "vpn");
@@ -190,7 +190,7 @@ namespace SanyaPlugin.Functions
 								Log.Warn($"[SteamCheck:VacBanned] NG:{userid}");
 								var player = Player.Get(userid);
 								if(player != null)
-									ServerConsole.Disconnect(player.Connection, Subtitles.VacBannedKickMessage);
+									ServerConsole.Disconnect(player.Connection, LocalSubtitles.VacBannedKickMessage);
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
 									EventHandlers.kickedbyChecker.Add(userid, "steam_vac");
@@ -216,7 +216,7 @@ namespace SanyaPlugin.Functions
 								var player = Player.Get(userid);
 								if(player != null)
 								{
-									ServerConsole.Disconnect(player.Connection, Subtitles.LimitedKickMessage);
+									ServerConsole.Disconnect(player.Connection, LocalSubtitles.LimitedKickMessage);
 								}
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
@@ -230,7 +230,7 @@ namespace SanyaPlugin.Functions
 							Log.Warn($"[SteamCheck] Falied(NoProfile or Error):{userid}");
 							var player = Player.Get(userid);
 							if(player != null)
-								ServerConsole.Disconnect(player.Connection, Subtitles.NoProfileKickMessage);
+								ServerConsole.Disconnect(player.Connection, LocalSubtitles.NoProfileKickMessage);
 							if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
 								EventHandlers.kickedbyChecker.Add(userid, "steam_noprofile");
 						}

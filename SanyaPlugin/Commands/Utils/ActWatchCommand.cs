@@ -41,7 +41,7 @@ namespace SanyaPlugin.Commands.Utils
 					writer.WriteUInt64(1ul);
 					writer.WriteUInt32(1);
 					writer.WriteByte(4);
-					writer.WriteUInt32(18);
+					writer.WriteUInt32(19);
 					writer.WriteByte(1);
 				});
 				_isEnabled = true;
@@ -53,7 +53,7 @@ namespace SanyaPlugin.Commands.Utils
 					writer.WriteUInt64(1ul);
 					writer.WriteUInt32(1);
 					writer.WriteByte(4);
-					writer.WriteUInt32(18);
+					writer.WriteUInt32(19);
 					writer.WriteByte(0);
 				});
 				_isEnabled = false;

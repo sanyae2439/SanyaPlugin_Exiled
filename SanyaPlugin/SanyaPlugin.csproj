@@ -142,6 +142,7 @@
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixEscapeCounterPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\ReduceGeneratorPatch.cs" />
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
@@ -161,7 +162,7 @@
     <Compile Include="Patches\JumpingStaminaPatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
-    <Compile Include="Subtitles.cs" />
+    <Compile Include="LocalSubtitles.cs" />
     <Compile Include="Configs.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="EventHandlers.cs" />

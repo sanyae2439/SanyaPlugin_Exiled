@@ -24,9 +24,9 @@ namespace SanyaPlugin.Patches
 						SCPCount++;
 
 				if(SCPCount > 0)
-					Methods.SendSubtitle(Subtitles.MTFRespawnSCPs.Replace("{0}", regular).Replace("{1}", SCPCount.ToString()), 30);
+					Methods.SendSubtitle(LocalSubtitles.MTFRespawnSCPs.Replace("{0}", regular).Replace("{1}", SCPCount.ToString()), 30);
 				else
-					Methods.SendSubtitle(Subtitles.MTFRespawnNOSCPs.Replace("{0}", regular), 30);
+					Methods.SendSubtitle(LocalSubtitles.MTFRespawnNOSCPs.Replace("{0}", regular), 30);
 			}
 		}
 	}

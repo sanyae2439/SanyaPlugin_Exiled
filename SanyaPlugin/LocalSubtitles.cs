@@ -1,6 +1,6 @@
 ﻿namespace SanyaPlugin.Data
 {
-	internal static class Subtitles
+	internal static class LocalSubtitles
 	{
 		internal static readonly string LimitedKickMessage = string.Concat(
 			"あなたのSteamIDは「制限付きユーザーアカウント」です。このサーバーは制限付きユーザーを許可していません。\n",

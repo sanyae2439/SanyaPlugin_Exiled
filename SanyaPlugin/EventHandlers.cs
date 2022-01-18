@@ -534,27 +534,27 @@ namespace SanyaPlugin
 				{
 					case 0:
 						{
-							Methods.SendSubtitle(Subtitles.DecontaminationInit, 20);
+							Methods.SendSubtitle(LocalSubtitles.DecontaminationInit, 20);
 							break;
 						}
 					case 1:
 						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
+							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
 							break;
 						}
 					case 2:
 						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
+							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
 							break;
 						}
 					case 3:
 						{
-							Methods.SendSubtitle(Subtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
+							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
 							break;
 						}
 					case 4:
 						{
-							Methods.SendSubtitle(Subtitles.Decontamination30s, 45);
+							Methods.SendSubtitle(LocalSubtitles.Decontamination30s, 45);
 							break;
 						}
 				}
@@ -574,32 +574,32 @@ namespace SanyaPlugin
 				switch(ev.Handler.Base)
 				{
 					case WarheadDamageHandler _:
-						str = Subtitles.SCPDeathWarhead.Replace("{0}", ev.Role.fullName);
+						str = LocalSubtitles.SCPDeathWarhead.Replace("{0}", ev.Role.fullName);
 						break;
 					case UniversalDamageHandler universal:
 						if(universal.TranslationId == DeathTranslations.Tesla.Id)
-							str = Subtitles.SCPDeathTesla.Replace("{0}", ev.Role.fullName);
+							str = LocalSubtitles.SCPDeathTesla.Replace("{0}", ev.Role.fullName);
 						if(universal.TranslationId == DeathTranslations.Decontamination.Id)
-							str = Subtitles.SCPDeathDecont.Replace("{0}", ev.Role.fullName);
+							str = LocalSubtitles.SCPDeathDecont.Replace("{0}", ev.Role.fullName);
 						break;
 				}
 
 				if(string.IsNullOrEmpty(str))
 				{
 					if(ev.Killer == null)
-						str = Subtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
+						str = LocalSubtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
 					else
 					{
 						if(ev.Killer.Team == Team.CDP)
-							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
+							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
 						else if(ev.Killer.Team == Team.CHI)
-							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
+							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
 						else if(ev.Killer.Team == Team.RSC)
-							str = Subtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
+							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
 						else if(ev.Killer.Team == Team.MTF)
-							str = Subtitles.SCPDeathContainedMTF.Replace("{0}", ev.Role.fullName).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
+							str = LocalSubtitles.SCPDeathContainedMTF.Replace("{0}", ev.Role.fullName).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
 						else
-							str = Subtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
+							str = LocalSubtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
 					}
 				}
 
@@ -614,7 +614,7 @@ namespace SanyaPlugin
 
 			//字幕用
 			if(plugin.Config.CassieSubtitle)
-				Methods.SendSubtitle(Subtitles.DecontaminationLockdown, 15);
+				Methods.SendSubtitle(LocalSubtitles.DecontaminationLockdown, 15);
 		}
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
@@ -629,9 +629,9 @@ namespace SanyaPlugin
 
 			if(plugin.Config.CassieSubtitle)
 				if(Map.ActivatedGenerators == 2)
-					Methods.SendSubtitle(Subtitles.GeneratorComplete, 15);
+					Methods.SendSubtitle(LocalSubtitles.GeneratorComplete, 15);
 				else
-					Methods.SendSubtitle(Subtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
+					Methods.SendSubtitle(LocalSubtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
 
 			switch(eventmode)
 			{
@@ -667,9 +667,9 @@ namespace SanyaPlugin
 				double count = Math.Truncate(left / 10.0) * 10.0;
 
 				if(!isresumed)
-					Methods.SendSubtitle(Subtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
+					Methods.SendSubtitle(LocalSubtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
 				else
-					Methods.SendSubtitle(Subtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
+					Methods.SendSubtitle(LocalSubtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
 			}
 		}
 		public void OnStopping(StoppingEventArgs ev)
@@ -682,7 +682,7 @@ namespace SanyaPlugin
 
 			//字幕用
 			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
-				Methods.SendSubtitle(Subtitles.AlphaWarheadCancel, 7);
+				Methods.SendSubtitle(LocalSubtitles.AlphaWarheadCancel, 7);
 		}
 		public void OnChangingLeverStatus(ChangingLeverStatusEventArgs ev)
 		{
@@ -719,7 +719,7 @@ namespace SanyaPlugin
 				{
 					writer.Reset();
 					writer.Put((byte)10);
-					writer.Put(Subtitles.VPNKickMessageShort);
+					writer.Put(LocalSubtitles.VPNKickMessageShort);
 					ev.Request.Reject(writer);
 					return;
 				}
@@ -743,13 +743,13 @@ namespace SanyaPlugin
 			{
 				string reasonMessage = string.Empty;
 				if(reason == "steam_vac")
-					reasonMessage = Subtitles.VacBannedKickMessage;
+					reasonMessage = LocalSubtitles.VacBannedKickMessage;
 				else if(reason == "steam_limited")
-					reasonMessage = Subtitles.LimitedKickMessage;
+					reasonMessage = LocalSubtitles.LimitedKickMessage;
 				else if(reason == "steam_noprofile")
-					reasonMessage = Subtitles.NoProfileKickMessage;
+					reasonMessage = LocalSubtitles.NoProfileKickMessage;
 				else if(reason == "vpn")
-					reasonMessage = Subtitles.VPNKickMessage;
+					reasonMessage = LocalSubtitles.VPNKickMessage;
 
 				ServerConsole.Disconnect(ev.Player.Connection, reasonMessage);
 				kickedbyChecker.Remove(ev.Player.UserId);
