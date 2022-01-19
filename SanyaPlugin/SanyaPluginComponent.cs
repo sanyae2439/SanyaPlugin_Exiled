@@ -266,6 +266,7 @@ namespace SanyaPlugin
 					rankcounter++;
 					if(rankcounter > 5) break;
 				}
+				if(!EventHandlers.sortedDamages.Any(x => x.Value != 0)) resultList += $"無し\n";
 				resultList = resultList.TrimEnd('\n');
 
 				resultList += '\n';
@@ -279,6 +280,23 @@ namespace SanyaPlugin
 					rankcounter++;
 					if(rankcounter > 5) break;
 				}
+				if(!EventHandlers.sortedKills.Any(x => x.Value != 0)) resultList += $"無し\n";
+				resultList = resultList.TrimEnd('\n');
+
+				resultList += '\n';
+
+				resultList += "Escaped ClassD:\n";
+				foreach(var stats in EventHandlers.EscapedClassDDict)
+					resultList += $"[{(stats.Value ? "脱出" : "確保")}]{stats.Key}\n";
+				if(EventHandlers.EscapedClassDDict.Count == 0) resultList += $"無し\n";
+				resultList = resultList.TrimEnd('\n');
+
+				resultList += '\n';
+
+				resultList += "Escaped Scientist:\n";
+				foreach(var stats in EventHandlers.EscapedScientistDict)
+					resultList += $"[{(stats.Value ? "脱出" : "確保")}]{stats.Key}\n";
+				if(EventHandlers.EscapedScientistDict.Count == 0) resultList += $"無し\n";
 				resultList = resultList.TrimEnd('\n');
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 13));

@@ -141,14 +141,13 @@
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\FixEscapeCounterPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\ReduceGeneratorPatch.cs" />
+    <Compile Include="Patches\ReduceGeneratorPatch.cs" />
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\FixGrenadeDestroyPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\LiftMovingSinkholePatch.cs" />
+    <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\RestartSequencePatch.cs" />
@@ -157,7 +156,6 @@
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
-    <Compile Include="Patches\Scp939OverAllPatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="LocalSubtitles.cs" />

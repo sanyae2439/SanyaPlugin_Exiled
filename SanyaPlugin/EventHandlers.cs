@@ -118,6 +118,8 @@ namespace SanyaPlugin
 		public readonly static Dictionary<int, string> connIdToUserIds = new Dictionary<int, string>();
 		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
 		public readonly static Dictionary<string, uint> KillsDict = new Dictionary<string, uint>();
+		public readonly static Dictionary<string, bool> EscapedClassDDict = new Dictionary<string, bool>();
+		public readonly static Dictionary<string, bool> EscapedScientistDict = new Dictionary<string, bool>();
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private Vector3 nextRespawnPos = Vector3.zero;
@@ -490,6 +492,8 @@ namespace SanyaPlugin
 			DamagesDict.Clear();
 			sortedKills = null;
 			KillsDict.Clear();
+			EscapedClassDDict.Clear();
+			EscapedScientistDict.Clear();
 
 			//Fix maingame(11.x)
 			RoundSummary.singleton.RoundEnded = true;
@@ -612,6 +616,13 @@ namespace SanyaPlugin
 		public void OnDetonated()
 		{
 			Log.Info($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
+
+			if(plugin.Config.TimeToRespawnAfterDetonated != -1 
+				&& RespawnManager.Singleton._curSequence == RespawnManager.RespawnSequencePhase.RespawnCooldown 
+				&& RespawnManager.Singleton._timeForNextSequence > plugin.Config.TimeToRespawnAfterDetonated)
+			{
+				RespawnManager.Singleton._timeForNextSequence = SanyaPlugin.Instance.Config.TimeToRespawnAfterDetonated;
+			}
 		}
 
 		//PlayerEvents
@@ -926,6 +937,15 @@ namespace SanyaPlugin
 			//キルランキング
 			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Team))
 				KillsDict[ev.Killer.Nickname] += 1;
+		}
+		public void OnEscaping(EscapingEventArgs ev)
+		{
+			Log.Debug($"[OnEscaping] {ev.Player.Nickname} {ev.Player.Role} -> {ev.NewRole}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			if(ev.Player.Role == RoleType.ClassD)
+				EscapedClassDDict.Add(ev.Player.Nickname, ev.NewRole == RoleType.ChaosConscript);
+			else if(ev.Player.Role == RoleType.Scientist)
+				EscapedScientistDict.Add(ev.Player.Nickname, ev.NewRole == RoleType.NtfSpecialist);
 		}
 		public void OnHandcuffing(HandcuffingEventArgs ev)
 		{

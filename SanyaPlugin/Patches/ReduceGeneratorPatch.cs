@@ -3,7 +3,7 @@ using MapGeneration.Distributors;
 using Mirror;
 using UnityEngine;
 
-namespace SanyaPlugin.Patches.Fix_Basegame
+namespace SanyaPlugin.Patches
 {
 	[HarmonyPatch(typeof(Scp079Generator), nameof(Scp079Generator.ServerUpdate))]
 	public static class ReduceGeneratorPatch

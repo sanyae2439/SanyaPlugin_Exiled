@@ -3,7 +3,7 @@
 namespace SanyaPlugin.Patches.Fix_Basegame
 {
 	[HarmonyPatch(typeof(RoundSummary), nameof(RoundSummary.OnClassChanged))]
-	public static class FixEscapeCounterPatch
+	public static class FixSummaryCounterPatch
 	{
 		public static bool Prefix(ReferenceHub userHub, RoleType prevClass, RoleType newClass, bool lite, CharacterClassManager.SpawnReason spawnReason)
 		{
@@ -22,7 +22,10 @@ namespace SanyaPlugin.Patches.Fix_Basegame
 				}
 			}
 			else if(spawnReason == CharacterClassManager.SpawnReason.Revived && prevClass == RoleType.Spectator && newClass == RoleType.Scp0492)
-				RoundSummary.ChangedIntoZombies++;
+			{
+				//RoundSummary.ChangedIntoZombies++;
+				RoundSummary.singleton.classlistStart.scps_except_zombies++;
+			}		
 
 			return false;
 		}
