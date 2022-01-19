@@ -29,6 +29,8 @@ namespace SanyaPlugin
 		public static SanyaPlugin Instance { get; private set; }
 		public EventHandlers Handlers { get; private set; }
 		public Harmony Harmony { get; private set; }
+		public PlayerDataManager PlayerDataManager { get; private set; }
+		public ShitChecker ShitChecker { get; private set;}
 		private int patchCounter;
 
 		public override void OnEnabled()
@@ -42,9 +44,15 @@ namespace SanyaPlugin
 			Log.Info("[OnEnabled] Parse configs...");
 			Config.ParseConfig();
 
-			Log.Info("[OnEnabled] Loading extra functions...");
-			if(!string.IsNullOrEmpty(this.Config.KickVpnApikey)) ShitChecker.LoadLists();
+			Log.Info("[OnEnabled] Loading InfoSender...");
 			if(this.Config.InfosenderIp != "none" && this.Config.InfosenderPort != -1) Handlers.sendertask = Handlers.SenderAsync().StartSender();
+
+			Log.Info("[OnEnabled] Loading PlayerDataManager...");
+			this.PlayerDataManager = new PlayerDataManager();
+
+			Log.Info("[OnEnabled] Loading ShitChecker...");
+			this.ShitChecker = new ShitChecker();
+			if(!string.IsNullOrEmpty(Config.KickVpnApikey)) this.ShitChecker.LoadLists();
 
 			Log.Info("[OnEnabled] Patching...");
 			this.Patch();

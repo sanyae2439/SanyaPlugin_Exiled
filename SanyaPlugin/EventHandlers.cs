@@ -142,7 +142,7 @@ namespace SanyaPlugin
 				sendertask = SenderAsync().StartSender();
 
 			//プレイヤーデータの初期化
-			PlayerDataManager.playersData.Clear();
+			SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Clear();
 
 			//初期スポーンデータのロード(Fix maingame 11.x)
 			SpawnpointManager.FillSpawnPoints();
@@ -443,20 +443,20 @@ namespace SanyaPlugin
 				{
 					if(string.IsNullOrEmpty(player.UserId)) continue;
 
-					if(PlayerDataManager.playersData.ContainsKey(player.UserId))
+					if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(player.UserId))
 					{
 						if(player.Role == RoleType.Spectator)
-							PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpLose);
+							SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[player.UserId].AddExp(plugin.Config.LevelExpLose);
 						else
-							PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpWin);
+							SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[player.UserId].AddExp(plugin.Config.LevelExpWin);
 					}
 				}
 
-				foreach(var data in PlayerDataManager.playersData.Values)
+				foreach(var data in SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Values)
 				{
 					data.lastUpdate = DateTime.Now;
 					data.playingcount++;
-					PlayerDataManager.SavePlayerData(data);
+					SanyaPlugin.Instance.PlayerDataManager.SavePlayerData(data);
 				}
 			}
 
@@ -631,8 +631,8 @@ namespace SanyaPlugin
 			Log.Debug($"[OnPreAuthenticating] {ev.Request.RemoteEndPoint.Address}:{ev.UserId}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//PreLoad PlayersData
-			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.UserId))
-				PlayerDataManager.playersData.Add(ev.UserId, PlayerDataManager.LoadPlayerData(ev.UserId));
+			if(plugin.Config.DataEnabled && !SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.UserId))
+				SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Add(ev.UserId, SanyaPlugin.Instance.PlayerDataManager.LoadPlayerData(ev.UserId));
 
 			//Staffs or BypassFlags
 			if(ev.UserId.Contains("@northwood") || (ev.Flags & BypassFlags) > 0)
@@ -644,7 +644,7 @@ namespace SanyaPlugin
 			//VPNCheck
 			if(!string.IsNullOrEmpty(plugin.Config.KickVpnApikey))
 			{
-				if(ShitChecker.IsBlacklisted(ev.Request.RemoteEndPoint.Address))
+				if(SanyaPlugin.Instance.ShitChecker.IsBlackListed(ev.Request.RemoteEndPoint.Address))
 				{
 					writer.Reset();
 					writer.Put((byte)10);
@@ -652,20 +652,20 @@ namespace SanyaPlugin
 					ev.Request.Reject(writer);
 					return;
 				}
-				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckVPN(ev), Segment.FixedUpdate));
+				roundCoroutines.Add(Timing.RunCoroutine(SanyaPlugin.Instance.ShitChecker.CheckVPN(ev), Segment.FixedUpdate));
 			}
 
 			//SteamCheck
 			if((plugin.Config.KickSteamLimited || plugin.Config.KickSteamVacBanned) && ev.UserId.Contains("@steam"))
-				roundCoroutines.Add(Timing.RunCoroutine(ShitChecker.CheckSteam(ev.UserId), Segment.FixedUpdate));
+				roundCoroutines.Add(Timing.RunCoroutine(SanyaPlugin.Instance.ShitChecker.CheckSteam(ev.UserId), Segment.FixedUpdate));
 		}
 		public void OnVerified(VerifiedEventArgs ev)
 		{
 			Log.Info($"[OnVerified] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
 			//LoadPlayersData
-			if(plugin.Config.DataEnabled && !PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
-				PlayerDataManager.playersData.Add(ev.Player.UserId, PlayerDataManager.LoadPlayerData(ev.Player.UserId));
+			if(plugin.Config.DataEnabled && !SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.Player.UserId))
+				SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Add(ev.Player.UserId, SanyaPlugin.Instance.PlayerDataManager.LoadPlayerData(ev.Player.UserId));
 
 			//ShitChecker
 			if(kickedbyChecker.TryGetValue(ev.Player.UserId, out var reason))
@@ -687,7 +687,7 @@ namespace SanyaPlugin
 
 			//LevelBadge
 			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
-				&& PlayerDataManager.playersData.TryGetValue(ev.Player.UserId, out PlayerData data))
+				&& SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.TryGetValue(ev.Player.UserId, out PlayerData data))
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate));
 
 			//MOTD
@@ -718,8 +718,8 @@ namespace SanyaPlugin
 
 			//プレイヤーデータのアンロード
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
-				if(PlayerDataManager.playersData.ContainsKey(ev.Player.UserId))
-					PlayerDataManager.playersData.Remove(ev.Player.UserId);
+				if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.Player.UserId))
+					SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Remove(ev.Player.UserId);
 		}
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
@@ -915,11 +915,11 @@ namespace SanyaPlugin
 			//キル/デス時経験値
 			if(plugin.Config.DataEnabled)
 			{
-				if(!string.IsNullOrEmpty(ev.Killer.UserId) && ev.Killer != ev.Target && PlayerDataManager.playersData.ContainsKey(ev.Killer.UserId))
-					PlayerDataManager.playersData[ev.Killer.UserId].AddExp(plugin.Config.LevelExpKill);
+				if(!string.IsNullOrEmpty(ev.Killer.UserId) && ev.Killer != ev.Target && SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.Killer.UserId))
+					SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[ev.Killer.UserId].AddExp(plugin.Config.LevelExpKill);
 
-				if(PlayerDataManager.playersData.ContainsKey(ev.Target.UserId))
-					PlayerDataManager.playersData[ev.Target.UserId].AddExp(plugin.Config.LevelExpDeath);
+				if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.Target.UserId))
+					SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[ev.Target.UserId].AddExp(plugin.Config.LevelExpDeath);
 			}
 
 			//SCP-049-2キルボーナス
@@ -1022,8 +1022,8 @@ namespace SanyaPlugin
 			//ポケディメデス時SCP-106へ経験値
 			if(plugin.Config.DataEnabled)
 				foreach(var player in Player.Get(RoleType.Scp106))
-					if(PlayerDataManager.playersData.ContainsKey(player.UserId))
-						PlayerDataManager.playersData[player.UserId].AddExp(plugin.Config.LevelExpKill);
+					if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(player.UserId))
+						SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[player.UserId].AddExp(plugin.Config.LevelExpKill);
 
 
 			foreach(var player in Player.Get(RoleType.Scp106))

@@ -157,6 +157,7 @@
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
+    <Compile Include="PlayerDataManager.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="Configs.cs" />
     <Compile Include="Data.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Functions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SanyaPlugin.cs" />
+    <Compile Include="ShitChecker.cs" />
     <Compile Include="Translations.cs" />
   </ItemGroup>
   <ItemGroup />
