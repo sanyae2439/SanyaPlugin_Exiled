@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using SanyaPlugin.Functions;
 using UnityEngine;
 
 namespace SanyaPlugin.Patches

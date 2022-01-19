@@ -25,7 +25,6 @@ using Mirror;
 using PlayerStatsSystem;
 using Respawning;
 using SanyaPlugin.Data;
-using SanyaPlugin.Functions;
 using Scp914.Processors;
 using UnityEngine;
 using Utf8Json;

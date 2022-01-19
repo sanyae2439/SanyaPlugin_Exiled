@@ -8,7 +8,6 @@ using MEC;
 using Mirror.LiteNetLib4Mirror;
 using PlayerStatsSystem;
 using Respawning;
-using SanyaPlugin.Functions;
 using UnityEngine;
 
 namespace SanyaPlugin

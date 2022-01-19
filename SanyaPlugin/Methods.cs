@@ -1,208 +1,22 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml;
 using Exiled.API.Enums;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
-using Exiled.Events.EventArgs;
-using Hints;
 using InventorySystem;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
-using MEC;
 using Mirror;
 using RemoteAdmin;
 using Respawning;
-using SanyaPlugin.Data;
 using UnityEngine;
-using UnityEngine.Networking;
-using Utf8Json;
 
-namespace SanyaPlugin.Functions
+namespace SanyaPlugin
 {
-
-	internal static class Coroutines
-	{
-		public static IEnumerator<float> GrantedLevel(Player player, PlayerData data)
-		{
-			yield return Timing.WaitForSeconds(1f);
-
-			if(player.GlobalBadge != null)
-			{
-				Log.Debug($"[GrantedLevel] User has GlobalBadge {player.UserId}:{player.GlobalBadge?.Text}", SanyaPlugin.Instance.Config.IsDebugged);
-				yield break;
-			}
-
-			var group = player.Group?.Clone();
-			string level = data.level.ToString();
-			string rolestr = player.ReferenceHub.serverRoles.GetUncoloredRoleString();
-			string rolecolor = player.RankColor;
-			string badge = string.Empty;
-
-			rolestr = rolestr.Replace("[", string.Empty).Replace("]", string.Empty).Replace("<", string.Empty).Replace(">", string.Empty);
-
-			if(rolecolor == "light_red")
-				rolecolor = "pink";
-
-			if(data.level == -1)
-				level = "???";
-
-			if(!player.DoNotTrack)
-			{
-				if(string.IsNullOrEmpty(rolestr))
-					badge = $"Level{level}";
-				else
-					badge = $"Level{level} : {rolestr}";
-
-				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
-					badge += " : 認証済み";
-			}
-			else
-			{
-				if(SanyaPlugin.Instance.Config.DisableChatBypassWhitelist && WhiteList.IsOnWhitelist(player.UserId))
-				{
-					if(!string.IsNullOrEmpty(rolestr))
-						badge = $"{rolestr} : 認証済み";
-					else
-						badge = $"認証済み";
-				}
-			}
-
-			if(group == null)
-				group = new UserGroup()
-				{
-					BadgeText = badge,
-					BadgeColor = "default",
-					HiddenByDefault = false,
-					Cover = true,
-					KickPower = 0,
-					Permissions = 0,
-					RequiredKickPower = 0,
-					Shared = false
-				};
-			else
-			{
-				group.BadgeText = badge;
-				group.BadgeColor = rolecolor;
-				group.HiddenByDefault = false;
-				group.Cover = true;
-			}
-
-			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
-
-			if(player.DoNotTrack)
-				SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Remove(player.UserId);
-
-			Log.Debug($"[GrantedLevel] {player.UserId} : Level{level} : DNT={player.DoNotTrack}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			yield break;
-		}
-
-		public static IEnumerator<float> BigHitmarker(Player player, float size = 1f)
-		{
-			yield return Timing.WaitForSeconds(0.1f);
-			player.SendHitmarker(size);
-			yield break;
-		}
-
-		public static IEnumerator<float> InitBlackout()
-		{
-			yield return Timing.WaitForSeconds(10f);
-			Methods.SendSubtitle(SanyaPlugin.Instance.Translation.BlackoutInit, 20);
-			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			foreach(var x in FlickerableLightController.Instances)
-				x.ServerFlickerLights(5f);
-			yield return Timing.WaitForSeconds(3f);
-			foreach(var i in FlickerableLightController.Instances.Where(x => x.transform.root?.name != "Outside"))
-			{
-				i.Network_warheadLightOverride = true;
-				i.Network_warheadLightColor = new Color(0f, 0f, 0f);
-			}
-			yield break;
-		}
-
-		public static IEnumerator<float> InitClassDPrison()
-		{
-			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
-			var doors = room.Doors.Where(x => x.Type == Exiled.API.Enums.DoorType.PrisonDoor);
-
-			room.TurnOffLights(5f);
-
-			foreach(var i in doors)
-			{
-				i.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-				i.Base.NetworkTargetState = false;
-			}
-
-			yield return Timing.WaitForSeconds(5f);
-
-			foreach(var j in doors)
-				j.Base.NetworkTargetState = true;
-			yield break;
-		}
-
-		public static IEnumerator<float> CheckScpsRoom()
-		{
-			yield return Timing.WaitForSeconds(3f);
-
-			string text = string.Empty;
-			bool detect939 = false;
-			foreach(var i in ReferenceHub.HostHub.characterClassManager.Classes.Where(x => x.team == Team.SCP && x.roleId != RoleType.Scp0492 && x.roleId != RoleType.Scp079 && !x.banClass))
-			{
-				text += $"{i.roleId}:{i.banClass}\n";
-
-				switch(i.roleId)
-				{
-					case RoleType.Scp173:
-						var gate173 = Map.GetDoorByName("173_GATE");
-						gate173?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						break;
-					case RoleType.Scp096:
-						var door096 = Map.GetDoorByName("096");
-						door096?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-
-						var itemcard = Map.Pickups.FirstOrDefault(x => x.Type == ItemType.KeycardNTFLieutenant);
-						itemcard?.Destroy();
-						Methods.SpawnItem(ItemType.KeycardNTFLieutenant, RoleType.Scp096.GetRandomSpawnProperties().Item1);
-						break;
-					case RoleType.Scp049:
-						var lift = Map.Lifts.First(x => x.elevatorName == "SCP-049");
-						lift.NetworkstatusID = (byte)Lift.Status.Down;
-						lift.Network_locked = true;
-						break;
-					case RoleType.Scp106:
-						var gate106p = Map.GetDoorByName("106_PRIMARY");
-						var gate106s = Map.GetDoorByName("106_SECONDARY");
-						gate106p?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						gate106s?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						break;
-					case RoleType.Scp93953:
-					case RoleType.Scp93989:
-						if(!detect939)
-						{
-							detect939 = true;
-							break;
-						}
-						else
-						{
-							foreach(var door in Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz939).Doors)
-								door.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-							break;
-						}
-				}
-			}
-		}
-	}
-
-	internal static class Methods
+	public static class Methods
 	{
 		public static HttpClient httpClient = new HttpClient();
 
@@ -361,15 +175,9 @@ namespace SanyaPlugin.Functions
 			}
 		}
 
-		public static void PlayAmbientSound(int id)
-		{
-			PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
-		}
+		public static void PlayAmbientSound(int id) => PlayerManager.localPlayer.GetComponent<AmbientSoundPlayer>().RpcPlaySound(Mathf.Clamp(id, 0, 31));
 
-		public static void PlayRandomAmbient()
-		{
-			PlayAmbientSound(UnityEngine.Random.Range(0, 32));
-		}
+		public static void PlayRandomAmbient() => PlayAmbientSound(UnityEngine.Random.Range(0, 32));
 
 		public static string FormatServerName()
 		{
@@ -605,108 +413,6 @@ namespace SanyaPlugin.Functions
 				default:
 					return "エラー";
 			}
-		}
-	}
-
-	internal static class Extensions
-	{
-		public static T CallBaseMethod<T>(this object instance, Type targetType, string methodName) => (T)Activator.CreateInstance(
-				typeof(T),
-				instance,
-				targetType.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).MethodHandle.GetFunctionPointer());
-
-		public static Task StartSender(this Task task)
-		{
-			return task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
-		}
-
-		public static bool IsHuman(this Player player)
-		{
-			return player.Team != Team.SCP && player.Team != Team.RIP;
-		}
-
-		public static bool IsEnemy(this Player player, Team target)
-		{
-			if(player.Role == RoleType.Spectator || player.Role == RoleType.None || player.Team == target)
-				return false;
-
-			return target == Team.SCP ||
-				((player.Team != Team.MTF && player.Team != Team.RSC) || (target != Team.MTF && target != Team.RSC))
-				&&
-				((player.Team != Team.CDP && player.Team != Team.CHI) || (target != Team.CDP && target != Team.CHI))
-			;
-		}
-
-		public static int GetHealthAmountPercent(this Player player)
-		{
-			return (int)(100f - (Mathf.Clamp01(1f - player.Health / (float)player.MaxHealth) * 100f));
-		}
-
-		public static int GetAHPAmountPercent(this Player player)
-		{
-			return (int)(100f - (Mathf.Clamp01(1f - player.ArtificialHealth / (float)player.MaxArtificialHealth) * 100f));
-		}
-
-		public static void SendTextHint(this Player player, string text, float time)
-		{
-			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, new HintEffect[] { HintEffectPresets.TrailingPulseAlpha(0.5f, 1f, 0.5f, 2f, 0f, 2) }, time));
-		}
-
-		public static void SendTextHintNotEffect(this Player player, string text, float time)
-		{
-			player.ReferenceHub.hints.Show(new TextHint(text, new HintParameter[] { new StringHintParameter(string.Empty) }, null, time));
-		}
-
-		public static void SetParentAndOffset(this Transform target, Transform parent, Vector3 local)
-		{
-			target.SetParent(parent);
-			target.position = parent.position;
-			target.transform.localPosition = local;
-			var localoffset = parent.transform.TransformVector(target.localPosition);
-			target.localPosition = Vector3.zero;
-			target.position += localoffset;
-		}
-
-		public static IEnumerable<Camera079> GetNearCams(this Player player)
-		{
-			foreach(var cam in Scp079PlayerScript.allCameras)
-			{
-				var dis = Vector3.Distance(player.Position, cam.transform.position);
-				if(dis <= 15f)
-				{
-					yield return cam;
-				}
-			}
-		}
-
-		public static void SendHitmarker(this Player player, float size = 1f) => Hitmarker.SendHitmarker(player.Connection, size);
-
-		public static void SendReportText(this Player player, string text) => player.SendConsoleMessage($"[REPORTING] {text}", "white");
-
-		public static bool IsList(this Type type)
-		{
-			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
-		}
-
-		public static bool IsDictionary(this Type type)
-		{
-			return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
-		}
-
-		public static Type GetListArgs(this Type type)
-		{
-			return type.GetGenericArguments()[0];
-		}
-
-		public static T GetRandomOne<T>(this List<T> list)
-		{
-			return list[UnityEngine.Random.Range(0, list.Count)];
-		}
-
-		public static T Random<T>(this IEnumerable<T> ie)
-		{
-			if(!ie.Any()) return default;
-			return ie.ElementAt(UnityEngine.Random.Range(0, ie.Count()));
 		}
 	}
 }

@@ -3,7 +3,6 @@ using HarmonyLib;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
-using SanyaPlugin.Functions;
 using UnityEngine;
 
 namespace SanyaPlugin.Patches

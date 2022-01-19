@@ -3,7 +3,6 @@ using Exiled.API.Enums;
 using Exiled.API.Features;
 using HarmonyLib;
 using MEC;
-using SanyaPlugin.Functions;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
 using Scp079Events = Exiled.Events.Handlers.Scp079;
