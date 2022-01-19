@@ -299,7 +299,7 @@ namespace SanyaPlugin
 				if(EventHandlers.EscapedScientistDict.Count == 0) resultList += $"無し\n";
 				resultList = resultList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 13));
+				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 7));
 			}
 			else if(player.Team == Team.SCP)
 			{
