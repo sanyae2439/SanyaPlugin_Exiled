@@ -149,7 +149,6 @@
     <Compile Include="Patches\Fix-Basegame\FixGrenadeDestroyPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\LiftMovingSinkholePatch.cs" />
-    <Compile Include="Patches\NTFUnitPatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\RestartSequencePatch.cs" />

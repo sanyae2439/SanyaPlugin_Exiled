@@ -81,9 +81,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
-			MapEvents.AnnouncingScpTermination += Handlers.OnAnnouncingScpTermination;
-			MapEvents.AnnouncingDecontamination += Handlers.OnAnnouncingDecontamination;
-			MapEvents.Decontaminating += Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
@@ -121,9 +118,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
-			MapEvents.AnnouncingScpTermination -= Handlers.OnAnnouncingScpTermination;
-			MapEvents.AnnouncingDecontamination -= Handlers.OnAnnouncingDecontamination;
-			MapEvents.Decontaminating -= Handlers.OnDecontaminating;
 			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;

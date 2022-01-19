@@ -83,9 +83,6 @@ namespace SanyaPlugin
 		[Description("ExHudの有効化")]
 		public bool ExHudEnabled { get; set; } = false;
 
-		[Description("CASSIE放送に字幕を表示する")]
-		public bool CassieSubtitle { get; set; } = false;
-
 		[Description("放送室のモニターの表示を拡張する")]
 		public bool IntercomInformation { get; set; } = false;
 
@@ -161,6 +158,9 @@ namespace SanyaPlugin
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
+
+		[Description("SCP-914にコインのレシピを追加する")]
+		public bool Scp914AddCoinRecipes { get; set; } = false;
 
 		[Description("SCP-018がドアを破壊しないようにする")]
 		public bool Scp018DisableDestroyingDoor { get; set; } = false;

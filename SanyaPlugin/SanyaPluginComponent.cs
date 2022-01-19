@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
 using MapGeneration.Distributors;
 using MEC;

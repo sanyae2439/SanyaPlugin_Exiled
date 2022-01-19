@@ -382,8 +382,7 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> InitBlackout()
 		{
 			yield return Timing.WaitForSeconds(10f);
-			if(SanyaPlugin.Instance.Config.CassieSubtitle)
-				Methods.SendSubtitle(EventTexts.BlackoutInit, 20);
+			Methods.SendSubtitle(EventTexts.BlackoutInit, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			foreach(var x in FlickerableLightController.Instances)
 				x.ServerFlickerLights(5f);

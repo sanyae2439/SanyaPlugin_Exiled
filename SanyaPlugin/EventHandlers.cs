@@ -26,6 +26,7 @@ using PlayerStatsSystem;
 using Respawning;
 using SanyaPlugin.Data;
 using SanyaPlugin.Functions;
+using Scp914.Processors;
 using UnityEngine;
 using Utf8Json;
 
@@ -335,21 +336,53 @@ namespace SanyaPlugin
 			//アイテム追加
 			if(plugin.Config.AddItemsOnFacility)
 			{
-				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
-				Methods.SpawnItem(ItemType.GunAK, hczcom18);
-				Methods.SpawnItem(ItemType.GunCrossvec, hczcom18);
-
-				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
+				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 
-				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up;
+				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczcom18);
+
+				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
 				Methods.SpawnItem(ItemType.Adrenaline, hczflash);
-				Methods.SpawnItem(ItemType.GrenadeFlash, hczflash);
-				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczflash);
+				Methods.SpawnItem(ItemType.Medkit, hczflash);
+
+				var lczfsp9 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunFSP9 && x.TriggerDoorName == "LCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				Methods.SpawnItem(ItemType.KeycardNTFOfficer, lczfsp9);
+				Methods.SpawnItem(ItemType.Medkit, lczfsp9);
+				Methods.SpawnItem(ItemType.Medkit, lczfsp9);
+			}
+
+			//SCP-914のRecipe追加
+			if(plugin.Config.Scp914AddCoinRecipes)
+			{
+				if(InventoryItemLoader.AvailableItems.TryGetValue(ItemType.Coin, out var itemBase) && itemBase.TryGetComponent<Scp914ItemProcessor>(out var processor))
+				{
+					var stdpro = processor as StandardItemProcessor;
+					Array.Clear(stdpro._coarseOutputs, 0, stdpro._coarseOutputs.Length);
+					Array.Clear(stdpro._fineOutputs, 0, stdpro._fineOutputs.Length);
+					Array.Clear(stdpro._veryFineOutputs, 0, stdpro._veryFineOutputs.Length);
+
+					List<ItemType> coarse = new List<ItemType>
+					{
+						ItemType.Radio
+					};
+					stdpro._coarseOutputs = coarse.ToArray();
+
+					List<ItemType> fine = new List<ItemType>
+					{
+						ItemType.Flashlight
+					};
+					stdpro._fineOutputs = fine.ToArray();
+
+					List<ItemType> veryfine = new List<ItemType>();
+					for(int i = 0; i <= (int)Enum.GetValues(typeof(ItemType)).Cast<ItemType>().Max(); i++)
+						veryfine.Add((ItemType)i);		
+					stdpro._veryFineOutputs = veryfine.ToArray();
+				}
 			}
 
 			var surfaceLight = UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>();
@@ -523,99 +556,7 @@ namespace SanyaPlugin
 			}
 		}
 
-		//MapEvents系
-		public void OnAnnouncingDecontamination(AnnouncingDecontaminationEventArgs ev)
-		{
-			Log.Debug($"[OnAnnouncingDecontamination] {ev.Id}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//字幕用
-			if(plugin.Config.CassieSubtitle)
-				switch(ev.Id)
-				{
-					case 0:
-						{
-							Methods.SendSubtitle(LocalSubtitles.DecontaminationInit, 20);
-							break;
-						}
-					case 1:
-						{
-							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "10"), 15);
-							break;
-						}
-					case 2:
-						{
-							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "5"), 15);
-							break;
-						}
-					case 3:
-						{
-							Methods.SendSubtitle(LocalSubtitles.DecontaminationMinutesCount.Replace("{0}", "1"), 15);
-							break;
-						}
-					case 4:
-						{
-							Methods.SendSubtitle(LocalSubtitles.Decontamination30s, 45);
-							break;
-						}
-				}
-		}
-		public void OnAnnouncingScpTermination(AnnouncingScpTerminationEventArgs ev)
-		{
-			if(ev.Role.team != Team.SCP || ev.Role.roleId == RoleType.Scp0492) return;
-			Log.Debug($"[AnnouncingScpTermination] {ev.Killer?.Nickname} -> {ev.Player?.Nickname}({ev.Role.roleId}) Reason:{ev.TerminationCause}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//字幕
-			if(plugin.Config.CassieSubtitle)
-			{
-
-				string str = string.Empty;
-
-
-				switch(ev.Handler.Base)
-				{
-					case WarheadDamageHandler _:
-						str = LocalSubtitles.SCPDeathWarhead.Replace("{0}", ev.Role.fullName);
-						break;
-					case UniversalDamageHandler universal:
-						if(universal.TranslationId == DeathTranslations.Tesla.Id)
-							str = LocalSubtitles.SCPDeathTesla.Replace("{0}", ev.Role.fullName);
-						if(universal.TranslationId == DeathTranslations.Decontamination.Id)
-							str = LocalSubtitles.SCPDeathDecont.Replace("{0}", ev.Role.fullName);
-						break;
-				}
-
-				if(string.IsNullOrEmpty(str))
-				{
-					if(ev.Killer == null)
-						str = LocalSubtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
-					else
-					{
-						if(ev.Killer.Team == Team.CDP)
-							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "Dクラス職員").Replace("{2}", "Class-D Personnel");
-						else if(ev.Killer.Team == Team.CHI)
-							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "カオス・インサージェンシー").Replace("{2}", "Chaos Insurgency");
-						else if(ev.Killer.Team == Team.RSC)
-							str = LocalSubtitles.SCPDeathTerminated.Replace("{0}", ev.Role.fullName).Replace("{1}", "研究員").Replace("{2}", "Science Personnel");
-						else if(ev.Killer.Team == Team.MTF)
-							str = LocalSubtitles.SCPDeathContainedMTF.Replace("{0}", ev.Role.fullName).Replace("{1}", ev.Killer.ReferenceHub.characterClassManager.CurUnitName);
-						else
-							str = LocalSubtitles.SCPDeathUnknown.Replace("{0}", ev.Role.fullName);
-					}
-				}
-
-				str = str.Replace("{-1}", string.Empty).Replace("{-2}", string.Empty);
-
-				Methods.SendSubtitle(str, (ushort)(str.Contains("t-minus") ? 30 : 10));
-			}
-		}
-		public void OnDecontaminating(DecontaminatingEventArgs ev)
-		{
-			Log.Debug($"[OnDecontaminating]", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//字幕用
-			if(plugin.Config.CassieSubtitle)
-				Methods.SendSubtitle(LocalSubtitles.DecontaminationLockdown, 15);
-		}
+		//MapEvents
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
 			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Map.ActivatedGenerators + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
@@ -626,12 +567,6 @@ namespace SanyaPlugin
 
 			if(plugin.Config.GeneratorFix)
 				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, false);
-
-			if(plugin.Config.CassieSubtitle)
-				if(Map.ActivatedGenerators == 2)
-					Methods.SendSubtitle(LocalSubtitles.GeneratorComplete, 15);
-				else
-					Methods.SendSubtitle(LocalSubtitles.GeneratorFinish.Replace("{0}", (Map.ActivatedGenerators + 1).ToString()), 10);
 
 			switch(eventmode)
 			{
@@ -658,19 +593,6 @@ namespace SanyaPlugin
 
 			if(AlphaWarheadController.Host.RealDetonationTime() < AlphaWarheadController.Host.timeToDetonation)
 				ev.IsAllowed = false;
-
-			//字幕用
-			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
-			{
-				bool isresumed = AlphaWarheadController._resumeScenario != -1;
-				double left = isresumed ? AlphaWarheadController.Host.timeToDetonation : AlphaWarheadController.Host.timeToDetonation - 4;
-				double count = Math.Truncate(left / 10.0) * 10.0;
-
-				if(!isresumed)
-					Methods.SendSubtitle(LocalSubtitles.AlphaWarheadStart.Replace("{0}", count.ToString()), 15);
-				else
-					Methods.SendSubtitle(LocalSubtitles.AlphaWarheadResume.Replace("{0}", count.ToString()), 10);
-			}
 		}
 		public void OnStopping(StoppingEventArgs ev)
 		{
@@ -679,10 +601,6 @@ namespace SanyaPlugin
 			//サーバー以外が止められないようにする
 			if(plugin.Config.AlphaWarheadLockAlways && !ev.Player.IsHost)
 				ev.IsAllowed = false;
-
-			//字幕用
-			if(plugin.Config.CassieSubtitle && ev.IsAllowed)
-				Methods.SendSubtitle(LocalSubtitles.AlphaWarheadCancel, 7);
 		}
 		public void OnChangingLeverStatus(ChangingLeverStatusEventArgs ev)
 		{

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CommandSystem;
 using Exiled.Permissions.Extensions;
+using Scp914.Processors;
 
 namespace SanyaPlugin.Commands.Debugs
 {
@@ -25,7 +28,7 @@ namespace SanyaPlugin.Commands.Debugs
 			response = string.Empty;
 			// testing zone start
 
-			response = "test";
+
 
 			// testing zone end
 			response = response.TrimEnd('\n');
