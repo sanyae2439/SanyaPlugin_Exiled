@@ -3,7 +3,7 @@ using Exiled.API.Interfaces;
 
 namespace SanyaPlugin
 {
-	public class Translations : ITranslation
+	public sealed class Translations : ITranslation
 	{
 		[Description("制限付きユーザーの際のメッセージ")]
 		public string LimitedKickMessage { get; set; } = "あなたのSteamIDは「制限付きユーザーアカウント」です。このサーバーは制限付きユーザーを許可していません。\n(Your Steam account is Limited User Account. This server doesn't allow Limited User Account.)";
@@ -21,7 +21,7 @@ namespace SanyaPlugin
 		public string VpnPreauthKickMessage { get; set; } = "This server doesn't allow VPN and Proxy.";
 
 		[Description("高いPingユーザーを検知した際のメッセージ")]
-		public string PingLimittedMessage { get; set; } = @"通信環境が不安定なため、サーバーからキックされました。\n(You has been kicked by Higher ping.)";
+		public string PingLimittedMessage { get; set; } = "通信環境が不安定なため、サーバーからキックされました。\n(You has been kicked by Higher ping.)";
 
 		[Description("停電モード時の初期メッセージ")]
 		public string BlackoutInit { get; set; } = "<color=#ff0000><size=25>《警告。施設の電源供給システムが攻撃を受けました。\nほぼ全ての部屋の照明は、発電機が2つ作動するまで利用できません。》\n</size><size=20>《Warning. Facility power system has been attacked. \nAll most containment zones light does not available until 2 generator activated.》\n</size></color>";
