@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using MEC;
 
-namespace SanyaPlugin.Patches
+namespace SanyaPlugin.Patches.MEC
 {
 	[HarmonyPatch(typeof(Timing), nameof(Timing.RunCoroutine), new Type[] { typeof(IEnumerator<float>) })]
 	public static class FixDefaultSegmentPatch

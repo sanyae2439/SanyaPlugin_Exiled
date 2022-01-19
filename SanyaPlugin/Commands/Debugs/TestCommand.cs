@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using CommandSystem;
 using Exiled.Permissions.Extensions;
-using Scp914.Processors;
 
 namespace SanyaPlugin.Commands.Debugs
 {
