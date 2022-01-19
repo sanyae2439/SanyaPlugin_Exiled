@@ -4,7 +4,6 @@ using Exiled.API.Extensions;
 using Exiled.API.Features;
 using MEC;
 using Respawning;
-using SanyaPlugin.Data;
 using UnityEngine;
 
 namespace SanyaPlugin

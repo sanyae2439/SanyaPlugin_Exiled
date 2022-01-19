@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using Exiled.API.Features;
 using Exiled.API.Interfaces;
-using SanyaPlugin.Data;
-using UnityEngine;
 
 namespace SanyaPlugin
 {

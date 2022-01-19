@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Exiled.API.Features;
 
-namespace SanyaPlugin.Data
+namespace SanyaPlugin
 {
 	public enum SANYA_GAME_MODE
 	{
