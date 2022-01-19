@@ -23,8 +23,9 @@ namespace SanyaPlugin.Patches.Fix_Basegame
 			}
 			else if(spawnReason == CharacterClassManager.SpawnReason.Revived && prevClass == RoleType.Spectator && newClass == RoleType.Scp0492)
 			{
-				//RoundSummary.ChangedIntoZombies++;
+				RoundSummary.ChangedIntoZombies++;
 				RoundSummary.singleton.classlistStart.scps_except_zombies++;
+				RoundSummary.singleton.classlistStart.zombies++;
 			}		
 
 			return false;
