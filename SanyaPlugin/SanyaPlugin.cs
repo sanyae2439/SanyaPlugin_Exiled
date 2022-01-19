@@ -15,7 +15,7 @@ using WarheadEvents = Exiled.Events.Handlers.Warhead;
 
 namespace SanyaPlugin
 {
-	public class SanyaPlugin : Plugin<Configs>
+	public class SanyaPlugin : Plugin<Configs, Translations>
 	{
 		//プラグイン設定
 		public override string Name => "SanyaPlugin";

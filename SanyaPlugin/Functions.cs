@@ -127,7 +127,7 @@ namespace SanyaPlugin.Functions
 						var player = Player.Get(ev.UserId);
 						if(player != null)
 						{
-							ServerConsole.Disconnect(player.Connection, LocalSubtitles.VPNKickMessage);
+							ServerConsole.Disconnect(player.Connection, SanyaPlugin.Instance.Translation.VpnKickMessage);
 						}
 						if(!EventHandlers.kickedbyChecker.ContainsKey(ev.UserId))
 							EventHandlers.kickedbyChecker.Add(ev.UserId, "vpn");
@@ -190,7 +190,7 @@ namespace SanyaPlugin.Functions
 								Log.Warn($"[SteamCheck:VacBanned] NG:{userid}");
 								var player = Player.Get(userid);
 								if(player != null)
-									ServerConsole.Disconnect(player.Connection, LocalSubtitles.VacBannedKickMessage);
+									ServerConsole.Disconnect(player.Connection, SanyaPlugin.Instance.Translation.VacBannedKickMessage);
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
 									EventHandlers.kickedbyChecker.Add(userid, "steam_vac");
@@ -216,7 +216,7 @@ namespace SanyaPlugin.Functions
 								var player = Player.Get(userid);
 								if(player != null)
 								{
-									ServerConsole.Disconnect(player.Connection, LocalSubtitles.LimitedKickMessage);
+									ServerConsole.Disconnect(player.Connection, SanyaPlugin.Instance.Translation.LimitedKickMessage);
 								}
 
 								if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
@@ -230,7 +230,7 @@ namespace SanyaPlugin.Functions
 							Log.Warn($"[SteamCheck] Falied(NoProfile or Error):{userid}");
 							var player = Player.Get(userid);
 							if(player != null)
-								ServerConsole.Disconnect(player.Connection, LocalSubtitles.NoProfileKickMessage);
+								ServerConsole.Disconnect(player.Connection, SanyaPlugin.Instance.Translation.NoProfileKickMessage);
 							if(!EventHandlers.kickedbyChecker.ContainsKey(userid))
 								EventHandlers.kickedbyChecker.Add(userid, "steam_noprofile");
 						}
@@ -382,7 +382,7 @@ namespace SanyaPlugin.Functions
 		public static IEnumerator<float> InitBlackout()
 		{
 			yield return Timing.WaitForSeconds(10f);
-			Methods.SendSubtitle(EventTexts.BlackoutInit, 20);
+			Methods.SendSubtitle(SanyaPlugin.Instance.Translation.BlackoutInit, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			foreach(var x in FlickerableLightController.Instances)
 				x.ServerFlickerLights(5f);

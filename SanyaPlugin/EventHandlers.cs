@@ -648,7 +648,7 @@ namespace SanyaPlugin
 				{
 					writer.Reset();
 					writer.Put((byte)10);
-					writer.Put(LocalSubtitles.VPNKickMessageShort);
+					writer.Put(SanyaPlugin.Instance.Translation.VpnPreauthKickMessage);
 					ev.Request.Reject(writer);
 					return;
 				}
@@ -672,13 +672,13 @@ namespace SanyaPlugin
 			{
 				string reasonMessage = string.Empty;
 				if(reason == "steam_vac")
-					reasonMessage = LocalSubtitles.VacBannedKickMessage;
+					reasonMessage = SanyaPlugin.Instance.Translation.VacBannedKickMessage;
 				else if(reason == "steam_limited")
-					reasonMessage = LocalSubtitles.LimitedKickMessage;
+					reasonMessage = SanyaPlugin.Instance.Translation.LimitedKickMessage;
 				else if(reason == "steam_noprofile")
-					reasonMessage = LocalSubtitles.NoProfileKickMessage;
+					reasonMessage = SanyaPlugin.Instance.Translation.NoProfileKickMessage;
 				else if(reason == "vpn")
-					reasonMessage = LocalSubtitles.VPNKickMessage;
+					reasonMessage = SanyaPlugin.Instance.Translation.VpnKickMessage;
 
 				ServerConsole.Disconnect(ev.Player.Connection, reasonMessage);
 				kickedbyChecker.Remove(ev.Player.UserId);
@@ -1090,7 +1090,7 @@ namespace SanyaPlugin
 				&& ev.Player.Level + 1 < plugin.Config.Scp079NeedInteractGateTier)
 			{
 				ev.IsAllowed = false;
-				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(HintTexts.Error079NotEnoughTier, 3);
+				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(SanyaPlugin.Instance.Translation.Error079NotEnoughTier, 3);
 			}
 		}
 		public void OnLockingDown(LockingDownEventArgs ev)
