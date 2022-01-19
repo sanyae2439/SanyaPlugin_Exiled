@@ -965,6 +965,20 @@ namespace SanyaPlugin
 				ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
 			}
 		}
+		public void OnJumping(JumpingEventArgs ev)
+		{
+			Log.Debug($"[OnJumping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//ジャンプ時スタミナ消費
+			if(SanyaPlugin.Instance.Config.StaminaCostJump > 0
+				&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
+				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
+				&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
+			{
+				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= SanyaPlugin.Instance.Config.StaminaCostJump;
+				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+			}
+		}
 		public void OnSpawningRagdoll(SpawningRagdollEventArgs ev)
 		{
 			Log.Debug($"[OnSpawningRagdoll] {ev.Owner.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);

@@ -158,7 +158,6 @@
     <Compile Include="Patches\Scp079ManaCostPatch.cs" />
     <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\Scp939OverAllPatch.cs" />
-    <Compile Include="Patches\JumpingStaminaPatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="SanyaPluginComponent.cs" />
     <Compile Include="LocalSubtitles.cs" />
