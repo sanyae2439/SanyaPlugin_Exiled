@@ -432,7 +432,7 @@ namespace SanyaPlugin
 		}
 		public void OnEndingRound(EndingRoundEventArgs ev)
 		{
-			if(plugin.Config.AlphaWarheadEndRound && Warhead.IsDetonated)
+			if(plugin.Config.AlphaWarheadEndRound && Warhead.IsDetonated && !ev.IsRoundEnded)
 			{
 				int scientist = ev.ClassList.scientists + RoundSummary.EscapedScientists;
 				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
