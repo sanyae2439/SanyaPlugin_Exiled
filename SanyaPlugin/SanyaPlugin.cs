@@ -83,6 +83,7 @@ namespace SanyaPlugin
 			Handlers = new EventHandlers(this);
 			ServerEvents.WaitingForPlayers += Handlers.OnWaintingForPlayers;
 			ServerEvents.RoundStarted += Handlers.OnRoundStarted;
+			ServerEvents.EndingRound += Handlers.OnEndingRound;
 			ServerEvents.RoundEnded += Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
@@ -122,6 +123,7 @@ namespace SanyaPlugin
 		{
 			ServerEvents.WaitingForPlayers -= Handlers.OnWaintingForPlayers;
 			ServerEvents.RoundStarted -= Handlers.OnRoundStarted;
+			ServerEvents.EndingRound -= Handlers.OnEndingRound;
 			ServerEvents.RoundEnded -= Handlers.OnRoundEnded;
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;

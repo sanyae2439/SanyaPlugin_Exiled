@@ -447,7 +447,6 @@ namespace SanyaPlugin
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Draw;
 
 				ev.IsRoundEnded = true;
-				ev.IsAllowed = true;
 
 				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}");
 			}
