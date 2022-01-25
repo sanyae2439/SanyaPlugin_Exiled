@@ -449,7 +449,7 @@ namespace SanyaPlugin
 
 				ev.IsRoundEnded = true;
 
-				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}/Scps:{scps}");
+				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Leading:{ev.LeadingTeam} Scientist:{scientist} ClassD:{classd} Scps:{scps}");
 			}
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
