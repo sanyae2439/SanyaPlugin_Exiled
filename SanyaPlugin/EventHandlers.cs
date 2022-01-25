@@ -434,8 +434,6 @@ namespace SanyaPlugin
 		{
 			if(plugin.Config.AlphaWarheadEndRound && Warhead.IsDetonated)
 			{
-				ev.IsRoundEnded = true;
-
 				int scientist = ev.ClassList.scientists + RoundSummary.EscapedScientists;
 				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
 
@@ -448,6 +446,7 @@ namespace SanyaPlugin
 				else
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Draw;
 
+				ev.IsRoundEnded = true;
 				ev.IsAllowed = true;
 
 				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}");
