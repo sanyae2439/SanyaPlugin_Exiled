@@ -436,19 +436,20 @@ namespace SanyaPlugin
 			{
 				int scientist = ev.ClassList.scientists + RoundSummary.EscapedScientists;
 				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
+				int scps = ev.ClassList.scps_except_zombies;
 
-				if(scientist > 0 && classd == 0)
+				if(scientist > 0 && classd == 0 && scps == 0)
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.FacilityForces;
 				else if(classd > 0)
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.ChaosInsurgency;
-				else if(scientist == 0 && classd == 0)
+				else if(scientist == 0 && classd == 0 && scps > 0)
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Anomalies;
 				else
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Draw;
 
 				ev.IsRoundEnded = true;
 
-				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}");
+				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}/Scps:{scps}");
 			}
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
