@@ -252,6 +252,16 @@ namespace SanyaPlugin
 				$"ServerTime:{DateTime.Now:HH:mm:ss} " +
 				$"Ping:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms");
 
+			/**
+			 * [LIST]        = 7
+			 * [CENTER_UP]   = 6
+			 * [CENTER]      = 6
+			 * [CENTER_DOWN] = 7
+			 * [BOTTOM]      = Space(" ")
+			 * 
+			 **/
+
+
 			//[SCPLIST]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedDamages != null)
 			{
@@ -298,7 +308,7 @@ namespace SanyaPlugin
 				if(EventHandlers.EscapedScientistDict.Count == 0) resultList += $"無し\n";
 				resultList = resultList.TrimEnd('\n');
 
-				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 13));
+				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 26));
 			}
 			else if(player.Team == Team.SCP)
 			{
@@ -369,7 +379,9 @@ namespace SanyaPlugin
 
 			//[CENTER_UP]
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
+			{
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
+			}
 			else if(player.Role == RoleType.Scp0492)
 			{
 				string text = string.Empty;
@@ -388,6 +400,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
 			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
+			{
 				switch(scp096.PlayerState)
 				{
 					case PlayableScps.Scp096PlayerState.TryNotToCry:
@@ -412,11 +425,16 @@ namespace SanyaPlugin
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 				}
+			}
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER]
-			if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton.RoundEnded)
+			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
+			{
+				curText = curText.Replace("[CENTER]", string.Empty);
+			}
+			else if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton.RoundEnded)
 			{
 				int TargettMinus = AlphaWarheadController._resumeScenario == -1
 						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
@@ -431,7 +449,11 @@ namespace SanyaPlugin
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
 
 			//[CENTER_DOWN]
-			if(player.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
+			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
+			{
+				curText = curText.Replace("[CENTER_DOWN]", string.Empty);
+			}
+			else if(player.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
 				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
@@ -442,15 +464,25 @@ namespace SanyaPlugin
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 7));
 			}
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
+			{
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(_hudCenterDownString, 7));
+			}
 			else
 				curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud(string.Empty, 7));
 
 			//[BOTTOM]
+			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
+			{
+				curText = curText.Replace("[BOTTOM]", "　");
+			}	
 			if(!string.IsNullOrEmpty(_hudBottomDownString))
+			{
 				curText = curText.Replace("[BOTTOM]", _hudBottomDownString);
+			}
 			else if(Intercom.host.speaking && Intercom.host.speaker != null)
+			{
 				curText = curText.Replace("[BOTTOM]", $"{Player.Get(Intercom.host.speaker)?.Nickname}が放送中...");
+			}
 			else
 				curText = curText.Replace("[BOTTOM]", "　");
 

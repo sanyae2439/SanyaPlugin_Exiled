@@ -153,7 +153,6 @@
     <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
-    <Compile Include="Patches\RestartSequencePatch.cs" />
     <Compile Include="Patches\Scp018Patch.cs" />
     <Compile Include="Patches\Scp207PreventScpDamagePatch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />

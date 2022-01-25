@@ -115,8 +115,8 @@ namespace SanyaPlugin
 		[Description("AlphaWarheadを停止できないようにする")]
 		public bool AlphaWarheadLockAlways { get; set; } = false;
 
-		[Description("AlphaWarhead起爆後のリスポーン時間")]
-		public int TimeToRespawnAfterDetonated { get; set; } = -1;
+		[Description("AlphaWarheadの起爆時にラウンドを終了させる")]
+		public bool AlphaWarheadEndRound { get; set; } = false;
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;

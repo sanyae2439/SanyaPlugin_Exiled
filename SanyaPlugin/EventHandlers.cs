@@ -430,6 +430,29 @@ namespace SanyaPlugin
 					}
 			}
 		}
+		public void OnEndingRound(EndingRoundEventArgs ev)
+		{
+			if(plugin.Config.AlphaWarheadEndRound && Warhead.IsDetonated)
+			{
+				ev.IsRoundEnded = true;
+
+				int scientist = ev.ClassList.scientists + RoundSummary.EscapedScientists;
+				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
+
+				if(scientist > 0 && classd == 0)
+					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.FacilityForces;
+				else if(classd > 0)
+					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.ChaosInsurgency;
+				else if(scientist == 0 && classd == 0)
+					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Anomalies;
+				else
+					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Draw;
+
+				ev.IsAllowed = true;
+
+				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Scientist:{scientist}/ClassD:{classd}");
+			}
+		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
 			Log.Info($"[OnRoundEnded] Round Ended. Win:{ev.LeadingTeam}");
@@ -614,13 +637,6 @@ namespace SanyaPlugin
 		public void OnDetonated()
 		{
 			Log.Info($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
-
-			if(plugin.Config.TimeToRespawnAfterDetonated != -1 
-				&& RespawnManager.Singleton._curSequence == RespawnManager.RespawnSequencePhase.RespawnCooldown 
-				&& RespawnManager.Singleton._timeForNextSequence > plugin.Config.TimeToRespawnAfterDetonated)
-			{
-				RespawnManager.Singleton._timeForNextSequence = SanyaPlugin.Instance.Config.TimeToRespawnAfterDetonated;
-			}
 		}
 
 		//PlayerEvents
