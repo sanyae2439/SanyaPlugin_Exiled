@@ -16,6 +16,7 @@ using InventorySystem;
 using InventorySystem.Items.Armor;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Keycards;
+using InventorySystem.Items.Usables.Scp244;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MapGeneration;
@@ -170,7 +171,9 @@ namespace SanyaPlugin
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).HelmetEfficacy = 100;
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).VestEfficacy = 100;
-
+			foreach(var i in RoomIdentifier.AllRoomIdentifiers.Where(x => x.Zone != FacilityZone.Surface))
+				if(UnityEngine.Random.Range(0, 100) < plugin.Config.Scp244SpawnPercent)
+					(Methods.SpawnItem(UnityEngine.Random.Range(0, 2) == 0 ? ItemType.SCP244a : ItemType.SCP244b, i.transform.position) as Scp244DeployablePickup).State = Scp244State.Active;
 
 			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;

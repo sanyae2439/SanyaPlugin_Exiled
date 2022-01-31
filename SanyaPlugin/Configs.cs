@@ -163,6 +163,9 @@ namespace SanyaPlugin
 		[Description("SCP-018がドアを破壊しないようにする")]
 		public bool Scp018DisableDestroyingDoor { get; set; } = false;
 
+		[Description("SCP-244が設置される確率")]
+		public float Scp244SpawnPercent { get; set; } = 0f;
+
 		[Description("ヘビィアーマーのダメージ固定減衰率")]
 		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
 
