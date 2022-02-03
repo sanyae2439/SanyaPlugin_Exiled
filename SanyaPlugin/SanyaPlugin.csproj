@@ -146,6 +146,7 @@
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\FixTantrumDespawn.cs" />
     <Compile Include="Patches\ReduceGeneratorPatch.cs" />
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />

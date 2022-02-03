@@ -183,7 +183,6 @@ namespace SanyaPlugin
 			//AlphaWarheadの設定
 			if(plugin.Config.AlphaWarheadLockAlways)
 			{
-				AlphaWarheadOutsitePanel.nukeside.Networkenabled = true;
 				Warhead.OutsitePanel.NetworkkeycardEntered = true;
 				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.NetworkTargetState = true;
 				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
@@ -618,6 +617,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStarting] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
+			//Fix maingame(11.x)
 			if(AlphaWarheadController.Host.RealDetonationTime() < AlphaWarheadController.Host.timeToDetonation)
 				ev.IsAllowed = false;
 		}
@@ -633,7 +633,7 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnChangingLeverStatus] {ev.Player.Nickname} {ev.CurrentState} -> {!ev.CurrentState}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(plugin.Config.AlphaWarheadLockAlways)
+			if(plugin.Config.AlphaWarheadLockAlways && ev.CurrentState)
 				ev.IsAllowed = false;
 		}
 		public void OnDetonated()

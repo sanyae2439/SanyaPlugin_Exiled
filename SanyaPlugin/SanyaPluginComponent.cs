@@ -249,8 +249,7 @@ namespace SanyaPlugin
 			if(DisableHud || !SanyaPlugin.Instance.Config.ExHudEnabled) return;
 
 			string curText = _hudTemplate.Replace("[STATS]",
-				$"ServerTime:{DateTime.Now:HH:mm:ss} " +
-				$"Ping:{LiteNetLib4MirrorServer.Peers[player.Connection.connectionId].Ping}ms");
+				$"ServerTime:{DateTime.Now:HH:mm:ss}");
 
 			/**
 			 * [LIST]        = 7
