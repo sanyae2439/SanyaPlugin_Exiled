@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandSystem;
 using SanyaPlugin.Commands.Debugs;
+using SanyaPlugin.Commands.Items;
 using SanyaPlugin.Commands.Utils;
 
 namespace SanyaPlugin.Commands
@@ -25,6 +26,9 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new CoroutinesCommand());
 			RegisterCommand(new CheckObjectCommand());
 			RegisterCommand(new CheckComponentsCommand());
+
+			//Items
+			RegisterCommand(new TantrumCommand());
 
 			//Utils
 			RegisterCommand(new ActWatchCommand());

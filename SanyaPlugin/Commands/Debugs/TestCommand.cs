@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandSystem;
 using Exiled.Permissions.Extensions;
+using HarmonyLib;
 
 namespace SanyaPlugin.Commands.Debugs
 {
@@ -22,7 +23,7 @@ namespace SanyaPlugin.Commands.Debugs
 				return false;
 			}
 
-			response = string.Empty;
+			response = $"args:{arguments.Join(null, " ")}\n";
 			// testing zone start
 
 
