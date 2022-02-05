@@ -113,6 +113,7 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator += Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator += Handlers.OnOpeningGenerator;
 			PlayerEvents.ClosingGenerator += Handlers.OnClosingGenerator;
+			PlayerEvents.InteractingScp330 += Handlers.OnInteractingScp330;
 			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
@@ -153,6 +154,7 @@ namespace SanyaPlugin
 			PlayerEvents.UnlockingGenerator -= Handlers.OnUnlockingGenerator;
 			PlayerEvents.OpeningGenerator -= Handlers.OnOpeningGenerator;
 			PlayerEvents.ClosingGenerator -= Handlers.OnClosingGenerator;
+			PlayerEvents.InteractingScp330 -= Handlers.OnInteractingScp330;
 			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;

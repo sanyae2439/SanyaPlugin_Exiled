@@ -1095,6 +1095,14 @@ namespace SanyaPlugin
 			if(plugin.Config.GeneratorFix && ev.Generator.Activating)
 				ev.IsAllowed = false;
 		}
+		public void OnInteractingScp330(InteractingScp330EventArgs ev)
+		{
+			Log.Debug($"[OnInteractingScp330] {ev.Player.Nickname} -> {ev.UsageCount}(Sever:{ev.ShouldSever})", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//Fix EXILED(4.x)
+			if(ev.UsageCount >= 2)
+				ev.ShouldSever = true;
+		}
 
 		//Scp079
 		public void OnTriggeringDoor(TriggeringDoorEventArgs ev)
