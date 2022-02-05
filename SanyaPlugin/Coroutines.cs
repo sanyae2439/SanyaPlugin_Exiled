@@ -14,6 +14,13 @@ namespace SanyaPlugin
 		{
 			yield return Timing.WaitForSeconds(1f);
 
+			if(player.DoNotTrack)
+			{
+				Log.Info($"[GrantedLevel] User has DNT : {player.DoNotTrack}");
+				SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Remove(player.UserId);
+				yield break;
+			}
+
 			if(player.GlobalBadge != null)
 			{
 				Log.Info($"[GrantedLevel] User has GlobalBadge {player.UserId}:{player.GlobalBadge?.Text}");
@@ -64,10 +71,7 @@ namespace SanyaPlugin
 
 			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
-			if(player.DoNotTrack)
-				SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Remove(player.UserId);
-
-			Log.Info($"[GrantedLevel] {player.UserId} : Level{level} : DNT={player.DoNotTrack}");
+			Log.Info($"[GrantedLevel] {player.UserId} : Level{level}");
 
 			yield break;
 		}
