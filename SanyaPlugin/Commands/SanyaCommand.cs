@@ -7,6 +7,7 @@ namespace SanyaPlugin.Commands
 {
 	[CommandHandler(typeof(GameConsoleCommandHandler))]
 	[CommandHandler(typeof(RemoteAdminCommandHandler))]
+	[CommandHandler(typeof(ClientCommandHandler))]
 	public class SanyaCommand : ParentCommand
 	{
 		public SanyaCommand() => LoadGeneratedCommands();
