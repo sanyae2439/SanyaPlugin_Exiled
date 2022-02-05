@@ -440,7 +440,7 @@ namespace SanyaPlugin
 				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
 				int scps = ev.ClassList.scps_except_zombies;
 
-				if(scientist > 0 && classd == 0 && scps == 0)
+				if(scientist > 0 && scps == 0)
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.FacilityForces;
 				else if(classd > 0)
 					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.ChaosInsurgency;
