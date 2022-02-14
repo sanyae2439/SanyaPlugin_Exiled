@@ -123,50 +123,16 @@ namespace SanyaPlugin
 		{
 			yield return Timing.WaitForSeconds(3f);
 
-			string text = string.Empty;
-			bool detect939 = false;
 			foreach(var i in ReferenceHub.HostHub.characterClassManager.Classes.Where(x => x.team == Team.SCP && x.roleId != RoleType.Scp0492 && x.roleId != RoleType.Scp079 && !x.banClass))
 			{
-				text += $"{i.roleId}:{i.banClass}\n";
-
 				switch(i.roleId)
 				{
-					case RoleType.Scp173:
-						var gate173 = Map.GetDoorByName("173_GATE");
-						gate173?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						break;
-					case RoleType.Scp096:
-						var door096 = Map.GetDoorByName("096");
-						door096?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-
-						var itemcard = Map.Pickups.FirstOrDefault(x => x.Type == ItemType.KeycardNTFLieutenant);
-						itemcard?.Destroy();
-						Methods.SpawnItem(ItemType.KeycardNTFLieutenant, RoleType.Scp096.GetRandomSpawnProperties().Item1);
-						break;
-					case RoleType.Scp049:
-						var lift = Map.Lifts.First(x => x.elevatorName == "SCP-049");
-						lift.NetworkstatusID = (byte)Lift.Status.Down;
-						lift.Network_locked = true;
-						break;
 					case RoleType.Scp106:
 						var gate106p = Map.GetDoorByName("106_PRIMARY");
 						var gate106s = Map.GetDoorByName("106_SECONDARY");
 						gate106p?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
 						gate106s?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
 						break;
-					case RoleType.Scp93953:
-					case RoleType.Scp93989:
-						if(!detect939)
-						{
-							detect939 = true;
-							break;
-						}
-						else
-						{
-							foreach(var door in Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz939).Doors)
-								door.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-							break;
-						}
 				}
 			}
 		}

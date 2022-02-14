@@ -542,33 +542,18 @@ namespace SanyaPlugin
 			if(plugin.Config.RandomRespawnPosPercent > 0)
 			{
 				int randomnum = UnityEngine.Random.Range(0, 100);
-				Log.Debug($"[RandomRespawnPos] Check:{randomnum}<{plugin.Config.RandomRespawnPosPercent}", SanyaPlugin.Instance.Config.IsDebugged);
+				Log.Info($"[RandomRespawnPos] Check:{randomnum}<{plugin.Config.RandomRespawnPosPercent}");
 				if(randomnum < plugin.Config.RandomRespawnPosPercent && !Warhead.IsDetonated && !Warhead.IsInProgress)
 				{
 					List<Vector3> poslist = new List<Vector3>();
 					if(!Map.IsLczDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
-					{
-						poslist.Add(RoleType.ClassD.GetRandomSpawnProperties().Item1);
-						poslist.Add(RoleType.Scientist.GetRandomSpawnProperties().Item1);
+						poslist.Add(Map.GetCameraByType(Exiled.API.Enums.CameraType.Lcz173Hallway).transform.position + Vector3.down * 2);
 
-						poslist.Add(Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczArmory).Position);
-
-						poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "LC_914_CR").transform.position);
-					}
-
-					foreach(GameObject roomid in GameObject.FindGameObjectsWithTag("RoomID"))
-					{
-						Rid rid = roomid.GetComponent<Rid>();
-						if(rid != null && (rid.id == "LC_ARMORY" || rid.id == "Shelter"))
-						{
-							poslist.Add(roomid.transform.position);
-						}
-					}
+					poslist.Add(RoleType.Scp93953.GetRandomSpawnProperties().Item1);
+					poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "Shelter").transform.position);
 
 					foreach(var i in poslist)
-					{
-						Log.Debug($"[RandomRespawnPos] TargetLists:{i}", SanyaPlugin.Instance.Config.IsDebugged);
-					}
+						Log.Info($"[RandomRespawnPos] TargetLists:{i}");
 
 					int randomnumlast = UnityEngine.Random.Range(0, poslist.Count);
 					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y + 2, poslist[randomnumlast].z);
@@ -635,10 +620,6 @@ namespace SanyaPlugin
 
 			if(plugin.Config.AlphaWarheadLockAlways && ev.CurrentState)
 				ev.IsAllowed = false;
-		}
-		public void OnDetonated()
-		{
-			Log.Info($"[OnDetonated] Detonated:{RoundSummary.roundTime / 60:00}:{RoundSummary.roundTime % 60:00}");
 		}
 
 		//PlayerEvents

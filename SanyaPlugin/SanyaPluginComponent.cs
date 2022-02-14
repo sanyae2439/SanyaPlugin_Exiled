@@ -104,7 +104,7 @@ namespace SanyaPlugin
 		public void OnChangingRole(RoleType newRole, RoleType prevRole)
 		{
 			if(newRole == RoleType.Scp049 || newRole == RoleType.Scp106)
-				Timing.CallDelayed(Timing.WaitForOneFrame, () => SetupShield(newRole));
+				Timing.CallDelayed(Timing.WaitForOneFrame, Segment.FixedUpdate, () => SetupShield(newRole));
 			else
 				ResetShield();
 		}
@@ -454,13 +454,10 @@ namespace SanyaPlugin
 			}
 			else if(player.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
 			{
-				if(RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0
-				   && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency) <= 0)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンチケットがありません", 7));
-				else if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"突入まで{_respawnCounter}秒\nチーム:{RespawnManager.Singleton.NextKnownTeam}", 7));
+				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"{RespawnManager.Singleton.NextKnownTeam}が突入まで{_respawnCounter}秒", 7));
 				else
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"リスポーンまで{_respawnCounter}秒", 7));
+					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"部隊到着まで{_respawnCounter}秒", 7));
 			}
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
 			{
