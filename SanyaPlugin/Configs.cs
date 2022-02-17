@@ -242,6 +242,9 @@ namespace SanyaPlugin
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
+		[Description("SCP-106の攻撃がポケットディメンションを介さないようになる")]
+		public bool Scp106InstaAttack { get; set; } = false;
+
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
 

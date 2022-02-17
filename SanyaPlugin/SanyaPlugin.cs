@@ -105,6 +105,7 @@ namespace SanyaPlugin
 			PlayerEvents.ItemUsed += Handlers.OnUsedItem;
 			PlayerEvents.Jumping += Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
+			PlayerEvents.EnteringPocketDimension += Handlers.OnEnteringPocketDimension;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget += Handlers.OnInteractingShootingTarget;
@@ -145,6 +146,7 @@ namespace SanyaPlugin
 			PlayerEvents.ItemUsed -= Handlers.OnUsedItem;
 			PlayerEvents.Jumping -= Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
+			PlayerEvents.EnteringPocketDimension -= Handlers.OnEnteringPocketDimension;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.InteractingShootingTarget -= Handlers.OnInteractingShootingTarget;

@@ -314,12 +314,15 @@ namespace SanyaPlugin
 				string scpList = string.Empty;
 				int scp0492counter = 0;
 				foreach(var scp in scplists)
+				{
+					var room = scp.CurrentRoom;
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"[{scp.CurrentRoom?.Type}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
+						scpList += $"[{Methods.TranslateZoneName(room.Zone)}:{Methods.TranslateRoomName(scp.CurrentRoom.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
 					else
-						scpList += $"[{scp.CurrentRoom?.Type}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
+						scpList += $"[{Methods.TranslateZoneName(room.Zone)}:{Methods.TranslateRoomName(scp.CurrentRoom.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
+				}
 				if(scp0492counter > 0)
 					scpList += $"SCP-049-2:({scp0492counter})\n";
 				scpList = scpList.TrimEnd('\n');
@@ -483,7 +486,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[BOTTOM]", "　");
 
 			_hudText = curText;
-			player.SendTextHintNotEffect(_hudText, 2);
+			player.SendTextHintNotEffect(_hudText, 1.25f);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)

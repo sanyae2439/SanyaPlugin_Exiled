@@ -853,7 +853,7 @@ namespace SanyaPlugin
 							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
 						break;
 					}
-				case MicroHidDamageHandler microHid:
+				case MicroHidDamageHandler _:
 					{
 						ev.Amount *= plugin.Config.MicrohidDamageMultiplier;
 						break;
@@ -1009,6 +1009,59 @@ namespace SanyaPlugin
 					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
 				{
 					ev.IsAllowed = false;
+				}
+			}
+
+			if(ev.DamageHandlerBase is ScpDamageHandler scp && scp._translationId == DeathTranslations.PocketDecay.Id)
+				ev.IsAllowed = false;
+		}
+		public void OnEnteringPocketDimension(EnteringPocketDimensionEventArgs ev)
+		{
+			Log.Debug($"[OnEnteringPocketDimension] {ev.Scp106.Nickname} -> {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//即死攻撃
+			if(plugin.Config.Scp106InstaAttack)
+			{
+				ev.IsAllowed = false;
+				if(UnityEngine.Random.Range(0, 9) < GameCore.ConfigFile.ServerConfig.GetInt("pd_exit_count", 2) || PocketDimensionTeleport.DebugBool)
+				{
+					ev.Scp106.SendHitmarker();
+					var roomIdentifier = RoomIdUtils.RoomAtPosition(ev.Scp106.Position);
+					if(roomIdentifier.Zone == FacilityZone.Surface)
+					{
+						SafeTeleportPosition componentInChildren = roomIdentifier.GetComponentInChildren<SafeTeleportPosition>();
+						float num = Vector3.Distance(ev.Scp106.Position, componentInChildren.SafePositions[0].position);
+						float num2 = Vector3.Distance(ev.Scp106.Position, componentInChildren.SafePositions[1].position);
+						ev.Player.Position = (num2 < num) ? componentInChildren.SafePositions[0].position : componentInChildren.SafePositions[1].position;
+					}
+					else
+					{
+						HashSet<RoomIdentifier> hashSet = RoomIdUtils.FindRooms(RoomName.Unnamed, roomIdentifier.Zone, RoomShape.Undefined);
+						while(hashSet.Count > 0)
+						{
+							RoomIdentifier roomIdentifier2 = hashSet.ElementAt(UnityEngine.Random.Range(0, hashSet.Count));
+							Vector3 position = roomIdentifier2.transform.position;
+							SafeTeleportPosition componentInChildren2 = roomIdentifier2.GetComponentInChildren<SafeTeleportPosition>();
+							if(componentInChildren2 != null && componentInChildren2.SafePositions.Length != 0)
+							{
+								position = componentInChildren2.SafePositions[UnityEngine.Random.Range(0, componentInChildren2.SafePositions.Length - 1)].position;
+							}
+							if(PlayerMovementSync.FindSafePosition(position, out var pos, false, true))
+							{
+								ev.Player.Position = pos;
+								break;
+							}
+							hashSet.Remove(roomIdentifier2);
+						}
+					}
+					ev.Player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(ev.Scp106.ReferenceHub, 40f, DeathTranslations.PocketDecay));
+				}
+				else
+				{
+					ev.Player.Ammo.Clear();
+					ev.Player.Inventory.SendAmmoNextFrame = true;
+					ev.Player.ClearInventory();
+					ev.Player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(ev.Scp106.ReferenceHub, 106106f, DeathTranslations.PocketDecay));
 				}
 			}
 		}
