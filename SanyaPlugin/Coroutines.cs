@@ -101,7 +101,7 @@ namespace SanyaPlugin
 
 		public static IEnumerator<float> InitClassDPrison()
 		{
-			var room = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.LczClassDSpawn);
+			var room = Room.Get(Exiled.API.Enums.RoomType.LczClassDSpawn);
 			var doors = room.Doors.Where(x => x.Type == Exiled.API.Enums.DoorType.PrisonDoor);
 
 			room.TurnOffLights(5f);
@@ -128,8 +128,8 @@ namespace SanyaPlugin
 				switch(i.roleId)
 				{
 					case RoleType.Scp106:
-						var gate106p = Map.GetDoorByName("106_PRIMARY");
-						var gate106s = Map.GetDoorByName("106_SECONDARY");
+						var gate106p = Door.Get("106_PRIMARY");
+						var gate106s = Door.Get("106_SECONDARY");
 						gate106p?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
 						gate106s?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
 						break;

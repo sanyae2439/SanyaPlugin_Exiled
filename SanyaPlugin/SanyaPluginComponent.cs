@@ -184,14 +184,14 @@ namespace SanyaPlugin
 
 		private void Check079Spot()
 		{
-			if(!SanyaPlugin.Instance.Config.Scp079ScanRoom || player.Role != RoleType.Scp079 || player.CurrentRoom == null || player.Camera == _lastcam) return;
+			if(!SanyaPlugin.Instance.Config.Scp079ScanRoom || player.Role != RoleType.Scp079 || player.CurrentRoom == null || player.ReferenceHub.scp079PlayerScript.currentCamera == _lastcam) return;
 
 			string message = string.Empty;
 			if(player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
 				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{player.CurrentRoom.Type}</color></size>\n";
 			else
 			{
-				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Team != Team.SCP && x.Team != Team.RIP && x.Team != Team.CHI);
+				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP && x.Role.Team != Team.CHI);
 				if(target != null)
 				{
 					if(player.CurrentRoom.Zone == Exiled.API.Enums.ZoneType.Surface)
@@ -205,7 +205,7 @@ namespace SanyaPlugin
 				foreach(var scp in Player.Get(Team.SCP))
 					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
 
-			_lastcam = player.Camera;
+			_lastcam = player.ReferenceHub.scp079PlayerScript.currentCamera;
 		}
 
 		private void UpdateMyCustomText()
@@ -230,13 +230,13 @@ namespace SanyaPlugin
 
 		private void UpdateScpLists()
 		{
-			if(player.Team != Team.SCP && scplists.Contains(player))
+			if(player.Role.Team != Team.SCP && scplists.Contains(player))
 			{
 				scplists.Remove(player);
 				return;
 			}
 
-			if(player.Team == Team.SCP && !scplists.Contains(player))
+			if(player.Role.Team == Team.SCP && !scplists.Contains(player))
 			{
 				scplists.Add(player);
 				return;
@@ -309,7 +309,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 26));
 			}
-			else if(player.Team == Team.SCP)
+			else if(player.Role.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
 				int scp0492counter = 0;
@@ -329,7 +329,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 7));
 			}
-			else if(player.Team == Team.MTF)
+			else if(player.Role.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
 				MtfList += $"MTF Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}\n";
@@ -342,7 +342,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 7));
 			}
-			else if(player.Team == Team.CHI)
+			else if(player.Role.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
 				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
@@ -396,7 +396,7 @@ namespace SanyaPlugin
 			{
 				string text = string.Empty;
 
-				if(player.Level > 0)
+				if(player.ReferenceHub.scp079PlayerScript.Lvl > 0)
 					text += player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f ? "LockDown:Ready" : $"LockDown:Cooldown({Mathf.RoundToInt(player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown)})";
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
@@ -455,7 +455,7 @@ namespace SanyaPlugin
 			{
 				curText = curText.Replace("[CENTER_DOWN]", string.Empty);
 			}
-			else if(player.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
+			else if(player.Role.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"{RespawnManager.Singleton.NextKnownTeam}が突入まで{_respawnCounter}秒", 7));
