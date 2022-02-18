@@ -119,21 +119,14 @@ namespace SanyaPlugin
 			yield break;
 		}
 
-		public static IEnumerator<float> CheckScpsRoom()
+		public static IEnumerator<float> CheckScp106Chamber()
 		{
-			yield return Timing.WaitForSeconds(3f);
+			yield return Timing.WaitForSeconds(5f);
 
-			foreach(var i in ReferenceHub.HostHub.characterClassManager.Classes.Where(x => x.team == Team.SCP && x.roleId != RoleType.Scp0492 && x.roleId != RoleType.Scp079 && !x.banClass))
+			if(!Player.Get(RoleType.Scp106).Any())
 			{
-				switch(i.roleId)
-				{
-					case RoleType.Scp106:
-						var gate106p = Door.Get("106_PRIMARY");
-						var gate106s = Door.Get("106_SECONDARY");
-						gate106p?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						gate106s?.Base.ServerChangeLock(Interactables.Interobjects.DoorUtils.DoorLockReason.AdminCommand, true);
-						break;
-				}
+				ReferenceHub.HostHub.characterClassManager._lureSpj.NetworkallowContain = true;
+				OneOhSixContainer.used = true;
 			}
 		}
 	}
