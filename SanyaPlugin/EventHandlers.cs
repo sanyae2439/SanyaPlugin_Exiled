@@ -370,8 +370,8 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
 
-			if(plugin.Config.ScpRoomLockWhenSafe)
-				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckScpsRoom(), Segment.FixedUpdate));
+			if(plugin.Config.Scp106ChamberLockWhenUnbreached)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckScp106Chamber(), Segment.FixedUpdate));
 
 			if(plugin.Config.ClassdPrisonInit)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitClassDPrison(), Segment.FixedUpdate));
@@ -725,14 +725,6 @@ namespace SanyaPlugin
 				}
 			}
 
-			//SCP
-			if(plugin.Config.ScpGift != ItemType.None && ev.NewRole != RoleType.Scp0492 && ev.NewRole.GetTeam() == Team.SCP)
-			{
-				ev.Items.Clear();
-				for(int i = 0; i < 8; i++)
-					ev.Items.Add(plugin.Config.ScpGift);
-			}
-
 			//Dクラスロールボーナス
 			if(!string.IsNullOrEmpty(ev.Player.GroupName) && plugin.Config.ClassdBonusitemsForRoleParsed.TryGetValue(ev.Player.GroupName, out List<ItemType> bonusitems) && ev.NewRole == RoleType.ClassD)
 				ev.Items.InsertRange(0, bonusitems);
@@ -823,13 +815,6 @@ namespace SanyaPlugin
 				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy)
 			{
 				ev.Amount *= plugin.Config.HeavyArmorDamageEfficacy;
-			}
-
-			//SCPのダメージ
-			if(ev.Attacker != ev.Target && ev.Target.IsScp)
-			{
-				if(plugin.Config.ScpTakenDamageMultiplierParsed.TryGetValue(ev.Target.Role, out var value))
-					ev.Amount *= value;
 			}
 
 			//こんぽーねんと

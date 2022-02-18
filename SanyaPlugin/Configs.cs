@@ -142,11 +142,8 @@ namespace SanyaPlugin
 		[Description("Dクラス収容房の初期動作")]
 		public bool ClassdPrisonInit { get; set; } = false;
 
-		[Description("スポーンしなかったSCP収容房へのドアをロックする")]
-		public bool ScpRoomLockWhenSafe { get; set; } = false;
-
-		[Description("SCPBall")]
-		public ItemType ScpGift { get; set; } = ItemType.None;
+		[Description("SCP-106がいない場合は囮コンテナを閉鎖する")]
+		public bool Scp106ChamberLockWhenUnbreached { get; set; } = false;
 
 		[Description("SCP-914に入ると悪影響を受ける")]
 		public bool Scp914Debuff { get; set; } = false;
@@ -177,19 +174,6 @@ namespace SanyaPlugin
 
 		[Description("MTF/CIが武装解除されると死亡し、相手チームのチケットを加算させる量")]
 		public int CuffedTicketDeathToMtfCi { get; set; } = 0;
-
-		[Description("SCPの被ダメージ乗数")]
-		public Dictionary<string, float> ScpTakenDamageMultiplier { get; set; } = new Dictionary<string, float>()
-		{
-			{ nameof(RoleType.Scp049), 1f },
-			{ nameof(RoleType.Scp0492), 1f },
-			{ nameof(RoleType.Scp096), 1f },
-			{ nameof(RoleType.Scp106), 1f },
-			{ nameof(RoleType.Scp173), 1f },
-			{ nameof(RoleType.Scp93953), 1f },
-			{ nameof(RoleType.Scp93989), 1f },
-		};
-		public readonly Dictionary<RoleType, float> ScpTakenDamageMultiplierParsed = new Dictionary<RoleType, float>();
 
 		[Description("SCP-049のシールド最大値")]
 		public int Scp049MaxAhp { get; set; } = 0;
@@ -259,7 +243,6 @@ namespace SanyaPlugin
 				DefaultammosParsed.Clear();
 				ClassdBonusitemsForRoleParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
-				ScpTakenDamageMultiplierParsed.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -291,12 +274,6 @@ namespace SanyaPlugin
 						AltvoicechatScpsParsed.Add(role);
 					else
 						Log.Error($"AltvoicechatScps parse error: {item} is not valid RoleType");
-
-				foreach(var key in ScpTakenDamageMultiplier)
-					if(Enum.TryParse(key.Key, out RoleType role))
-						ScpTakenDamageMultiplierParsed.Add(role, key.Value);
-					else
-						Log.Error($"ScpTakenDamageMultiplier parse error: {key.Key} is not valid RoleType");
 			}
 			catch(Exception ex)
 			{
