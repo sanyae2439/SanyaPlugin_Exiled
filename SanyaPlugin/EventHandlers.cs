@@ -188,39 +188,6 @@ namespace SanyaPlugin
 				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
 			}
 
-			//地上の改装（ドア置く）
-			if(plugin.Config.AddDoorsOnSurface)
-			{
-				//Prefabの準備
-				var LCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("LCZ"));
-				var EZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("EZ"));
-				var HCZprefab = UnityEngine.Object.FindObjectsOfType<MapGeneration.DoorSpawnpoint>().First(x => x.TargetPrefab.name.Contains("HCZ"));
-
-				//ドアオブジェクト作成とグレネード耐性と位置の設定
-				var door1 = UnityEngine.Object.Instantiate(LCZprefab.TargetPrefab, new UnityEngine.Vector3(14.425f, 995.2f, -43.525f), Quaternion.Euler(Vector3.zero));
-				(door1 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				var door2 = UnityEngine.Object.Instantiate(LCZprefab.TargetPrefab, new UnityEngine.Vector3(14.425f, 995.2f, -23.25f), Quaternion.Euler(Vector3.zero));
-				(door2 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				var door3 = UnityEngine.Object.Instantiate(EZprefab.TargetPrefab, new UnityEngine.Vector3(176.2f, 983.24f, 35.23f), Quaternion.Euler(Vector3.up * 180f));
-				(door3 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				var door4 = UnityEngine.Object.Instantiate(EZprefab.TargetPrefab, new UnityEngine.Vector3(174.4f, 983.24f, 29.1f), Quaternion.Euler(Vector3.up * 90f));
-				(door4 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				var door5 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(0f, 1000f, 4.8f), Quaternion.Euler(Vector3.zero));
-				(door5 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				door5.transform.localScale = new Vector3(2f, 2.05f, 1f);
-				var door6 = UnityEngine.Object.Instantiate(HCZprefab.TargetPrefab, new UnityEngine.Vector3(86.5f, 987.15f, -67.3f), Quaternion.Euler(Vector3.zero));
-				(door6 as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-				door6.transform.localScale = new Vector3(2.5f, 1.6f, 1f);
-
-				//スポーンさせる
-				NetworkServer.Spawn(door1.gameObject);
-				NetworkServer.Spawn(door2.gameObject);
-				NetworkServer.Spawn(door3.gameObject);
-				NetworkServer.Spawn(door4.gameObject);
-				NetworkServer.Spawn(door5.gameObject);
-				NetworkServer.Spawn(door6.gameObject);
-			}
-
 			//地上の改装（ゲート移動したりステーション置いたり）
 			if(plugin.Config.EditObjectsOnSurface)
 			{
@@ -250,11 +217,6 @@ namespace SanyaPlugin
 				//ゲート上
 				var station6 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
 				var station7 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
-
-				//的の設置
-				var target1 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -68f), Quaternion.Euler(Vector3.up * 180f));
-				var target2 = UnityEngine.Object.Instantiate(sportPrefab, new Vector3(-24.5f, 1000f, -72.5f), Quaternion.Euler(Vector3.up * 180f));
-				var target3 = UnityEngine.Object.Instantiate(dboyPrefab, new Vector3(-24.5f, 1000f, -70.25f), Quaternion.Euler(Vector3.up * 180f));
 
 				//核起爆室のライト
 				var light_nuke = UnityEngine.Object.Instantiate(lightPrefab.GetComponent<LightSourceToy>());
@@ -286,7 +248,7 @@ namespace SanyaPlugin
 				wall_fence3.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-106のコンテナ壁
-				var room106 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz106);
+				var room106 = Room.Get(Exiled.API.Enums.RoomType.Hcz106);
 				var wall_106_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
 				wall_106_1.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
 				wall_106_1.transform.localScale = new Vector3(32f, 11f, 0.5f);
@@ -306,7 +268,7 @@ namespace SanyaPlugin
 				wall_106_2.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-939スポーン位置の蓋
-				var room939 = Map.Rooms.First(x => x.Type == Exiled.API.Enums.RoomType.Hcz939);
+				var room939 = Room.Get(Exiled.API.Enums.RoomType.Hcz939);
 				var wall_939_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
 				wall_939_1.transform.SetParentAndOffset(room939.transform, new Vector3(0f, -0.55f, 1.2f));
 				wall_939_1.transform.localScale = new Vector3(16f, 1f, 13f);
@@ -323,9 +285,6 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(station5);
 				NetworkServer.Spawn(station6);
 				NetworkServer.Spawn(station7);
-				NetworkServer.Spawn(target1);
-				NetworkServer.Spawn(target2);
-				NetworkServer.Spawn(target3);
 				NetworkServer.Spawn(light_nuke.gameObject);
 				NetworkServer.Spawn(wall_fence1.gameObject);
 				NetworkServer.Spawn(wall_fence2.gameObject);
@@ -547,7 +506,7 @@ namespace SanyaPlugin
 				{
 					List<Vector3> poslist = new List<Vector3>();
 					if(!Map.IsLczDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
-						poslist.Add(Map.GetCameraByType(Exiled.API.Enums.CameraType.Lcz173Hallway).transform.position + Vector3.down * 2);
+						poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Lcz173Hallway).Transform.position + Vector3.down * 2);
 
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnProperties().Item1);
 					poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "Shelter").transform.position);
@@ -570,20 +529,17 @@ namespace SanyaPlugin
 		//MapEvents
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Map.ActivatedGenerators + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//強制再収容のとき
 			if(UnityEngine.Object.FindObjectOfType<Recontainer079>()._alreadyRecontained)
 				return;
 
-			if(plugin.Config.GeneratorFix)
-				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, false);
-
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.BLACKOUT:
 					{
-						if(Map.ActivatedGenerators == 1)
+						if(Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() == 1)
 						{
 							foreach(var i in FlickerableLightController.Instances.Where(x => x.transform.root?.name != "Outside"))
 							{
@@ -881,7 +837,7 @@ namespace SanyaPlugin
 				component.OnDamage();
 
 			//ダメージランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Attacker != null && ev.Attacker.IsEnemy(ev.Target.Team) && ev.Attacker.IsHuman && ev.Amount > 0f)
+			if(!RoundSummary.singleton.RoundEnded && ev.Attacker != null && ev.Attacker.IsEnemy(ev.Target.Role.Team) && ev.Attacker.IsHuman && ev.Amount > 0f)
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 		}
 		public void OnDying(DyingEventArgs ev)
@@ -932,7 +888,7 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(ev.Killer, 2f), Segment.FixedUpdate));
 
 			//キルランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Team))
+			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Role.Team))
 				KillsDict[ev.Killer.Nickname] += 1;
 		}
 		public void OnEscaping(EscapingEventArgs ev)
@@ -949,11 +905,11 @@ namespace SanyaPlugin
 			Log.Debug($"[OnHandcuffing] {ev.Cuffer.Nickname} -> {ev.Target.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//キル&チケットボーナス
-			if(plugin.Config.CuffedTicketDeathToMtfCi != 0 && (ev.Target.Team == Team.MTF || ev.Target.Team == Team.CHI))
+			if(plugin.Config.CuffedTicketDeathToMtfCi != 0 && (ev.Target.Role.Team == Team.MTF || ev.Target.Role.Team == Team.CHI))
 			{
 				ev.IsAllowed = false;
 				SpawnableTeamType team = SpawnableTeamType.None;
-				switch(ev.Target.Team)
+				switch(ev.Target.Role.Team)
 				{
 					case Team.MTF:
 						team = SpawnableTeamType.ChaosInsurgency;
@@ -1094,49 +1050,6 @@ namespace SanyaPlugin
 				ev.IsInIdleRange = false;
 			}	
 		}
-		public void OnInteractingShootingTarget(InteractingShootingTargetEventArgs ev)
-		{
-			Log.Debug($"[OnInteractingShootingTarget] {ev.Player.Nickname} -> {ev.TargetButton}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.Remove || ev.TargetButton == Exiled.API.Enums.ShootingTargetButton.ToggleSync)
-				ev.IsAllowed = false;
-		}
-		public void OnInteractingElevator(InteractingElevatorEventArgs ev)
-		{
-			Log.Debug($"[OnInteractingElevator] {ev.Player.Nickname} -> {ev.Lift.elevatorName}({ev.Status}) lock:{ev.Lift.Network_locked}", plugin.Config.IsDebugged);
-
-			if(ev.Lift.Network_locked)
-				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText("<color=#bbee00><size=25>このエレベーターはロックされています</color></size>", 3);
-		}
-		public void OnUnlockingGenerator(UnlockingGeneratorEventArgs ev)
-		{
-			Log.Debug($"[OnUnlockingGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.GeneratorFix && ev.IsAllowed)
-				ev.Generator.ServerSetFlag(MapGeneration.Distributors.Scp079Generator.GeneratorFlags.Open, true);
-		}
-		public void OnOpeningGenerator(OpeningGeneratorEventArgs ev)
-		{
-			Log.Debug($"[OnOpeningGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.GeneratorFix && ev.Generator.Engaged)
-				ev.IsAllowed = false;
-		}
-		public void OnClosingGenerator(ClosingGeneratorEventArgs ev)
-		{
-			Log.Debug($"[OnClosingGenerator] {ev.Player.Nickname} -> {ev.Generator.GetComponentInParent<RoomIdentifier>().Name}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.GeneratorFix && ev.Generator.Activating)
-				ev.IsAllowed = false;
-		}
-		public void OnInteractingScp330(InteractingScp330EventArgs ev)
-		{
-			Log.Debug($"[OnInteractingScp330] {ev.Player.Nickname} -> {ev.UsageCount}(Sever:{ev.ShouldSever})", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//Fix EXILED(4.x)
-			if(ev.UsageCount >= 2)
-				ev.ShouldSever = true;
-		}
 
 		//Scp079
 		public void OnTriggeringDoor(TriggeringDoorEventArgs ev)
@@ -1145,7 +1058,7 @@ namespace SanyaPlugin
 
 			if(plugin.Config.Scp079NeedInteractGateTier != -1
 				&& (ev.Door.Type == Exiled.API.Enums.DoorType.Scp914 || ev.Door.Type == Exiled.API.Enums.DoorType.GateA || ev.Door.Type == Exiled.API.Enums.DoorType.GateB)
-				&& ev.Player.Level + 1 < plugin.Config.Scp079NeedInteractGateTier)
+				&& ev.Player.ReferenceHub.scp079PlayerScript.Lvl + 1 < plugin.Config.Scp079NeedInteractGateTier)
 			{
 				ev.IsAllowed = false;
 				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(SanyaPlugin.Instance.Translation.Error079NotEnoughTier, 3);

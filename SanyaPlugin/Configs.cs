@@ -121,9 +121,6 @@ namespace SanyaPlugin
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;
 
-		[Description("発電機の使用を細かく修正する")]
-		public bool GeneratorFix { get; set; } = false;
-
 		[Description("ポケットディメンションの死体やアイテムを発生させない")]
 		public bool PocketdimensionClean { get; set; } = false;
 
@@ -132,9 +129,6 @@ namespace SanyaPlugin
 
 		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
 		public string TeslaDisabledPermission { get; set; } = "None";
-
-		[Description("地上にドアを追加する")]
-		public bool AddDoorsOnSurface { get; set; } = false;
 
 		[Description("地上のオブジェクトを編集する")]
 		public bool EditObjectsOnSurface { get; set; } = false;

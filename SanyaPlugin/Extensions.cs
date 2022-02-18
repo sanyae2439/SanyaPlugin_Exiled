@@ -18,17 +18,17 @@ namespace SanyaPlugin
 
 		public static Task StartSender(this Task task) => task.ContinueWith((x) => { Log.Error($"[Sender] {x}"); }, TaskContinuationOptions.OnlyOnFaulted);
 
-		public static bool IsHuman(this Player player) => player.Team != Team.SCP && player.Team != Team.RIP;
+		public static bool IsHuman(this Player player) => player.Role.Team != Team.SCP && player.Role.Team != Team.RIP;
 
 		public static bool IsEnemy(this Player player, Team target)
 		{
-			if(player.Role == RoleType.Spectator || player.Role == RoleType.None || player.Team == target)
+			if(player.Role == RoleType.Spectator || player.Role == RoleType.None || player.Role.Team == target)
 				return false;
 
 			return target == Team.SCP ||
-				((player.Team != Team.MTF && player.Team != Team.RSC) || (target != Team.MTF && target != Team.RSC))
+				((player.Role.Team != Team.MTF && player.Role.Team != Team.RSC) || (target != Team.MTF && target != Team.RSC))
 				&&
-				((player.Team != Team.CDP && player.Team != Team.CHI) || (target != Team.CDP && target != Team.CHI))
+				((player.Role.Team != Team.CDP && player.Role.Team != Team.CHI) || (target != Team.CDP && target != Team.CHI))
 			;
 		}
 
