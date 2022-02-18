@@ -251,31 +251,6 @@ namespace SanyaPlugin
 		[Description("SCP-079がゲートを操作するのに必要なTier")]
 		public int Scp079NeedInteractGateTier { get; set; } = -1;
 
-		[Description("SCP-079の消費コスト")]
-		public Dictionary<string, float> Scp079ManaCost { get; set; } = new Dictionary<string, float>()
-		{
-			{"Camera Switch",                   1f },
-			{"Door Lock",                       4f },
-			{"Door Lock Start",                 5f },
-			{"Door Lock Minimum",              10f },
-			{"Door Interaction DEFAULT",        5f },
-			{"Door Interaction CONT_LVL_1",    50f },
-			{"Door Interaction CONT_LVL_2",    40f },
-			{"Door Interaction CONT_LVL_3",   110f },
-			{"Door Interaction ARMORY_LVL_1",  50f },
-			{"Door Interaction ARMORY_LVL_2",  60f },
-			{"Door Interaction ARMORY_LVL_3",  70f },
-			{"Door Interaction EXIT_ACC",      60f },
-			{"Door Interaction INCOM_ACC",     30f },
-			{"Door Interaction CHCKPOINT_ACC", 10f },
-			{"Room Lockdown",                  60f },
-			{"Tesla Gate Burst",               50f },
-			{"Elevator Teleport",              30f },
-			{"Elevator Use",                   10f },
-			{"Speaker Start",                  10f },
-			{"Speaker Update",                0.8f }
-		};
-
 		public void ParseConfig()
 		{
 			try
