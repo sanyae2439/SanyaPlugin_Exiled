@@ -11,8 +11,6 @@ namespace SanyaPlugin.Patches
 		[HarmonyPriority(Priority.HigherThanNormal)]
 		public static bool Prefix(Scp096 __instance)
 		{
-			if(__instance._flash.IsEnabled) return false;
-
 			Vector3 vector = __instance.Hub.transform.TransformPoint(Scp096._headOffset);
 			foreach(KeyValuePair<GameObject, ReferenceHub> keyValuePair in ReferenceHub.GetAllHubs())
 			{
