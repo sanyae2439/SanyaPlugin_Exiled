@@ -19,8 +19,8 @@ namespace SanyaPlugin
 
 		public void LoadLists()
 		{
-			PathWhiteList = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, "VPN-Whitelist.txt");
-			PathBlackList = Path.Combine(SanyaPlugin.Instance.Config.DataDirectory, "VPN-Blacklist.txt");
+			PathWhiteList = Path.Combine(Paths.IndividualConfigs, SanyaPlugin.Instance.Prefix, "VPN-Whitelist.txt");
+			PathBlackList = Path.Combine(Paths.IndividualConfigs, SanyaPlugin.Instance.Prefix, "VPN-Blacklist.txt");
 			IPWhiteList.Clear();
 			IPBlackList.Clear();
 
