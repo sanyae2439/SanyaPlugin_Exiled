@@ -248,7 +248,7 @@ namespace SanyaPlugin
 				wall_fence3.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-106のコンテナ壁
-				var room106 = Room.Get(Exiled.API.Enums.RoomType.Hcz106);
+				var room106 = RoomIdentifier.AllRoomIdentifiers.First(x => x.Name == RoomName.Hcz106);
 				var wall_106_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
 				wall_106_1.transform.SetParentAndOffset(room106.transform, new Vector3(9f, 5f, -4.5f));
 				wall_106_1.transform.localScale = new Vector3(32f, 11f, 0.5f);
@@ -268,7 +268,7 @@ namespace SanyaPlugin
 				wall_106_2.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-939スポーン位置の蓋
-				var room939 = Room.Get(Exiled.API.Enums.RoomType.Hcz939);
+				var room939 = RoomIdentifier.AllRoomIdentifiers.First(x => x.Name == RoomName.Hcz939);
 				var wall_939_1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
 				wall_939_1.transform.SetParentAndOffset(room939.transform, new Vector3(0f, -0.55f, 1.2f));
 				wall_939_1.transform.localScale = new Vector3(16f, 1f, 13f);
