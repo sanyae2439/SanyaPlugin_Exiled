@@ -964,9 +964,9 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp106InstaAttack)
 			{
 				ev.IsAllowed = false;
+				ev.Scp106.ReferenceHub.scp106PlayerScript.TargetHitMarker(ev.Scp106.Connection, ev.Scp106.ReferenceHub.scp106PlayerScript.captureCooldown);
 				if(UnityEngine.Random.Range(0, 9) < GameCore.ConfigFile.ServerConfig.GetInt("pd_exit_count", 2) || PocketDimensionTeleport.DebugBool)
 				{
-					ev.Scp106.SendHitmarker();
 					var roomIdentifier = RoomIdUtils.RoomAtPosition(ev.Scp106.Position);
 					if(roomIdentifier.Zone == FacilityZone.Surface)
 					{

@@ -304,6 +304,25 @@ namespace SanyaPlugin
 			}
 		}
 
+		public static string TranslateZoneNameForShort(ZoneType zone)
+		{
+			switch(zone)
+			{
+				case ZoneType.Surface:
+					return "地上";
+				case ZoneType.Entrance:
+					return "EZ";
+				case ZoneType.HeavyContainment:
+					return "HCZ";
+				case ZoneType.LightContainment:
+					return "LCZ";
+				case ZoneType.Unspecified:
+					return "不明";
+				default:
+					return "エラー";
+			}
+		}
+
 		public static string TranslateRoomName(RoomType room)
 		{
 			switch(room)

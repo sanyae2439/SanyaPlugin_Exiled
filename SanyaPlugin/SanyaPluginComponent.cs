@@ -319,9 +319,19 @@ namespace SanyaPlugin
 					if(scp.Role == RoleType.Scp0492)
 						scp0492counter++;
 					else if(scp.Role == RoleType.Scp079)
-						scpList += $"[{Methods.TranslateZoneName(room.Zone)}:{Methods.TranslateRoomName(scp.CurrentRoom.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
+					{
+						if(room.Zone == Exiled.API.Enums.ZoneType.Surface)
+							scpList += $"[{Methods.TranslateZoneNameForShort(room.Zone)}:{scp.ReferenceHub.scp079PlayerScript.currentCamera.cameraName}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
+						else
+							scpList += $"[{Methods.TranslateZoneNameForShort(room.Zone)}:{Methods.TranslateRoomName(room.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:Tier{scp.ReferenceHub.scp079PlayerScript._curLvl + 1}/{Mathf.RoundToInt(scp.ReferenceHub.scp079PlayerScript.Mana)}AP\n";
+					}
 					else
-						scpList += $"[{Methods.TranslateZoneName(room.Zone)}:{Methods.TranslateRoomName(scp.CurrentRoom.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
+					{
+						if(room.Zone == Exiled.API.Enums.ZoneType.Surface)
+							scpList += $"[{Methods.TranslateZoneNameForShort(room.Zone)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
+						else
+							scpList += $"[{Methods.TranslateZoneNameForShort(room.Zone)}:{Methods.TranslateRoomName(room.Type)}]{scp.ReferenceHub.characterClassManager.CurRole.fullName}:{scp.GetHealthAmountPercent()}%{(scp.ArtificialHealth > 0 ? $"({scp.GetAHPAmountPercent()}%)" : string.Empty)}\n";
+					}
 				}
 				if(scp0492counter > 0)
 					scpList += $"SCP-049-2:({scp0492counter})\n";
