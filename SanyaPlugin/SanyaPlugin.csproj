@@ -171,6 +171,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)\bin\Release\SanyaPlugin.dll" "$(AppData)\EXILED\Plugins" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(AppData)\EXILED\Plugins" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
