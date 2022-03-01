@@ -33,7 +33,7 @@ namespace SanyaPlugin
 		public PlayerDataManager PlayerDataManager { get; private set; }
 		public ShitChecker ShitChecker { get; private set;}
 		public TPSChecker TPSChecker { get; private set; }
-		public string ExiledFullVersion;
+		public string ExiledFullVersion { get; private set; }
 		private int patchCounter;
 
 		public override void OnEnabled()
@@ -62,7 +62,7 @@ namespace SanyaPlugin
 			Log.Info("[OnEnabled] Patching...");
 			this.Patch();
 
-			Log.Info("[OnEnabled] Start TPSCounter...");
+			Log.Info("[OnEnabled] Start TPSChecker...");
 			TPSChecker = new TPSChecker();
 
 			Log.Info($"[OnEnabled] SanyaPlugin(Ver{Version}) Enabled Complete.");
@@ -77,6 +77,9 @@ namespace SanyaPlugin
 			foreach(var cor in Handlers.roundCoroutines)
 				Timing.KillCoroutines(cor);
 			this.Handlers.roundCoroutines.Clear();
+
+			Log.Info("[OnDisabled] Stopping TPSChecker...");
+			Timing.KillCoroutines(TPSChecker.Coroutine);
 
 			Log.Info("[OnDisabled] Unregisting events...");
 			this.UnRegistEvents();
