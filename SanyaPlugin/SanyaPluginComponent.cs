@@ -249,7 +249,7 @@ namespace SanyaPlugin
 
 			string curText = _hudTemplate.Replace("[STATS]",
 				$"ServerTime:{DateTime.Now:HH:mm:ss} " +
-				$"TPS:{Mathf.RoundToInt(TPSChecker.CurrentTPS)}");
+				$"TPS:{TPSChecker.CurrentTPSInt}");
 
 			/**
 			 * [LIST]        = 7
