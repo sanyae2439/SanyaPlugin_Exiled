@@ -5,7 +5,6 @@ using CustomPlayerEffects;
 using Exiled.API.Features;
 using MapGeneration.Distributors;
 using MEC;
-using Mirror.LiteNetLib4Mirror;
 using PlayerStatsSystem;
 using Respawning;
 using UnityEngine;
@@ -42,7 +41,7 @@ namespace SanyaPlugin
 			player = Player.Get(gameObject);
 			if(!Instances.TryGetValue(player, out _))
 				Instances.Add(player, this);
-			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}");
+			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}/{SanyaPlugin.Instance.ExiledFullVersion}");
 		}
 
 		private void OnDestroy()
@@ -249,7 +248,8 @@ namespace SanyaPlugin
 			if(DisableHud || !SanyaPlugin.Instance.Config.ExHudEnabled) return;
 
 			string curText = _hudTemplate.Replace("[STATS]",
-				$"ServerTime:{DateTime.Now:HH:mm:ss}");
+				$"ServerTime:{DateTime.Now:HH:mm:ss} " +
+				$"TPS:{Mathf.RoundToInt(TPSChecker.CurrentTPS)}");
 
 			/**
 			 * [LIST]        = 7
