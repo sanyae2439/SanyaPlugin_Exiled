@@ -16,7 +16,7 @@ namespace SanyaPlugin
 			while(true)
 			{
 				CurrentTPS = 1f / Time.deltaTime;
-				CurrentTPSInt = Mathf.CeilToInt(CurrentTPS);
+				CurrentTPSInt = Mathf.FloorToInt(CurrentTPS);
 				yield return Timing.WaitForOneFrame;
 			}
 		}
