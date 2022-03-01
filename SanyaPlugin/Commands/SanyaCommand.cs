@@ -34,6 +34,7 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new ActWatchCommand());
 			RegisterCommand(new OverrideCommand());
 			RegisterCommand(new Scp914Command());
+			RegisterCommand(new TpPosCommand());
 		}
 
 		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

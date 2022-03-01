@@ -138,6 +138,7 @@
     <Compile Include="Commands\Utils\Scp914Command.cs" />
     <Compile Include="Commands\Utils\Scp914\KnobCommand.cs" />
     <Compile Include="Commands\Utils\Scp914\UseCommand.cs" />
+    <Compile Include="Commands\Utils\TpPosCommand.cs" />
     <Compile Include="Coroutines.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Methods.cs" />
