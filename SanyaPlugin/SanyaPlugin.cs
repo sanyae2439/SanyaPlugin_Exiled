@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using HarmonyLib;
@@ -30,12 +32,16 @@ namespace SanyaPlugin
 		public Harmony Harmony { get; private set; }
 		public PlayerDataManager PlayerDataManager { get; private set; }
 		public ShitChecker ShitChecker { get; private set;}
+		public TPSChecker TPSChecker { get; private set; }
+		public string ExiledFullVersion;
 		private int patchCounter;
 
 		public override void OnEnabled()
 		{
 			base.OnEnabled();
 			SanyaPlugin.Instance = this;
+			ExiledFullVersion = Exiled.Loader.Loader.Dependencies.First(x => x.GetName().Name == "Exiled.API").GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+			Log.Info($"[OnEnabled] Detect EXILED Version:{ExiledFullVersion}");
 
 			Log.Info("[OnEnabled] Registing events...");
 			this.RegistEvents();
@@ -55,6 +61,9 @@ namespace SanyaPlugin
 
 			Log.Info("[OnEnabled] Patching...");
 			this.Patch();
+
+			Log.Info("[OnEnabled] Start TPSCounter...");
+			TPSChecker = new TPSChecker();
 
 			Log.Info($"[OnEnabled] SanyaPlugin(Ver{Version}) Enabled Complete.");
 		}
