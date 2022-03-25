@@ -2,6 +2,7 @@
 using CommandSystem;
 using SanyaPlugin.Commands.Debugs;
 using SanyaPlugin.Commands.Items;
+using SanyaPlugin.Commands.Public;
 using SanyaPlugin.Commands.Utils;
 
 namespace SanyaPlugin.Commands
@@ -29,6 +30,9 @@ namespace SanyaPlugin.Commands
 
 			//Items
 			RegisterCommand(new TantrumCommand());
+
+			//Public
+			RegisterCommand(new ExHudCommand());
 
 			//Utils
 			RegisterCommand(new ActWatchCommand());

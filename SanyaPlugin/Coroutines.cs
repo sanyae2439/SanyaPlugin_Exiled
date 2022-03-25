@@ -91,7 +91,7 @@ namespace SanyaPlugin
 			foreach(var x in FlickerableLightController.Instances)
 				x.ServerFlickerLights(5f);
 			yield return Timing.WaitForSeconds(3f);
-			foreach(var i in FlickerableLightController.Instances.Where(x => x.transform.root?.name != "Outside"))
+			foreach(var i in FlickerableLightController.Instances.Where(x => (x.transform.root?.name != "Outside") && x.transform.parent?.name != "PocketWorld"))
 			{
 				i.Network_warheadLightOverride = true;
 				i.Network_warheadLightColor = new Color(0f, 0f, 0f);
