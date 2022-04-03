@@ -32,6 +32,7 @@ namespace SanyaPlugin
 		public Harmony Harmony { get; private set; }
 		public PlayerDataManager PlayerDataManager { get; private set; }
 		public ShitChecker ShitChecker { get; private set;}
+		public TpsWatcher TpsWatcher { get; private set; }
 		public string ExiledFullVersion { get; private set; }
 		private int patchCounter;
 
@@ -58,6 +59,9 @@ namespace SanyaPlugin
 			this.ShitChecker = new ShitChecker();
 			if(!string.IsNullOrEmpty(Config.KickVpnApikey)) this.ShitChecker.LoadLists();
 
+			Log.Info("[OnEnabled] Loading TpsWatcher...");
+			this.TpsWatcher = new TpsWatcher();
+
 			Log.Info("[OnEnabled] Patching...");
 			this.Patch();
 
@@ -73,6 +77,7 @@ namespace SanyaPlugin
 			foreach(var cor in Handlers.roundCoroutines)
 				Timing.KillCoroutines(cor);
 			this.Handlers.roundCoroutines.Clear();
+			Timing.KillCoroutines(TpsWatcher.Coroutine);
 
 			Log.Info("[OnDisabled] Unregisting events...");
 			this.UnRegistEvents();

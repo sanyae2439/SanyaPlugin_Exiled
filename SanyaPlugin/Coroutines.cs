@@ -2,6 +2,7 @@
 using System.Linq;
 using Exiled.API.Extensions;
 using Exiled.API.Features;
+using MapGeneration;
 using MEC;
 using Respawning;
 using UnityEngine;
@@ -91,10 +92,10 @@ namespace SanyaPlugin
 			foreach(var x in FlickerableLightController.Instances)
 				x.ServerFlickerLights(5f);
 			yield return Timing.WaitForSeconds(3f);
-			foreach(var i in FlickerableLightController.Instances.Where(x => (x.transform.root?.name != "Outside") && x.transform.parent?.name != "PocketWorld"))
+			foreach(var i in Room.List.Where(x => x.Zone != Exiled.API.Enums.ZoneType.Surface && x.Type != Exiled.API.Enums.RoomType.Pocket))
 			{
-				i.Network_warheadLightOverride = true;
-				i.Network_warheadLightColor = new Color(0f, 0f, 0f);
+				i.FlickerableLightController.Network_warheadLightOverride = true;
+				i.FlickerableLightController.Network_warheadLightColor = new Color(0f, 0f, 0f);
 			}
 			yield break;
 		}
