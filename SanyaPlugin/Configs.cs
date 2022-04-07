@@ -66,6 +66,10 @@ namespace SanyaPlugin
 		public Dictionary<string, string> ClassdBonusitemsForRole { get; set; } = new Dictionary<string, string>();
 		public readonly Dictionary<string, List<ItemType>> ClassdBonusitemsForRoleParsed = new Dictionary<string, List<ItemType>>();
 
+		[Description("落とさないようにするアイテム")]
+		public List<string> NoDropItems { get; set; } = new List<string>();
+		public readonly List<ItemType> NoDropItemsParsed = new List<ItemType>();
+
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
@@ -205,23 +209,17 @@ namespace SanyaPlugin
 		[Description("SCP-049-2がキルするたびにHPが回復し、追加効果を得る")]
 		public bool Scp0492KillStreak { get; set; } = false;
 
-		[Description("SCP-096に触れると発狂するようになる距離")]
-		public float Scp096TouchEnrageDistance { get; set; } = -1f;
-
-		[Description("SCP-106のシールド最大値")]
-		public int Scp106MaxAhp { get; set; } = 0;
-
-		[Description("SCP-106のシールド回復速度")]
-		public float Scp106RegenRate { get; set; } = 0f;
-
-		[Description("SCP-106のシールド回復までの時間")]
-		public float Scp106TimeUntilRegen { get; set; } = 0f;
+		[Description("SCP-096をリワークする")]
+		public bool Scp096Rework { get; set; } = false;
 
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
 		[Description("SCP-106の攻撃がポケットディメンションを介さないようになる")]
 		public bool Scp106InstaAttack { get; set; } = false;
+
+		[Description("SCP-106をリワークする")]
+		public bool Scp106Rework { get; set; } = false;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
@@ -242,6 +240,7 @@ namespace SanyaPlugin
 				DefaultitemsParsed.Clear();
 				DefaultammosParsed.Clear();
 				ClassdBonusitemsForRoleParsed.Clear();
+				NoDropItemsParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 
 				foreach(var key in Defaultitems)
@@ -268,6 +267,12 @@ namespace SanyaPlugin
 					else
 						Log.Error($"DefaultAmmos parse error: {key.Key} is not valid RoleType");
 				}
+
+				foreach(var item in NoDropItems)
+					if(Enum.TryParse(item, out ItemType itemtype))
+						NoDropItemsParsed.Add(itemtype);
+				    else
+						Log.Error($"NoDropItems parse error: {item} is not valid ItemType");
 
 				foreach(var item in AltvoicechatScps)
 					if(Enum.TryParse(item, out RoleType role))

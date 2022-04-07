@@ -163,6 +163,7 @@ namespace SanyaPlugin
 			if(RoundRestarting.RoundRestart.UptimeRounds == 0)
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
+			DecontaminationController.Singleton.NetworkRoundStartTime = 0.0;
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
 			foreach(var gen in Recontainer079.AllGenerators)
@@ -552,6 +553,16 @@ namespace SanyaPlugin
 					}
 			}
 		}
+		public void OnExplodingGrenade(ExplodingGrenadeEventArgs ev)
+		{
+			Log.Debug($"[OnExplodingGrenade] thrower:{ev.Thrower.Nickname} type:{ev.GrenadeType} toaffect:{ev.TargetsToAffect.Count}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//SCP-106
+			if(ev.GrenadeType == Exiled.API.Enums.GrenadeType.Flashbang)
+				foreach(var i in ev.TargetsToAffect)
+				if(i.Role == RoleType.Scp106)
+					roundCoroutines.Add(Timing.RunCoroutine(i.ReferenceHub.scp106PlayerScript._DoTeleportAnimation()));
+		}
 
 		//WarheadEvents
 		public void OnStarting(StartingEventArgs ev)
@@ -764,6 +775,20 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
 			}
 
+			//SCP-106
+			if(plugin.Config.Scp106Rework 
+				&& ev.Attacker != ev.Target 
+				&& ev.Target.Role == RoleType.Scp106 
+				&& ev.Handler.Type != Exiled.API.Enums.DamageType.MicroHid)
+			{
+				ev.IsAllowed = false;
+				ev.Target.EnableEffect<Amnesia>(5f);
+				ev.Target.EnableEffect<Disabled>(5f);
+				ev.Target.EnableEffect<Concussed>(5f);
+				ev.Target.EnableEffect<Deafened>(5f);
+				return;
+			}
+
 			//ダメージタイプ分岐
 			switch(ev.Handler.Base)
 			{
@@ -829,6 +854,14 @@ namespace SanyaPlugin
 		{
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected) return;
 			Log.Debug($"[OnDying] {ev.Killer?.Nickname}[{ev.Killer?.Role}] -> {ev.Target.Nickname}[{ev.Target.ReferenceHub.characterClassManager._prevId}]", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//落とさないアイテム
+			var removingSerial = new List<ushort>();
+			foreach(var i in ev.Target.Inventory.UserInventory.Items)
+				if(plugin.Config.NoDropItemsParsed.Contains(i.Value.ItemTypeId))
+					removingSerial.Add(i.Key);
+			foreach(var s in removingSerial)
+				ev.Target.Inventory.UserInventory.Items.Remove(s);
 
 			//アイテム削除
 			if(ev.Handler.Base is UniversalDamageHandler universal)
@@ -945,15 +978,11 @@ namespace SanyaPlugin
 
 			//死体削除
 			if(ev.DamageHandlerBase is UniversalDamageHandler universal)
-			{
-				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id
+				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id 
 					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
-				{
 					ev.IsAllowed = false;
-				}
-			}
 
-			if(ev.DamageHandlerBase is ScpDamageHandler scp && scp._translationId == DeathTranslations.PocketDecay.Id)
+			if(ev.DamageHandlerBase is ScpDamageHandler scp && (scp._translationId == DeathTranslations.PocketDecay.Id || scp._translationId == DeathTranslations.Scp096.Id))
 				ev.IsAllowed = false;
 		}
 		public void OnEnteringPocketDimension(EnteringPocketDimensionEventArgs ev)

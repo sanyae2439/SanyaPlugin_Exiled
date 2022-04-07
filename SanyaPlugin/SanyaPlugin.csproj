@@ -157,8 +157,10 @@
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\Scp018Patch.cs" />
+    <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
+    <Compile Include="Patches\Scp096\StopEnrageOnDamagePatch.cs" />
+    <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
-    <Compile Include="Patches\Scp096TouchEnragePatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="PlayerDataManager.cs" />
     <Compile Include="SanyaPluginComponent.cs" />

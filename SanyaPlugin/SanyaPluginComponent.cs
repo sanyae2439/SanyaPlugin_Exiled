@@ -114,8 +114,6 @@ namespace SanyaPlugin
 			{
 				if(player.Role == RoleType.Scp049)
 					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
-				else if(player.Role == RoleType.Scp106)
-					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
 			}
 		}
 
@@ -131,12 +129,6 @@ namespace SanyaPlugin
 				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp049MaxAhp;
 				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp049RegenRate;
 				Shield.Limit = SanyaPlugin.Instance.Config.Scp049MaxAhp;
-			}
-			else if(roleType == RoleType.Scp106)
-			{
-				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp106MaxAhp;
-				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp106RegenRate;
-				Shield.Limit = SanyaPlugin.Instance.Config.Scp106MaxAhp;
 			}
 		}
 
@@ -428,8 +420,14 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Enraged:
 					case PlayableScps.Scp096PlayerState.Attacking:
 					case PlayableScps.Scp096PlayerState.Charging:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s", 6));
-						break;
+						{
+							var sortedTarget = scp096._targets.OrderBy(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition));
+							float nearDistance = 0f;
+							if(sortedTarget.Any())
+								nearDistance = Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, sortedTarget.First().playerMovementSync.RealModelPosition);
+							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Near targets:{Mathf.RoundToInt(nearDistance)}m", 6));
+							break;
+						}
 					case PlayableScps.Scp096PlayerState.Calming:
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Calming:{Mathf.RoundToInt(scp096._calmingTime)}s", 6));
 						break;
