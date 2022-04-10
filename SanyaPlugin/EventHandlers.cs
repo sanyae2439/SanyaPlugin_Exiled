@@ -767,7 +767,7 @@ namespace SanyaPlugin
 		public void OnHurting(HurtingEventArgs ev)
 		{
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected || ev.Amount < 0f) return;
-			Log.Debug($"[OnHurting] {ev.Attacker?.Nickname}[{ev.Attacker?.Role}] -({ev.Amount})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnHurting] {ev.Attacker?.Nickname}[{ev.Attacker?.Role}] -({ev.Amount}:{ev.Handler.Type})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//SCP-049の治療中ダメージ
 			if(ev.Attacker != ev.Target && ev.Target.Role == RoleType.Scp049 && ev.Target.CurrentScp is PlayableScps.Scp049 scp049 && scp049._recallInProgressServer)
@@ -779,7 +779,7 @@ namespace SanyaPlugin
 			if(plugin.Config.Scp106Rework 
 				&& ev.Attacker != ev.Target 
 				&& ev.Target.Role == RoleType.Scp106 
-				&& ev.Handler.Type != Exiled.API.Enums.DamageType.MicroHid)
+				&& !(ev.Handler.Base is MicroHidDamageHandler))
 			{
 				ev.IsAllowed = false;
 				ev.Target.EnableEffect<Amnesia>(5f);

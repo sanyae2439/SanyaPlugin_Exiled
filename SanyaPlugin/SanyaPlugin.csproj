@@ -149,6 +149,7 @@
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
+    <Compile Include="Patches\Fix-Basegame\Scp244AddScpsDamagePatch.cs" />
     <Compile Include="Patches\ReduceGeneratorPatch.cs" />
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
@@ -158,6 +159,8 @@
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\Scp018Patch.cs" />
     <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
+    <Compile Include="Patches\Scp096\ResetShieldPatch.cs" />
+    <Compile Include="Patches\Scp096\SetupShieldPatch.cs" />
     <Compile Include="Patches\Scp096\StopEnrageOnDamagePatch.cs" />
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />

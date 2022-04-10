@@ -209,6 +209,9 @@ namespace SanyaPlugin
 		[Description("SCP-049-2がキルするたびにHPが回復し、追加効果を得る")]
 		public bool Scp0492KillStreak { get; set; } = false;
 
+		[Description("SCP-096のシールド最大値")]
+		public int Scp096MaxAhp { get; set; } = 1000;
+
 		[Description("SCP-096をリワークする")]
 		public bool Scp096Rework { get; set; } = false;
 
