@@ -1,4 +1,5 @@
-﻿using CustomPlayerEffects;
+﻿using System.Linq;
+using CustomPlayerEffects;
 using HarmonyLib;
 using PlayableScps.Messages;
 using UnityEngine;
@@ -17,7 +18,8 @@ namespace SanyaPlugin.Patches.Scp096
 				__instance._preWindupTime -= Time.deltaTime;
 				if(__instance._preWindupTime <= 0f)
 				{
-					__instance.Hub.playerEffectsController.EnableEffect<Invigorated>(6f);
+					__instance.Hub.playerEffectsController.DisableEffect<Amnesia>();
+					__instance.Hub.playerEffectsController.EnableEffect<Invigorated>();
 					__instance.Hub.playerEffectsController.EnableEffect<Ensnared>(6f);
 					__instance.Windup(false);
 				}				
@@ -33,11 +35,14 @@ namespace SanyaPlugin.Patches.Scp096
 				//__instance.EnrageTimeLeft -= Time.deltaTime;
 				__instance.Hub.characterClassManager.netIdentity.connectionToClient.Send(new Scp096ToSelfMessage(__instance.EnrageTimeLeft, __instance._chargeCooldown), 0);
 
+				var sortedTargetDistance = __instance._targets.Select(x => Vector3.Distance(__instance.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
+
 				//__instance.EnrageTimeLeft <= 0f
-				if(__instance._targets.Count == 0 && !__instance.PryingGate)
+				if((__instance._targets.Count == 0 || sortedTargetDistance.FirstOrDefault() > 200f) && !__instance.PryingGate)
 				{
 					//__instance.RemainingEnrageCooldown = 6f;
-					__instance.Hub.playerEffectsController.EnableEffect<Amnesia>(6f);
+					__instance.Hub.playerEffectsController.DisableEffect<Invigorated>();
+					__instance.Hub.playerEffectsController.EnableEffect<Amnesia>();
 					__instance.Hub.playerEffectsController.EnableEffect<Ensnared>(6f);
 					__instance.EndEnrage();
 				}

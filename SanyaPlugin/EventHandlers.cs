@@ -702,6 +702,11 @@ namespace SanyaPlugin
 			}
 
 			//Effect
+			if(plugin.Config.Scp096Rework && ev.NewRole == RoleType.Scp096)
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+				{
+					ev.Player.EnableEffect<Amnesia>();
+				}));
 			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
@@ -982,7 +987,9 @@ namespace SanyaPlugin
 					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
 					ev.IsAllowed = false;
 
-			if(ev.DamageHandlerBase is ScpDamageHandler scp && (scp._translationId == DeathTranslations.PocketDecay.Id || scp._translationId == DeathTranslations.Scp096.Id))
+			if(ev.DamageHandlerBase is ScpDamageHandler scp && scp._translationId == DeathTranslations.PocketDecay.Id)
+				ev.IsAllowed = false;
+			if(ev.DamageHandlerBase is Scp096DamageHandler)
 				ev.IsAllowed = false;
 		}
 		public void OnEnteringPocketDimension(EnteringPocketDimensionEventArgs ev)

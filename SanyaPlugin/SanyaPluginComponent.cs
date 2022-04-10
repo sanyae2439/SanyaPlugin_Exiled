@@ -421,11 +421,8 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Attacking:
 					case PlayableScps.Scp096PlayerState.Charging:
 						{
-							var sortedTarget = scp096._targets.OrderBy(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition));
-							float nearDistance = 0f;
-							if(sortedTarget.Any())
-								nearDistance = Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, sortedTarget.First().playerMovementSync.RealModelPosition);
-							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Near targets:{Mathf.RoundToInt(nearDistance)}m", 6));
+							var sortedTargetDistance = scp096._targets.Select(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
+							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Near targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
 							break;
 						}
 					case PlayableScps.Scp096PlayerState.Calming:
