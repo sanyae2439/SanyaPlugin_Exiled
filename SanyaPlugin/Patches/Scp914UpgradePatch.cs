@@ -12,7 +12,7 @@ namespace SanyaPlugin.Patches
 		public static void Postfix()
 		{
 			Log.Debug($"[Scp914UpgradePatch]", SanyaPlugin.Instance.Config.IsDebugged);
-			var coliders = Physics.OverlapBox(Exiled.API.Features.Scp914.Scp914Controller._outputChamber.position, Vector3.one * Exiled.API.Features.Scp914.Scp914Controller._chamberSize / 2f);
+			var coliders = Physics.OverlapBox(Exiled.API.Features.Scp914.Scp914Controller._outputChamber.position, Exiled.API.Features.Scp914.Scp914Controller.IntakeChamberSize);
 			foreach(var colider in coliders)
 			{
 				if(colider.TryGetComponent(out CharacterClassManager ccm))

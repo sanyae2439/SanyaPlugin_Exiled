@@ -1,18 +1,18 @@
-﻿using CustomPlayerEffects;
-using HarmonyLib;
+﻿using HarmonyLib;
+using InventorySystem.Items.Usables.Scp244.Hypothermia;
 using PlayableScps.Interfaces;
 using PlayerStatsSystem;
+using UnityEngine;
 
 namespace SanyaPlugin.Patches.Fix_Basegame
 {
-	[HarmonyPatch(typeof(Hypothermia), nameof(Hypothermia.UpdateHume))]
+	[HarmonyPatch(typeof(HumeShieldSubEffect), nameof(HumeShieldSubEffect.UpdateHumeShield))]
 	public static class FixHypothermiaCustomShieldBlock
 	{
-		public static bool Prefix(Hypothermia __instance)
+		public static bool Prefix(HumeShieldSubEffect __instance, ref bool __result, float expo)
 		{
-			IShielded shielded = __instance.Hub.scpsController.CurrentScp as PlayableScps.Interfaces.IShielded;
-			if(!__instance.IsSCP || !__instance.IsEnabled)
-				return false;
+			__result = false;
+			IShielded shielded = __instance.Hub.scpsController.CurrentScp as IShielded;
 
 			AhpStat.AhpProcess Shield = null;
 			if(__instance.Hub.TryGetComponent<SanyaPluginComponent>(out var sanya) && sanya.Shield != null)
@@ -24,20 +24,20 @@ namespace SanyaPlugin.Patches.Fix_Basegame
 			if(Shield == null)
 				return false;
 
-			if(Shield.CurrentAmount <= 0f || Shield.CurrentAmount >= Shield.Limit || Shield.SustainTime > __instance._hsSustainTime)
-			{
-				__instance._humeBlocked = false;
+			__instance._decreaseTimer += expo * Time.deltaTime;
+
+			if(Shield.CurrentAmount < 1f || __instance._decreaseTimer < __instance._hsDecreaseStartTime)
 				return false;
-			}
 
-			Shield.SustainTime = __instance._hsSustainTime;
+			float num = (expo * __instance._hsDecreasePerExposure + __instance._hsDecreaseAbsolute) * Time.deltaTime;
+			if(num < Shield.CurrentAmount)
+				Shield.CurrentAmount -= num;
 
-			if(!__instance._humeBlocked)
-			{
-				__instance._humeBlocked = true;
-				__instance.Hub.networkIdentity.connectionToClient.Send(default(Hypothermia.HumeBlockMsg), 0);
-			}
+			if(Shield.CurrentAmount <= 0f)
+				return false;
 
+			Shield.SustainTime = Mathf.Max(Shield.SustainTime, __instance._hsSustainTime);
+			__result = true;
 			return false;
 		}
 	}

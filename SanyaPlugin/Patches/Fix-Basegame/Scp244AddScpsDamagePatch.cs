@@ -1,11 +1,18 @@
 ﻿using CustomPlayerEffects;
 using HarmonyLib;
+using InventorySystem.Items.Usables.Scp244.Hypothermia;
+using Mirror;
 
 namespace SanyaPlugin.Patches.Fix_Basegame
 {
-	[HarmonyPatch(typeof(Hypothermia), nameof(Hypothermia.Enabled))]
+	[HarmonyPatch(typeof(DamageSubEffect), nameof(DamageSubEffect.UpdateEffect))]
 	public static class Scp244AddScpsDamagePatch
 	{
-		public static void Postfix(Hypothermia __instance) => __instance._dealScpDamage = true;
+		public static bool Prefix(DamageSubEffect __instance)
+		{
+			if(!NetworkServer.active) return false;
+			__instance.DealDamage(__instance._temperature.CurTemperature);
+			return false;
+		}
 	}
 }

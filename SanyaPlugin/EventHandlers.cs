@@ -530,7 +530,7 @@ namespace SanyaPlugin
 		//MapEvents
 		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
 		{
-			Log.Debug($"[OnGeneratorActivated] {ev.Generator.GetComponentInParent<RoomIdentifier>()?.Name} ({Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Debug($"[OnGeneratorActivated] {ev.Generator.Room.Name} ({Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//強制再収容のとき
 			if(UnityEngine.Object.FindObjectOfType<Recontainer079>()._alreadyRecontained)

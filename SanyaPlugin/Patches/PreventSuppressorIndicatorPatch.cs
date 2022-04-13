@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using HarmonyLib;
 using InventorySystem.Items.Firearms.Attachments;
+using InventorySystem.Items.Firearms.Attachments.Components;
 using InventorySystem.Items.Firearms.Modules;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace SanyaPlugin.Patches
 			if(!ReferenceHub.TryGetHubNetID(netId, out var hub))
 				return false;
 
-			FirearmAttachment supp = __instance.Firearm.Attachments.FirstOrDefault(x => x.Name == AttachmentNameTranslation.SoundSuppressor);
+			Attachment supp = __instance.Firearm.Attachments.FirstOrDefault(x => x.Name == AttachmentName.SoundSuppressor);
 			bool isSuppressor = false;
 			if(supp != null)
 				isSuppressor = supp.IsEnabled;
