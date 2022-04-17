@@ -166,9 +166,7 @@ namespace SanyaPlugin
 		{
 			if(!SanyaPlugin.Instance.Config.Scp939CanSeeVoiceChatting) return;
 
-			if(player.IsHuman()
-				&& player.GameObject.TryGetComponent(out Radio radio)
-				&& (radio._syncPrimaryVoicechatButton || radio._syncAltVoicechatButton))
+			if(player.IsHuman() && (player.Radio._syncPrimaryVoicechatButton || player.Radio._syncAltVoicechatButton))
 				player.ReferenceHub.footstepSync._visionController.MakeNoise(35f);
 		}
 
@@ -501,7 +499,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[BOTTOM]", "　");
 
 			_hudText = curText;
-			player.SendTextHintNotEffect(_hudText, 1.25f);
+			player.SendTextHintNotEffect(_hudText, 1.1f);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)
