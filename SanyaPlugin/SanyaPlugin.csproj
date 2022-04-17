@@ -146,6 +146,7 @@
     <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
     <Compile Include="Patches\ExiledPermissionsPatch.cs" />
+    <Compile Include="Patches\ExplodeDoorPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
@@ -159,10 +160,8 @@
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="Patches\Scp018Patch.cs" />
     <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
-    <Compile Include="Patches\Scp096\ResetShieldPatch.cs" />
-    <Compile Include="Patches\Scp096\SetupShieldPatch.cs" />
-    <Compile Include="Patches\Scp096\StopEnrageOnDamagePatch.cs" />
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
+    <Compile Include="Patches\Scp096\WindupPatch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="PlayerDataManager.cs" />

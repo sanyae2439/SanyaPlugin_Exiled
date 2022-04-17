@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
-using MapGeneration;
 using MEC;
 using Respawning;
-using UnityEngine;
 
 namespace SanyaPlugin
 {
@@ -89,13 +86,11 @@ namespace SanyaPlugin
 			yield return Timing.WaitForSeconds(10f);
 			Methods.SendSubtitle(SanyaPlugin.Instance.Translation.BlackoutInit, 20);
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
-			foreach(var x in FlickerableLightController.Instances)
-				x.ServerFlickerLights(5f);
-			yield return Timing.WaitForSeconds(3f);
-			foreach(var i in Room.List.Where(x => x.Zone != Exiled.API.Enums.ZoneType.Surface && x.Type != Exiled.API.Enums.RoomType.Pocket))
+			while(Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() < 2)
 			{
-				i.FlickerableLightController.Network_warheadLightOverride = true;
-				i.FlickerableLightController.Network_warheadLightColor = new Color(0f, 0f, 0f);
+				Log.Warn($"yes");
+				FlickerableLightController.Instances.Where(x => x.LightsEnabled).Random()?.ServerFlickerLights(60f);
+				yield return Timing.WaitForSeconds(1f);
 			}
 			yield break;
 		}

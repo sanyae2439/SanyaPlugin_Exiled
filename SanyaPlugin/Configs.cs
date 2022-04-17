@@ -167,6 +167,9 @@ namespace SanyaPlugin
 		[Description("MicroHIDの威力の乗数")]
 		public float MicrohidDamageMultiplier { get; set; } = 1f;
 
+		[Description("ディスラプターの威力の乗数")]
+		public float DisruptorDamageMultiplier { get; set; } = 1f;
+
 		[Description("ショットガンの威力の乗数")]
 		public float ShotgunDamageMultiplier { get; set; } = 1f;
 
@@ -209,20 +212,23 @@ namespace SanyaPlugin
 		[Description("SCP-049-2がキルするたびにHPが回復し、追加効果を得る")]
 		public bool Scp0492KillStreak { get; set; } = false;
 
-		[Description("SCP-096のシールド最大値")]
-		public int Scp096MaxAhp { get; set; } = 1000;
-
 		[Description("SCP-096をリワークする")]
 		public bool Scp096Rework { get; set; } = false;
+
+		[Description("SCP-106のシールド最大値")]
+		public int Scp106MaxAhp { get; set; } = 0;
+
+		[Description("SCP-106のシールド回復速度")]
+		public float Scp106RegenRate { get; set; } = 0f;
+
+		[Description("SCP-106のシールド回復までの時間")]
+		public float Scp106TimeUntilRegen { get; set; } = 0f;
 
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
 		[Description("SCP-106の攻撃がポケットディメンションを介さないようになる")]
 		public bool Scp106InstaAttack { get; set; } = false;
-
-		[Description("SCP-106をリワークする")]
-		public bool Scp106Rework { get; set; } = false;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;

@@ -528,31 +528,6 @@ namespace SanyaPlugin
 		}
 
 		//MapEvents
-		public void OnGeneratorActivated(GeneratorActivatedEventArgs ev)
-		{
-			Log.Debug($"[OnGeneratorActivated] {ev.Generator.Room.Name} ({Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() + 1} / 3)", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//強制再収容のとき
-			if(UnityEngine.Object.FindObjectOfType<Recontainer079>()._alreadyRecontained)
-				return;
-
-			switch(eventmode)
-			{
-				case SANYA_GAME_MODE.BLACKOUT:
-					{
-						if(Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() == 1)
-						{
-							foreach(var i in FlickerableLightController.Instances.Where(x => x.transform.root?.name != "Outside"))
-							{
-								i.WarheadLightColor = FlickerableLightController.DefaultWarheadColor;
-								i.WarheadLightOverride = false;
-							}	
-						}
-
-						break;
-					}
-			}
-		}
 		public void OnExplodingGrenade(ExplodingGrenadeEventArgs ev)
 		{
 			Log.Debug($"[OnExplodingGrenade] thrower:{ev.Thrower.Nickname} type:{ev.GrenadeType} toaffect:{ev.TargetsToAffect.Count}", SanyaPlugin.Instance.Config.IsDebugged);
@@ -712,6 +687,7 @@ namespace SanyaPlugin
 				{
 					ev.Player.EnableEffect<Hemorrhage>();
 					ev.Player.EnableEffect<Amnesia>();
+					ev.Player.EnableEffect<Deafened>();
 				}));
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
@@ -780,20 +756,6 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
 			}
 
-			//SCP-106
-			if(plugin.Config.Scp106Rework 
-				&& ev.Attacker != ev.Target 
-				&& ev.Target.Role == RoleType.Scp106 
-				&& !(ev.Handler.Base is MicroHidDamageHandler))
-			{
-				ev.IsAllowed = false;
-				ev.Target.EnableEffect<Amnesia>(5f);
-				ev.Target.EnableEffect<Disabled>(5f);
-				ev.Target.EnableEffect<Concussed>(5f);
-				ev.Target.EnableEffect<Deafened>(5f);
-				return;
-			}
-
 			//ダメージタイプ分岐
 			switch(ev.Handler.Base)
 			{
@@ -834,6 +796,11 @@ namespace SanyaPlugin
 				case MicroHidDamageHandler _:
 					{
 						ev.Amount *= plugin.Config.MicrohidDamageMultiplier;
+						break;
+					}
+				case DisruptorDamageHandler _:
+					{
+						ev.Amount *= plugin.Config.DisruptorDamageMultiplier;
 						break;
 					}
 			}

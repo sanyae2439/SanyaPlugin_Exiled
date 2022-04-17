@@ -25,6 +25,7 @@ namespace SanyaPlugin
 		private float _timer = 0f;
 		private int _respawnCounter = -1;
 		private int _prevHealth = -1;
+		private int _prevAhp = -1;
 		private string _hudText = string.Empty;
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
@@ -114,6 +115,8 @@ namespace SanyaPlugin
 			{
 				if(player.Role == RoleType.Scp049)
 					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
+				else if(player.Role == RoleType.Scp106)
+					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
 			}
 		}
 
@@ -129,6 +132,12 @@ namespace SanyaPlugin
 				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp049MaxAhp;
 				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp049RegenRate;
 				Shield.Limit = SanyaPlugin.Instance.Config.Scp049MaxAhp;
+			}
+			else if(roleType == RoleType.Scp106)
+			{
+				Shield.CurrentAmount = SanyaPlugin.Instance.Config.Scp106MaxAhp;
+				Shield.DecayRate = -SanyaPlugin.Instance.Config.Scp106RegenRate;
+				Shield.Limit = SanyaPlugin.Instance.Config.Scp106MaxAhp;
 			}
 		}
 
@@ -202,10 +211,11 @@ namespace SanyaPlugin
 		private void UpdateMyCustomText()
 		{
 			if(!player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
-			if(_prevHealth != player.Health)
+			if(_prevHealth != player.Health || _prevAhp != player.ArtificialHealth)
 			{
 				_prevHealth = (int)player.Health;
-				player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP";
+				_prevAhp = (int)player.ArtificialHealth;
+				player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP{(_prevAhp != 0 ? $"\n{_prevAhp} AHP" : "")}";
 			}
 		}
 
@@ -422,7 +432,7 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Charging:
 						{
 							var sortedTargetDistance = scp096._targets.Select(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
-							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Near targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
+							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s Near targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
 							break;
 						}
 					case PlayableScps.Scp096PlayerState.Calming:

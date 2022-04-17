@@ -98,7 +98,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
-			MapEvents.GeneratorActivated += Handlers.OnGeneratorActivated;
 			MapEvents.ExplodingGrenade += Handlers.OnExplodingGrenade;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
@@ -134,7 +133,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
-			MapEvents.GeneratorActivated -= Handlers.OnGeneratorActivated;
 			MapEvents.ExplodingGrenade -= Handlers.OnExplodingGrenade;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
