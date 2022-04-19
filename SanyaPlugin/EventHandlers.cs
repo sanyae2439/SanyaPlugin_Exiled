@@ -714,6 +714,7 @@ namespace SanyaPlugin
 				{
 					ev.Items.Clear();
 					ev.Items.AddRange(itemconfig);
+					if(ev.Items.RemoveAll(x => x == ItemType.ParticleDisruptor) > 0) roundCoroutines.Add(Timing.CallDelayed(0.5f, () => ev.Player.AddItem(ItemType.ParticleDisruptor)));
 				}
 			}
 

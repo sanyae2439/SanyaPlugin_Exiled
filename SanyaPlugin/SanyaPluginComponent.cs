@@ -430,7 +430,7 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Charging:
 						{
 							var sortedTargetDistance = scp096._targets.Select(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
-							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s Near targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
+							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s\nNear targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
 							break;
 						}
 					case PlayableScps.Scp096PlayerState.Calming:
@@ -499,7 +499,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[BOTTOM]", "　");
 
 			_hudText = curText;
-			player.SendTextHintNotEffect(_hudText, 1.1f);
+			player.SendTextHintNotEffect(_hudText, 1.2f);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)

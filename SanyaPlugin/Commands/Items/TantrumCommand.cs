@@ -2,6 +2,7 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using Mirror;
 using PlayableScps.ScriptableObjects;
 using UnityEngine;
 
@@ -34,7 +35,8 @@ namespace SanyaPlugin.Commands.Items
 					return false;
 				}
 				GameObject gameObject = UnityEngine.Object.Instantiate(ScpScriptableObjects.Instance.Scp173Data.TantrumPrefab);
-				gameObject.transform.position = target.Position;
+				gameObject.transform.position = target.ReferenceHub.playerMovementSync.RealModelPosition;
+				NetworkServer.Spawn(gameObject);
 				response = $"{target.Nickname}に設置しました。";
 				return true;
 			}

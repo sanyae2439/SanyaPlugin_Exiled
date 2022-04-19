@@ -88,8 +88,8 @@ namespace SanyaPlugin
 			RespawnEffectsController.PlayCassieAnnouncement("warning . facility power system has been attacked . all most containment zones light does not available until generator activated .", false, true);
 			while(Generator.Get(Exiled.API.Enums.GeneratorState.Engaged).Count() < 2)
 			{
-				FlickerableLightController.Instances.Where(x => x.LightsEnabled).Random()?.ServerFlickerLights(60f);
-				yield return Timing.WaitForSeconds(0.5f);
+				FlickerableLightController.Instances.Where(x => x.LightsEnabled).Random()?.ServerFlickerLights(30f);
+				yield return Timing.WaitForSeconds(1f);
 			}
 			yield break;
 		}
