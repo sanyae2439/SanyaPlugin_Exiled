@@ -913,22 +913,6 @@ namespace SanyaPlugin
 				ev.Target.ReferenceHub.playerStats.DealDamage(new RecontainmentDamageHandler(new Footprinting.Footprint(ev.Cuffer.ReferenceHub)));
 			}
 		}
-		public void OnUsedItem(UsedItemEventArgs ev)
-		{
-			Log.Debug($"[OnUsedItem] {ev.Player.Nickname} / {ev.Item.Type}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(ev.Item.Type == ItemType.SCP500)
-			{
-				ev.Player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerAddProcess(75f);
-				ev.Player.ReferenceHub.fpc.ResetStamina();
-				ev.Player.EnableEffect<Invigorated>(30f);
-			}
-
-			if(ev.Item.Type == ItemType.Adrenaline || ev.Item.Type == ItemType.Painkillers)
-			{
-				ev.Player.ReferenceHub.fpc.ModifyStamina(100f);
-			}
-		}
 		public void OnJumping(JumpingEventArgs ev)
 		{
 			Log.Debug($"[OnJumping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);

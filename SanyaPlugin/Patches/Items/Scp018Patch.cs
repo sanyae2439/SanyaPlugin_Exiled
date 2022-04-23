@@ -5,7 +5,7 @@ using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
 using UnityEngine;
 
-namespace SanyaPlugin.Patches
+namespace SanyaPlugin.Patches.Items
 {
 	[HarmonyPatch(typeof(Scp018Projectile), nameof(Scp018Projectile.ProcessCollision))]
 	public static class Scp018Patch

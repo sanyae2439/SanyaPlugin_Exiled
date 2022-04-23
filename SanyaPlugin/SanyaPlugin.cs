@@ -112,7 +112,6 @@ namespace SanyaPlugin
 			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Escaping += Handlers.OnEscaping;
 			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
-			PlayerEvents.UsedItem += Handlers.OnUsedItem;
 			PlayerEvents.Jumping += Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.EnteringPocketDimension += Handlers.OnEnteringPocketDimension;
@@ -147,7 +146,6 @@ namespace SanyaPlugin
 			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Escaping -= Handlers.OnEscaping;
 			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
-			PlayerEvents.UsedItem -= Handlers.OnUsedItem;
 			PlayerEvents.Jumping -= Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.EnteringPocketDimension -= Handlers.OnEnteringPocketDimension;

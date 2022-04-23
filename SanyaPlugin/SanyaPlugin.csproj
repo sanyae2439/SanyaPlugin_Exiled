@@ -130,6 +130,7 @@
     <Compile Include="Commands\Debugs\CheckObjectCommand.cs" />
     <Compile Include="Commands\Debugs\CheckComponentsCommand.cs" />
     <Compile Include="Commands\Debugs\CoroutinesCommand.cs" />
+    <Compile Include="Commands\Items\FragCommand.cs" />
     <Compile Include="Commands\Items\TantrumCommand.cs" />
     <Compile Include="Commands\Public\ExHudCommand.cs" />
     <Compile Include="Commands\SanyaCommand.cs" />
@@ -151,6 +152,8 @@
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\Scp244AddScpsDamagePatch.cs" />
+    <Compile Include="Patches\Items\DisruptorShotPatch.cs" />
+    <Compile Include="Patches\Items\PainKillersPatch.cs" />
     <Compile Include="Patches\ReduceGeneratorPatch.cs" />
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
@@ -158,10 +161,11 @@
     <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
-    <Compile Include="Patches\Scp018Patch.cs" />
+    <Compile Include="Patches\Items\Scp018Patch.cs" />
     <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
     <Compile Include="Patches\Scp096\WindupPatch.cs" />
+    <Compile Include="Patches\Items\Scp500Patch.cs" />
     <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="PlayerDataManager.cs" />

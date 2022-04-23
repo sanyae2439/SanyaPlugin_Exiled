@@ -30,6 +30,7 @@ namespace SanyaPlugin.Commands
 
 			//Items
 			RegisterCommand(new TantrumCommand());
+			RegisterCommand(new FragCommand());
 
 			//Public
 			RegisterCommand(new ExHudCommand());
