@@ -114,12 +114,13 @@ namespace SanyaPlugin
 			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
 			PlayerEvents.Jumping += Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
-			PlayerEvents.EnteringPocketDimension += Handlers.OnEnteringPocketDimension;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
+			PlayerEvents.ProcessingHotkey += Handlers.OnProcessingHotkey;
 			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
+			Scp106Events.Containing += Handlers.OnContaining;
 			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
 
@@ -148,12 +149,13 @@ namespace SanyaPlugin
 			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
 			PlayerEvents.Jumping -= Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
-			PlayerEvents.EnteringPocketDimension -= Handlers.OnEnteringPocketDimension;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
+			PlayerEvents.ProcessingHotkey -= Handlers.OnProcessingHotkey;
 			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
 			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
+			Scp106Events.Containing -= Handlers.OnContaining;
 			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;
 		}

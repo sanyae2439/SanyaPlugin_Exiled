@@ -2,7 +2,9 @@
 using System.Linq;
 using Exiled.API.Features;
 using MEC;
+using PlayerStatsSystem;
 using Respawning;
+using UnityEngine;
 
 namespace SanyaPlugin
 {
@@ -122,6 +124,21 @@ namespace SanyaPlugin
 			{
 				ReferenceHub.HostHub.characterClassManager._lureSpj.NetworkallowContain = true;
 				OneOhSixContainer.used = true;
+			}
+		}
+
+		public static IEnumerator<float> Scp106CustomTeleport(Player player, Vector3 position)
+		{
+			if(!player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+			{
+				player.ReferenceHub.scp106PlayerScript.RpcTeleportAnimation();
+				player.ReferenceHub.scp106PlayerScript.goingViaThePortal = true;
+				yield return Timing.WaitForSeconds(2.5f);
+				player.Position = position;
+				yield return Timing.WaitForSeconds(2.5f);
+				if(AlphaWarheadController.Host.detonated && player.Position.y < 800f)
+					player.ReferenceHub.scp106PlayerScript._hub.playerStats.DealDamage(new WarheadDamageHandler());
+				player.ReferenceHub.scp106PlayerScript.goingViaThePortal = false;
 			}
 		}
 	}

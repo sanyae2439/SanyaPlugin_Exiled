@@ -137,9 +137,6 @@ namespace SanyaPlugin
 		[Description("地上のオブジェクトを編集する")]
 		public bool EditObjectsOnSurface { get; set; } = false;
 
-		[Description("地上の色")]
-		public SColor LightColorSurface { get; set; } = new SColor() { r = 255f, g = 255f, b = 255f };
-
 		[Description("アイテムを追加する")]
 		public bool AddItemsOnFacility { get; set; } = false;
 
@@ -154,9 +151,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-914にコインのレシピを追加する")]
 		public bool Scp914AddCoinRecipes { get; set; } = false;
-
-		[Description("SCP-018がドアを破壊しないようにする")]
-		public bool Scp018DisableDestroyingDoor { get; set; } = false;
 
 		[Description("SCP-244が設置される確率")]
 		public float Scp244SpawnPercent { get; set; } = 0f;
@@ -227,8 +221,8 @@ namespace SanyaPlugin
 		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
 		public bool Scp106PortalWithSinkhole { get; set; } = false;
 
-		[Description("SCP-106の攻撃がポケットディメンションを介さないようになる")]
-		public bool Scp106InstaAttack { get; set; } = false;
+		[Description("SCP-106にEX-HotKeyを適用する")]
+		public bool Scp106ExHotkey { get; set; } = false;
 
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;

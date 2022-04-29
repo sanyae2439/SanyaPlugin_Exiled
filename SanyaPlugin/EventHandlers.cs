@@ -123,7 +123,7 @@ namespace SanyaPlugin
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		internal Player Overrided = null;
-		internal NetworkIdentity Sinkhole = null;
+		internal List<SinkholeEnvironmentalHazard> Sinkholes = new List<SinkholeEnvironmentalHazard>();
 
 		//イベント用の変数
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
@@ -147,9 +147,10 @@ namespace SanyaPlugin
 			SpawnpointManager.FillSpawnPoints();
 
 			//SinkholeHazardオブジェクトの保存(いろいろ使う)
-			Sinkhole = Methods.GetSinkHoleHazard();
+			Sinkholes = new List<SinkholeEnvironmentalHazard>(UnityEngine.Object.FindObjectsOfType<SinkholeEnvironmentalHazard>());
 			//SinkholeのSCP-106スポーン位置への移動(上記フィールド用に確保しておく)
-			if(Sinkhole != null) Methods.MoveNetworkIdentityObject(Sinkhole, RoleType.Scp106.GetRandomSpawnProperties().Item1 - (-Vector3.down * 4));
+			foreach(var sinkhole in Sinkholes)
+				Methods.MoveNetworkIdentityObject(sinkhole.netIdentity, RoleType.Scp106.GetRandomSpawnProperties().Item1 - (-Vector3.down * 4));
 
 			//前ラウンドでスポーンキューを上書きした時に戻しておく
 			if(prevSpawnQueue != null)
@@ -342,14 +343,10 @@ namespace SanyaPlugin
 
 					List<ItemType> veryfine = new List<ItemType>();
 					for(int i = 0; i <= (int)Enum.GetValues(typeof(ItemType)).Cast<ItemType>().Max(); i++)
-						veryfine.Add((ItemType)i);		
+						veryfine.Add((ItemType)i);
 					stdpro._veryFineOutputs = veryfine.ToArray();
 				}
 			}
-
-			var surfaceLight = UnityEngine.Object.FindObjectsOfType<RoomIdentifier>().First(x => x.Zone == FacilityZone.Surface).GetComponentInChildren<FlickerableLightController>();
-			surfaceLight.Network_warheadLightOverride = true;
-			surfaceLight.Network_warheadLightColor = new Color(plugin.Config.LightColorSurface.r / 255f, plugin.Config.LightColorSurface.g / 255f, plugin.Config.LightColorSurface.b / 255f);
 
 
 			//イベント設定
@@ -535,8 +532,8 @@ namespace SanyaPlugin
 			//SCP-106
 			if(ev.GrenadeType == Exiled.API.Enums.GrenadeType.Flashbang)
 				foreach(var i in ev.TargetsToAffect)
-				if(i.Role == RoleType.Scp106)
-					roundCoroutines.Add(Timing.RunCoroutine(i.ReferenceHub.scp106PlayerScript._DoTeleportAnimation()));
+					if(i.Role == RoleType.Scp106)
+						roundCoroutines.Add(Timing.RunCoroutine(i.ReferenceHub.scp106PlayerScript._DoTeleportAnimation()));
 		}
 
 		//WarheadEvents
@@ -722,6 +719,20 @@ namespace SanyaPlugin
 			if(!string.IsNullOrEmpty(ev.Player.GroupName) && plugin.Config.ClassdBonusitemsForRoleParsed.TryGetValue(ev.Player.GroupName, out List<ItemType> bonusitems) && ev.NewRole == RoleType.ClassD)
 				ev.Items.InsertRange(0, bonusitems);
 
+			//SCPホットキーの初期化
+			if(plugin.Config.Scp106ExHotkey && ev.NewRole == RoleType.Scp106)
+			{
+				ev.Items.Clear();
+				ev.Items.AddRange(new ItemType[]
+				{
+					ItemType.GunCOM15,
+					ItemType.GunCOM18,
+					ItemType.KeycardJanitor,
+					ItemType.GrenadeFlash,
+					ItemType.Painkillers
+				});
+			}
+
 			//こんぽーねんと
 			if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))
 				component.OnChangingRole(ev.NewRole, ev.Player.ReferenceHub.characterClassManager._prevId);
@@ -807,9 +818,9 @@ namespace SanyaPlugin
 			}
 
 			//ヘビィアーマーの効果値
-			if(ev.Target.IsHuman() 
+			if(ev.Target.IsHuman()
 				&& (ev.Handler.Base is FirearmDamageHandler || ev.Handler.Base is ExplosionDamageHandler || ev.Handler.Base is Scp018DamageHandler)
-				&& ev.Target.ReferenceHub.inventory.TryGetBodyArmor(out var bodyArmor) 
+				&& ev.Target.ReferenceHub.inventory.TryGetBodyArmor(out var bodyArmor)
 				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy)
 			{
 				ev.Amount *= plugin.Config.HeavyArmorDamageEfficacy;
@@ -847,6 +858,10 @@ namespace SanyaPlugin
 					ev.Target.ClearInventory();
 				}
 			}
+
+			//SCPはアイテムを落とさない
+			if(ev.Target.IsScp)
+				ev.Target.ClearInventory();
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
@@ -935,7 +950,7 @@ namespace SanyaPlugin
 
 			//死体削除
 			if(ev.DamageHandlerBase is UniversalDamageHandler universal)
-				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id 
+				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id
 					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
 					ev.IsAllowed = false;
 
@@ -943,56 +958,6 @@ namespace SanyaPlugin
 				ev.IsAllowed = false;
 			if(ev.DamageHandlerBase is Scp096DamageHandler)
 				ev.IsAllowed = false;
-		}
-		public void OnEnteringPocketDimension(EnteringPocketDimensionEventArgs ev)
-		{
-			Log.Debug($"[OnEnteringPocketDimension] {ev.Scp106.Nickname} -> {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//即死攻撃
-			if(plugin.Config.Scp106InstaAttack)
-			{
-				ev.IsAllowed = false;
-				ev.Scp106.ReferenceHub.scp106PlayerScript.TargetHitMarker(ev.Scp106.Connection, ev.Scp106.ReferenceHub.scp106PlayerScript.captureCooldown);
-				if(UnityEngine.Random.Range(0, 9) < GameCore.ConfigFile.ServerConfig.GetInt("pd_exit_count", 2) || PocketDimensionTeleport.DebugBool)
-				{
-					var roomIdentifier = RoomIdUtils.RoomAtPosition(ev.Scp106.Position);
-					if(roomIdentifier.Zone == FacilityZone.Surface)
-					{
-						SafeTeleportPosition componentInChildren = roomIdentifier.GetComponentInChildren<SafeTeleportPosition>();
-						float num = Vector3.Distance(ev.Scp106.Position, componentInChildren.SafePositions[0].position);
-						float num2 = Vector3.Distance(ev.Scp106.Position, componentInChildren.SafePositions[1].position);
-						ev.Player.Position = (num2 < num) ? componentInChildren.SafePositions[0].position : componentInChildren.SafePositions[1].position;
-					}
-					else
-					{
-						HashSet<RoomIdentifier> hashSet = RoomIdUtils.FindRooms(RoomName.Unnamed, roomIdentifier.Zone, RoomShape.Undefined);
-						while(hashSet.Count > 0)
-						{
-							RoomIdentifier roomIdentifier2 = hashSet.ElementAt(UnityEngine.Random.Range(0, hashSet.Count));
-							Vector3 position = roomIdentifier2.transform.position;
-							SafeTeleportPosition componentInChildren2 = roomIdentifier2.GetComponentInChildren<SafeTeleportPosition>();
-							if(componentInChildren2 != null && componentInChildren2.SafePositions.Length != 0)
-							{
-								position = componentInChildren2.SafePositions[UnityEngine.Random.Range(0, componentInChildren2.SafePositions.Length - 1)].position;
-							}
-							if(PlayerMovementSync.FindSafePosition(position, out var pos, false, true))
-							{
-								ev.Player.Position = pos;
-								break;
-							}
-							hashSet.Remove(roomIdentifier2);
-						}
-					}
-					ev.Player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(ev.Scp106.ReferenceHub, 40f, DeathTranslations.PocketDecay));
-				}
-				else
-				{
-					ev.Player.Ammo.Clear();
-					ev.Player.Inventory.SendAmmoNextFrame = true;
-					ev.Player.ClearInventory();
-					ev.Player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(ev.Scp106.ReferenceHub, 106106f, DeathTranslations.PocketDecay));
-				}
-			}
 		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{
@@ -1021,7 +986,19 @@ namespace SanyaPlugin
 			{
 				ev.IsTriggerable = false;
 				ev.IsInIdleRange = false;
-			}	
+			}
+		}
+		public void OnProcessingHotkey(ProcessingHotkeyEventArgs ev)
+		{
+			Log.Debug($"[OnProcessingHotkey] {ev.Player.Nickname} -> {ev.Hotkey}");
+
+			//SCP-Hotkeys
+			if(plugin.Config.Scp106ExHotkey && ev.Player.Role.Type == RoleType.Scp106)
+			{
+				ev.IsAllowed = false;
+				if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))
+					component.OnProcessingHotkey(ev.Hotkey);
+			} 
 		}
 
 		//Scp079
@@ -1030,7 +1007,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnTriggeringDoor] {ev.Player.Nickname} -> {ev.Door.Type}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			if(plugin.Config.Scp079NeedInteractGateTier != -1
-				&& (ev.Door.Type == Exiled.API.Enums.DoorType.Scp914 || ev.Door.Type == Exiled.API.Enums.DoorType.GateA || ev.Door.Type == Exiled.API.Enums.DoorType.GateB)
+				&& (ev.Door.Type == Exiled.API.Enums.DoorType.Scp914Gate || ev.Door.Type == Exiled.API.Enums.DoorType.GateA || ev.Door.Type == Exiled.API.Enums.DoorType.GateB)
 				&& ev.Player.ReferenceHub.scp079PlayerScript.Lvl + 1 < plugin.Config.Scp079NeedInteractGateTier)
 			{
 				ev.IsAllowed = false;
@@ -1065,8 +1042,17 @@ namespace SanyaPlugin
 			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//SinkholeをPortalに同期させる
-			if(plugin.Config.Scp106PortalWithSinkhole && Sinkhole != null)
-				Methods.MoveNetworkIdentityObject(Sinkhole, ev.Position);
+			if(plugin.Config.Scp106PortalWithSinkhole)
+				Methods.MoveNetworkIdentityObject(Sinkholes[0].netIdentity, ev.Position);
+		}
+		public void OnContaining(ContainingEventArgs ev)
+		{
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Primary).Base.NetworkTargetState = true;
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Primary).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Secondary).Base.NetworkTargetState = true;
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Secondary).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.NetworkTargetState = true;
+			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
 		}
 
 		//Scp914

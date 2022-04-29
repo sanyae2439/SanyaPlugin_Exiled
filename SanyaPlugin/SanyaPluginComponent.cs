@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CustomPlayerEffects;
+using Exiled.API.Enums;
 using Exiled.API.Features;
 using MapGeneration.Distributors;
 using MEC;
@@ -33,9 +34,16 @@ namespace SanyaPlugin
 		private string _hudBottomDownString = string.Empty;
 		private float _hudBottomDownTime = -1f;
 		private float _hudBottomDownTimer = 0f;
+		private SinkHole sinkHoleEffect = null;
 
 		//Scan
 		private Camera079 _lastcam = null;
+
+		//SCP-106 ExHotkey
+		private bool isHiding = false;
+		private bool IsTeleportMode = false;
+		private float captureTimerDefault = 30f;
+		private float captureTimer = 30f;
 
 		private void Start()
 		{
@@ -43,6 +51,7 @@ namespace SanyaPlugin
 			if(!Instances.TryGetValue(player, out _))
 				Instances.Add(player, this);
 			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}/{SanyaPlugin.Instance.ExiledFullVersion}");
+			sinkHoleEffect = player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>();
 		}
 
 		private void OnDestroy()
@@ -120,6 +129,120 @@ namespace SanyaPlugin
 			}
 		}
 
+		public void OnProcessingHotkey(HotkeyButton hotkeyButton)
+		{
+			switch(hotkeyButton)
+			{
+				case HotkeyButton.PrimaryFirearm:
+					{
+						if(!IsTeleportMode)
+						{
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
+								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
+						}
+						else
+						{
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+						}
+						break;
+					}
+				case HotkeyButton.SecondaryFirearm:
+					{
+						if(!IsTeleportMode)
+						{
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
+								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
+						}
+						else
+						{
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+						}
+						break;
+					}
+				case HotkeyButton.Keycard:
+					{
+						if(captureTimer <= 0f)
+						{
+							HashSet<Player> targets = new HashSet<Player>();
+							foreach(var i in Player.List.Where(x => x.IsHuman))
+								foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
+									if(Vector3.Distance(i.Position, sinkhole.transform.position) <= 5f)
+										targets.Add(i);
+							foreach(var target in targets)
+							{
+								player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+								player.ReferenceHub.scp106PlayerScript.TargetHitMarker(player.Connection, player.ReferenceHub.scp106PlayerScript.captureCooldown);
+								player.ReferenceHub.scp106PlayerScript._currentServerCooldown = player.ReferenceHub.scp106PlayerScript.captureCooldown;
+								if(Scp106PlayerScript._blastDoor.isClosed)
+								{
+									player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+									target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, DeathTranslations.PocketDecay));
+								}
+								else
+								{
+									foreach(Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
+									{
+										scp079PlayerScript.ServerProcessKillAssist(target.ReferenceHub, ExpGainType.PocketAssist);
+									}
+									target.ReferenceHub.scp106PlayerScript.GrabbedPosition = target.ReferenceHub.playerMovementSync.RealModelPosition;
+									target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 40f, DeathTranslations.PocketDecay));
+								}
+								target.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
+							}
+							captureTimer = captureTimerDefault;
+						}
+						break;
+					}
+				case HotkeyButton.Grenade:
+					{
+						if(!isHiding)
+						{
+							if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+							{
+								bool canHide = false;
+								foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
+									if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 5f)
+										canHide = true;
+
+								if(canHide)
+								{
+									player.Scale = Vector3.one / 5f;
+									player.EnableEffect<Ensnared>();
+									player.EnableEffect<Invisible>();
+									player.EnableEffect<Amnesia>();
+									player.EnableEffect<Deafened>();
+									isHiding = true;
+								}
+							}
+						}
+						else
+						{
+							player.Scale = Vector3.one;
+							player.DisableEffect<Ensnared>();
+							player.DisableEffect<Invisible>();
+							player.DisableEffect<Amnesia>();
+							player.DisableEffect<Deafened>();
+							isHiding = false;
+						}
+						break;
+					}
+				case HotkeyButton.Medical:
+					{
+						IsTeleportMode = !IsTeleportMode;
+						break;
+					}
+			}
+		}
+
+		private Vector3 Get106PortalDiff()
+		{
+			if(Physics.Raycast(new Ray(player.Position, -player.GameObject.transform.up), out var raycastHit, 10f, player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
+				return raycastHit.point - Vector3.up;
+			return Vector3.zero;
+		}
+
 		private void SetupShield(RoleType roleType)
 		{
 			if(Shield != null)
@@ -160,6 +283,9 @@ namespace SanyaPlugin
 				_hudBottomDownTimer += Time.deltaTime;
 			else
 				_hudBottomDownString = string.Empty;
+
+			if(captureTimer > 0)
+				captureTimer -= Time.deltaTime;
 		}
 
 		private void CheckVoiceChatting()
@@ -172,12 +298,9 @@ namespace SanyaPlugin
 
 		private void CheckSinkholeDistance()
 		{
-			if(SanyaPlugin.Instance.Handlers.Sinkhole == null) return;
-
-			if(!(Vector3.Distance(player.Position, SanyaPlugin.Instance.Handlers.Sinkhole.transform.position) <= 7f)
-				&& player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>().IsEnabled
-				)
-				player.DisableEffect<SinkHole>();
+			foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
+				if(Vector3.Distance(player.Position, sinkhole.transform.position) > 7f && sinkHoleEffect.IsEnabled)
+					player.DisableEffect<SinkHole>();
 		}
 
 		private void Check079Spot()
@@ -358,7 +481,7 @@ namespace SanyaPlugin
 				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
 				CiList += $"<color=#008f1e>Conscript:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}\n";
 				CiList += $"<color=#0a7d34>Repressor:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}\n";
-				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";	
+				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";
 				CiList += $"<color=#008f1e>Rifleman:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}\n";
 				CiList = CiList.TrimEnd('\n');
 
@@ -441,6 +564,19 @@ namespace SanyaPlugin
 						break;
 				}
 			}
+			else if(player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled)
+			{
+				string text = string.Empty;
+
+				text += "<align=left><alpha=#44>　ExHotkey:\n";
+				text += $"　　　[武器]:{(IsTeleportMode ? "トラップへテレポート" : "トラップの設置")}\n";
+				text += $"[キーカード]:トラップで捕獲({(captureTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(captureTimer)}秒")})\n";
+				text += $"[グレネード]:トラップに隠れる\n";
+				text += $"　　　[回復]:テレポートの切替";
+				text += "</align>\n<alpha=#FF><align=center>";
+
+				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
+			}
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
@@ -486,7 +622,7 @@ namespace SanyaPlugin
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 			{
 				curText = curText.Replace("[BOTTOM]", "　");
-			}	
+			}
 			if(!string.IsNullOrEmpty(_hudBottomDownString))
 			{
 				curText = curText.Replace("[BOTTOM]", _hudBottomDownString);
