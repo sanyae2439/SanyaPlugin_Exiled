@@ -990,7 +990,7 @@ namespace SanyaPlugin
 		}
 		public void OnProcessingHotkey(ProcessingHotkeyEventArgs ev)
 		{
-			Log.Debug($"[OnProcessingHotkey] {ev.Player.Nickname} -> {ev.Hotkey}");
+			Log.Debug($"[OnProcessingHotkey] {ev.Player.Nickname} -> {ev.Hotkey}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//SCP-Hotkeys
 			if(plugin.Config.Scp106ExHotkey && ev.Player.Role.Type == RoleType.Scp106)
