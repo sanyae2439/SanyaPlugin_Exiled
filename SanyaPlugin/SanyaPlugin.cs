@@ -121,7 +121,6 @@ namespace SanyaPlugin
 			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp106Events.Containing += Handlers.OnContaining;
-			Scp914Events.UpgradingPlayer += Handlers.OnUpgradingPlayer;
 		}
 
 		private void UnRegistEvents()
@@ -156,7 +155,6 @@ namespace SanyaPlugin
 			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp106Events.Containing -= Handlers.OnContaining;
-			Scp914Events.UpgradingPlayer -= Handlers.OnUpgradingPlayer;
 			Handlers = null;
 		}
 

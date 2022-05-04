@@ -166,7 +166,6 @@
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
     <Compile Include="Patches\Scp096\WindupPatch.cs" />
     <Compile Include="Patches\Items\Scp500Patch.cs" />
-    <Compile Include="Patches\Scp914UpgradePatch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />
     <Compile Include="PlayerDataManager.cs" />
     <Compile Include="SanyaPluginComponent.cs" />

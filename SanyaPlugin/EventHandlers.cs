@@ -1013,36 +1013,5 @@ namespace SanyaPlugin
 			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.NetworkTargetState = true;
 			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
 		}
-
-		//Scp914
-		public void OnUpgradingPlayer(UpgradingPlayerEventArgs ev)
-		{
-			Log.Debug($"[OnUpgradingPlayer] {ev.KnobSetting} Players:{ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.Scp914Debuff)
-			{
-				if(ev.Player.IsScp)
-				{
-					while(ev.Player.Inventory.UserInventory.Items.Count > 0)
-						ev.Player.Inventory.ServerRemoveItem(ev.Player.Inventory.UserInventory.Items.ElementAt(0).Key, null);
-
-					ev.Player.ReferenceHub.playerStats.DealDamage(new UniversalDamageHandler(914914f, DeathTranslations.Tesla));
-				}
-				else
-				{
-					ev.Player.Inventory.ServerDropEverything();
-
-					ev.Player.SetRole(RoleType.Scp0492, Exiled.API.Enums.SpawnReason.ForceClass, true);
-					roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-					{
-						ev.Player.Health = ev.Player.Health / 5f;
-						ev.Player.EnableEffect<Disabled>();
-						ev.Player.EnableEffect<Poisoned>();
-						ev.Player.EnableEffect<Concussed>();
-						ev.Player.EnableEffect<Exhausted>();
-					}));
-				}
-			}
-		}
 	}
 }

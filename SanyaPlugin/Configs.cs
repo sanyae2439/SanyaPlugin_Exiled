@@ -140,9 +140,6 @@ namespace SanyaPlugin
 		[Description("SCP-106がいない場合は囮コンテナを閉鎖する")]
 		public bool Scp106ChamberLockWhenUnbreached { get; set; } = false;
 
-		[Description("SCP-914に入ると悪影響を受ける")]
-		public bool Scp914Debuff { get; set; } = false;
-
 		[Description("SCP-914にコインのレシピを追加する")]
 		public bool Scp914AddCoinRecipes { get; set; } = false;
 
