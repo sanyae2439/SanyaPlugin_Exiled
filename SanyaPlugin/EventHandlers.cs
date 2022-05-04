@@ -173,22 +173,11 @@ namespace SanyaPlugin
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).HelmetEfficacy = 100;
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).VestEfficacy = 100;
-			foreach(var i in RoomIdentifier.AllRoomIdentifiers.Where(x => x.Zone != FacilityZone.Surface))
-				if(UnityEngine.Random.Range(0, 100) < plugin.Config.Scp244SpawnPercent)
-					(Methods.SpawnItem(UnityEngine.Random.Range(0, 2) == 0 ? ItemType.SCP244a : ItemType.SCP244b, i.transform.position) as Scp244DeployablePickup).State = Scp244State.Active;
 
 			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
 			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-
-			//AlphaWarheadの設定
-			if(plugin.Config.AlphaWarheadLockAlways)
-			{
-				Warhead.OutsitePanel.NetworkkeycardEntered = true;
-				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.NetworkTargetState = true;
-				DoorNametagExtension.NamedDoors["SURFACE_NUKE"].TargetDoor.ServerChangeLock(DoorLockReason.AdminCommand, true);
-			}
 
 			//地上の改装（ゲート移動したりステーション置いたり）
 			if(plugin.Config.EditObjectsOnSurface)
@@ -348,7 +337,6 @@ namespace SanyaPlugin
 				}
 			}
 
-
 			//イベント設定
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)
@@ -374,12 +362,6 @@ namespace SanyaPlugin
 			if(plugin.Config.ClassdPrisonInit)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.InitClassDPrison(), Segment.FixedUpdate));
 
-			if(plugin.Config.AlphaWarheadNeedElapsedSeconds != 1)
-			{
-				AlphaWarheadController.Host.cooldown = plugin.Config.AlphaWarheadNeedElapsedSeconds;
-				AlphaWarheadController.Host.NetworktimeToDetonation += (float)AlphaWarheadController.Host.cooldown;
-			}
-
 			switch(eventmode)
 			{
 				case SANYA_GAME_MODE.BLACKOUT:
@@ -391,24 +373,11 @@ namespace SanyaPlugin
 		}
 		public void OnEndingRound(EndingRoundEventArgs ev)
 		{
-			if(plugin.Config.AlphaWarheadEndRound && Warhead.IsDetonated && !ev.IsRoundEnded)
+			if(plugin.Config.RoundEndWhenNoScps && !ev.IsRoundEnded && ev.ClassList.scps_except_zombies == 0)
 			{
-				int scientist = ev.ClassList.scientists + RoundSummary.EscapedScientists;
-				int classd = ev.ClassList.class_ds + RoundSummary.EscapedClassD;
-				int scps = ev.ClassList.scps_except_zombies;
-
-				if(scientist > 0 && scps == 0)
-					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.FacilityForces;
-				else if(classd > 0)
-					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.ChaosInsurgency;
-				else if(scientist == 0 && classd == 0 && scps > 0)
-					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Anomalies;
-				else
-					ev.LeadingTeam = Exiled.API.Enums.LeadingTeam.Draw;
-
 				ev.IsRoundEnded = true;
 
-				Log.Info($"[OnEndingRound] Force Ended by AlphaWarhead. Leading:{ev.LeadingTeam} Scientist:{scientist} ClassD:{classd} Scps:{scps}");
+				Log.Info($"[OnEndingRound] Force Ended By No Scps.");
 			}
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
@@ -549,16 +518,13 @@ namespace SanyaPlugin
 		{
 			Log.Debug($"[OnStopping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			//サーバー以外が止められないようにする
-			if(plugin.Config.AlphaWarheadLockAlways && !ev.Player.IsHost)
+			//Fix maingame(11.x)
+			if(AlphaWarheadController.Host.RealDetonationTime() - (AlphaWarheadController._resumeScenario == -1 ? 15f : 9f) < AlphaWarheadController.Host.timeToDetonation)
 				ev.IsAllowed = false;
 		}
 		public void OnChangingLeverStatus(ChangingLeverStatusEventArgs ev)
 		{
 			Log.Debug($"[OnChangingLeverStatus] {ev.Player.Nickname} {ev.CurrentState} -> {!ev.CurrentState}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.AlphaWarheadLockAlways && ev.CurrentState)
-				ev.IsAllowed = false;
 		}
 
 		//PlayerEvents
@@ -1000,20 +966,13 @@ namespace SanyaPlugin
 					component.OnProcessingHotkey(ev.Hotkey);
 			} 
 		}
+		public void OnShot(ShotEventArgs ev)
+		{
+			if(ev.Hitbox._dmgMultiplier == HitboxType.Headshot)
+				ev.Hitbox._dmgMultiplier = HitboxType.Body;
+		}
 
 		//Scp079
-		public void OnTriggeringDoor(TriggeringDoorEventArgs ev)
-		{
-			Log.Debug($"[OnTriggeringDoor] {ev.Player.Nickname} -> {ev.Door.Type}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.Scp079NeedInteractGateTier != -1
-				&& (ev.Door.Type == Exiled.API.Enums.DoorType.Scp914Gate || ev.Door.Type == Exiled.API.Enums.DoorType.GateA || ev.Door.Type == Exiled.API.Enums.DoorType.GateB)
-				&& ev.Player.ReferenceHub.scp079PlayerScript.Lvl + 1 < plugin.Config.Scp079NeedInteractGateTier)
-			{
-				ev.IsAllowed = false;
-				ev.Player.ReferenceHub.GetComponent<SanyaPluginComponent>()?.AddHudCenterDownText(SanyaPlugin.Instance.Translation.Error079NotEnoughTier, 3);
-			}
-		}
 		public void OnLockingDown(LockingDownEventArgs ev)
 		{
 			Log.Debug($"[OnLockingDown] {ev.Player.Nickname} -> {ev.RoomGameObject.Name}", SanyaPlugin.Instance.Config.IsDebugged);

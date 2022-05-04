@@ -117,7 +117,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
 			PlayerEvents.ProcessingHotkey += Handlers.OnProcessingHotkey;
-			Scp079Events.TriggeringDoor += Handlers.OnTriggeringDoor;
+			PlayerEvents.Shot += Handlers.OnShot;
 			Scp079Events.LockingDown += Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal += Handlers.OnCreatingPortal;
 			Scp106Events.Containing += Handlers.OnContaining;
@@ -152,7 +152,7 @@ namespace SanyaPlugin
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
 			PlayerEvents.ProcessingHotkey -= Handlers.OnProcessingHotkey;
-			Scp079Events.TriggeringDoor -= Handlers.OnTriggeringDoor;
+			PlayerEvents.Shot -= Handlers.OnShot;
 			Scp079Events.LockingDown -= Handlers.OnLockingDown;
 			Scp106Events.CreatingPortal -= Handlers.OnCreatingPortal;
 			Scp106Events.Containing -= Handlers.OnContaining;

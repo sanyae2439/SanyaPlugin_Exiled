@@ -101,7 +101,7 @@ namespace SanyaPlugin
 			var room = Room.Get(Exiled.API.Enums.RoomType.LczClassDSpawn);
 			var doors = room.Doors.Where(x => x.Type == Exiled.API.Enums.DoorType.PrisonDoor);
 
-			room.TurnOffLights(5f);
+			room.TurnOffLights(10f);
 
 			foreach(var i in doors)
 			{
@@ -109,7 +109,7 @@ namespace SanyaPlugin
 				i.Base.NetworkTargetState = false;
 			}
 
-			yield return Timing.WaitForSeconds(5f);
+			yield return Timing.WaitForSeconds(10f);
 
 			foreach(var j in doors)
 				j.Base.NetworkTargetState = true;

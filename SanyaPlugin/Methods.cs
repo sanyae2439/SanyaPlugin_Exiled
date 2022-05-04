@@ -270,6 +270,14 @@ namespace SanyaPlugin
 				: AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime);
 		}
 
+		public static float GetCurrentTimeToDetonationTime() => AlphaWarheadController._resumeScenario == -1
+				? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
+				: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime;
+
+		public static float GetAdditionalTime() => AlphaWarheadController._resumeScenario == -1
+				? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime
+				: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime;
+
 		public static void SetAmmoConfigs()
 		{
 			foreach(var role in CharacterClassManager._staticClasses.Where(x => x.team != Team.SCP && x.team != Team.RIP))

@@ -111,16 +111,10 @@ namespace SanyaPlugin
 
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
-		public readonly List<RoleType> AltvoicechatScpsParsed = new List<RoleType>();
+		public readonly List<RoleType> AltvoicechatScpsParsed = new();
 
-		[Description("AlphaWarheadがカウントダウン開始できるようになるまでの時間")]
-		public int AlphaWarheadNeedElapsedSeconds { get; set; } = -1;
-
-		[Description("AlphaWarheadを停止できないようにする")]
-		public bool AlphaWarheadLockAlways { get; set; } = false;
-
-		[Description("AlphaWarheadの起爆時にラウンドを終了させる")]
-		public bool AlphaWarheadEndRound { get; set; } = false;
+		[Description("SCPがいなくなるとラウンド終了するように")]
+		public bool RoundEndWhenNoScps { get; set; } = false;
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;
@@ -151,9 +145,6 @@ namespace SanyaPlugin
 
 		[Description("SCP-914にコインのレシピを追加する")]
 		public bool Scp914AddCoinRecipes { get; set; } = false;
-
-		[Description("SCP-244が設置される確率")]
-		public float Scp244SpawnPercent { get; set; } = 0f;
 
 		[Description("ヘビィアーマーのダメージ固定減衰率")]
 		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
@@ -227,14 +218,11 @@ namespace SanyaPlugin
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
 
-		[Description("SCP-939-XXの攻撃で即死するようにして移動速度を低下させる")]
+		[Description("SCP-939-XXの攻撃で即死するようにする")]
 		public bool Scp939InstaKill { get; set; } = false;
 
 		[Description("SCP-079が部屋を移動した際にスキャンするように")]
 		public bool Scp079ScanRoom { get; set; } = false;
-
-		[Description("SCP-079がゲートを操作するのに必要なTier")]
-		public int Scp079NeedInteractGateTier { get; set; } = -1;
 
 		public void ParseConfig()
 		{
