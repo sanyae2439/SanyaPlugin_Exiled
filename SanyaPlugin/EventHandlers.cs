@@ -106,6 +106,38 @@ namespace SanyaPlugin
 				await Task.Delay(TimeSpan.FromSeconds(30));
 			}
 		}
+		internal async Task SendRoundResultASync(RoundEndedEventArgs ev)
+		{
+			Log.Debug($"[SendRoundResultASync] Started.", SanyaPlugin.Instance.Config.IsDebugged);
+
+			try
+			{
+				RoundResultInfo info = new RoundResultInfo();
+
+				DateTime dt = DateTime.Now;
+				info.time = dt.ToString("yyyy-MM-ddTHH:mm:sszzzz");
+				info.name = ServerConsole.singleton.RefreshServerName();
+				info.roundDuration = ev.ClassList.time - RoundSummary.singleton.classlistStart.time;
+				info.winTeam = ev.LeadingTeam.ToString();
+				info.totalSCPKill = RoundSummary.KilledBySCPs;
+				info.totalSCPDeath = ev.ClassList.scps_except_zombies - RoundSummary.SurvivingSCPs;
+				info.totalSCPAmount = ev.ClassList.scps_except_zombies;
+				info.damageRank = new Dictionary<string, uint>(DamagesDict);
+				info.killRank = new Dictionary<string, uint>(KillsDict);
+				info.classdEscaped = new Dictionary<string, bool>(EscapedClassDDict);
+				info.scientistEscaped = new Dictionary<string, bool>(EscapedScientistDict);
+
+				string json = JsonSerializer.ToJsonString(info);
+				byte[] sendBytes = Encoding.UTF8.GetBytes(json);
+				await udpClient.SendAsync(sendBytes, sendBytes.Length, plugin.Config.InfosenderIp, plugin.Config.InfosenderPort);
+
+				Log.Debug($"[SendRoundResultASync] Completed. Length:{sendBytes.Length}", SanyaPlugin.Instance.Config.IsDebugged);
+			}
+			catch(Exception e)
+			{
+				throw e;
+			}
+		}
 
 		//ShitChecker
 		internal const byte BypassFlags = (1 << 1) | (1 << 3);
@@ -416,6 +448,10 @@ namespace SanyaPlugin
 			//ランキングの作成/並び替え
 			sortedDamages = DamagesDict.OrderByDescending(x => x.Value);
 			sortedKills = KillsDict.OrderByDescending(x => x.Value);
+
+			//情報送信
+			if(plugin.Config.InfosenderIp != "none" && plugin.Config.InfosenderPort != -1)
+				_ = SendRoundResultASync(ev);
 		}
 		public void OnRestartingRound()
 		{
@@ -609,9 +645,9 @@ namespace SanyaPlugin
 			//各種Dict
 			if(!connIdToUserIds.TryGetValue(ev.Player.Connection.connectionId, out _))
 				connIdToUserIds.Add(ev.Player.Connection.connectionId, ev.Player.UserId);
-			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _))
+			if(!DamagesDict.TryGetValue(ev.Player.Nickname, out _) && !ev.Player.DoNotTrack)
 				DamagesDict.Add(ev.Player.Nickname, 0);
-			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _))
+			if(!KillsDict.TryGetValue(ev.Player.Nickname, out _) && !ev.Player.DoNotTrack)
 				KillsDict.Add(ev.Player.Nickname, 0);
 		}
 		public void OnDestroying(DestroyingEventArgs ev)
@@ -801,7 +837,7 @@ namespace SanyaPlugin
 				component.OnDamage();
 
 			//ダメージランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Attacker != null && ev.Attacker.IsEnemy(ev.Target.Role.Team) && ev.Attacker.IsHuman && ev.Amount > 0f)
+			if(!RoundSummary.singleton.RoundEnded && ev.Attacker != null && ev.Attacker.IsEnemy(ev.Target.Role.Team) && ev.Attacker.IsHuman && ev.Amount > 0f && DamagesDict.ContainsKey(ev.Attacker.Nickname))
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
 		}
 		public void OnDying(DyingEventArgs ev)
@@ -864,16 +900,16 @@ namespace SanyaPlugin
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(ev.Killer, 2f), Segment.FixedUpdate));
 
 			//キルランキング
-			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Role.Team))
+			if(!RoundSummary.singleton.RoundEnded && ev.Killer != ev.Target && ev.Killer.IsEnemy(ev.Target.Role.Team) && KillsDict.ContainsKey(ev.Killer.Nickname))
 				KillsDict[ev.Killer.Nickname] += 1;
 		}
 		public void OnEscaping(EscapingEventArgs ev)
 		{
 			Log.Debug($"[OnEscaping] {ev.Player.Nickname} {ev.Player.Role} -> {ev.NewRole}", SanyaPlugin.Instance.Config.IsDebugged);
 
-			if(ev.Player.Role == RoleType.ClassD)
+			if(ev.Player.Role == RoleType.ClassD && !ev.Player.DoNotTrack)
 				EscapedClassDDict.Add(ev.Player.Nickname, ev.NewRole == RoleType.ChaosConscript);
-			else if(ev.Player.Role == RoleType.Scientist)
+			else if(ev.Player.Role == RoleType.Scientist && !ev.Player.DoNotTrack)
 				EscapedScientistDict.Add(ev.Player.Nickname, ev.NewRole == RoleType.NtfSpecialist);
 		}
 		public void OnHandcuffing(HandcuffingEventArgs ev)

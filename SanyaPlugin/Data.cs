@@ -91,6 +91,33 @@ namespace SanyaPlugin
 		public string hostname { get; set; }
 	}
 
+	public class RoundResultInfo
+	{
+		public RoundResultInfo() { }
+		
+		public string time { get; set; }
+
+		public string name { get; set; }
+
+		public string winTeam { get; set; }
+
+		public int roundDuration { get; set; }
+
+		public int totalSCPKill { get; set; }
+
+		public int totalSCPDeath { get; set; }
+
+		public int totalSCPAmount { get; set; }
+
+		public Dictionary<string, uint> damageRank { get; set; }
+
+		public Dictionary<string, uint> killRank { get; set; }
+
+		public Dictionary<string, bool> classdEscaped { get; set; }
+
+		public Dictionary<string, bool> scientistEscaped { get; set; }
+	}
+
 	public class Serverinfo
 	{
 		public Serverinfo() { players = new List<Playerinfo>(); }
