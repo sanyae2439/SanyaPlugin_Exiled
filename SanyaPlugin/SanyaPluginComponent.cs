@@ -137,7 +137,7 @@ namespace SanyaPlugin
 					{
 						if(!IsTeleportMode)
 						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
 								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
 						}
 						else
@@ -151,7 +151,7 @@ namespace SanyaPlugin
 					{
 						if(!IsTeleportMode)
 						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
+							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
 								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
 						}
 						else
@@ -209,7 +209,8 @@ namespace SanyaPlugin
 								if(canHide)
 								{
 									player.Scale = Vector3.one / 5f;
-									player.EnableEffect<Ensnared>();
+									player.Position += Vector3.up;
+									player.ReferenceHub.fpc.NetworkforceStopInputs = true;
 									player.EnableEffect<Invisible>();
 									player.EnableEffect<Amnesia>();
 									player.EnableEffect<Deafened>();
@@ -220,7 +221,8 @@ namespace SanyaPlugin
 						else
 						{
 							player.Scale = Vector3.one;
-							player.DisableEffect<Ensnared>();
+							player.Position += Vector3.up;
+							player.ReferenceHub.fpc.NetworkforceStopInputs = false;
 							player.DisableEffect<Invisible>();
 							player.DisableEffect<Amnesia>();
 							player.DisableEffect<Deafened>();
@@ -480,8 +482,8 @@ namespace SanyaPlugin
 				string CiList = string.Empty;
 				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
 				CiList += $"<color=#008f1e>Conscript:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosConscript)}\n";
-				CiList += $"<color=#0a7d34>Repressor:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}\n";
-				CiList += $"<color=#006728>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";
+				CiList += $"<color=#0a7d34>Marauder:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosMarauder)}\n";
+				CiList += $"<color=#006728>Repressor:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRepressor)}\n";
 				CiList += $"<color=#008f1e>Rifleman:</color>{RoundSummary.singleton.CountRole(RoleType.ChaosRifleman)}\n";
 				CiList = CiList.TrimEnd('\n');
 

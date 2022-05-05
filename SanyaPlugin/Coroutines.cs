@@ -141,5 +141,30 @@ namespace SanyaPlugin
 				player.ReferenceHub.scp106PlayerScript.goingViaThePortal = false;
 			}
 		}
+
+		public static IEnumerator<float> TryRespawnDisconnectedScp(RoleType role, float health)
+		{
+			Log.Warn("called");
+			while(true)
+			{
+				yield return Timing.WaitForSeconds(10f);
+				if(role == RoleType.Scp173 && Map.IsLczDecontaminated) yield break;
+				if(!RoundSummary.RoundInProgress()) yield break;
+
+				var spectators = Player.Get(RoleType.Spectator);
+				if(!spectators.Any()) continue;
+
+				var target = spectators.Random();
+				target.SetRole(role);
+				if(target.GameObject.TryGetComponent<SanyaPluginComponent>(out var sanya))
+					sanya.AddHudBottomText("<color=#ff0000><size=25>SCPのプレイヤーが切断したため、代わりとして選ばれました。</size></color>", 5);
+				yield return Timing.WaitForSeconds(1f);
+
+				target.Health = health;
+				if(target.MaxArtificialHealth > 0) target.ArtificialHealth = 0f;
+
+				yield break;
+			}
+		}
 	}
 }

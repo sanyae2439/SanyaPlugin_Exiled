@@ -16,7 +16,6 @@ using InventorySystem;
 using InventorySystem.Items.Armor;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Keycards;
-using InventorySystem.Items.Usables.Scp244;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MapGeneration;
@@ -25,6 +24,7 @@ using MEC;
 using Mirror;
 using PlayerStatsSystem;
 using Respawning;
+using RoundRestarting;
 using Scp914.Processors;
 using UnityEngine;
 using Utf8Json;
@@ -618,6 +618,10 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnDestroying] {ev.Player.Nickname} ({ev.Player.IPAddress}:{ev.Player.UserId})");
 
+			//ScpSpawn
+			if(plugin.Config.SpawnScpsWhenDisconnect && !RoundRestart.IsRoundRestarting && !Warhead.IsDetonated && ev.Player.Role.Team == Team.SCP && ev.Player.Role != RoleType.Scp0492 && ev.Player.Role != RoleType.Scp079)
+				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.TryRespawnDisconnectedScp(ev.Player.Role.Type, ev.Player.Health), Segment.FixedUpdate));
+
 			//プレイヤーデータのアンロード
 			if(plugin.Config.DataEnabled && !string.IsNullOrEmpty(ev.Player.UserId))
 				if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(ev.Player.UserId))
@@ -965,11 +969,6 @@ namespace SanyaPlugin
 				if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))
 					component.OnProcessingHotkey(ev.Hotkey);
 			} 
-		}
-		public void OnShot(ShotEventArgs ev)
-		{
-			if(ev.Hitbox._dmgMultiplier == HitboxType.Headshot)
-				ev.Hitbox._dmgMultiplier = HitboxType.Body;
 		}
 
 		//Scp079

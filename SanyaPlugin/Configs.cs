@@ -113,6 +113,9 @@ namespace SanyaPlugin
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
 		public readonly List<RoleType> AltvoicechatScpsParsed = new();
 
+		[Description("SCPが切断した場合にSCPを再度スポーンする")]
+		public bool SpawnScpsWhenDisconnect { get; set; } = false;
+
 		[Description("SCPがいなくなるとラウンド終了するように")]
 		public bool RoundEndWhenNoScps { get; set; } = false;
 
