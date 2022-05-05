@@ -144,7 +144,7 @@ namespace SanyaPlugin
 
 		public static IEnumerator<float> TryRespawnDisconnectedScp(RoleType role, float health)
 		{
-			Log.Warn("called");
+			Log.Info("[TryRespawnDisconnectedScp] Start");
 			while(true)
 			{
 				yield return Timing.WaitForSeconds(10f);
@@ -163,6 +163,7 @@ namespace SanyaPlugin
 				target.Health = health;
 				if(target.MaxArtificialHealth > 0) target.ArtificialHealth = 0f;
 
+				Log.Info("[TryRespawnDisconnectedScp] Done");
 				yield break;
 			}
 		}
