@@ -122,8 +122,8 @@ namespace SanyaPlugin
 				info.totalSCPKill = RoundSummary.KilledBySCPs;
 				info.totalSCPDeath = RoundSummary.singleton.classlistStart.scps_except_zombies - RoundSummary.SurvivingSCPs;
 				info.totalSCPAmount = RoundSummary.singleton.classlistStart.scps_except_zombies;
-				info.damageRank = new Dictionary<string, uint>(DamagesDict);
-				info.killRank = new Dictionary<string, uint>(KillsDict);
+				info.damageRank = sortedDamages.ToDictionary((x) => x.Key, (y) => y.Value);
+				info.killRank = sortedKills.ToDictionary((x) => x.Key, (y) => y.Value);
 				info.classdEscaped = new Dictionary<string, bool>(EscapedClassDDict);
 				info.scientistEscaped = new Dictionary<string, bool>(EscapedScientistDict);
 
