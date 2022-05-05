@@ -120,8 +120,8 @@ namespace SanyaPlugin
 				info.roundDuration = ev.ClassList.time - RoundSummary.singleton.classlistStart.time;
 				info.winTeam = ev.LeadingTeam.ToString();
 				info.totalSCPKill = RoundSummary.KilledBySCPs;
-				info.totalSCPDeath = ev.ClassList.scps_except_zombies - RoundSummary.SurvivingSCPs;
-				info.totalSCPAmount = ev.ClassList.scps_except_zombies;
+				info.totalSCPDeath = RoundSummary.singleton.classlistStart.scps_except_zombies - RoundSummary.SurvivingSCPs;
+				info.totalSCPAmount = RoundSummary.singleton.classlistStart.scps_except_zombies;
 				info.damageRank = new Dictionary<string, uint>(DamagesDict);
 				info.killRank = new Dictionary<string, uint>(KillsDict);
 				info.classdEscaped = new Dictionary<string, bool>(EscapedClassDDict);
