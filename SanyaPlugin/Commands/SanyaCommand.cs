@@ -31,6 +31,7 @@ namespace SanyaPlugin.Commands
 			//Items
 			RegisterCommand(new TantrumCommand());
 			RegisterCommand(new FragCommand());
+			RegisterCommand(new ExplosionCommand());
 
 			//Public
 			RegisterCommand(new ExHudCommand());
@@ -40,6 +41,7 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new OverrideCommand());
 			RegisterCommand(new Scp914Command());
 			RegisterCommand(new TpPosCommand());
+			RegisterCommand(new RainbowFacilityCommand());
 		}
 
 		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

@@ -14,7 +14,9 @@ using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem;
 using InventorySystem.Items.Armor;
+using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
+using InventorySystem.Items.Firearms.Attachments;
 using InventorySystem.Items.Keycards;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
@@ -320,24 +322,37 @@ namespace SanyaPlugin
 			//アイテム追加
 			if(plugin.Config.AddItemsOnFacility)
 			{
-				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				var hczradio = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Radio && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 				(Methods.SpawnItem(ItemType.Ammo762x39, hczradio) as AmmoPickup).NetworkSavedAmmo = 30;
 
-				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				var hczcom18 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCOM18 && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position;
 				Methods.SpawnItem(ItemType.KeycardNTFOfficer, hczcom18);
 
-				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				var hczflash = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Flashlight && x.TriggerDoorName == "HCZ_ARMORY")._positionVariants.First().position;
 				Methods.SpawnItem(ItemType.Adrenaline, hczflash);
 				Methods.SpawnItem(ItemType.Medkit, hczflash);
 
-				var lczfsp9 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunFSP9 && x.TriggerDoorName == "LCZ_ARMORY")._positionVariants.First().position + Vector3.up * 2;
+				var lczfsp9 = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunFSP9 && x.TriggerDoorName == "LCZ_ARMORY")._positionVariants.First().position;
 				Methods.SpawnItem(ItemType.KeycardNTFOfficer, lczfsp9);
 				Methods.SpawnItem(ItemType.Medkit, lczfsp9);
 				Methods.SpawnItem(ItemType.Medkit, lczfsp9);
+
+				var hcz079crossvec = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.GunCrossvec && string.IsNullOrEmpty(x.TriggerDoorName))._positionVariants.First().position;
+				var revolver1 = Methods.SpawnItem(ItemType.GunRevolver, hcz079crossvec) as FirearmPickup;
+				revolver1.NetworkStatus = new FirearmStatus(2, FirearmStatusFlags.MagazineInserted, AttachmentsUtils.GetRandomAttachmentsCode(ItemType.GunRevolver));
+				revolver1.Distributed = true;
+				var revolver2 = Methods.SpawnItem(ItemType.GunRevolver, hcz079crossvec) as FirearmPickup;
+				revolver2.NetworkStatus = new FirearmStatus(2, FirearmStatusFlags.MagazineInserted, AttachmentsUtils.GetRandomAttachmentsCode(ItemType.GunRevolver));
+				revolver2.Distributed = true;
+
+				var hcz079ammo9mm = ItemSpawnpoint.AutospawnInstances.First(x => x.AutospawnItem == ItemType.Ammo9x19 && string.IsNullOrEmpty(x.TriggerDoorName))._positionVariants.First().position;
+				(Methods.SpawnItem(ItemType.Ammo44cal, hcz079ammo9mm) as AmmoPickup).NetworkSavedAmmo = 12;
+				(Methods.SpawnItem(ItemType.Ammo44cal, hcz079ammo9mm) as AmmoPickup).NetworkSavedAmmo = 12;
+				(Methods.SpawnItem(ItemType.Ammo44cal, hcz079ammo9mm) as AmmoPickup).NetworkSavedAmmo = 12;
 			}
 
 			//SCP-914のRecipe追加
@@ -513,6 +528,8 @@ namespace SanyaPlugin
 
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnProperties().Item1);
 					poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "Shelter").transform.position);
+					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.HczWarheadArmory).Transform.position + Vector3.down * 2);
+					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Hcz049Armory).Transform.position + Vector3.down * 2);
 
 					foreach(var i in poslist)
 						Log.Info($"[RandomRespawnPos] TargetLists:{i}");
@@ -690,7 +707,6 @@ namespace SanyaPlugin
 				{
 					ev.Player.EnableEffect<Hemorrhage>();
 					ev.Player.EnableEffect<Amnesia>();
-					ev.Player.EnableEffect<Deafened>();
 				}));
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
@@ -809,6 +825,16 @@ namespace SanyaPlugin
 							ev.Amount *= plugin.Config.RevolverDamageMultiplier;
 						if(firearm.WeaponType == ItemType.GunShotgun)
 							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
+						if(firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18)
+						{
+							if(ev.Target.Role.Team == Team.SCP)
+							{
+								ev.Target.EnableEffect<Poisoned>(60f);
+								ev.Target.EnableEffect<Bleeding>(60f);
+							}
+							ev.Target.EnableEffect<Blinded>(1f);
+							ev.Target.EnableEffect<Deafened>(1f);
+						}
 						break;
 					}
 				case MicroHidDamageHandler _:

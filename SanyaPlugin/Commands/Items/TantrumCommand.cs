@@ -42,7 +42,7 @@ namespace SanyaPlugin.Commands.Items
 			}
 			else
 			{
-				response = "引数:[players or *]";
+				response = "引数:[player]";
 				return false;
 			}
 		}

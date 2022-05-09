@@ -1,19 +1,22 @@
 ﻿using System;
+using System.Linq;
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using InventorySystem.Items.Usables.Scp330;
+using Utils.Networking;
 
 namespace SanyaPlugin.Commands.Items
 {
-	internal class FragCommand : ICommand
+	public class ExplosionCommand : ICommand
 	{
-		public string Command { get; } = "frag";
+		public string Command { get; } = "explosion";
 
 		public string[] Aliases { get; }
 
-		public string Description { get; } = "フラググレネードを設置する";
+		public string Description { get; } = "爆発エフェクトを起こします";
 
-		public string RequiredPermission { get; } = "sanya.items.frag";
+		public string RequiredPermission { get; } = "sanya.items.explosion";
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -31,8 +34,8 @@ namespace SanyaPlugin.Commands.Items
 					response = "ターゲットが見つかりません。";
 					return false;
 				}
-				Methods.SpawnGrenade(target.Position, ItemType.GrenadeHE, -1f, target.ReferenceHub);
-				response = $"{target.Nickname}に設置しました。";
+				new CandyPink.CandyExplosionMessage() { Origin = target.Position }.SendToAuthenticated();
+				response = $"{target.Nickname}に起こしました。";
 				return true;
 			}
 			else

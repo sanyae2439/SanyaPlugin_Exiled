@@ -369,6 +369,8 @@ namespace SanyaPlugin
 					return "SCP-372収容室";
 				case RoomType.LczChkpA:
 					return "チェックポイントA-L";
+				case RoomType.Lcz330:
+					return "SCP-330テストチェンバー";
 				case RoomType.Hcz079:
 					return "SCP-079収容室";
 				case RoomType.HczEzCheckpoint:

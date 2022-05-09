@@ -146,6 +146,9 @@ namespace SanyaPlugin
 		[Description("SCP-914にコインのレシピを追加する")]
 		public bool Scp914AddCoinRecipes { get; set; } = false;
 
+		[Description("COM-15とCOM-18にエフェクトを追加する")]
+		public bool HandgunEffect { get; set; } = false;
+
 		[Description("ヘビィアーマーのダメージ固定減衰率")]
 		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
 

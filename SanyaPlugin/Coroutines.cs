@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
 using PlayerStatsSystem;
 using Respawning;
+using SanyaPlugin.Commands.Utils;
 using UnityEngine;
 
 namespace SanyaPlugin
@@ -165,6 +167,29 @@ namespace SanyaPlugin
 
 				Log.Info("[TryRespawnDisconnectedScp] Done");
 				yield break;
+			}
+		}
+
+		public static IEnumerator<float> RainbowFacility()
+		{
+			var rooms = Room.List.Where(x => x.Zone == ZoneType.LightContainment || x.Zone == ZoneType.HeavyContainment || x.Zone == ZoneType.Entrance);
+			foreach(var i in rooms)
+				i.FlickerableLightController.Network_warheadLightOverride = true;
+
+			Log.Info($"[RainbowFacility] Start. Targets:{rooms.Count()}");
+			while(RainbowFacilityCommand.isActive)
+			{
+				var currentColor = Color.HSVToRGB(Time.time % 1, 1, 1);
+				foreach(var i in rooms)
+					i.FlickerableLightController.Network_warheadLightColor = currentColor;
+				yield return Timing.WaitForOneFrame;
+			}
+			Log.Info("[RainbowFacility] End");
+
+			foreach(var i in rooms)
+			{
+				i.FlickerableLightController.Network_warheadLightOverride = false;
+				i.FlickerableLightController.Network_warheadLightColor = FlickerableLightController.DefaultWarheadColor;
 			}
 		}
 	}

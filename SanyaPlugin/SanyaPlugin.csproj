@@ -131,6 +131,7 @@
     <Compile Include="Commands\Debugs\CheckObjectCommand.cs" />
     <Compile Include="Commands\Debugs\CheckComponentsCommand.cs" />
     <Compile Include="Commands\Debugs\CoroutinesCommand.cs" />
+    <Compile Include="Commands\Items\ExplosionCommand.cs" />
     <Compile Include="Commands\Items\FragCommand.cs" />
     <Compile Include="Commands\Items\TantrumCommand.cs" />
     <Compile Include="Commands\Public\ExHudCommand.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Commands\Debugs\TestCommand.cs" />
     <Compile Include="Commands\Utils\ActWatchCommand.cs" />
     <Compile Include="Commands\Utils\OverrideCommand.cs" />
+    <Compile Include="Commands\Utils\RainbowFacilityCommand.cs" />
     <Compile Include="Commands\Utils\Scp914Command.cs" />
     <Compile Include="Commands\Utils\Scp914\KnobCommand.cs" />
     <Compile Include="Commands\Utils\Scp914\UseCommand.cs" />
