@@ -146,7 +146,7 @@ namespace SanyaPlugin
 		[Description("SCP-914にコインのレシピを追加する")]
 		public bool Scp914AddCoinRecipes { get; set; } = false;
 
-		[Description("COM-15とCOM-18にエフェクトを追加する")]
+		[Description("拳銃にエフェクトを追加する")]
 		public bool HandgunEffect { get; set; } = false;
 
 		[Description("ヘビィアーマーのダメージ固定減衰率")]
@@ -157,9 +157,6 @@ namespace SanyaPlugin
 
 		[Description("ディスラプターの威力の乗数")]
 		public float DisruptorDamageMultiplier { get; set; } = 1f;
-
-		[Description("ショットガンの威力の乗数")]
-		public float ShotgunDamageMultiplier { get; set; } = 1f;
 
 		[Description("リボルバーの威力の乗数")]
 		public float RevolverDamageMultiplier { get; set; } = 1f;

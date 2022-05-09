@@ -18,6 +18,8 @@ using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Firearms.Attachments;
 using InventorySystem.Items.Keycards;
+using InventorySystem.Items.Usables.Scp244.Hypothermia;
+using InventorySystem.Items.Usables.Scp330;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MapGeneration;
@@ -27,9 +29,11 @@ using Mirror;
 using PlayerStatsSystem;
 using Respawning;
 using RoundRestarting;
+using SanyaPlugin.Components;
 using Scp914.Processors;
 using UnityEngine;
 using Utf8Json;
+using Utils.Networking;
 
 namespace SanyaPlugin
 {
@@ -822,18 +826,31 @@ namespace SanyaPlugin
 				case FirearmDamageHandler firearm:
 					{
 						if(firearm.WeaponType == ItemType.GunRevolver)
+						{
 							ev.Amount *= plugin.Config.RevolverDamageMultiplier;
-						if(firearm.WeaponType == ItemType.GunShotgun)
-							ev.Amount *= plugin.Config.ShotgunDamageMultiplier;
-						if(firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18)
+							if(plugin.Config.HandgunEffect) new CandyPink.CandyExplosionMessage() { Origin = ev.Target.Position }.SendToAuthenticated();
+						}			
+						if((firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18) && plugin.Config.HandgunEffect)
 						{
 							if(ev.Target.Role.Team == Team.SCP)
 							{
-								ev.Target.EnableEffect<Poisoned>(60f);
-								ev.Target.EnableEffect<Bleeding>(60f);
+								if(ev.Target.Role != RoleType.Scp096) 
+									ev.Target.EnableEffect<Disabled>(5f);
+								ev.Target.EnableEffect<Burned>(60f);
+
+								if(ev.Target.ArtificialHealth > 0)
+								{
+									ev.Target.Health -= ev.Target.Role != RoleType.Scp106 ? ev.Amount : ev.Amount * 0.1f;
+									ev.Target.Connection.Send(new HumeShieldSubEffect.HumeBlockMsg());
+								}							
 							}
-							ev.Target.EnableEffect<Blinded>(1f);
-							ev.Target.EnableEffect<Deafened>(1f);
+
+							if(ev.Target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
+								lightMove.Timer = 60f;
+							else
+								ev.Target.GameObject.AddComponent<LightMoveComponent>().Timer = 60f;
+
+							ev.Target.EnableEffect<Concussed>(5f);
 						}
 						break;
 					}
