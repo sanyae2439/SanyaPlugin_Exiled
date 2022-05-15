@@ -1,5 +1,6 @@
 ﻿using CustomPlayerEffects;
 using HarmonyLib;
+using MEC;
 using PlayableScps.Messages;
 using UnityEngine;
 
@@ -30,11 +31,10 @@ namespace SanyaPlugin.Patches.Scp096
 				__instance.Hub.characterClassManager.netIdentity.connectionToClient.Send(new Scp096ToSelfMessage(__instance.EnrageTimeLeft, __instance._chargeCooldown), 0);
 				if(__instance.EnrageTimeLeft <= 0f && !__instance.PryingGate)
 				{
-					//__instance.RemainingEnrageCooldown = 6f;
+					__instance.RemainingEnrageCooldown = 6f;
 					__instance.Hub.playerEffectsController.DisableEffect<Invigorated>();
-					__instance.Hub.playerEffectsController.EnableEffect<Amnesia>();
-					__instance.Hub.playerEffectsController.EnableEffect<Deafened>();
-					__instance.Hub.playerEffectsController.EnableEffect<Disabled>(6f);
+					__instance.Hub.fpc.NetworkforceStopInputs = true;
+					SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.CallDelayed(6f, Segment.FixedUpdate, () => __instance.Hub.fpc.NetworkforceStopInputs = false));
 					__instance.EndEnrage();
 				}
 

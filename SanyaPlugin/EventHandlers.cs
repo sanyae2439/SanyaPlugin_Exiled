@@ -17,9 +17,9 @@ using InventorySystem.Items.Armor;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Firearms.Attachments;
+using InventorySystem.Items.Firearms.Modules;
 using InventorySystem.Items.Keycards;
 using InventorySystem.Items.Usables.Scp244.Hypothermia;
-using InventorySystem.Items.Usables.Scp330;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
 using MapGeneration;
@@ -513,11 +513,19 @@ namespace SanyaPlugin
 		}
 		public void OnRespawningTeam(RespawningTeamEventArgs ev)
 		{
-			Log.Info($"[OnRespawningTeam] Queues:{ev.Players.Count} IsCI:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}");
+			Log.Info($"[OnRespawningTeam] Queues:{ev.Players.Count} Team:{ev.NextKnownTeam} MaxAmount:{ev.MaximumRespawnAmount}");
 
 			//ラウンド終了後にリスポーンを停止する
 			if(plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
+
+			//チケットが0になったら強制終了
+			if(plugin.Config.RoundEndWhenNoMtfTickets && !RoundSummary.RoundInProgress() && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0)
+			{
+				Round.EndRound(true);
+
+				Log.Info($"[OnEndingRound] Force Ended By No MTF Tickets.");
+			}
 
 			//ランダムでリスポーン位置を変更する
 			if(plugin.Config.RandomRespawnPosPercent > 0)
@@ -528,12 +536,12 @@ namespace SanyaPlugin
 				{
 					List<Vector3> poslist = new List<Vector3>();
 					if(!Map.IsLczDecontaminated && DecontaminationController.Singleton._nextPhase < 3)
-						poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Lcz173Hallway).Transform.position + Vector3.down * 2);
+						poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Lcz173Hallway).Transform.position + Vector3.down);
 
 					poslist.Add(RoleType.Scp93953.GetRandomSpawnProperties().Item1);
 					poslist.Add(GameObject.FindGameObjectsWithTag("RoomID").First(x => x.GetComponent<Rid>()?.id == "Shelter").transform.position);
-					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.HczWarheadArmory).Transform.position + Vector3.down * 2);
-					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Hcz049Armory).Transform.position + Vector3.down * 2);
+					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.HczWarheadArmory).Transform.position + Vector3.down);
+					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Hcz049Armory).Transform.position + Vector3.down);
 
 					foreach(var i in poslist)
 						Log.Info($"[RandomRespawnPos] TargetLists:{i}");
@@ -559,7 +567,10 @@ namespace SanyaPlugin
 			if(ev.GrenadeType == Exiled.API.Enums.GrenadeType.Flashbang)
 				foreach(var i in ev.TargetsToAffect)
 					if(i.Role == RoleType.Scp106)
+					{
+						i.ArtificialHealth = 0f;
 						roundCoroutines.Add(Timing.RunCoroutine(i.ReferenceHub.scp106PlayerScript._DoTeleportAnimation()));
+					}
 		}
 
 		//WarheadEvents
@@ -645,7 +656,7 @@ namespace SanyaPlugin
 			}
 
 			//LevelBadge
-			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled
+			if(plugin.Config.DataEnabled && plugin.Config.LevelEnabled && plugin.Config.LevelBadgeEnabled
 				&& SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.TryGetValue(ev.Player.UserId, out PlayerData data))
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.GrantedLevel(ev.Player, data), Segment.FixedUpdate));
 
@@ -701,11 +712,6 @@ namespace SanyaPlugin
 			}
 
 			//Effect
-			if(plugin.Config.Scp096Rework && ev.NewRole == RoleType.Scp096)
-				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-				{
-					ev.Player.EnableEffect<Amnesia>();
-				}));
 			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
@@ -794,6 +800,13 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
 			}
 
+			//SCP-096の発狂中は無敵
+			if(plugin.Config.Scp096Rework && ev.Target.Role == RoleType.Scp096 && ev.Attacker != ev.Target && ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.Enraged)
+			{
+				ev.IsAllowed = false;
+				return;
+			}
+
 			//ダメージタイプ分岐
 			switch(ev.Handler.Base)
 			{
@@ -828,9 +841,13 @@ namespace SanyaPlugin
 						if(firearm.WeaponType == ItemType.GunRevolver)
 						{
 							ev.Amount *= plugin.Config.RevolverDamageMultiplier;
-							if(plugin.Config.HandgunEffect) new CandyPink.CandyExplosionMessage() { Origin = ev.Target.Position }.SendToAuthenticated();
+							if(plugin.Config.HandgunEffect && ev.Attacker.IsEnemy(ev.Target.Role.Team)) 
+								new DisruptorHitreg.DisruptorHitMessage { 
+									Position = ev.Target.Position, 
+									Rotation = new LowPrecisionQuaternion(ev.Target.GameObject.transform.rotation) 
+								}.SendToAuthenticated();
 						}			
-						if((firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18) && plugin.Config.HandgunEffect)
+						if((firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18) && plugin.Config.HandgunEffect && ev.Attacker.IsEnemy(ev.Target.Role.Team))
 						{
 							if(ev.Target.Role.Team == Team.SCP)
 							{

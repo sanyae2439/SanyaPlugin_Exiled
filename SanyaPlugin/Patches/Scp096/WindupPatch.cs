@@ -1,5 +1,6 @@
 ﻿using CustomPlayerEffects;
 using HarmonyLib;
+using MEC;
 
 namespace SanyaPlugin.Patches.Scp096
 {
@@ -11,10 +12,9 @@ namespace SanyaPlugin.Patches.Scp096
 			if(!force && (__instance.IsPreWindup || !__instance.CanEnrage))
 				return;
 
-			__instance.Hub.playerEffectsController.DisableEffect<Amnesia>();
-			__instance.Hub.playerEffectsController.DisableEffect<Deafened>();
 			__instance.Hub.playerEffectsController.EnableEffect<Invigorated>();
-			__instance.Hub.playerEffectsController.EnableEffect<Disabled>(6f);
+			__instance.Hub.fpc.NetworkforceStopInputs = true;
+			SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.CallDelayed(6f, Segment.FixedUpdate, () => __instance.Hub.fpc.NetworkforceStopInputs = false));
 		}
 	}
 }

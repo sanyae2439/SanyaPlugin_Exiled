@@ -27,6 +27,9 @@ namespace SanyaPlugin
 		[Description("プレイヤーレベルの有効化")]
 		public bool LevelEnabled { get; set; } = false;
 
+		[Description("プレイヤーレベルをバッジに表示するか")]
+		public bool LevelBadgeEnabled { get; set; } = false;
+
 		[Description("キル時に手に入るレベル経験値")]
 		public int LevelExpKill { get; set; } = 3;
 
@@ -118,6 +121,9 @@ namespace SanyaPlugin
 
 		[Description("SCPがいなくなるとラウンド終了するように")]
 		public bool RoundEndWhenNoScps { get; set; } = false;
+
+		[Description("NTFのチケットがなくなったらラウンドが終了するように")]
+		public bool RoundEndWhenNoMtfTickets { get; set; } = false;
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;

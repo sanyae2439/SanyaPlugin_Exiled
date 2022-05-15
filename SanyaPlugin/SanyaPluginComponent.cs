@@ -44,6 +44,10 @@ namespace SanyaPlugin
 		private bool IsTeleportMode = false;
 		private float captureTimerDefault = 30f;
 		private float captureTimer = 30f;
+		private float trapTimerDefault = 5f;
+		private float trapTimer = 5f;
+		private float hideTimer = 10f;
+		private float hideTimerDefault = 10f;
 
 		private void Start()
 		{
@@ -135,29 +139,37 @@ namespace SanyaPlugin
 			{
 				case HotkeyButton.PrimaryFirearm:
 					{
-						if(!IsTeleportMode)
+						if(trapTimer <= 0f)
 						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
-								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
-						}
-						else
-						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
-								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+							if(!IsTeleportMode)
+							{
+								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+									Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
+							}
+							else
+							{
+								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
+									SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+							}
+							trapTimer = trapTimerDefault;
 						}
 						break;
 					}
 				case HotkeyButton.SecondaryFirearm:
 					{
-						if(!IsTeleportMode)
+						if(trapTimer <= 0f)
 						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
-								Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
-						}
-						else
-						{
-							if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
-								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+							if(!IsTeleportMode)
+							{
+								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+									Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
+							}
+							else
+							{
+								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
+									SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+							}
+							trapTimer = trapTimerDefault;
 						}
 						break;
 					}
@@ -199,7 +211,7 @@ namespace SanyaPlugin
 					{
 						if(!isHiding)
 						{
-							if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+							if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal && hideTimer <= 0f)
 							{
 								bool canHide = false;
 								foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
@@ -227,6 +239,7 @@ namespace SanyaPlugin
 							player.DisableEffect<Amnesia>();
 							player.DisableEffect<Deafened>();
 							isHiding = false;
+							hideTimer = hideTimerDefault;
 						}
 						break;
 					}
@@ -288,6 +301,12 @@ namespace SanyaPlugin
 
 			if(captureTimer > 0)
 				captureTimer -= Time.deltaTime;
+
+			if(trapTimer > 0)
+				trapTimer -= Time.deltaTime;
+
+			if(hideTimer > 0)
+				hideTimer -= Time.deltaTime;
 		}
 
 		private void CheckVoiceChatting()
@@ -542,12 +561,11 @@ namespace SanyaPlugin
 				{
 					case PlayableScps.Scp096PlayerState.TryNotToCry:
 					case PlayableScps.Scp096PlayerState.Docile:
-						if(scp096.IsPreWindup) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"PreWindup:{ Mathf.RoundToInt(scp096._preWindupTime)}s", 6));
-						else if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Docile:{ Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
-						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("Ready for Enrage...", 6));
+						if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"静寂中:{ Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
+						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.Enraging:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"激怒中:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.PryGate:
 					case PlayableScps.Scp096PlayerState.Enraged:
@@ -555,25 +573,25 @@ namespace SanyaPlugin
 					case PlayableScps.Scp096PlayerState.Charging:
 						{
 							var sortedTargetDistance = scp096._targets.Select(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
-							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Enraging:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s\nNear targets:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
+							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"狂乱中:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s\n最寄りの対象:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
 							break;
 						}
 					case PlayableScps.Scp096PlayerState.Calming:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"Calming:{Mathf.RoundToInt(scp096._calmingTime)}s", 6));
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"鎮静中:{Mathf.RoundToInt(scp096._calmingTime)}s", 6));
 						break;
 					default:
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 				}
 			}
-			else if(player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled)
+			else if(player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp106ExHotkey)
 			{
 				string text = string.Empty;
 
 				text += "<align=left><alpha=#44>　ExHotkey:\n";
-				text += $"　　　[武器]:{(IsTeleportMode ? "トラップへテレポート" : "トラップの設置")}\n";
+				text += $"　　　[武器]:{(IsTeleportMode ? "トラップへテレポート" : "トラップの設置")}({(trapTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(trapTimer)}秒")})\n";
 				text += $"[キーカード]:トラップで捕獲({(captureTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(captureTimer)}秒")})\n";
-				text += $"[グレネード]:トラップに隠れる\n";
+				text += $"[グレネード]:トラップに隠れる({(hideTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(hideTimer)}秒")})\n";
 				text += $"　　　[回復]:テレポートの切替";
 				text += "</align>\n<alpha=#FF><align=center>";
 
