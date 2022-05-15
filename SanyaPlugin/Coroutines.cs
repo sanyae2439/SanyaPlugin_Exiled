@@ -153,7 +153,7 @@ namespace SanyaPlugin
 				if(role == RoleType.Scp173 && Map.IsLczDecontaminated) yield break;
 				if(!RoundSummary.RoundInProgress()) yield break;
 
-				var spectators = Player.Get(RoleType.Spectator);
+				var spectators = Player.Get(RoleType.Spectator).Where(x => !x.IsOverwatchEnabled);
 				if(!spectators.Any()) continue;
 
 				var target = spectators.Random();
@@ -190,6 +190,18 @@ namespace SanyaPlugin
 			{
 				i.FlickerableLightController.Network_warheadLightOverride = false;
 				i.FlickerableLightController.Network_warheadLightColor = FlickerableLightController.DefaultWarheadColor;
+			}
+		}
+
+		public static IEnumerator<float> PreAnnounce()
+		{
+			yield return Timing.WaitForSeconds(7f);
+
+			int counter = 0;
+			while(counter++ < 5)
+			{
+				Map.PlayAmbientSound(7);
+				yield return Timing.WaitForSeconds(1f);
 			}
 		}
 	}
