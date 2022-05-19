@@ -292,6 +292,7 @@ namespace SanyaPlugin
 									if(hub != null)
 									{
 										var target = Player.Get(hub);
+										if(!player.IsEnemy(target.Role.Team)) break;
 
 										if(target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
 											lightMove.Timer = 60f;
