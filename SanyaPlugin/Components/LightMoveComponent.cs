@@ -32,6 +32,9 @@ namespace SanyaPlugin.Components
 			if(TargetPlayer.Role == RoleType.None || TargetPlayer.Role == RoleType.Spectator || Timer <= 0f)
 				Object.Destroy(this);
 
+			if(TargetPlayer.Role.Color != SourceObject.LightColor)
+				SourceObject.NetworkLightColor = TargetPlayer.Role.Color;
+
 			SourceObject.transform.position = TargetPlayer.Position + Vector3.up;
 			Timer -= Time.deltaTime;
 		}
