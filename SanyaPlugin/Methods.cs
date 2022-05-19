@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using InventorySystem;
+using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
 using Mirror;
@@ -278,6 +279,8 @@ namespace SanyaPlugin
 				? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].additionalTime
 				: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].additionalTime;
 
+		public static GameObject GetCurrentRoomsSpeaker(Room room) => GameObject.Find($"{room.transform.parent.name}/{room.name}/Scp079Speaker");
+
 		public static void SetAmmoConfigs()
 		{
 			foreach(var role in CharacterClassManager._staticClasses.Where(x => x.team != Team.SCP && x.team != Team.RIP))
@@ -291,6 +294,26 @@ namespace SanyaPlugin
 					foreach(var ammo in value2)
 						InventorySystem.Configs.StartingInventories.DefinedInventories[role.roleId].Ammo[ammo.Key] = ammo.Value;
 				}
+		}
+
+		public static void PlayGunSoundFixed(Player player, Vector3 position, ItemType itemType, byte volume, byte audioClipId = 0)
+		{
+			GunAudioMessage message = new()
+			{
+				Weapon = itemType,
+				AudioClipId = audioClipId,
+				MaxDistance = volume,
+				ShooterNetId = 0U,
+			};
+
+			Vector3 to = position - player.GameObject.transform.position;
+			float angle = Vector3.Angle(Vector3.forward, to);
+			if(Vector3.Dot(to.normalized, Vector3.left) > 0f)
+				angle = 360f - angle;
+			message.ShooterDirection = (byte)Mathf.RoundToInt(angle / 1.44f);
+			message.ShooterRealDistance = (byte)Mathf.RoundToInt(Mathf.Min(to.magnitude, 255f));
+
+			player.Connection.Send(message);
 		}
 
 		public static string TranslateZoneName(ZoneType zone)

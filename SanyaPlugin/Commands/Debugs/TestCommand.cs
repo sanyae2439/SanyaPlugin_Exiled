@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using CommandSystem;
+using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
 
@@ -23,6 +25,7 @@ namespace SanyaPlugin.Commands.Debugs
 				return false;
 			}
 
+			Player player = Player.Get(sender);
 			response = $"args:{arguments.Join(null, " ")}\n";
 			// testing zone start
 

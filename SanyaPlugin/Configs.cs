@@ -230,6 +230,9 @@ namespace SanyaPlugin
 		[Description("SCP-079が部屋を移動した際にスキャンするように")]
 		public bool Scp079ScanRoom { get; set; } = false;
 
+		[Description("SCP-079にEX-Hotkeyを適用する")]
+		public bool Scp079ExHotkey { get; set; } = false;
+
 		public void ParseConfig()
 		{
 			try

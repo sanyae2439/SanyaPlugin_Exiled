@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using MEC;
@@ -193,15 +194,71 @@ namespace SanyaPlugin
 			}
 		}
 
-		public static IEnumerator<float> PreAnnounce()
+		public static IEnumerator<float> PreAnnounce(SpawnableTeamType team)
 		{
-			yield return Timing.WaitForSeconds(7f);
+			yield return Timing.WaitForSeconds(team == SpawnableTeamType.NineTailedFox ? 12f : 8f);
 
 			int counter = 0;
-			while(counter++ < 5)
+			while(counter++ < 3)
 			{
 				Map.PlayAmbientSound(7);
 				yield return Timing.WaitForSeconds(1f);
+			}
+		}
+
+		public static IEnumerator<float> Scp079ScanningHumans(Player player)
+		{
+			player.ReferenceHub.scp079PlayerScript._serverIndicatorUpdateTimer = -12f;
+			player.ReferenceHub.scp079PlayerScript.TargetSetupIndicators(player.Connection, new List<Vector3>());
+
+			int counter = 0;
+			while(counter++ < 10)
+			{
+				var list = new List<Vector3>();
+				if(player.Role != RoleType.Scp079) break;
+				if(player.CurrentRoom.Zone == ZoneType.Surface) continue;
+
+				foreach(var target in Player.List.Where(x => x.IsHuman && x.Zone == player.Zone))
+					list.Add(target.CameraTransform.position);
+
+				player.ReferenceHub.scp079PlayerScript.TargetSetupIndicators(player.Connection, list);
+				yield return Timing.WaitForSeconds(1.3f);
+			}
+			player.ReferenceHub.scp079PlayerScript.TargetSetupIndicators(player.Connection, new List<Vector3>());
+		}
+
+		public static IEnumerator<float> Scp079RoomFlashing(Player player)
+		{
+			Methods.SpawnGrenade(player.CurrentRoom.Position + Vector3.up, ItemType.GrenadeFlash, 0.35f, player.ReferenceHub);
+			yield return Timing.WaitForSeconds(0.35f);
+			foreach(var target in player.CurrentRoom.Players.Where(x => x.IsHuman))
+			{
+				target.EnableEffect<Flashed>(3f, true);
+				player.SendHitmarker();
+			}
+			yield return Timing.WaitForSeconds(0.25f);
+			Timing.CallDelayed(0.25f, Segment.FixedUpdate, () => player.CurrentRoom.TurnOffLights(8f));
+		}
+
+		public static IEnumerator<float> Scp079PlayDummySound(Player player)
+		{
+			var speaker = Methods.GetCurrentRoomsSpeaker(player.CurrentRoom);
+			var itemtype = new List<ItemType>() 
+			{
+				ItemType.GunAK, 
+				ItemType.GunE11SR, 
+				ItemType.GunLogicer,
+				ItemType.GunCrossvec, 
+				ItemType.GunFSP9 
+			}.GetRandomOne();
+			if(speaker == null) yield break;
+
+			int counter = 0;
+			while(counter++ < 15)
+			{
+				foreach(var i in Player.List)
+					Methods.PlayGunSoundFixed(i, speaker.transform.position, itemtype, 120);
+				yield return Timing.WaitForSeconds(UnityEngine.Random.Range(0.05f, 0.2f));
 			}
 		}
 	}

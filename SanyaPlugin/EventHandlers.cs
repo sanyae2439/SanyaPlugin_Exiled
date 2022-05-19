@@ -752,7 +752,7 @@ namespace SanyaPlugin
 				ev.Items.InsertRange(0, bonusitems);
 
 			//SCPホットキーの初期化
-			if(plugin.Config.Scp106ExHotkey && ev.NewRole == RoleType.Scp106)
+			if((plugin.Config.Scp106ExHotkey && ev.NewRole == RoleType.Scp106) || (plugin.Config.Scp079ExHotkey && ev.NewRole == RoleType.Scp079))
 			{
 				ev.Items.Clear();
 				ev.Items.AddRange(new ItemType[]
@@ -800,11 +800,10 @@ namespace SanyaPlugin
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
 			}
 
-			//SCP-096の発狂中は無敵
-			if(plugin.Config.Scp096Rework && ev.Target.Role == RoleType.Scp096 && ev.Attacker != ev.Target && ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && scp096.Enraged)
+			//SCP-096の発狂中はダメージ激減
+			if(plugin.Config.Scp096Rework && ev.Target.Role == RoleType.Scp096 && ev.Attacker != ev.Target && ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && (scp096.Enraged || scp096.Enraging))
 			{
-				ev.IsAllowed = false;
-				return;
+				ev.Amount *= 0.01f;
 			}
 
 			//ダメージタイプ分岐
@@ -1059,7 +1058,7 @@ namespace SanyaPlugin
 			Log.Debug($"[OnProcessingHotkey] {ev.Player.Nickname} -> {ev.Hotkey}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//SCP-Hotkeys
-			if(plugin.Config.Scp106ExHotkey && ev.Player.Role.Type == RoleType.Scp106)
+			if((plugin.Config.Scp106ExHotkey && ev.Player.Role == RoleType.Scp106) || (plugin.Config.Scp079ExHotkey && ev.Player.Role == RoleType.Scp079))
 			{
 				ev.IsAllowed = false;
 				if(SanyaPluginComponent.Instances.TryGetValue(ev.Player, out var component))

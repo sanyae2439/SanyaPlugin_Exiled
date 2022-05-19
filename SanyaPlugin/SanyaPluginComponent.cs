@@ -4,11 +4,14 @@ using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using InventorySystem.Items.Firearms.Modules;
 using MapGeneration.Distributors;
 using MEC;
 using PlayerStatsSystem;
 using Respawning;
+using SanyaPlugin.Components;
 using UnityEngine;
+using Utils.Networking;
 
 namespace SanyaPlugin
 {
@@ -43,11 +46,21 @@ namespace SanyaPlugin
 		private bool isHiding = false;
 		private bool IsTeleportMode = false;
 		private float captureTimerDefault = 30f;
-		private float captureTimer = 30f;
+		private float captureTimer = 0f;
 		private float trapTimerDefault = 5f;
-		private float trapTimer = 5f;
-		private float hideTimer = 10f;
+		private float trapTimer = 0f;
 		private float hideTimerDefault = 10f;
+		private float hideTimer = 0f;
+
+		//SCP-079 ExHotkey
+		private float playgunTimerDefault = 10f;
+		private float playgunTimer = 0f;
+		private float markingTimerDefault = 30f;
+		private float markingTimer = 0f;
+		private float flashingTimerDefault = 60f;
+		private float flashingTimer = 0f;
+		private float scanningTimerDefault = 120f;
+		private float scanningTimer = 0f;
 
 		private void Start()
 		{
@@ -135,119 +148,197 @@ namespace SanyaPlugin
 
 		public void OnProcessingHotkey(HotkeyButton hotkeyButton)
 		{
-			switch(hotkeyButton)
+			if(player.Role == RoleType.Scp106)
 			{
-				case HotkeyButton.PrimaryFirearm:
-					{
-						if(trapTimer <= 0f)
+				switch(hotkeyButton)
+				{
+					case HotkeyButton.PrimaryFirearm:
 						{
-							if(!IsTeleportMode)
+							if(trapTimer <= 0f)
 							{
-								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
-									Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
-							}
-							else
-							{
-								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
-									SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
-							}
-							trapTimer = trapTimerDefault;
-						}
-						break;
-					}
-				case HotkeyButton.SecondaryFirearm:
-					{
-						if(trapTimer <= 0f)
-						{
-							if(!IsTeleportMode)
-							{
-								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
-									Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
-							}
-							else
-							{
-								if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
-									SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
-							}
-							trapTimer = trapTimerDefault;
-						}
-						break;
-					}
-				case HotkeyButton.Keycard:
-					{
-						if(captureTimer <= 0f)
-						{
-							HashSet<Player> targets = new HashSet<Player>();
-							foreach(var i in Player.List.Where(x => x.IsHuman))
-								foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
-									if(Vector3.Distance(i.Position, sinkhole.transform.position) <= 5f)
-										targets.Add(i);
-							foreach(var target in targets)
-							{
-								player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
-								player.ReferenceHub.scp106PlayerScript.TargetHitMarker(player.Connection, player.ReferenceHub.scp106PlayerScript.captureCooldown);
-								player.ReferenceHub.scp106PlayerScript._currentServerCooldown = player.ReferenceHub.scp106PlayerScript.captureCooldown;
-								if(Scp106PlayerScript._blastDoor.isClosed)
+								if(!IsTeleportMode)
 								{
-									player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
-									target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, DeathTranslations.PocketDecay));
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+										Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
 								}
 								else
 								{
-									foreach(Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
-									{
-										scp079PlayerScript.ServerProcessKillAssist(target.ReferenceHub, ExpGainType.PocketAssist);
-									}
-									target.ReferenceHub.scp106PlayerScript.GrabbedPosition = target.ReferenceHub.playerMovementSync.RealModelPosition;
-									target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 40f, DeathTranslations.PocketDecay));
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
+										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
 								}
-								target.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
+								trapTimer = trapTimerDefault;
 							}
-							captureTimer = captureTimerDefault;
+							break;
 						}
-						break;
-					}
-				case HotkeyButton.Grenade:
-					{
-						if(!isHiding)
+					case HotkeyButton.SecondaryFirearm:
 						{
-							if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal && hideTimer <= 0f)
+							if(trapTimer <= 0f)
 							{
-								bool canHide = false;
-								foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
-									if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 5f)
-										canHide = true;
-
-								if(canHide)
+								if(!IsTeleportMode)
 								{
-									player.Scale = Vector3.one / 5f;
-									player.Position += Vector3.up;
-									player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-									player.EnableEffect<Invisible>();
-									player.EnableEffect<Amnesia>();
-									player.EnableEffect<Deafened>();
-									isHiding = true;
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+										Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
+								}
+								else
+								{
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
+										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+								}
+								trapTimer = trapTimerDefault;
+							}
+							break;
+						}
+					case HotkeyButton.Keycard:
+						{
+							if(captureTimer <= 0f)
+							{
+								HashSet<Player> targets = new HashSet<Player>();
+								foreach(var i in Player.List.Where(x => x.IsHuman))
+									foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
+										if(Vector3.Distance(i.Position, sinkhole.transform.position) <= 5f)
+											targets.Add(i);
+								foreach(var target in targets)
+								{
+									player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+									player.ReferenceHub.scp106PlayerScript.TargetHitMarker(player.Connection, player.ReferenceHub.scp106PlayerScript.captureCooldown);
+									player.ReferenceHub.scp106PlayerScript._currentServerCooldown = player.ReferenceHub.scp106PlayerScript.captureCooldown;
+									if(Scp106PlayerScript._blastDoor.isClosed)
+									{
+										player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, DeathTranslations.PocketDecay));
+									}
+									else
+									{
+										foreach(Scp079PlayerScript scp079PlayerScript in Scp079PlayerScript.instances)
+										{
+											scp079PlayerScript.ServerProcessKillAssist(target.ReferenceHub, ExpGainType.PocketAssist);
+										}
+										target.ReferenceHub.scp106PlayerScript.GrabbedPosition = target.ReferenceHub.playerMovementSync.RealModelPosition;
+										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 40f, DeathTranslations.PocketDecay));
+									}
+									target.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
+								}
+								captureTimer = captureTimerDefault;
+							}
+							break;
+						}
+					case HotkeyButton.Grenade:
+						{
+							if(!isHiding)
+							{
+								if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal && hideTimer <= 0f)
+								{
+									bool canHide = false;
+									foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
+										if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 5f)
+											canHide = true;
+
+									if(canHide)
+									{
+										player.Scale = Vector3.one / 5f;
+										player.Position += Vector3.up;
+										player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+										player.EnableEffect<Invisible>();
+										player.EnableEffect<Amnesia>();
+										player.EnableEffect<Deafened>();
+										isHiding = true;
+									}
 								}
 							}
+							else
+							{
+								player.Scale = Vector3.one;
+								player.Position += Vector3.up;
+								player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+								player.DisableEffect<Invisible>();
+								player.DisableEffect<Amnesia>();
+								player.DisableEffect<Deafened>();
+								isHiding = false;
+								hideTimer = hideTimerDefault;
+							}
+							break;
 						}
-						else
+					case HotkeyButton.Medical:
 						{
-							player.Scale = Vector3.one;
-							player.Position += Vector3.up;
-							player.ReferenceHub.fpc.NetworkforceStopInputs = false;
-							player.DisableEffect<Invisible>();
-							player.DisableEffect<Amnesia>();
-							player.DisableEffect<Deafened>();
-							isHiding = false;
-							hideTimer = hideTimerDefault;
+							IsTeleportMode = !IsTeleportMode;
+							break;
 						}
-						break;
-					}
-				case HotkeyButton.Medical:
-					{
-						IsTeleportMode = !IsTeleportMode;
-						break;
-					}
+				}
+			}
+			else if(player.Role == RoleType.Scp079)
+			{
+				switch(hotkeyButton)
+				{
+					case HotkeyButton.PrimaryFirearm:
+					case HotkeyButton.SecondaryFirearm:
+						{
+							if(playgunTimer <= 0f && Methods.GetCurrentRoomsSpeaker(player.CurrentRoom) != null)
+							{
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079PlayDummySound(player), Segment.FixedUpdate));
+								playgunTimer = playgunTimerDefault;
+							}
+							break;
+						}			
+					case HotkeyButton.Keycard:
+						{
+							if(markingTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 1)
+							{
+								if(Physics.Raycast(player.ReferenceHub.scp079PlayerScript.currentCamera.transform.position, 
+									player.ReferenceHub.scp079PlayerScript.currentCamera.targetPosition.forward, 
+									out var raycastHit, 
+									StandardHitregBase.HitregMask))
+								{
+									var hub = raycastHit.collider.GetComponentInParent<ReferenceHub>();
+									if(hub != null)
+									{
+										var target = Player.Get(hub);
+
+										if(target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
+											lightMove.Timer = 60f;
+										else
+											target.GameObject.AddComponent<LightMoveComponent>().Timer = 60f;
+
+										target.EnableEffect<Concussed>(5f);
+
+										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 5f, DeathTranslations.Poisoned));
+
+										player.SendHitmarker();
+
+										markingTimer = markingTimerDefault;
+									}
+									else
+									{
+										new DisruptorHitreg.DisruptorHitMessage()
+										{
+											Position = raycastHit.point + raycastHit.normal * 0.1f,
+											Rotation = new LowPrecisionQuaternion(Quaternion.LookRotation(-raycastHit.normal))
+										}.SendToAuthenticated();
+									}
+
+								}
+								
+							}
+							break;
+						}
+					case HotkeyButton.Grenade:
+						{
+							if(flashingTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 2)
+							{
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079RoomFlashing(player), Segment.FixedUpdate));
+								flashingTimer = flashingTimerDefault;
+							}
+							break;
+						}
+					case HotkeyButton.Medical:
+						{
+							if(scanningTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 3)
+							{
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079ScanningHumans(player), Segment.FixedUpdate));
+								scanningTimer = scanningTimerDefault;
+							}
+							break;
+						}
+				}
 			}
 		}
 
@@ -301,12 +392,19 @@ namespace SanyaPlugin
 
 			if(captureTimer > 0)
 				captureTimer -= Time.deltaTime;
-
 			if(trapTimer > 0)
 				trapTimer -= Time.deltaTime;
-
 			if(hideTimer > 0)
 				hideTimer -= Time.deltaTime;
+
+			if(playgunTimer > 0)
+				playgunTimer -= Time.deltaTime;
+			if(markingTimer > 0)
+				markingTimer -= Time.deltaTime;
+			if(flashingTimer > 0)
+				flashingTimer -= Time.deltaTime;
+			if(scanningTimer > 0)
+				scanningTimer -= Time.deltaTime;
 		}
 
 		private void CheckVoiceChatting()
@@ -330,7 +428,7 @@ namespace SanyaPlugin
 
 			string message = string.Empty;
 			if(player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
-				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{player.CurrentRoom.Type}</color></size>\n";
+				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{Methods.TranslateRoomName(player.CurrentRoom.Type)}</color></size>\n";
 			else
 			{
 				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP && x.Role.Team != Team.CHI);
@@ -546,15 +644,6 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
-			else if(player.Role == RoleType.Scp079)
-			{
-				string text = string.Empty;
-
-				if(player.ReferenceHub.scp079PlayerScript.Lvl > 0)
-					text += player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f ? "LockDown:Ready" : $"LockDown:Cooldown({Mathf.RoundToInt(player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown)})";
-
-				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
-			}
 			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
 			{
 				switch(scp096.PlayerState)
@@ -583,6 +672,19 @@ namespace SanyaPlugin
 						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 						break;
 				}
+			}
+			else if(player.Role == RoleType.Scp079 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp079ExHotkey)
+			{
+				string text = string.Empty;
+
+				text += "<align=left><alpha=#44>　ExHotkey:\n";
+				text += $"　　　[武器]:銃声再生({(playgunTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(playgunTimer)}秒")})\n";
+				text += $"[キーカード]:マーキングビーム({(markingTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 1 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(markingTimer)}秒")})\n";
+				text += $"[グレネード]:ライトフラッシュ({(flashingTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 2 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(flashingTimer)}秒")})\n";
+				text += $"　　　[回復]:レーダースキャン({(scanningTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 3 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(scanningTimer)}秒")})";
+				text += "</align>\n<alpha=#FF><align=center>";
+
+				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
 			else if(player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp106ExHotkey)
 			{
