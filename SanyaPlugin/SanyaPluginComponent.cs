@@ -288,6 +288,12 @@ namespace SanyaPlugin
 									out var raycastHit, 
 									StandardHitregBase.HitregMask))
 								{
+									new DisruptorHitreg.DisruptorHitMessage()
+									{
+										Position = raycastHit.point + raycastHit.normal * 0.1f,
+										Rotation = new LowPrecisionQuaternion(Quaternion.LookRotation(-raycastHit.normal))
+									}.SendToAuthenticated();
+
 									var hub = raycastHit.collider.GetComponentInParent<ReferenceHub>();
 									if(hub != null)
 									{
@@ -301,23 +307,13 @@ namespace SanyaPlugin
 
 										target.EnableEffect<Concussed>(5f);
 
-										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 5f, DeathTranslations.Poisoned));
+										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(player.ReferenceHub), 5f));
 
 										player.SendHitmarker();
 
 										markingTimer = markingTimerDefault;
 									}
-									else
-									{
-										new DisruptorHitreg.DisruptorHitMessage()
-										{
-											Position = raycastHit.point + raycastHit.normal * 0.1f,
-											Rotation = new LowPrecisionQuaternion(Quaternion.LookRotation(-raycastHit.normal))
-										}.SendToAuthenticated();
-									}
-
-								}
-								
+								}						
 							}
 							break;
 						}
