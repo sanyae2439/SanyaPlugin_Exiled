@@ -18,10 +18,10 @@ namespace SanyaPlugin
 	public class SanyaPluginComponent : MonoBehaviour
 	{
 
-		public static readonly Dictionary<Player, SanyaPluginComponent> Instances = new Dictionary<Player, SanyaPluginComponent>();
-		public static readonly HashSet<Player> scplists = new HashSet<Player>();
+		public static readonly Dictionary<Player, SanyaPluginComponent> Instances = new();
+		public static readonly HashSet<Player> scplists = new();
 
-		public Player player { get; private set; }
+		public Player Player { get; private set; }
 		public AhpStat.AhpProcess Shield { get; private set; }
 		public bool DisableHud = false;
 
@@ -64,19 +64,19 @@ namespace SanyaPlugin
 
 		private void Start()
 		{
-			player = Player.Get(gameObject);
-			if(!Instances.TryGetValue(player, out _))
-				Instances.Add(player, this);
+			Player = Player.Get(gameObject);
+			if(!Instances.TryGetValue(Player, out _))
+				Instances.Add(Player, this);
 			_hudTemplate = _hudTemplate.Replace("[VERSION]", $"Ver{SanyaPlugin.Instance.Version}/{SanyaPlugin.Instance.ExiledFullVersion}");
-			sinkHoleEffect = player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>();
+			sinkHoleEffect = Player.ReferenceHub.playerEffectsController.GetEffect<SinkHole>();
 		}
 
 		private void OnDestroy()
 		{
-			if(scplists.Contains(player))
-				scplists.Remove(player);
-			if(Instances.TryGetValue(player, out _))
-				Instances.Remove(player);
+			if(scplists.Contains(Player))
+				scplists.Remove(Player);
+			if(Instances.TryGetValue(Player, out _))
+				Instances.Remove(Player);
 		}
 
 		private void FixedUpdate()
@@ -139,16 +139,16 @@ namespace SanyaPlugin
 		{
 			if(Shield != null)
 			{
-				if(player.Role == RoleType.Scp049)
+				if(Player.Role == RoleType.Scp049)
 					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp049TimeUntilRegen;
-				else if(player.Role == RoleType.Scp106)
+				else if(Player.Role == RoleType.Scp106)
 					Shield.SustainTime = SanyaPlugin.Instance.Config.Scp106TimeUntilRegen;
 			}
 		}
 
 		public void OnProcessingHotkey(HotkeyButton hotkeyButton)
 		{
-			if(player.Role == RoleType.Scp106)
+			if(Player.Role == RoleType.Scp106)
 			{
 				switch(hotkeyButton)
 				{
@@ -158,13 +158,13 @@ namespace SanyaPlugin
 							{
 								if(!IsTeleportMode)
 								{
-									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1 && Player.ReferenceHub.playerMovementSync.Grounded && !Player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
 										Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[1].netIdentity, Get106PortalDiff());
 								}
 								else
 								{
 									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 1)
-										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(Player, SanyaPlugin.Instance.Handlers.Sinkholes[1].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
 								}
 								trapTimer = trapTimerDefault;
 							}
@@ -176,13 +176,13 @@ namespace SanyaPlugin
 							{
 								if(!IsTeleportMode)
 								{
-									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
+									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2 && Player.ReferenceHub.playerMovementSync.Grounded && !Player.ReferenceHub.scp106PlayerScript.goingViaThePortal)
 										Methods.MoveNetworkIdentityObject(SanyaPlugin.Instance.Handlers.Sinkholes[2].netIdentity, Get106PortalDiff());
 								}
 								else
 								{
 									if(SanyaPlugin.Instance.Handlers.Sinkholes.Count > 2)
-										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
+										SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp106CustomTeleport(Player, SanyaPlugin.Instance.Handlers.Sinkholes[2].transform.position + Vector3.up * 2f), Segment.FixedUpdate));
 								}
 								trapTimer = trapTimerDefault;
 							}
@@ -199,13 +199,13 @@ namespace SanyaPlugin
 											targets.Add(i);
 								foreach(var target in targets)
 								{
-									player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
-									player.ReferenceHub.scp106PlayerScript.TargetHitMarker(player.Connection, player.ReferenceHub.scp106PlayerScript.captureCooldown);
-									player.ReferenceHub.scp106PlayerScript._currentServerCooldown = player.ReferenceHub.scp106PlayerScript.captureCooldown;
+									Player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+									Player.ReferenceHub.scp106PlayerScript.TargetHitMarker(Player.Connection, Player.ReferenceHub.scp106PlayerScript.captureCooldown);
+									Player.ReferenceHub.scp106PlayerScript._currentServerCooldown = Player.ReferenceHub.scp106PlayerScript.captureCooldown;
 									if(Scp106PlayerScript._blastDoor.isClosed)
 									{
-										player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
-										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, DeathTranslations.PocketDecay));
+										Player.ReferenceHub.characterClassManager.RpcPlaceBlood(target.Position, 1, 2f);
+										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(Player.ReferenceHub, DeathTranslations.PocketDecay));
 									}
 									else
 									{
@@ -214,7 +214,7 @@ namespace SanyaPlugin
 											scp079PlayerScript.ServerProcessKillAssist(target.ReferenceHub, ExpGainType.PocketAssist);
 										}
 										target.ReferenceHub.scp106PlayerScript.GrabbedPosition = target.ReferenceHub.playerMovementSync.RealModelPosition;
-										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 40f, DeathTranslations.PocketDecay));
+										target.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(Player.ReferenceHub, 40f, DeathTranslations.PocketDecay));
 									}
 									target.ReferenceHub.playerEffectsController.EnableEffect<Corroding>();
 								}
@@ -226,33 +226,33 @@ namespace SanyaPlugin
 						{
 							if(!isHiding)
 							{
-								if(player.ReferenceHub.playerMovementSync.Grounded && !player.ReferenceHub.scp106PlayerScript.goingViaThePortal && hideTimer <= 0f)
+								if(Player.ReferenceHub.playerMovementSync.Grounded && !Player.ReferenceHub.scp106PlayerScript.goingViaThePortal && hideTimer <= 0f)
 								{
 									bool canHide = false;
 									foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
-										if(Vector3.Distance(player.Position, sinkhole.transform.position) <= 5f)
+										if(Vector3.Distance(Player.Position, sinkhole.transform.position) <= 5f)
 											canHide = true;
 
 									if(canHide)
 									{
-										player.Scale = Vector3.one / 5f;
-										player.Position += Vector3.up;
-										player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-										player.EnableEffect<Invisible>();
-										player.EnableEffect<Amnesia>();
-										player.EnableEffect<Deafened>();
+										Player.Scale = Vector3.one / 5f;
+										Player.Position += Vector3.up;
+										Player.ReferenceHub.fpc.NetworkforceStopInputs = true;
+										Player.EnableEffect<Invisible>();
+										Player.EnableEffect<Amnesia>();
+										Player.EnableEffect<Deafened>();
 										isHiding = true;
 									}
 								}
 							}
 							else
 							{
-								player.Scale = Vector3.one;
-								player.Position += Vector3.up;
-								player.ReferenceHub.fpc.NetworkforceStopInputs = false;
-								player.DisableEffect<Invisible>();
-								player.DisableEffect<Amnesia>();
-								player.DisableEffect<Deafened>();
+								Player.Scale = Vector3.one;
+								Player.Position += Vector3.up;
+								Player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+								Player.DisableEffect<Invisible>();
+								Player.DisableEffect<Amnesia>();
+								Player.DisableEffect<Deafened>();
 								isHiding = false;
 								hideTimer = hideTimerDefault;
 							}
@@ -265,26 +265,26 @@ namespace SanyaPlugin
 						}
 				}
 			}
-			else if(player.Role == RoleType.Scp079)
+			else if(Player.Role == RoleType.Scp079)
 			{
 				switch(hotkeyButton)
 				{
 					case HotkeyButton.PrimaryFirearm:
 					case HotkeyButton.SecondaryFirearm:
 						{
-							if(playgunTimer <= 0f && Methods.GetCurrentRoomsSpeaker(player.CurrentRoom) != null)
+							if(playgunTimer <= 0f && Methods.GetCurrentRoomsSpeaker(Player.CurrentRoom) != null)
 							{
-								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079PlayDummySound(player), Segment.FixedUpdate));
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079PlayDummySound(Player), Segment.FixedUpdate));
 								playgunTimer = playgunTimerDefault;
 							}
 							break;
 						}			
 					case HotkeyButton.Keycard:
 						{
-							if(markingTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 1)
+							if(markingTimer <= 0f && Player.ReferenceHub.scp079PlayerScript.Lvl >= 1)
 							{
-								if(Physics.Raycast(player.ReferenceHub.scp079PlayerScript.currentCamera.transform.position, 
-									player.ReferenceHub.scp079PlayerScript.currentCamera.targetPosition.forward, 
+								if(Physics.Raycast(Player.ReferenceHub.scp079PlayerScript.currentCamera.transform.position, 
+									Player.ReferenceHub.scp079PlayerScript.currentCamera.targetPosition.forward, 
 									out var raycastHit, 
 									StandardHitregBase.HitregMask))
 								{
@@ -298,7 +298,7 @@ namespace SanyaPlugin
 									if(hub != null)
 									{
 										var target = Player.Get(hub);
-										if(!player.IsEnemy(target.Role.Team)) break;
+										if(!Player.IsEnemy(target.Role.Team)) break;
 
 										if(target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
 											lightMove.Timer = 60f;
@@ -307,9 +307,9 @@ namespace SanyaPlugin
 
 										target.EnableEffect<Concussed>(5f);
 
-										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(player.ReferenceHub), 20f));
+										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(Player.ReferenceHub), 20f));
 
-										player.SendHitmarker();
+										Player.SendHitmarker();
 
 										markingTimer = markingTimerDefault;
 									}
@@ -319,18 +319,18 @@ namespace SanyaPlugin
 						}
 					case HotkeyButton.Grenade:
 						{
-							if(flashingTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 2)
+							if(flashingTimer <= 0f && Player.ReferenceHub.scp079PlayerScript.Lvl >= 2)
 							{
-								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079RoomFlashing(player), Segment.FixedUpdate));
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079RoomFlashing(Player), Segment.FixedUpdate));
 								flashingTimer = flashingTimerDefault;
 							}
 							break;
 						}
 					case HotkeyButton.Medical:
 						{
-							if(scanningTimer <= 0f && player.ReferenceHub.scp079PlayerScript.Lvl >= 3)
+							if(scanningTimer <= 0f && Player.ReferenceHub.scp079PlayerScript.Lvl >= 3)
 							{
-								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079ScanningHumans(player), Segment.FixedUpdate));
+								SanyaPlugin.Instance.Handlers.roundCoroutines.Add(Timing.RunCoroutine(Coroutines.Scp079ScanningHumans(Player), Segment.FixedUpdate));
 								scanningTimer = scanningTimerDefault;
 							}
 							break;
@@ -341,7 +341,7 @@ namespace SanyaPlugin
 
 		private Vector3 Get106PortalDiff()
 		{
-			if(Physics.Raycast(new Ray(player.Position, -player.GameObject.transform.up), out var raycastHit, 10f, player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
+			if(Physics.Raycast(new Ray(Player.Position, -Player.GameObject.transform.up), out var raycastHit, 10f, Player.ReferenceHub.scp106PlayerScript.teleportPlacementMask))
 				return raycastHit.point - Vector3.up;
 			return Vector3.zero;
 		}
@@ -351,7 +351,7 @@ namespace SanyaPlugin
 			if(Shield != null)
 				ResetShield();
 
-			Shield = player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerAddProcess(0f, 0f, 0f, 1f, 0f, true);
+			Shield = Player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerAddProcess(0f, 0f, 0f, 1f, 0f, true);
 
 			if(roleType == RoleType.Scp049)
 			{
@@ -370,7 +370,7 @@ namespace SanyaPlugin
 		private void ResetShield()
 		{
 			if(Shield != null)
-				player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(Shield.KillCode);
+				Player.ReferenceHub.playerStats.GetModule<AhpStat>().ServerKillProcess(Shield.KillCode);
 
 			Shield = null;
 		}
@@ -408,33 +408,33 @@ namespace SanyaPlugin
 		{
 			if(!SanyaPlugin.Instance.Config.Scp939CanSeeVoiceChatting) return;
 
-			if(player.IsHuman() && (player.Radio._syncPrimaryVoicechatButton || player.Radio._syncAltVoicechatButton))
-				player.ReferenceHub.footstepSync._visionController.MakeNoise(35f);
+			if(Player.IsHuman() && (Player.Radio._syncPrimaryVoicechatButton || Player.Radio._syncAltVoicechatButton))
+				Player.ReferenceHub.footstepSync._visionController.MakeNoise(35f);
 		}
 
 		private void CheckSinkholeDistance()
 		{
 			foreach(var sinkhole in SanyaPlugin.Instance.Handlers.Sinkholes)
-				if(Vector3.Distance(player.Position, sinkhole.transform.position) > 7f && sinkHoleEffect.IsEnabled)
-					player.DisableEffect<SinkHole>();
+				if(Vector3.Distance(Player.Position, sinkhole.transform.position) > 7f && sinkHoleEffect.IsEnabled)
+					Player.DisableEffect<SinkHole>();
 		}
 
 		private void Check079Spot()
 		{
-			if(!SanyaPlugin.Instance.Config.Scp079ScanRoom || player.Role != RoleType.Scp079 || player.CurrentRoom == null || player.ReferenceHub.scp079PlayerScript.currentCamera == _lastcam) return;
+			if(!SanyaPlugin.Instance.Config.Scp079ScanRoom || Player.Role != RoleType.Scp079 || Player.CurrentRoom == null || Player.ReferenceHub.scp079PlayerScript.currentCamera == _lastcam) return;
 
 			string message = string.Empty;
-			if(player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
-				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{Methods.TranslateRoomName(player.CurrentRoom.Type)}</color></size>\n";
+			if(Player.CurrentRoom.GetComponentsInChildren<Scp079Generator>().Any(x => x.Activating))
+				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{Methods.TranslateRoomName(Player.CurrentRoom.Type)}</color></size>\n";
 			else
 			{
-				var target = player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP && x.Role.Team != Team.CHI);
+				var target = Player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP && x.Role.Team != Team.CHI);
 				if(target != null)
 				{
-					if(player.CurrentRoom.Zone == Exiled.API.Enums.ZoneType.Surface)
-						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(player.CurrentRoom.Zone)}</color></size>\n";
+					if(Player.CurrentRoom.Zone == Exiled.API.Enums.ZoneType.Surface)
+						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(Player.CurrentRoom.Zone)}</color></size>\n";
 					else
-						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(player.CurrentRoom.Zone)}の{Methods.TranslateRoomName(player.CurrentRoom.Type)}</color></size>\n";
+						message = $"<color=#bbee00><size=25>SCP-079が{target.ReferenceHub.characterClassManager.CurRole.fullName}を発見した\n場所：{Methods.TranslateZoneName(Player.CurrentRoom.Zone)}の{Methods.TranslateRoomName(Player.CurrentRoom.Type)}</color></size>\n";
 				}
 			}
 
@@ -442,23 +442,23 @@ namespace SanyaPlugin
 				foreach(var scp in Player.Get(Team.SCP))
 					scp.ReferenceHub.GetComponent<SanyaPluginComponent>().AddHudCenterDownText(message, 5);
 
-			_lastcam = player.ReferenceHub.scp079PlayerScript.currentCamera;
+			_lastcam = Player.ReferenceHub.scp079PlayerScript.currentCamera;
 		}
 
 		private void UpdateMyCustomText()
 		{
-			if(!player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
-			if(_prevHealth != player.Health || _prevAhp != player.ArtificialHealth)
+			if(!Player.IsAlive || !SanyaPlugin.Instance.Config.PlayersInfoShowHp) return;
+			if(_prevHealth != Player.Health || _prevAhp != Player.ArtificialHealth)
 			{
-				_prevHealth = (int)player.Health;
-				_prevAhp = (int)player.ArtificialHealth;
-				player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP{(_prevAhp != 0 ? $"\n{_prevAhp} AHP" : "")}";
+				_prevHealth = (int)Player.Health;
+				_prevAhp = (int)Player.ArtificialHealth;
+				Player.ReferenceHub.nicknameSync.Network_customPlayerInfoString = $"{_prevHealth} HP{(_prevAhp != 0 ? $"\n{_prevAhp} AHP" : "")}";
 			}
 		}
 
 		private void UpdateRespawnCounter()
 		{
-			if(!RoundSummary.RoundInProgress() || player.Role != RoleType.Spectator) return;
+			if(!RoundSummary.RoundInProgress() || Player.Role != RoleType.Spectator) return;
 
 			if(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown || RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.PlayingEntryAnimations)
 				_respawnCounter = (int)Math.Truncate(RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds);
@@ -468,15 +468,15 @@ namespace SanyaPlugin
 
 		private void UpdateScpLists()
 		{
-			if(player.Role.Team != Team.SCP && scplists.Contains(player))
+			if(Player.Role.Team != Team.SCP && scplists.Contains(Player))
 			{
-				scplists.Remove(player);
+				scplists.Remove(Player);
 				return;
 			}
 
-			if(player.Role.Team == Team.SCP && !scplists.Contains(player))
+			if(Player.Role.Team == Team.SCP && !scplists.Contains(Player))
 			{
-				scplists.Add(player);
+				scplists.Add(Player);
 				return;
 			}
 
@@ -548,7 +548,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(resultList, 26));
 			}
-			else if(player.Role.Team == Team.SCP)
+			else if(Player.Role.Team == Team.SCP)
 			{
 				string scpList = string.Empty;
 				int scp0492counter = 0;
@@ -578,7 +578,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(scpList, 7));
 			}
-			else if(player.Role.Team == Team.MTF)
+			else if(Player.Role.Team == Team.MTF)
 			{
 				string MtfList = string.Empty;
 				MtfList += $"MTF Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}\n";
@@ -591,7 +591,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(MtfList, 7));
 			}
-			else if(player.Role.Team == Team.CHI)
+			else if(Player.Role.Team == Team.CHI)
 			{
 				string CiList = string.Empty;
 				CiList += $"CI Tickets:{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.ChaosInsurgency)}\n";
@@ -603,7 +603,7 @@ namespace SanyaPlugin
 
 				curText = curText.Replace("[LIST]", FormatStringForHud(CiList, 7));
 			}
-			else if(player.Role == RoleType.Spectator)
+			else if(Player.Role == RoleType.Spectator)
 			{
 				string RespawnList = string.Empty;
 				RespawnList += $"Tickets:<color=#6fc3ff>{RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox)}</color>:";
@@ -613,7 +613,7 @@ namespace SanyaPlugin
 				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None && RespawnWaveGenerator.SpawnableTeams.TryGetValue(RespawnManager.Singleton.NextKnownTeam, out var spawnableTeamHandlerBase))
 				{
 					if(RespawnManager.Singleton._prioritySpawn)
-						if(Player.List.Where(x => x.Role == RoleType.Spectator && !x.IsOverwatchEnabled).OrderBy(x => x.ReferenceHub.characterClassManager.DeathTime).Take(spawnableTeamHandlerBase.MaxWaveSize).Contains(player))
+						if(Player.List.Where(x => x.Role == RoleType.Spectator && !x.IsOverwatchEnabled).OrderBy(x => x.ReferenceHub.characterClassManager.DeathTime).Take(spawnableTeamHandlerBase.MaxWaveSize).Contains(Player))
 							RespawnList += $"あなたは次でリスポーンします";
 						else
 							RespawnList += $"あなたは対象ではありません";
@@ -633,15 +633,15 @@ namespace SanyaPlugin
 			{
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			}
-			else if(player.Role == RoleType.Scp0492)
+			else if(Player.Role == RoleType.Scp0492)
 			{
 				string text = string.Empty;
 
-				text += $"Adrenaline Level:{(player.GetEffectIntensity<MovementBoost>() / 10) - 1}/4";
+				text += $"Adrenaline Level:{(Player.GetEffectIntensity<MovementBoost>() / 10) - 1}/4";
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
-			else if(player.Role == RoleType.Scp096 && player.CurrentScp is PlayableScps.Scp096 scp096)
+			else if(Player.Role == RoleType.Scp096 && Player.CurrentScp is PlayableScps.Scp096 scp096)
 			{
 				switch(scp096.PlayerState)
 				{
@@ -670,20 +670,20 @@ namespace SanyaPlugin
 						break;
 				}
 			}
-			else if(player.Role == RoleType.Scp079 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp079ExHotkey)
+			else if(Player.Role == RoleType.Scp079 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp079ExHotkey)
 			{
 				string text = string.Empty;
 
 				text += "<align=left><alpha=#44>　ExHotkey:\n";
 				text += $"　　　[武器]:銃声再生({(playgunTimer <= 0f ? "使用可能" : $"あと{Mathf.FloorToInt(playgunTimer)}秒")})\n";
-				text += $"[キーカード]:マーキングビーム({(markingTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 1 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(markingTimer)}秒")})\n";
-				text += $"[グレネード]:ライトフラッシュ({(flashingTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 2 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(flashingTimer)}秒")})\n";
-				text += $"　　　[回復]:レーダースキャン({(scanningTimer <= 0f ? (player.ReferenceHub.scp079PlayerScript.Lvl >= 3 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(scanningTimer)}秒")})";
+				text += $"[キーカード]:マーキングビーム({(markingTimer <= 0f ? (Player.ReferenceHub.scp079PlayerScript.Lvl >= 1 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(markingTimer)}秒")})\n";
+				text += $"[グレネード]:ライトフラッシュ({(flashingTimer <= 0f ? (Player.ReferenceHub.scp079PlayerScript.Lvl >= 2 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(flashingTimer)}秒")})\n";
+				text += $"　　　[回復]:レーダースキャン({(scanningTimer <= 0f ? (Player.ReferenceHub.scp079PlayerScript.Lvl >= 3 ? "使用可能" : "Tier不足") : $"あと{Mathf.FloorToInt(scanningTimer)}秒")})";
 				text += "</align>\n<alpha=#FF><align=center>";
 
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(text, 6));
 			}
-			else if(player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp106ExHotkey)
+			else if(Player.Role == RoleType.Scp106 && SanyaPlugin.Instance.Config.ExHudEnabled && SanyaPlugin.Instance.Config.Scp106ExHotkey)
 			{
 				string text = string.Empty;
 
@@ -723,7 +723,7 @@ namespace SanyaPlugin
 			{
 				curText = curText.Replace("[CENTER_DOWN]", string.Empty);
 			}
-			else if(player.Role.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
+			else if(Player.Role.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
 			{
 				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
 					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"{RespawnManager.Singleton.NextKnownTeam}が突入まで{_respawnCounter}秒", 7));
@@ -754,7 +754,7 @@ namespace SanyaPlugin
 				curText = curText.Replace("[BOTTOM]", "　");
 
 			_hudText = curText;
-			player.SendTextHintNotEffect(_hudText, 1.2f);
+			Player.SendTextHintNotEffect(_hudText, 1.2f);
 		}
 
 		private string FormatStringForHud(string text, int needNewLine)

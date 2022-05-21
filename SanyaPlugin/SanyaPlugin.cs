@@ -7,7 +7,6 @@ using HarmonyLib;
 using MEC;
 using MapEvents = Exiled.Events.Handlers.Map;
 using PlayerEvents = Exiled.Events.Handlers.Player;
-using Scp079Events = Exiled.Events.Handlers.Scp079;
 using Scp106Events = Exiled.Events.Handlers.Scp106;
 using ServerEvents = Exiled.Events.Handlers.Server;
 using WarheadEvents = Exiled.Events.Handlers.Warhead;
@@ -22,8 +21,8 @@ namespace SanyaPlugin
 		public override string Prefix => "sanya";
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
-		public override Version Version => new Version(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new Version(4, 0, 0);
+		public override Version Version => new(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
+		public override Version RequiredExiledVersion => new(4, 0, 0);
 
 		//インスタンス
 		public static SanyaPlugin Instance { get; private set; }

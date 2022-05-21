@@ -41,11 +41,11 @@ namespace SanyaPlugin
 	{
 		public EventHandlers(SanyaPlugin plugin) => this.plugin = plugin;
 		public readonly SanyaPlugin plugin;
-		public List<CoroutineHandle> roundCoroutines = new List<CoroutineHandle>();
+		public List<CoroutineHandle> roundCoroutines = new();
 		private bool loaded = false;
 
 		//InfoSender
-		private readonly UdpClient udpClient = new UdpClient();
+		private readonly UdpClient udpClient = new();
 		internal Task sendertask;
 		internal async Task SenderAsync()
 		{
@@ -147,21 +147,21 @@ namespace SanyaPlugin
 
 		//ShitChecker
 		internal const byte BypassFlags = (1 << 1) | (1 << 3);
-		internal static readonly NetDataReader reader = new NetDataReader();
-		internal static readonly NetDataWriter writer = new NetDataWriter();
-		internal static readonly Dictionary<string, string> kickedbyChecker = new Dictionary<string, string>();
+		internal static readonly NetDataReader reader = new();
+		internal static readonly NetDataWriter writer = new();
+		internal static readonly Dictionary<string, string> kickedbyChecker = new();
 
 		//ラウンドごとの変数
-		public readonly static Dictionary<int, string> connIdToUserIds = new Dictionary<int, string>();
-		public readonly static Dictionary<string, uint> DamagesDict = new Dictionary<string, uint>();
-		public readonly static Dictionary<string, uint> KillsDict = new Dictionary<string, uint>();
-		public readonly static Dictionary<string, bool> EscapedClassDDict = new Dictionary<string, bool>();
-		public readonly static Dictionary<string, bool> EscapedScientistDict = new Dictionary<string, bool>();
+		public static readonly Dictionary<int, string> connIdToUserIds = new();
+		public static readonly Dictionary<string, uint> DamagesDict = new();
+		public static readonly Dictionary<string, uint> KillsDict = new();
+		public static readonly Dictionary<string, bool> EscapedClassDDict = new();
+		public static readonly Dictionary<string, bool> EscapedScientistDict = new();
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedDamages;
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		internal Player Overrided = null;
-		internal List<SinkholeEnvironmentalHazard> Sinkholes = new List<SinkholeEnvironmentalHazard>();
+		internal List<SinkholeEnvironmentalHazard> Sinkholes = new();
 
 		//イベント用の変数
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;

@@ -56,18 +56,18 @@ namespace SanyaPlugin
 		{
 			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
 		};
-		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new Dictionary<RoleType, List<ItemType>>();
+		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new();
 
 		[Description("各ロールの初期所持弾数")]
 		public Dictionary<string, Dictionary<string, ushort>> DefaultAmmos { get; set; } = new Dictionary<string, Dictionary<string, ushort>>()
 		{
 			{ RoleType.ClassD.ToString(), new Dictionary<string, ushort>(){ { ItemType.Ammo556x45.ToString(), (ushort)0 }  } }
 		};
-		public readonly Dictionary<RoleType, Dictionary<ItemType, ushort>> DefaultammosParsed = new Dictionary<RoleType, Dictionary<ItemType, ushort>>();
+		public readonly Dictionary<RoleType, Dictionary<ItemType, ushort>> DefaultammosParsed = new();
 
 		[Description("Dクラスへのロールごとの追加アイテム")]
 		public Dictionary<string, string> ClassdBonusitemsForRole { get; set; } = new Dictionary<string, string>();
-		public readonly Dictionary<string, List<ItemType>> ClassdBonusitemsForRoleParsed = new Dictionary<string, List<ItemType>>();
+		public readonly Dictionary<string, List<ItemType>> ClassdBonusitemsForRoleParsed = new();
 
 		[Description("落とさないようにするアイテム")]
 		public List<string> NoDropItems { get; set; } = new List<string>();
