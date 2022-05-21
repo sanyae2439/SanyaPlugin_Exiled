@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Linq;
-using AdminToys;
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
 using HarmonyLib;
-using Mirror;
-using UnityEngine;
 
 namespace SanyaPlugin.Commands.Debugs
 {
@@ -19,8 +16,6 @@ namespace SanyaPlugin.Commands.Debugs
 		public string Description { get; } = "テスト用";
 
 		public string RequiredPermission { get; } = "sanya.debugs.test";
-
-		PrimitiveObjectToy targetPrimitive;
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
