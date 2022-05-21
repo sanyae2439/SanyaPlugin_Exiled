@@ -13,12 +13,12 @@ using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
 using InventorySystem;
+using InventorySystem.Items;
 using InventorySystem.Items.Armor;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Firearms.Attachments;
 using InventorySystem.Items.Firearms.Modules;
-using InventorySystem.Items.Keycards;
 using InventorySystem.Items.Usables.Scp244.Hypothermia;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
@@ -233,8 +233,8 @@ namespace SanyaPlugin
 				var sportPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("sportTarget"));
 				var dboyPrefab = CustomNetworkManager.singleton.spawnPrefabs.First(x => x.name.Contains("dboyTarget"));
 
-				//エレベーターA前
-				var station1 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(-0.15f, 1000f, 9.75f), Quaternion.Euler(Vector3.up * 180f));
+				//エレベーターA正面
+				var station1 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(15.5f, 1000f, -1.9f), Quaternion.Euler(Vector3.up * 270f));
 				//エレベーターB正面ドア前
 				var station2 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(86.69f, 987.2f, -70.85f), Quaternion.Euler(Vector3.up));
 				//MTFスポーン前
@@ -246,6 +246,8 @@ namespace SanyaPlugin
 				//ゲート上
 				var station6 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -68.5f), Quaternion.Euler(Vector3.up * 270f));
 				var station7 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(56.5f, 1000f, -71.85f), Quaternion.Euler(Vector3.up * 270f));
+				//エレベーターA正面2
+				var station8 = UnityEngine.Object.Instantiate(stationPrefab, new Vector3(15.5f, 1000f, 2.75f), Quaternion.Euler(Vector3.up * 270f));
 
 				//核起爆室のライト
 				var light_nuke = UnityEngine.Object.Instantiate(lightPrefab.GetComponent<LightSourceToy>());
@@ -255,26 +257,12 @@ namespace SanyaPlugin
 				light_nuke.NetworkLightColor = new Color(1f, 0f, 0f);
 
 				//核起動室上箱
-				var wall_fence1 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence1.transform.position = new Vector3(50f, 1002f, -57f);
-				wall_fence1.transform.localScale = new Vector3(0.5f, 5f, 19.7f);
-				wall_fence1.UpdatePositionServer();
-				wall_fence1.NetworkMaterialColor = Color.white;
-				wall_fence1.NetworkPrimitiveType = PrimitiveType.Cube;
-
-				var wall_fence2 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence2.transform.position = new Vector3(53.5f, 1002f, -66.61f);
-				wall_fence2.transform.localScale = new Vector3(7f, 5f, 0.5f);
-				wall_fence2.UpdatePositionServer();
-				wall_fence2.NetworkMaterialColor = Color.white;
-				wall_fence2.NetworkPrimitiveType = PrimitiveType.Cube;
-
-				var wall_fence3 = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
-				wall_fence3.transform.position = new Vector3(52.5f, 1004.24f, -57.59f);
-				wall_fence3.transform.localScale = new Vector3(5f, 0.5f, 18.5f);
-				wall_fence3.UpdatePositionServer();
-				wall_fence3.NetworkMaterialColor = Color.white;
-				wall_fence3.NetworkPrimitiveType = PrimitiveType.Cube;
+				var wall_fence = UnityEngine.Object.Instantiate(primitivePrefab.GetComponent<PrimitiveObjectToy>());
+				wall_fence.transform.position = new Vector3(52.4f, 1001f, -57.5f);
+				wall_fence.transform.localScale = new Vector3(5f, 5f, 18.5f);
+				wall_fence.UpdatePositionServer();
+				wall_fence.NetworkMaterialColor = Color.white;
+				wall_fence.NetworkPrimitiveType = PrimitiveType.Cube;
 
 				//SCP-106のコンテナ壁
 				var room106 = RoomIdentifier.AllRoomIdentifiers.First(x => x.Name == RoomName.Hcz106);
@@ -314,10 +302,9 @@ namespace SanyaPlugin
 				NetworkServer.Spawn(station5);
 				NetworkServer.Spawn(station6);
 				NetworkServer.Spawn(station7);
+				NetworkServer.Spawn(station8);
 				NetworkServer.Spawn(light_nuke.gameObject);
-				NetworkServer.Spawn(wall_fence1.gameObject);
-				NetworkServer.Spawn(wall_fence2.gameObject);
-				NetworkServer.Spawn(wall_fence3.gameObject);
+				NetworkServer.Spawn(wall_fence.gameObject);
 				NetworkServer.Spawn(wall_106_1.gameObject);
 				NetworkServer.Spawn(wall_106_2.gameObject);
 				NetworkServer.Spawn(wall_939_1.gameObject);
@@ -544,10 +531,10 @@ namespace SanyaPlugin
 					poslist.Add(Exiled.API.Features.Camera.Get(Exiled.API.Enums.CameraType.Hcz049Armory).Transform.position + Vector3.down);
 
 					foreach(var i in poslist)
-						Log.Info($"[RandomRespawnPos] TargetLists:{i}");
+						Log.Debug($"[RandomRespawnPos] TargetLists:{i}", SanyaPlugin.Instance.Config.IsDebugged);
 
 					int randomnumlast = UnityEngine.Random.Range(0, poslist.Count);
-					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y + 2, poslist[randomnumlast].z);
+					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y, poslist[randomnumlast].z);
 
 					Log.Info($"[RandomRespawnPos] Determined:{nextRespawnPos}");
 				}
@@ -723,7 +710,7 @@ namespace SanyaPlugin
 				{
 					ev.Player.ChangeEffectIntensity<MovementBoost>(20);
 					ev.Player.EnableEffect<Burned>();
-					ev.Player.EnableEffect<Deafened>();
+					ev.Player.EnableEffect<Invigorated>();
 				}));
 			if(plugin.Config.Scp049SpeedupAmount != 0 && ev.NewRole == RoleType.Scp049)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
@@ -796,15 +783,11 @@ namespace SanyaPlugin
 
 			//SCP-049の治療中ダメージ
 			if(ev.Attacker != ev.Target && ev.Target.Role == RoleType.Scp049 && ev.Target.CurrentScp is PlayableScps.Scp049 scp049 && scp049._recallInProgressServer)
-			{
 				ev.Amount *= plugin.Config.Scp049TakenDamageWhenCureMultiplier;
-			}
 
 			//SCP-096の発狂中はダメージ激減
 			if(plugin.Config.Scp096Rework && ev.Target.Role == RoleType.Scp096 && ev.Attacker != ev.Target && ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && (scp096.Enraged || scp096.Enraging))
-			{
 				ev.Amount *= 0.01f;
-			}
 
 			//ダメージタイプ分岐
 			switch(ev.Handler.Base)
@@ -886,10 +869,9 @@ namespace SanyaPlugin
 			if(ev.Target.IsHuman()
 				&& (ev.Handler.Base is FirearmDamageHandler || ev.Handler.Base is ExplosionDamageHandler || ev.Handler.Base is Scp018DamageHandler)
 				&& ev.Target.ReferenceHub.inventory.TryGetBodyArmor(out var bodyArmor)
-				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy)
-			{
+				&& bodyArmor.ItemTypeId == ItemType.ArmorHeavy
+			)
 				ev.Amount *= plugin.Config.HeavyArmorDamageEfficacy;
-			}
 
 			//こんぽーねんと
 			if(SanyaPluginComponent.Instances.TryGetValue(ev.Target, out var component))
@@ -998,13 +980,28 @@ namespace SanyaPlugin
 			Log.Debug($"[OnJumping] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
 
 			//ジャンプ時スタミナ消費
-			if(SanyaPlugin.Instance.Config.StaminaCostJump > 0
+			if(SanyaPlugin.Instance.Config.StaminaCostJump > 0 
 				&& ev.Player.ReferenceHub.characterClassManager.IsHuman()
-				&& !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled
-				&& !ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled)
+				&& ev.Player.ReferenceHub.characterClassManager.AliveTime > ev.Player.ReferenceHub.fpc.staminaController.StaminaImmunityUponRespawn)
 			{
-				ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= SanyaPlugin.Instance.Config.StaminaCostJump;
-				ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+				float cost = SanyaPlugin.Instance.Config.StaminaCostJump;
+				if(ev.Player.Inventory.TryGetBodyArmor(out BodyArmor bodyArmor))
+				{
+					BodyArmorUtils.GetMovementProperties(ev.Player.Role.Team, bodyArmor, out _, out float staminamulti);
+					cost *= staminamulti;
+				}
+
+				if(ev.Player.Inventory.CurInstance is IMobilityModifyingItem item)
+					cost *= item.StaminaUsageMultiplier;
+
+				if(ev.Player.ReferenceHub.fpc.staminaController._scp1853.IsEnabled)
+					cost *= ev.Player.ReferenceHub.fpc.staminaController._scp1853.CurStaminaMultiplier;
+
+				if(!ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled && ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled)
+				{
+					ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= cost;
+					ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
+				}
 			}
 		}
 		public void OnSpawningRagdoll(SpawningRagdollEventArgs ev)
@@ -1043,14 +1040,11 @@ namespace SanyaPlugin
 		}
 		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
 		{
-			if(plugin.Config.TeslaDisabledPermission != "None"
-				&& ev.Player.IsHuman()
-				&& ev.Player.CurrentItem != null
-				&& (ev.Player.CurrentItem.Base is KeycardItem keycardItem)
-				&& keycardItem.Permissions.ToString().Contains(plugin.Config.TeslaDisabledPermission))
+			//テスラを無効にするチーム
+			if(plugin.Config.TeslaDisabledTeamsParsed.Contains(ev.Player.Role.Team))
 			{
-				ev.IsTriggerable = false;
 				ev.IsInIdleRange = false;
+				ev.IsTriggerable = false;
 			}
 		}
 		public void OnProcessingHotkey(ProcessingHotkeyEventArgs ev)
@@ -1066,38 +1060,7 @@ namespace SanyaPlugin
 			} 
 		}
 
-		//Scp079
-		public void OnLockingDown(LockingDownEventArgs ev)
-		{
-			Log.Debug($"[OnLockingDown] {ev.Player.Nickname} -> {ev.RoomGameObject.Name}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			bool isDestroyed = false;
-			foreach(var i in Scp079Interactable.InteractablesByRoomId[ev.RoomGameObject.UniqueId].Where(x => x.type == Scp079Interactable.InteractableType.Door && x != null))
-				if(i.TryGetComponent<DoorVariant>(out var door) && (door is IDamageableDoor damageableDoor) && damageableDoor.IsDestroyed)
-					isDestroyed = true;
-
-			if(isDestroyed && ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown <= 0f)
-			{
-				foreach(var i in ev.RoomGameObject.GetComponentsInChildren<FlickerableLightController>())
-					i?.ServerFlickerLights(8f);
-
-				ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown = ev.Player.ReferenceHub.scp079PlayerScript.LockdownCooldown + ev.Player.ReferenceHub.scp079PlayerScript.LockdownDuration;
-
-				foreach(var referenceHub in ev.Player.ReferenceHub.scp079PlayerScript._referenceHub.spectatorManager.ServerCurrentSpectatingPlayers)
-					ev.Player.ReferenceHub.scp079PlayerScript.TargetSetLockdownCooldown(referenceHub.networkIdentity.connectionToClient, ev.Player.ReferenceHub.scp079PlayerScript.CurrentLDCooldown);
-			}
-
-		}
-
 		//Scp106
-		public void OnCreatingPortal(CreatingPortalEventArgs ev)
-		{
-			Log.Debug($"[OnCreatingPortal] {ev.Player.Nickname} -> {ev.Position}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			//SinkholeをPortalに同期させる
-			if(plugin.Config.Scp106PortalWithSinkhole)
-				Methods.MoveNetworkIdentityObject(Sinkholes[0].netIdentity, ev.Position);
-		}
 		public void OnContaining(ContainingEventArgs ev)
 		{
 			Door.Get(Exiled.API.Enums.DoorType.Scp106Primary).Base.NetworkTargetState = true;

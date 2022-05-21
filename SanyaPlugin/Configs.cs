@@ -134,8 +134,9 @@ namespace SanyaPlugin
 		[Description("テスラで死亡した際の死体やアイテムを削除する")]
 		public bool TeslaDeleteObjects { get; set; } = false;
 
-		[Description("特定のレベルのカードを手に持っているときはテスラが反応しなくなる")]
-		public string TeslaDisabledPermission { get; set; } = "None";
+		[Description("指定したチームがテスラに反応しなくなる")]
+		public List<string> TeslaDisabledTeams { get; set; } = new List<string>();
+		public readonly List<Team> TeslaDisabledTeamsParsed = new();
 
 		[Description("地上のオブジェクトを編集する")]
 		public bool EditObjectsOnSurface { get; set; } = false;
@@ -242,6 +243,7 @@ namespace SanyaPlugin
 				ClassdBonusitemsForRoleParsed.Clear();
 				NoDropItemsParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
+				TeslaDisabledTeamsParsed.Clear();
 
 				foreach(var key in Defaultitems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -279,6 +281,12 @@ namespace SanyaPlugin
 						AltvoicechatScpsParsed.Add(role);
 					else
 						Log.Error($"AltvoicechatScps parse error: {item} is not valid RoleType");
+
+				foreach(var item in TeslaDisabledTeams)
+					if(Enum.TryParse(item, out Team team))
+						TeslaDisabledTeamsParsed.Add(team);
+					else
+						Log.Error($"TeslaDisabledTeams parse error: {item} is not valid Team");
 			}
 			catch(Exception ex)
 			{

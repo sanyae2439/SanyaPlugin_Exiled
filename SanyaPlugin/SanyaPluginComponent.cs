@@ -307,7 +307,7 @@ namespace SanyaPlugin
 
 										target.EnableEffect<Concussed>(5f);
 
-										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(player.ReferenceHub), 5f));
+										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(player.ReferenceHub), 20f));
 
 										player.SendHitmarker();
 
