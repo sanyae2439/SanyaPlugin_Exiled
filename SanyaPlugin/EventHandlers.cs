@@ -997,7 +997,7 @@ namespace SanyaPlugin
 				if(ev.Player.ReferenceHub.fpc.staminaController._scp1853.IsEnabled)
 					cost *= ev.Player.ReferenceHub.fpc.staminaController._scp1853.CurStaminaMultiplier;
 
-				if(!ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled && ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled)
+				if(!ev.Player.ReferenceHub.fpc.staminaController._scp207.IsEnabled && !ev.Player.ReferenceHub.fpc.staminaController._invigorated.IsEnabled)
 				{
 					ev.Player.ReferenceHub.fpc.staminaController.RemainingStamina -= cost;
 					ev.Player.ReferenceHub.fpc.staminaController._regenerationTimer = 0f;
