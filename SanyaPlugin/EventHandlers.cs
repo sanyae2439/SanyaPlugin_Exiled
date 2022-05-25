@@ -534,7 +534,7 @@ namespace SanyaPlugin
 						Log.Debug($"[RandomRespawnPos] TargetLists:{i}", SanyaPlugin.Instance.Config.IsDebugged);
 
 					int randomnumlast = UnityEngine.Random.Range(0, poslist.Count);
-					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y, poslist[randomnumlast].z);
+					nextRespawnPos = new Vector3(poslist[randomnumlast].x, poslist[randomnumlast].y + 2f, poslist[randomnumlast].z);
 
 					Log.Info($"[RandomRespawnPos] Determined:{nextRespawnPos}");
 				}
@@ -860,7 +860,8 @@ namespace SanyaPlugin
 					}
 				case DisruptorDamageHandler _:
 					{
-						ev.Amount *= plugin.Config.DisruptorDamageMultiplier;
+						if(ev.Attacker.Role.Team != Team.SCP)
+							ev.Amount *= plugin.Config.DisruptorDamageMultiplier;
 						break;
 					}
 			}
