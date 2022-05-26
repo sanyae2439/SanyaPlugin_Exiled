@@ -514,9 +514,9 @@ namespace SanyaPlugin
 				ev.Players.Clear();
 
 			//チケットが0になったら強制終了
-			if(plugin.Config.RoundEndWhenNoMtfTickets && !RoundSummary.RoundInProgress() && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0)
+			if(plugin.Config.RoundEndWhenNoMtfTickets && RoundSummary.RoundInProgress() && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0)
 			{
-				Round.EndRound(true);
+				RoundSummary.singleton.ForceEnd();
 
 				Log.Info($"[OnEndingRound] Force Ended By No MTF Tickets.");
 			}

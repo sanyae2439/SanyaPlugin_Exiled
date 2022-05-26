@@ -43,6 +43,7 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new TpPosCommand());
 			RegisterCommand(new RainbowFacilityCommand());
 			RegisterCommand(new PlayAmbientCommand());
+			RegisterCommand(new ForceEndCommand());
 		}
 
 		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
