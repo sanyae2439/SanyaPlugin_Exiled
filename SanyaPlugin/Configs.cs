@@ -122,6 +122,9 @@ namespace SanyaPlugin
 		[Description("SCPがいなくなるとラウンド終了するように")]
 		public bool RoundEndWhenNoScps { get; set; } = false;
 
+		[Description("カオスとSCPのみの場合にラウンドを終了しない")]
+		public bool PreventRoundEndWhenCiWithScps { get; set; } = false;
+
 		[Description("NTFのチケットがなくなったらラウンドが終了するように")]
 		public bool RoundEndWhenNoMtfTickets { get; set; } = false;
 

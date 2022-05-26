@@ -428,7 +428,7 @@ namespace SanyaPlugin
 				message = $"<color=#bbee00><size=25>発電機が起動を開始している\n場所：{Methods.TranslateRoomName(Player.CurrentRoom.Type)}</color></size>\n";
 			else
 			{
-				var target = Player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP && x.Role.Team != Team.CHI);
+				var target = Player.CurrentRoom.Players.FirstOrDefault(x => x.Role.Team != Team.SCP && x.Role.Team != Team.RIP);
 				if(target != null)
 				{
 					if(Player.CurrentRoom.Zone == Exiled.API.Enums.ZoneType.Surface)

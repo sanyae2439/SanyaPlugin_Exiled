@@ -417,6 +417,13 @@ namespace SanyaPlugin
 
 				Log.Info($"[OnEndingRound] Force Ended By No Scps.");
 			}
+
+			if(plugin.Config.PreventRoundEndWhenCiWithScps 
+				&& ev.IsRoundEnded 
+				&& (ev.ClassList.chaos_insurgents) != 0 
+				&& (ev.ClassList.scps_except_zombies + ev.ClassList.zombies) != 0
+			)
+				ev.IsRoundEnded = false;
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
