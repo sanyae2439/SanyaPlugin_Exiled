@@ -161,6 +161,7 @@ namespace SanyaPlugin
 		public static IOrderedEnumerable<KeyValuePair<string, uint>> sortedKills;
 		private Vector3 nextRespawnPos = Vector3.zero;
 		internal Player Overrided = null;
+		internal bool nextForceEnd = false;
 		internal List<SinkholeEnvironmentalHazard> Sinkholes = new();
 
 		//イベント用の変数
@@ -202,7 +203,6 @@ namespace SanyaPlugin
 			if(RoundRestarting.RoundRestart.UptimeRounds == 0)
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
-			DecontaminationController.Singleton.NetworkRoundStartTime = 0.0;
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
 			foreach(var gen in Recontainer079.AllGenerators)
@@ -394,6 +394,9 @@ namespace SanyaPlugin
 		{
 			Log.Info($"[OnRoundStarted] Round Start!");
 
+			//Fix maingame(11.x)
+			DecontaminationController.Singleton.NetworkRoundStartTime = NetworkTime.time;
+
 			if(plugin.Config.Scp106ChamberLockWhenUnbreached)
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.CheckScp106Chamber(), Segment.FixedUpdate));
 
@@ -411,11 +414,18 @@ namespace SanyaPlugin
 		}
 		public void OnEndingRound(EndingRoundEventArgs ev)
 		{
+			if(nextForceEnd)
+			{
+				ev.IsRoundEnded = true;
+				Log.Warn($"[OnEndingRound] Recieved ForceEnd.");
+				return;
+			}
+
 			if(plugin.Config.RoundEndWhenNoScps && !ev.IsRoundEnded && ev.ClassList.scps_except_zombies == 0)
 			{
 				ev.IsRoundEnded = true;
-
-				Log.Info($"[OnEndingRound] Force Ended By No Scps.");
+				Log.Warn($"[OnEndingRound] Force Ended By No Scps.");
+				return;
 			}
 
 			if(plugin.Config.PreventRoundEndWhenCiWithScps 
@@ -484,6 +494,9 @@ namespace SanyaPlugin
 			//Connidのリセット
 			connIdToUserIds.Clear();
 
+			//リセット
+			nextForceEnd = false;
+
 			//ランキングのリセット
 			sortedDamages = null;
 			DamagesDict.Clear();
@@ -516,9 +529,10 @@ namespace SanyaPlugin
 			//チケットが0になったら強制終了
 			if(plugin.Config.RoundEndWhenNoMtfTickets && RoundSummary.RoundInProgress() && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0)
 			{
-				RoundSummary.singleton.ForceEnd();
-
-				Log.Info($"[OnEndingRound] Force Ended By No MTF Tickets.");
+				nextForceEnd = true;
+				ev.IsAllowed = false;
+				Log.Warn($"[OnEndingRound] Force Ended By No MTF Tickets.");
+				return;
 			}
 
 			//ランダムでリスポーン位置を変更する

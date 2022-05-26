@@ -21,7 +21,7 @@ namespace SanyaPlugin.Commands.Utils
 				response = $"{RequiredPermission}の権限がありません。";
 				return false;
 			}
-			RoundSummary.singleton.ForceEnd();
+			SanyaPlugin.Instance.Handlers.nextForceEnd = true;
 			response = "成功しました。";
 			return true;
 		}

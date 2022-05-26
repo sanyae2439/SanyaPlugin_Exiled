@@ -196,7 +196,7 @@ namespace SanyaPlugin
 
 		public static IEnumerator<float> PreAnnounce(SpawnableTeamType team)
 		{
-			yield return Timing.WaitForSeconds(team == SpawnableTeamType.NineTailedFox ? 12f : 8f);
+			yield return Timing.WaitForSeconds(team == SpawnableTeamType.NineTailedFox ? 14f : 10f);
 
 			int counter = 0;
 			while(counter++ < 3)
