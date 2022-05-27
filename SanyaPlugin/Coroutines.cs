@@ -3,11 +3,15 @@ using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Interactables.Interobjects;
+using Interactables.Interobjects.DoorUtils;
 using MEC;
+using PlayableScps.Messages;
 using PlayerStatsSystem;
 using Respawning;
 using SanyaPlugin.Commands.Utils;
 using UnityEngine;
+using Utils.Networking;
 
 namespace SanyaPlugin
 {
@@ -233,11 +237,11 @@ namespace SanyaPlugin
 			yield return Timing.WaitForSeconds(0.35f);
 			foreach(var target in player.CurrentRoom.Players.Where(x => x.IsHuman))
 			{
-				target.EnableEffect<Flashed>(3f, true);
+				target.EnableEffect<Flashed>(2f, true);
 				player.SendHitmarker();
 			}
 			yield return Timing.WaitForSeconds(0.25f);
-			Timing.CallDelayed(0.25f, Segment.FixedUpdate, () => player.CurrentRoom.TurnOffLights(8f));
+			player.CurrentRoom.TurnOffLights(8f);
 		}
 
 		public static IEnumerator<float> Scp079PlayDummySound(Player player)
@@ -261,5 +265,52 @@ namespace SanyaPlugin
 				yield return Timing.WaitForSeconds(UnityEngine.Random.Range(0.05f, 0.2f));
 			}
 		}
+
+		public static IEnumerator<float> Scp939Charge(Player player)
+		{
+			player.ChangeEffectIntensity<MovementBoost>(100);
+			player.ReferenceHub.fpc.NetworkmovementOverride = new UnityEngine.Vector2(1f, 0f);
+
+			float timer = 0f;
+			RaycastHit[] hits = new RaycastHit[25];
+			HashSet<ReferenceHub> chargedPlayers = new();
+			int mask = LayerMask.GetMask("Hitbox", "Door");
+			while(timer < 3f)
+			{
+				int hitamount = Physics.SphereCastNonAlloc(player.CameraTransform.position, 1.5f, player.CameraTransform.forward, hits, 2f, mask);
+				for(int i = 0; i < hitamount; i++)
+				{
+					DoorVariant door = hits[i].collider.GetComponentInParent<DoorVariant>();
+					ReferenceHub hub = hits[i].collider.GetComponentInParent<ReferenceHub>();
+					if(door != null)
+					{
+						if(door.GetExactState() >= 1f) continue;
+						if(door is PryableDoor pryableDoor && door.GetExactState() == 0f && !door.TargetState && pryableDoor.TryPryGate())
+							new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
+						else if(door is IDamageableDoor damageableDoor && !damageableDoor.IsDestroyed && door.GetExactState() < 1f)
+						{
+							damageableDoor.ServerDamage(750f, DoorDamageType.Scp096);
+							new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
+						}					
+					}
+					else if(hub != null)
+					{
+						if(hub.characterClassManager.IsAnyScp()) continue;
+						if(chargedPlayers.Contains(hub)) continue;
+						if(Physics.Linecast(player.GameObject.transform.position, hub.transform.position, LayerMask.GetMask("Default", "Door", "Glass"))) continue;
+						chargedPlayers.Add(hub);
+						player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 50f, DeathTranslations.Scp939));
+						new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
+					}
+				}
+				timer += Time.deltaTime;
+				yield return Timing.WaitForOneFrame;
+			}
+
+			player.ReferenceHub.fpc.NetworkmovementOverride = Vector2.zero;
+			player.DisableEffect<MovementBoost>();
+			Log.Warn($"end");
+		}
 	}
 }
+ 

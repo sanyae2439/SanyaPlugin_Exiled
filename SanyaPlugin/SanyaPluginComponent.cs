@@ -53,7 +53,7 @@ namespace SanyaPlugin
 		private float hideTimer = 0f;
 
 		//SCP-079 ExHotkey
-		private float playgunTimerDefault = 10f;
+		private float playgunTimerDefault = 3f;
 		private float playgunTimer = 0f;
 		private float markingTimerDefault = 30f;
 		private float markingTimer = 0f;
@@ -278,14 +278,14 @@ namespace SanyaPlugin
 								playgunTimer = playgunTimerDefault;
 							}
 							break;
-						}			
+						}
 					case HotkeyButton.Keycard:
 						{
 							if(markingTimer <= 0f && Player.ReferenceHub.scp079PlayerScript.Lvl >= 1)
 							{
-								if(Physics.Raycast(Player.ReferenceHub.scp079PlayerScript.currentCamera.transform.position, 
-									Player.ReferenceHub.scp079PlayerScript.currentCamera.targetPosition.forward, 
-									out var raycastHit, 
+								if(Physics.Raycast(Player.ReferenceHub.scp079PlayerScript.currentCamera.transform.position,
+									Player.ReferenceHub.scp079PlayerScript.currentCamera.targetPosition.forward,
+									out var raycastHit,
 									StandardHitregBase.HitregMask))
 								{
 									new DisruptorHitreg.DisruptorHitMessage()
@@ -298,22 +298,23 @@ namespace SanyaPlugin
 									if(hub != null)
 									{
 										var target = Player.Get(hub);
-										if(!Player.IsEnemy(target.Role.Team)) break;
+										if(Player.IsEnemy(target.Role.Team))
+										{
+											if(target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
+												lightMove.Timer = 60f;
+											else
+												target.GameObject.AddComponent<LightMoveComponent>().Timer = 60f;
 
-										if(target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
-											lightMove.Timer = 60f;
-										else
-											target.GameObject.AddComponent<LightMoveComponent>().Timer = 60f;
+											target.EnableEffect<Concussed>(5f);
+											target.EnableEffect<Disabled>(5f);
 
-										target.EnableEffect<Concussed>(5f);
+											target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(Player.ReferenceHub), 20f));
 
-										target.ReferenceHub.playerStats.DealDamage(new DisruptorDamageHandler(new Footprinting.Footprint(Player.ReferenceHub), 20f));
-
-										Player.SendHitmarker();
-
-										markingTimer = markingTimerDefault;
+											Player.SendHitmarker();
+										}
 									}
-								}						
+								}
+								markingTimer = markingTimerDefault;
 							}
 							break;
 						}
@@ -647,11 +648,11 @@ namespace SanyaPlugin
 				{
 					case PlayableScps.Scp096PlayerState.TryNotToCry:
 					case PlayableScps.Scp096PlayerState.Docile:
-						if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"静寂中:{ Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
+						if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"静寂中:{Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
 						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.Enraging:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"激怒中:{ Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
+						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"激怒中:{Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
 						break;
 					case PlayableScps.Scp096PlayerState.PryGate:
 					case PlayableScps.Scp096PlayerState.Enraged:

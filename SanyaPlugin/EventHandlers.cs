@@ -12,6 +12,7 @@ using Exiled.Events;
 using Exiled.Events.EventArgs;
 using Interactables.Interobjects;
 using Interactables.Interobjects.DoorUtils;
+using Interactables.Verification;
 using InventorySystem;
 using InventorySystem.Items;
 using InventorySystem.Items.Armor;
@@ -166,7 +167,6 @@ namespace SanyaPlugin
 
 		//イベント用の変数
 		internal static SANYA_GAME_MODE eventmode = SANYA_GAME_MODE.NULL;
-		private List<Team> prevSpawnQueue = null;
 
 		//ServerEvents系
 		public void OnWaintingForPlayers()
@@ -191,26 +191,17 @@ namespace SanyaPlugin
 			foreach(var sinkhole in Sinkholes)
 				Methods.MoveNetworkIdentityObject(sinkhole.netIdentity, RoleType.Scp106.GetRandomSpawnProperties().Item1 - (-Vector3.down * 4));
 
-			//前ラウンドでスポーンキューを上書きした時に戻しておく
-			if(prevSpawnQueue != null)
-			{
-				CharacterClassManager.ClassTeamQueue.Clear();
-				CharacterClassManager.ClassTeamQueue.AddRange(prevSpawnQueue);
-				prevSpawnQueue = null;
-			}
-
 			//Fix maingame(11.x)
 			if(RoundRestarting.RoundRestart.UptimeRounds == 0)
 				RoundRestarting.RoundRestart.UptimeRounds++;
 			Methods.SetAmmoConfigs();
 			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
 			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
-			foreach(var gen in Recontainer079.AllGenerators)
-				gen._unlockCooldownTime = gen._doorToggleCooldownTime;
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.NineTailedFox] = new NineTailedFoxSpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_MTF_respawn_amount", 15), 1, 17.95f, true);
 			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).HelmetEfficacy = 100;
 			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).VestEfficacy = 100;
+			StandardDistanceVerification.Default = new StandardDistanceVerification(3.35f, false, false);
 
 			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
 			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
@@ -601,6 +592,10 @@ namespace SanyaPlugin
 		public void OnChangingLeverStatus(ChangingLeverStatusEventArgs ev)
 		{
 			Log.Debug($"[OnChangingLeverStatus] {ev.Player.Nickname} {ev.CurrentState} -> {!ev.CurrentState}", SanyaPlugin.Instance.Config.IsDebugged);
+
+			//Fix maingame(11.x)
+			if(AlphaWarheadController.Host.inProgress && ev.CurrentState)
+				ev.IsAllowed = false;
 		}
 
 		//PlayerEvents
@@ -720,12 +715,6 @@ namespace SanyaPlugin
 			}
 
 			//Effect
-			if(plugin.Config.Scp939InstaKill && ev.NewRole.Is939())
-				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-				{
-					ev.Player.EnableEffect<Hemorrhage>();
-					ev.Player.EnableEffect<Amnesia>();
-				}));
 			if(plugin.Config.Scp0492GiveEffectOnSpawn && ev.NewRole == RoleType.Scp0492)
 				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
 				{
@@ -854,15 +843,12 @@ namespace SanyaPlugin
 						{
 							if(ev.Target.Role.Team == Team.SCP)
 							{
-								if(ev.Target.Role != RoleType.Scp096) 
-									ev.Target.EnableEffect<Disabled>(5f);
 								ev.Target.EnableEffect<Burned>(60f);
 
 								if(ev.Target.ArtificialHealth > 0)
-								{
-									ev.Target.Health -= ev.Target.Role != RoleType.Scp106 ? ev.Amount : ev.Amount * 0.1f;
 									ev.Target.Connection.Send(new HumeShieldSubEffect.HumeBlockMsg());
-								}							
+								else
+									ev.Amount *= 2.5f;
 							}
 
 							if(ev.Target.GameObject.TryGetComponent<LightMoveComponent>(out var lightMove))
