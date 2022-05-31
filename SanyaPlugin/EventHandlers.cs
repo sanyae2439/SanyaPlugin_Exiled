@@ -411,20 +411,6 @@ namespace SanyaPlugin
 				Log.Warn($"[OnEndingRound] Recieved ForceEnd.");
 				return;
 			}
-
-			if(plugin.Config.RoundEndWhenNoScps && !ev.IsRoundEnded && ev.ClassList.scps_except_zombies == 0)
-			{
-				ev.IsRoundEnded = true;
-				Log.Warn($"[OnEndingRound] Force Ended By No Scps.");
-				return;
-			}
-
-			if(plugin.Config.PreventRoundEndWhenCiWithScps 
-				&& ev.IsRoundEnded 
-				&& (ev.ClassList.chaos_insurgents) != 0 
-				&& (ev.ClassList.scps_except_zombies + ev.ClassList.zombies) != 0
-			)
-				ev.IsRoundEnded = false;
 		}
 		public void OnRoundEnded(RoundEndedEventArgs ev)
 		{
@@ -516,15 +502,6 @@ namespace SanyaPlugin
 			//ラウンド終了後にリスポーンを停止する
 			if(plugin.Config.GodmodeAfterEndround && !RoundSummary.RoundInProgress())
 				ev.Players.Clear();
-
-			//チケットが0になったら強制終了
-			if(plugin.Config.RoundEndWhenNoMtfTickets && RoundSummary.RoundInProgress() && RespawnTickets.Singleton.GetAvailableTickets(SpawnableTeamType.NineTailedFox) <= 0)
-			{
-				nextForceEnd = true;
-				ev.IsAllowed = false;
-				Log.Warn($"[OnEndingRound] Force Ended By No MTF Tickets.");
-				return;
-			}
 
 			//ランダムでリスポーン位置を変更する
 			if(plugin.Config.RandomRespawnPosPercent > 0)
@@ -701,7 +678,7 @@ namespace SanyaPlugin
 		public void OnChangingRole(ChangingRoleEventArgs ev)
 		{
 			if(ev.Player.Nickname == null) return;
-			Log.Debug($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.Reason})", SanyaPlugin.Instance.Config.IsDebugged);
+			Log.Info($"[OnChangingRole] {ev.Player.Nickname} [{ev.Player.ReferenceHub.characterClassManager._prevId}] -> [{ev.NewRole}] ({ev.Reason})");
 
 			//おーばーらいど！
 			if(Overrided != null && Overrided == ev.Player && RoundSummary.roundTime < 3)

@@ -71,7 +71,7 @@ namespace SanyaPlugin
 
 		[Description("落とさないようにするアイテム")]
 		public List<string> NoDropItems { get; set; } = new List<string>();
-		public readonly List<ItemType> NoDropItemsParsed = new List<ItemType>();
+		public readonly List<ItemType> NoDropItemsParsed = new();
 
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
@@ -118,15 +118,6 @@ namespace SanyaPlugin
 
 		[Description("SCPが切断した場合にSCPを再度スポーンする")]
 		public bool SpawnScpsWhenDisconnect { get; set; } = false;
-
-		[Description("SCPがいなくなるとラウンド終了するように")]
-		public bool RoundEndWhenNoScps { get; set; } = false;
-
-		[Description("カオスとSCPのみの場合にラウンドを終了しない")]
-		public bool PreventRoundEndWhenCiWithScps { get; set; } = false;
-
-		[Description("NTFのチケットがなくなったらラウンドが終了するように")]
-		public bool RoundEndWhenNoMtfTickets { get; set; } = false;
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;
