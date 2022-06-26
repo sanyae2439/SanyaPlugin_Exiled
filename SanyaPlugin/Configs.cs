@@ -159,9 +159,6 @@ namespace SanyaPlugin
 		[Description("ディスラプターの威力の乗数")]
 		public float DisruptorDamageMultiplier { get; set; } = 1f;
 
-		[Description("リボルバーの威力の乗数")]
-		public float RevolverDamageMultiplier { get; set; } = 1f;
-
 		[Description("ジャンプで消費するスタミナ量")]
 		public float StaminaCostJump { get; set; } = -1f;
 

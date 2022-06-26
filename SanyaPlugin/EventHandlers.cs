@@ -806,16 +806,7 @@ namespace SanyaPlugin
 						break;
 					}
 				case FirearmDamageHandler firearm:
-					{
-						if(firearm.WeaponType == ItemType.GunRevolver)
-						{
-							ev.Amount *= plugin.Config.RevolverDamageMultiplier;
-							if(plugin.Config.HandgunEffect && ev.Attacker.IsEnemy(ev.Target.Role.Team)) 
-								new DisruptorHitreg.DisruptorHitMessage { 
-									Position = ev.Target.Position, 
-									Rotation = new LowPrecisionQuaternion(ev.Target.GameObject.transform.rotation) 
-								}.SendToAuthenticated();
-						}			
+					{		
 						if((firearm.WeaponType == ItemType.GunCOM15 || firearm.WeaponType == ItemType.GunCOM18) && plugin.Config.HandgunEffect && ev.Attacker.IsEnemy(ev.Target.Role.Team))
 						{
 							if(ev.Target.Role.Team == Team.SCP)
