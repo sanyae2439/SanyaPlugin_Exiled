@@ -213,11 +213,11 @@ namespace SanyaPlugin
 		[Description("SCP-106にEX-HotKeyを適用する")]
 		public bool Scp106ExHotkey { get; set; } = false;
 
+		[Description("SCP-939-XXの攻撃力")]
+		public float Scp939Damage { get; set; } = 50f;
+
 		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
 		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
-
-		[Description("SCP-939-XXの攻撃で即死するようにする")]
-		public bool Scp939InstaKill { get; set; } = false;
 
 		[Description("SCP-079が部屋を移動した際にスキャンするように")]
 		public bool Scp079ScanRoom { get; set; } = false;

@@ -19,7 +19,6 @@ using InventorySystem.Items.Armor;
 using InventorySystem.Items.Firearms;
 using InventorySystem.Items.Firearms.Ammo;
 using InventorySystem.Items.Firearms.Attachments;
-using InventorySystem.Items.Firearms.Modules;
 using InventorySystem.Items.Usables.Scp244.Hypothermia;
 using LightContainmentZoneDecontamination;
 using LiteNetLib.Utils;
@@ -34,7 +33,6 @@ using SanyaPlugin.Components;
 using Scp914.Processors;
 using UnityEngine;
 using Utf8Json;
-using Utils.Networking;
 
 namespace SanyaPlugin
 {
@@ -798,9 +796,7 @@ namespace SanyaPlugin
 						//SCP-939-XX
 						if(scp._translationId == DeathTranslations.Scp939.Id)
 						{
-							//即死攻撃
-							if(plugin.Config.Scp939InstaKill)
-								ev.Amount = 93900f;
+							ev.Amount = plugin.Config.Scp939Damage;
 						}
 
 						break;

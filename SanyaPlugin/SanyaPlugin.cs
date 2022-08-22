@@ -22,7 +22,7 @@ namespace SanyaPlugin
 		public override string Author => "sanyae2439";
 		public override PluginPriority Priority => PluginPriority.Default;
 		public override Version Version => new(Assembly.GetName().Version.Major, Assembly.GetName().Version.Minor, Assembly.GetName().Version.Build);
-		public override Version RequiredExiledVersion => new(4, 0, 0);
+		public override Version RequiredExiledVersion => new(5, 3, 0);
 
 		//インスタンス
 		public static SanyaPlugin Instance { get; private set; }

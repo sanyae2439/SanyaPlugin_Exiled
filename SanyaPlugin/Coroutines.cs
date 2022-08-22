@@ -156,6 +156,7 @@ namespace SanyaPlugin
 			{
 				yield return Timing.WaitForSeconds(10f);
 				if(role == RoleType.Scp173 && Map.IsLczDecontaminated) yield break;
+				if(role == RoleType.Scp106 && OneOhSixContainer.used) yield break;
 				if(!RoundSummary.RoundInProgress()) yield break;
 
 				var spectators = Player.Get(RoleType.Spectator).Where(x => !x.IsOverwatchEnabled);
