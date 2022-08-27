@@ -172,6 +172,8 @@
     <Compile Include="Patches\RespawnPreAnnouncePatch.cs" />
     <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
+    <Compile Include="Patches\Scp096\TryingNotToCryPatch.cs" />
+    <Compile Include="Patches\Scp096\TryingNotToCryUpdatePatch.cs" />
     <Compile Include="Patches\Scp096\WindupPatch.cs" />
     <Compile Include="Patches\Items\Scp500Patch.cs" />
     <Compile Include="Patches\VCScpPatch.cs" />

@@ -702,6 +702,11 @@ namespace SanyaPlugin
 				{
 					ev.Player.ChangeEffectIntensity<MovementBoost>(plugin.Config.Scp049SpeedupAmount);
 				}));
+			if(plugin.Config.Scp096Rework && ev.NewRole == RoleType.Scp096)
+				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
+				{
+					ev.Player.ChangeEffectIntensity<MovementBoost>(20);
+				}));
 
 			//SCP-106のExMode用初期化
 			if(ev.NewRole == RoleType.Scp106)
