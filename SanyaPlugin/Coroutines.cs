@@ -3,15 +3,11 @@ using System.Linq;
 using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Features;
-using Interactables.Interobjects;
-using Interactables.Interobjects.DoorUtils;
 using MEC;
-using PlayableScps.Messages;
 using PlayerStatsSystem;
 using Respawning;
 using SanyaPlugin.Commands.Utils;
 using UnityEngine;
-using Utils.Networking;
 
 namespace SanyaPlugin
 {
@@ -34,7 +30,6 @@ namespace SanyaPlugin
 				yield break;
 			}
 
-			var group = player.Group?.Clone();
 			string level = data.level.ToString();
 			string rolestr = player.ReferenceHub.serverRoles.GetUncoloredRoleString();
 			string rolecolor = player.RankColor;
@@ -48,16 +43,25 @@ namespace SanyaPlugin
 			if(data.level == -1)
 				level = "???";
 
-			if(!player.DoNotTrack)
-			{
-				if(string.IsNullOrEmpty(rolestr))
-					badge = $"Level{level}";
-				else
-					badge = $"Level{level} : {rolestr}";
-			}
+			if(data.level >= 50 && data.level < 100)
+				rolecolor = "brown";
+			else if(data.level >= 100 && data.level < 150)
+				rolecolor = "army_green";
+			else if(data.level >= 150 && data.level < 200)
+				rolecolor = "pumpkin";
+			else if(data.level >= 200 && data.level < 300)
+				rolecolor = "carmine";
+			else if(data.level >= 300)
+				rolecolor = "tomato";
 
-			if(group == null)
-				group = new UserGroup()
+			if(string.IsNullOrEmpty(rolestr))
+				badge = $"Level{level}";
+			else
+				badge = $"Level{level} : {rolestr}";
+
+			if(player.Group == null)
+			{
+				UserGroup group = new UserGroup()
 				{
 					BadgeText = badge,
 					BadgeColor = "default",
@@ -68,15 +72,13 @@ namespace SanyaPlugin
 					RequiredKickPower = 0,
 					Shared = false
 				};
+				player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
+			}
 			else
 			{
-				group.BadgeText = badge;
-				group.BadgeColor = rolecolor;
-				group.HiddenByDefault = false;
-				group.Cover = true;
+				player.ReferenceHub.serverRoles.Network_myText = badge;
+				player.ReferenceHub.serverRoles.Network_myColor = rolecolor;
 			}
-
-			player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 
 			Log.Info($"[GrantedLevel] {player.UserId} : Level{level}");
 
@@ -199,18 +201,6 @@ namespace SanyaPlugin
 			}
 		}
 
-		public static IEnumerator<float> PreAnnounce(SpawnableTeamType team)
-		{
-			yield return Timing.WaitForSeconds(team == SpawnableTeamType.NineTailedFox ? 14f : 10f);
-
-			int counter = 0;
-			while(counter++ < 3)
-			{
-				Map.PlayAmbientSound(7);
-				yield return Timing.WaitForSeconds(1f);
-			}
-		}
-
 		public static IEnumerator<float> Scp079ScanningHumans(Player player)
 		{
 			player.ReferenceHub.scp079PlayerScript._serverIndicatorUpdateTimer = -12f;
@@ -265,52 +255,6 @@ namespace SanyaPlugin
 					Methods.PlayGunSoundFixed(i, speaker.transform.position, itemtype, 120);
 				yield return Timing.WaitForSeconds(UnityEngine.Random.Range(0.05f, 0.2f));
 			}
-		}
-
-		public static IEnumerator<float> Scp939Charge(Player player)
-		{
-			player.ChangeEffectIntensity<MovementBoost>(100);
-			player.ReferenceHub.fpc.NetworkmovementOverride = new UnityEngine.Vector2(1f, 0f);
-
-			float timer = 0f;
-			RaycastHit[] hits = new RaycastHit[25];
-			HashSet<ReferenceHub> chargedPlayers = new();
-			int mask = LayerMask.GetMask("Hitbox", "Door");
-			while(timer < 3f)
-			{
-				int hitamount = Physics.SphereCastNonAlloc(player.CameraTransform.position, 1.5f, player.CameraTransform.forward, hits, 2f, mask);
-				for(int i = 0; i < hitamount; i++)
-				{
-					DoorVariant door = hits[i].collider.GetComponentInParent<DoorVariant>();
-					ReferenceHub hub = hits[i].collider.GetComponentInParent<ReferenceHub>();
-					if(door != null)
-					{
-						if(door.GetExactState() >= 1f) continue;
-						if(door is PryableDoor pryableDoor && door.GetExactState() == 0f && !door.TargetState && pryableDoor.TryPryGate())
-							new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
-						else if(door is IDamageableDoor damageableDoor && !damageableDoor.IsDestroyed && door.GetExactState() < 1f)
-						{
-							damageableDoor.ServerDamage(750f, DoorDamageType.Scp096);
-							new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
-						}					
-					}
-					else if(hub != null)
-					{
-						if(hub.characterClassManager.IsAnyScp()) continue;
-						if(chargedPlayers.Contains(hub)) continue;
-						if(Physics.Linecast(player.GameObject.transform.position, hub.transform.position, LayerMask.GetMask("Default", "Door", "Glass"))) continue;
-						chargedPlayers.Add(hub);
-						player.ReferenceHub.playerStats.DealDamage(new ScpDamageHandler(player.ReferenceHub, 50f, DeathTranslations.Scp939));
-						new Scp939OnHitMessage(player.ReferenceHub).SendToAuthenticated();
-					}
-				}
-				timer += Time.deltaTime;
-				yield return Timing.WaitForOneFrame;
-			}
-
-			player.ReferenceHub.fpc.NetworkmovementOverride = Vector2.zero;
-			player.DisableEffect<MovementBoost>();
-			Log.Warn($"end");
 		}
 	}
 }

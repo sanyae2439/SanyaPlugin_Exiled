@@ -52,22 +52,18 @@ namespace SanyaPlugin
 		public List<int> EventModeWeight { get; set; } = new List<int>() { 0, 0 };
 
 		[Description("各ロールの初期装備")]
-		public Dictionary<string, string> Defaultitems { get; set; } = new Dictionary<string, string>()
+		public Dictionary<string, string> DefaultItems { get; set; } = new Dictionary<string, string>()
 		{
 			{ RoleType.ClassD.ToString(), ItemType.None.ToString() }
 		};
-		public readonly Dictionary<RoleType, List<ItemType>> DefaultitemsParsed = new();
+		public readonly Dictionary<RoleType, List<ItemType>> DefaultItemsParsed = new();
 
 		[Description("各ロールの初期所持弾数")]
 		public Dictionary<string, Dictionary<string, ushort>> DefaultAmmos { get; set; } = new Dictionary<string, Dictionary<string, ushort>>()
 		{
 			{ RoleType.ClassD.ToString(), new Dictionary<string, ushort>(){ { ItemType.Ammo556x45.ToString(), (ushort)0 }  } }
 		};
-		public readonly Dictionary<RoleType, Dictionary<ItemType, ushort>> DefaultammosParsed = new();
-
-		[Description("Dクラスへのロールごとの追加アイテム")]
-		public Dictionary<string, string> ClassdBonusitemsForRole { get; set; } = new Dictionary<string, string>();
-		public readonly Dictionary<string, List<ItemType>> ClassdBonusitemsForRoleParsed = new();
+		public readonly Dictionary<RoleType, Dictionary<ItemType, ushort>> DefaultAmmosParsed = new();
 
 		[Description("落とさないようにするアイテム")]
 		public List<string> NoDropItems { get; set; } = new List<string>();
@@ -91,15 +87,6 @@ namespace SanyaPlugin
 		[Description("放送室のモニターの表示を拡張する")]
 		public bool IntercomInformation { get; set; } = false;
 
-		[Description("プレイヤー情報にHPを表示する")]
-		public bool PlayersInfoShowHp { get; set; } = false;
-
-		[Description("プレイヤー情報のMTF関係を無効にする")]
-		public bool PlayersInfoDisableFollow { get; set; } = false;
-
-		[Description("ラウンド終了後に無敵になる")]
-		public bool GodmodeAfterEndround { get; set; } = false;
-
 		[Description("全プレイヤーのボイスチャットを無効化する")]
 		public bool DisableAllChat { get; set; } = false;
 
@@ -108,9 +95,6 @@ namespace SanyaPlugin
 
 		[Description("ホワイトリストに入っていないミュートされたプレイヤーへのメッセージ")]
 		public string MotdMessageOnDisabledChat { get; set; } = string.Empty;
-
-		[Description("リスポーン場所をランダムにする")]
-		public int RandomRespawnPosPercent { get; set; } = -1;
 
 		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
 		public List<string> AltvoicechatScps { get; set; } = new List<string>();
@@ -132,128 +116,37 @@ namespace SanyaPlugin
 		public List<string> TeslaDisabledTeams { get; set; } = new List<string>();
 		public readonly List<Team> TeslaDisabledTeamsParsed = new();
 
-		[Description("地上のオブジェクトを編集する")]
-		public bool EditObjectsOnSurface { get; set; } = false;
-
-		[Description("アイテムを追加する")]
-		public bool AddItemsOnFacility { get; set; } = false;
-
-		[Description("Dクラス収容房の初期動作")]
-		public bool ClassdPrisonInit { get; set; } = false;
-
-		[Description("SCP-106がいない場合は囮コンテナを閉鎖する")]
-		public bool Scp106ChamberLockWhenUnbreached { get; set; } = false;
-
-		[Description("SCP-914にコインのレシピを追加する")]
-		public bool Scp914AddCoinRecipes { get; set; } = false;
-
-		[Description("拳銃にエフェクトを追加する")]
-		public bool HandgunEffect { get; set; } = false;
-
-		[Description("ヘビィアーマーのダメージ固定減衰率")]
-		public float HeavyArmorDamageEfficacy { get; set; } = 1f;
-
-		[Description("MicroHIDの威力の乗数")]
-		public float MicrohidDamageMultiplier { get; set; } = 1f;
-
-		[Description("ディスラプターの威力の乗数")]
-		public float DisruptorDamageMultiplier { get; set; } = 1f;
-
-		[Description("ジャンプで消費するスタミナ量")]
-		public float StaminaCostJump { get; set; } = -1f;
-
-		[Description("MTF/CIが武装解除されると死亡し、相手チームのチケットを加算させる量")]
-		public int CuffedTicketDeathToMtfCi { get; set; } = 0;
-
-		[Description("SCP-049のシールド最大値")]
-		public int Scp049MaxAhp { get; set; } = 0;
-
-		[Description("SCP-049のシールド回復速度")]
-		public float Scp049RegenRate { get; set; } = 0f;
-
-		[Description("SCP-049のシールド回復までの時間")]
-		public float Scp049TimeUntilRegen { get; set; } = 0f;
-
-		[Description("SCP-049の治療中に受けるダメージ乗数")]
-		public float Scp049TakenDamageWhenCureMultiplier { get; set; } = 1f;
-
-		[Description("SCP-049の治療が可能な状態を延長する時間")]
-		public double Scp049AddAllowrecallTime { get; set; } = 0;
-
-		[Description("SCP-049の移動速度バフ")]
-		public byte Scp049SpeedupAmount { get; set; } = 0;
-
-		[Description("SCP-049-2の攻撃力")]
-		public float Scp0492Damage { get; set; } = 40f;
-
-		[Description("SCP-049-2の攻撃にエフェクトを追加する")]
-		public bool Scp0492AttackEffect { get; set; } = false;
-
-		[Description("SCP-049-2のスポーン時にエフェクトを追加する")]
-		public bool Scp0492GiveEffectOnSpawn { get; set; } = false;
-
-		[Description("SCP-049-2がキルするたびにHPが回復し、追加効果を得る")]
-		public bool Scp0492KillStreak { get; set; } = false;
+		[Description("SCP-049をリワークする")]
+		public bool Scp049Rework { get; set; } = false;
 
 		[Description("SCP-096をリワークする")]
 		public bool Scp096Rework { get; set; } = false;
-
-		[Description("SCP-106のシールド最大値")]
-		public int Scp106MaxAhp { get; set; } = 0;
-
-		[Description("SCP-106のシールド回復速度")]
-		public float Scp106RegenRate { get; set; } = 0f;
-
-		[Description("SCP-106のシールド回復までの時間")]
-		public float Scp106TimeUntilRegen { get; set; } = 0f;
-
-		[Description("SCP-106のポータルを拡大してエフェクトを適用する")]
-		public bool Scp106PortalWithSinkhole { get; set; } = false;
-
-		[Description("SCP-106にEX-HotKeyを適用する")]
-		public bool Scp106ExHotkey { get; set; } = false;
-
-		[Description("SCP-939-XXの攻撃力")]
-		public float Scp939Damage { get; set; } = 50f;
-
-		[Description("SCP-939-XXがVC使用中の人間を視認できるように")]
-		public bool Scp939CanSeeVoiceChatting { get; set; } = false;
-
-		[Description("SCP-079が部屋を移動した際にスキャンするように")]
-		public bool Scp079ScanRoom { get; set; } = false;
-
-		[Description("SCP-079にEX-Hotkeyを適用する")]
-		public bool Scp079ExHotkey { get; set; } = false;
 
 		public void ParseConfig()
 		{
 			try
 			{
-				DefaultitemsParsed.Clear();
-				DefaultammosParsed.Clear();
-				ClassdBonusitemsForRoleParsed.Clear();
+				DefaultItemsParsed.Clear();
+				DefaultAmmosParsed.Clear();
 				NoDropItemsParsed.Clear();
 				AltvoicechatScpsParsed.Clear();
 				TeslaDisabledTeamsParsed.Clear();
 
-				foreach(var key in Defaultitems)
+				foreach(var key in DefaultItems)
 					if(Enum.TryParse(key.Key, out RoleType role))
-						DefaultitemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
+						DefaultItemsParsed.Add(role, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 					else
 						Log.Error($"Defaultitems parse error: {key.Key} is not valid RoleType");
-
-				foreach(var key in ClassdBonusitemsForRole)
-					ClassdBonusitemsForRoleParsed.Add(key.Key, new List<ItemType>(key.Value.Split(',').Select((string x) => (ItemType)Enum.Parse(typeof(ItemType), x))));
 
 				foreach(var key in DefaultAmmos)
 				{
 					if(Enum.TryParse(key.Key, out RoleType role))
 					{
-						DefaultammosParsed.Add(role, new Dictionary<ItemType, ushort>());
+						DefaultAmmosParsed.Add(role, new Dictionary<ItemType, ushort>());
 
 						foreach(var key2 in key.Value)
 							if(Enum.TryParse(key2.Key, out ItemType itemType))
-								DefaultammosParsed[role].Add(itemType, key2.Value);
+								DefaultAmmosParsed[role].Add(itemType, key2.Value);
 							else
 								Log.Error($"DefaultAmmos parse error: {key2.Key} is not valid ItemType");
 					}

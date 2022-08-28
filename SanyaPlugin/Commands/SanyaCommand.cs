@@ -44,6 +44,7 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new RainbowFacilityCommand());
 			RegisterCommand(new PlayAmbientCommand());
 			RegisterCommand(new ForceEndCommand());
+			RegisterCommand(new LevelCommand());
 		}
 
 		protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)

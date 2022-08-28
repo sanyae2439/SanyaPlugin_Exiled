@@ -281,21 +281,6 @@ namespace SanyaPlugin
 
 		public static GameObject GetCurrentRoomsSpeaker(Room room) => GameObject.Find($"{room.transform.parent.name}/{room.name}/Scp079Speaker");
 
-		public static void SetAmmoConfigs()
-		{
-			foreach(var role in CharacterClassManager._staticClasses.Where(x => x.team != Team.SCP && x.team != Team.RIP))
-				if(SanyaPlugin.Instance.Config.DefaultammosParsed.TryGetValue(role.roleId, out var value2))
-				{
-					if(!InventorySystem.Configs.StartingInventories.DefinedInventories.TryGetValue(role.roleId, out var value))
-						InventorySystem.Configs.StartingInventories.DefinedInventories.Add(role.roleId, new InventorySystem.InventoryRoleInfo(new ItemType[] { }, new Dictionary<ItemType, ushort>()));
-					else
-						value.Ammo.Clear();
-
-					foreach(var ammo in value2)
-						InventorySystem.Configs.StartingInventories.DefinedInventories[role.roleId].Ammo[ammo.Key] = ammo.Value;
-				}
-		}
-
 		public static void PlayGunSoundFixed(Player player, Vector3 position, ItemType itemType, byte volume, byte audioClipId = 0)
 		{
 			GunAudioMessage message = new()

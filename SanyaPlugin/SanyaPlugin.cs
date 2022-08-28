@@ -96,7 +96,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound += Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs += Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam += Handlers.OnRespawningTeam;
-			MapEvents.ExplodingGrenade += Handlers.OnExplodingGrenade;
 			WarheadEvents.Starting += Handlers.OnStarting;
 			WarheadEvents.Stopping += Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus += Handlers.OnChangingLeverStatus;
@@ -109,12 +108,9 @@ namespace SanyaPlugin
 			PlayerEvents.Dying += Handlers.OnDying;
 			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Escaping += Handlers.OnEscaping;
-			PlayerEvents.Handcuffing += Handlers.OnHandcuffing;
-			PlayerEvents.Jumping += Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
-			PlayerEvents.ProcessingHotkey += Handlers.OnProcessingHotkey;
 			Scp106Events.Containing += Handlers.OnContaining;
 		}
 
@@ -127,7 +123,6 @@ namespace SanyaPlugin
 			ServerEvents.RestartingRound -= Handlers.OnRestartingRound;
 			ServerEvents.ReloadedConfigs -= Handlers.OnReloadConfigs;
 			ServerEvents.RespawningTeam -= Handlers.OnRespawningTeam;
-			MapEvents.ExplodingGrenade -= Handlers.OnExplodingGrenade;
 			WarheadEvents.Starting -= Handlers.OnStarting;
 			WarheadEvents.Stopping -= Handlers.OnStopping;
 			WarheadEvents.ChangingLeverStatus -= Handlers.OnChangingLeverStatus;
@@ -140,12 +135,9 @@ namespace SanyaPlugin
 			PlayerEvents.Dying -= Handlers.OnDying;
 			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Escaping -= Handlers.OnEscaping;
-			PlayerEvents.Handcuffing -= Handlers.OnHandcuffing;
-			PlayerEvents.Jumping -= Handlers.OnJumping;
 			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
 			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
-			PlayerEvents.ProcessingHotkey -= Handlers.OnProcessingHotkey;
 			Scp106Events.Containing -= Handlers.OnContaining;
 			Handlers = null;
 		}

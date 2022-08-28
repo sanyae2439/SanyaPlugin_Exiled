@@ -138,6 +138,7 @@
     <Compile Include="Commands\Public\ExHudCommand.cs" />
     <Compile Include="Commands\SanyaCommand.cs" />
     <Compile Include="Commands\Debugs\TestCommand.cs" />
+    <Compile Include="Commands\Utils\LevelCommand.cs" />
     <Compile Include="Commands\Utils\ActWatchCommand.cs" />
     <Compile Include="Commands\Utils\ForceEndCommand.cs" />
     <Compile Include="Commands\Utils\OverrideCommand.cs" />
@@ -151,14 +152,11 @@
     <Compile Include="Coroutines.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Methods.cs" />
-    <Compile Include="Patches\ACNotifyPatch.cs" />
     <Compile Include="Patches\DissonanceMessagePatch.cs" />
-    <Compile Include="Patches\ExiledPermissionsPatch.cs" />
     <Compile Include="Patches\ExplodeDoorPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixDisableVisual939.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\FixHypothermiaCustomShieldPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\Scp244AddScpsDamagePatch.cs" />
     <Compile Include="Patches\Items\DisruptorShotPatch.cs" />
     <Compile Include="Patches\Items\PainKillersPatch.cs" />
@@ -166,10 +164,8 @@
     <Compile Include="Patches\PreventSuppressorIndicatorPatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
-    <Compile Include="Patches\LiftMovingSinkholePatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
-    <Compile Include="Patches\RespawnPreAnnouncePatch.cs" />
     <Compile Include="Patches\Scp096\FastEnragePatch.cs" />
     <Compile Include="Patches\Scp096\ReworkEnragePatch.cs" />
     <Compile Include="Patches\Scp096\TryingNotToCryPatch.cs" />
