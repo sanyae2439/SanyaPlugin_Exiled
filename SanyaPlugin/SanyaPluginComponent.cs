@@ -19,7 +19,6 @@ namespace SanyaPlugin
 
 		private string _hudTemplate = "<line-height=95%><voffset=8.5em><align=left><size=50%><alpha=#44>さにゃぷらぐいん(SanyaPlugin) Ex-HUD [VERSION] ([STATS])<alpha=#ff></size></align>\n<align=right>[LIST]</align><align=center>[CENTER_UP][CENTER][CENTER_DOWN][BOTTOM]";
 		private float _timer = 0f;
-		private int _respawnCounter = -1;
 		private string _hudText = string.Empty;
 		private string _hudCenterDownString = string.Empty;
 		private float _hudCenterDownTime = -1f;
@@ -55,7 +54,6 @@ namespace SanyaPlugin
 			if(_timer > 1f)
 			{
 				UpdateScpLists();
-				UpdateRespawnCounter();
 				UpdateExHud();
 				_timer = 0f;
 			}
@@ -98,16 +96,6 @@ namespace SanyaPlugin
 				_hudBottomDownTimer += Time.deltaTime;
 			else
 				_hudBottomDownString = string.Empty;
-		}
-
-		private void UpdateRespawnCounter()
-		{
-			if(!RoundSummary.RoundInProgress() || Player.Role != RoleType.Spectator) return;
-
-			if(RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.RespawnCooldown || RespawnManager.CurrentSequence() == RespawnManager.RespawnSequencePhase.PlayingEntryAnimations)
-				_respawnCounter = (int)Math.Truncate(RespawnManager.Singleton._timeForNextSequence - RespawnManager.Singleton._stopwatch.Elapsed.TotalSeconds);
-			else
-				_respawnCounter = 0;
 		}
 
 		private void UpdateScpLists()
@@ -332,13 +320,6 @@ namespace SanyaPlugin
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 			{
 				curText = curText.Replace("[CENTER_DOWN]", string.Empty);
-			}
-			else if(Player.Role.Team == Team.RIP && _respawnCounter != -1 && !RoundSummary.singleton.RoundEnded)
-			{
-				if(RespawnManager.Singleton.NextKnownTeam != SpawnableTeamType.None)
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"{RespawnManager.Singleton.NextKnownTeam}が突入まで{_respawnCounter}秒", 7));
-				else
-					curText = curText.Replace("[CENTER_DOWN]", FormatStringForHud($"部隊到着まで{_respawnCounter}秒", 7));
 			}
 			else if(!string.IsNullOrEmpty(_hudCenterDownString))
 			{
