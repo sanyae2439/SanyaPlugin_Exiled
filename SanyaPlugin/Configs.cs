@@ -96,31 +96,11 @@ namespace SanyaPlugin
 		[Description("ホワイトリストに入っていないミュートされたプレイヤーへのメッセージ")]
 		public string MotdMessageOnDisabledChat { get; set; } = string.Empty;
 
-		[Description("Vキーチャットが可能なSCP（SCP-939以外）")]
-		public List<string> AltvoicechatScps { get; set; } = new List<string>();
-		public readonly List<RoleType> AltvoicechatScpsParsed = new();
-
 		[Description("SCPが切断した場合にSCPを再度スポーンする")]
 		public bool SpawnScpsWhenDisconnect { get; set; } = false;
 
 		[Description("キルヒットマークの表示")]
 		public bool HitmarkKilled { get; set; } = false;
-
-		[Description("ポケットディメンションの死体やアイテムを発生させない")]
-		public bool PocketdimensionClean { get; set; } = false;
-
-		[Description("テスラで死亡した際の死体やアイテムを削除する")]
-		public bool TeslaDeleteObjects { get; set; } = false;
-
-		[Description("指定したチームがテスラに反応しなくなる")]
-		public List<string> TeslaDisabledTeams { get; set; } = new List<string>();
-		public readonly List<Team> TeslaDisabledTeamsParsed = new();
-
-		[Description("SCP-049をリワークする")]
-		public bool Scp049Rework { get; set; } = false;
-
-		[Description("SCP-096をリワークする")]
-		public bool Scp096Rework { get; set; } = false;
 
 		public void ParseConfig()
 		{
@@ -129,8 +109,6 @@ namespace SanyaPlugin
 				DefaultItemsParsed.Clear();
 				DefaultAmmosParsed.Clear();
 				NoDropItemsParsed.Clear();
-				AltvoicechatScpsParsed.Clear();
-				TeslaDisabledTeamsParsed.Clear();
 
 				foreach(var key in DefaultItems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -159,18 +137,6 @@ namespace SanyaPlugin
 						NoDropItemsParsed.Add(itemtype);
 				    else
 						Log.Error($"NoDropItems parse error: {item} is not valid ItemType");
-
-				foreach(var item in AltvoicechatScps)
-					if(Enum.TryParse(item, out RoleType role))
-						AltvoicechatScpsParsed.Add(role);
-					else
-						Log.Error($"AltvoicechatScps parse error: {item} is not valid RoleType");
-
-				foreach(var item in TeslaDisabledTeams)
-					if(Enum.TryParse(item, out Team team))
-						TeslaDisabledTeamsParsed.Add(team);
-					else
-						Log.Error($"TeslaDisabledTeams parse error: {item} is not valid Team");
 			}
 			catch(Exception ex)
 			{

@@ -441,18 +441,6 @@ namespace SanyaPlugin
 				Overrided = null;
 			}
 
-			//Effect
-			if(plugin.Config.Scp049Rework && ev.NewRole == RoleType.Scp049)
-				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-				{
-					ev.Player.ChangeEffectIntensity<MovementBoost>(20);
-				}));
-			if(plugin.Config.Scp096Rework && ev.NewRole == RoleType.Scp096)
-				roundCoroutines.Add(Timing.CallDelayed(1f, Segment.FixedUpdate, () =>
-				{
-					ev.Player.ChangeEffectIntensity<MovementBoost>(20);
-				}));
-
 			//デフォルトアイテムの設定
 			if(plugin.Config.DefaultItemsParsed.TryGetValue(ev.NewRole, out List<ItemType> itemconfig))
 			{
@@ -489,10 +477,6 @@ namespace SanyaPlugin
 			if(ev.Target.Role == RoleType.Spectator || ev.Target.Role == RoleType.None || ev.Target.IsGodModeEnabled || ev.Target.ReferenceHub.characterClassManager.SpawnProtected || ev.Amount < 0f) return;
 			Log.Debug($"[OnHurting] {ev.Attacker?.Nickname}[{ev.Attacker?.Role}] -({ev.Amount}:{ev.Handler.Type})-> {ev.Target.Nickname}[{ev.Target.Role}]", SanyaPlugin.Instance.Config.IsDebugged);
 
-			//SCP-096の発狂中はダメージ激減
-			if(plugin.Config.Scp096Rework && ev.Target.Role == RoleType.Scp096 && ev.Attacker != ev.Target && ev.Target.CurrentScp is PlayableScps.Scp096 scp096 && (scp096.Enraged || scp096.Enraging))
-				ev.Amount *= 0.01f;
-
 			//ダメージランキング
 			if(!RoundSummary.singleton.RoundEnded && ev.Attacker != null && ev.Attacker.IsEnemy(ev.Target.Role.Team) && ev.Attacker.IsHuman && ev.Amount > 0f && DamagesDict.ContainsKey(ev.Attacker.Nickname))
 				DamagesDict[ev.Attacker.Nickname] += (uint)ev.Amount;
@@ -509,22 +493,6 @@ namespace SanyaPlugin
 					removingSerial.Add(i.Key);
 			foreach(var s in removingSerial)
 				ev.Target.Inventory.UserInventory.Items.Remove(s);
-
-			//アイテム削除
-			if(ev.Handler.Base is UniversalDamageHandler universal)
-			{
-				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id
-					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
-				{
-					ev.Target.Ammo.Clear();
-					ev.Target.Inventory.SendAmmoNextFrame = true;
-					ev.Target.ClearInventory();
-				}
-			}
-
-			//SCPはアイテムを落とさない
-			if(ev.Target.IsScp)
-				ev.Target.ClearInventory();
 		}
 		public void OnDied(DiedEventArgs ev)
 		{
@@ -562,23 +530,6 @@ namespace SanyaPlugin
 			else if(ev.Player.Role == RoleType.Scientist && !ev.Player.DoNotTrack)
 				EscapedScientistDict.Add(ev.Player.Nickname, ev.NewRole == RoleType.NtfSpecialist);
 		}
-		public void OnSpawningRagdoll(SpawningRagdollEventArgs ev)
-		{
-			Log.Debug($"[OnSpawningRagdoll] {ev.Owner.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
-
-			if(plugin.Config.Scp049Rework)
-				ev.Info = new RagdollInfo(ev.Info.OwnerHub, ev.Info.Handler, ev.Info.RoleType, ev.Info.StartPosition, ev.Info.StartRotation, ev.Info.Nickname, ev.Info.CreationTime + 25.0);
-
-			//死体削除
-			if(ev.DamageHandlerBase is UniversalDamageHandler universal)
-				if(plugin.Config.PocketdimensionClean && universal.TranslationId == DeathTranslations.PocketDecay.Id
-					|| plugin.Config.TeslaDeleteObjects && universal.TranslationId == DeathTranslations.Tesla.Id)
-					ev.IsAllowed = false;
-			if(ev.DamageHandlerBase is ScpDamageHandler scp && scp._translationId == DeathTranslations.PocketDecay.Id)
-				ev.IsAllowed = false;
-			if(ev.DamageHandlerBase is Scp096DamageHandler)
-				ev.IsAllowed = false;
-		}
 		public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
 		{
 			Log.Debug($"[OnFailingEscapePocketDimension] {ev.Player.Nickname}", SanyaPlugin.Instance.Config.IsDebugged);
@@ -589,32 +540,12 @@ namespace SanyaPlugin
 					if(SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.ContainsKey(player.UserId))
 						SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict[player.UserId].AddExp(plugin.Config.LevelExpKill);
 
-
+			//キルランキング
 			foreach(var player in Player.Get(RoleType.Scp106))
 			{
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(player, 2f), Segment.FixedUpdate));
 				if(!RoundSummary.singleton.RoundEnded) KillsDict[player.Nickname] += 1;
 			}
-		}
-		public void OnTriggeringTesla(TriggeringTeslaEventArgs ev)
-		{
-			//テスラを無効にするチーム
-			if(plugin.Config.TeslaDisabledTeamsParsed.Contains(ev.Player.Role.Team))
-			{
-				ev.IsInIdleRange = false;
-				ev.IsTriggerable = false;
-			}
-		}
-
-		//Scp106
-		public void OnContaining(ContainingEventArgs ev)
-		{
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Primary).Base.NetworkTargetState = true;
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Primary).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Secondary).Base.NetworkTargetState = true;
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Secondary).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.NetworkTargetState = true;
-			Door.Get(Exiled.API.Enums.DoorType.Scp106Bottom).Base.ServerChangeLock(DoorLockReason.DecontEvacuate, true);
 		}
 	}
 }

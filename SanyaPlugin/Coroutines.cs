@@ -44,15 +44,15 @@ namespace SanyaPlugin
 				level = "???";
 
 			if(data.level >= 50 && data.level < 100)
-				rolecolor = "brown";
+				rolecolor = "lime";
 			else if(data.level >= 100 && data.level < 150)
-				rolecolor = "army_green";
+				rolecolor = "aqua";
 			else if(data.level >= 150 && data.level < 200)
-				rolecolor = "pumpkin";
+				rolecolor = "deep_pink";
 			else if(data.level >= 200 && data.level < 300)
-				rolecolor = "carmine";
+				rolecolor = "emerald";
 			else if(data.level >= 300)
-				rolecolor = "tomato";
+				rolecolor = "magenta";
 
 			if(string.IsNullOrEmpty(rolestr))
 				badge = $"Level{level}";
@@ -64,7 +64,7 @@ namespace SanyaPlugin
 				UserGroup group = new UserGroup()
 				{
 					BadgeText = badge,
-					BadgeColor = "default",
+					BadgeColor = rolecolor,
 					HiddenByDefault = false,
 					Cover = true,
 					KickPower = 0,

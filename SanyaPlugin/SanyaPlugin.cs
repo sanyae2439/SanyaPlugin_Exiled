@@ -108,10 +108,7 @@ namespace SanyaPlugin
 			PlayerEvents.Dying += Handlers.OnDying;
 			PlayerEvents.Died += Handlers.OnDied;
 			PlayerEvents.Escaping += Handlers.OnEscaping;
-			PlayerEvents.SpawningRagdoll += Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension += Handlers.OnFailingEscapePocketDimension;
-			PlayerEvents.TriggeringTesla += Handlers.OnTriggeringTesla;
-			Scp106Events.Containing += Handlers.OnContaining;
 		}
 
 		private void UnRegistEvents()
@@ -135,10 +132,7 @@ namespace SanyaPlugin
 			PlayerEvents.Dying -= Handlers.OnDying;
 			PlayerEvents.Died -= Handlers.OnDied;
 			PlayerEvents.Escaping -= Handlers.OnEscaping;
-			PlayerEvents.SpawningRagdoll -= Handlers.OnSpawningRagdoll;
 			PlayerEvents.FailingEscapePocketDimension -= Handlers.OnFailingEscapePocketDimension;
-			PlayerEvents.TriggeringTesla -= Handlers.OnTriggeringTesla;
-			Scp106Events.Containing -= Handlers.OnContaining;
 			Handlers = null;
 		}
 
