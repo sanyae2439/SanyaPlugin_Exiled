@@ -285,10 +285,6 @@ namespace SanyaPlugin
 			{
 				curText = curText.Replace("[BOTTOM]", _hudBottomDownString);
 			}
-			else if(Intercom.host.speaking && Intercom.host.speaker != null)
-			{
-				curText = curText.Replace("[BOTTOM]", $"{Player.Get(Intercom.host.speaker)?.Nickname}が放送中...");
-			}
 			else
 				curText = curText.Replace("[BOTTOM]", "　");
 
