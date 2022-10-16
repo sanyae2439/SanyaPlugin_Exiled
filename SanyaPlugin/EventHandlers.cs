@@ -167,24 +167,10 @@ namespace SanyaPlugin
 			//プレイヤーデータの初期化
 			SanyaPlugin.Instance.PlayerDataManager.PlayerDataDict.Clear();
 
-			//初期スポーンデータのロード(Fix maingame 11.x)
-			SpawnpointManager.FillSpawnPoints();
-
 			//Fix maingame(11.x)
 			if(RoundRestart.UptimeRounds == 0)
 				RoundRestart.UptimeRounds++;
-			ReferenceHub.HostHub.characterClassManager.NetworkCurClass = RoleType.Tutorial;
-			ReferenceHub.HostHub.playerMovementSync.ForcePosition(new Vector3(0f, 2000f, 0f));
-			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.NineTailedFox] = new NineTailedFoxSpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_MTF_respawn_amount", 15), 1, 17.95f, true);
-			RespawnWaveGenerator.SpawnableTeams[SpawnableTeamType.ChaosInsurgency] = new ChaosInsurgencySpawnHandler(RespawnWaveGenerator.GetConfigLimit("maximum_CI_respawn_amount", 15), 1, 13.49f, false);
-			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).HelmetEfficacy = 100;
-			(InventoryItemLoader.AvailableItems[ItemType.ArmorHeavy] as BodyArmor).VestEfficacy = 100;
-			StandardDistanceVerification.Default = new StandardDistanceVerification(3.35f, false, false);
-
-			//地上脱出口の二つのドアとHIDのドアにグレネード耐性をつける
-			(DoorNametagExtension.NamedDoors["HID"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-			(DoorNametagExtension.NamedDoors["ESCAPE_PRIMARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
-			(DoorNametagExtension.NamedDoors["ESCAPE_SECONDARY"].TargetDoor as BreakableDoor)._ignoredDamageSources |= DoorDamageType.Grenade;
+			SpawnpointManager.FillSpawnPoints();
 
 			//イベント設定
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
