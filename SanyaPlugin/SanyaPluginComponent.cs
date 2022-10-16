@@ -265,35 +265,6 @@ namespace SanyaPlugin
 			{
 				curText = curText.Replace("[CENTER_UP]", string.Empty);
 			}
-			else if(Player.Role == RoleType.Scp096 && Player.CurrentScp is PlayableScps.Scp096 scp096)
-			{
-				switch(scp096.PlayerState)
-				{
-					case PlayableScps.Scp096PlayerState.TryNotToCry:
-					case PlayableScps.Scp096PlayerState.Docile:
-						if(!scp096.CanEnrage) curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"静寂中:{Mathf.RoundToInt(scp096.RemainingEnrageCooldown)}s", 6));
-						else curText = curText.Replace("[CENTER_UP]", FormatStringForHud("", 6));
-						break;
-					case PlayableScps.Scp096PlayerState.Enraging:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"激怒中:{Mathf.RoundToInt(scp096._enrageWindupRemaining)}s", 6));
-						break;
-					case PlayableScps.Scp096PlayerState.PryGate:
-					case PlayableScps.Scp096PlayerState.Enraged:
-					case PlayableScps.Scp096PlayerState.Attacking:
-					case PlayableScps.Scp096PlayerState.Charging:
-						{
-							var sortedTargetDistance = scp096._targets.Select(x => Vector3.Distance(scp096.Hub.playerMovementSync.RealModelPosition, x.playerMovementSync.RealModelPosition)).OrderBy(x => x);
-							curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"狂乱中:{Mathf.RoundToInt(scp096.EnrageTimeLeft)}s\n最寄りの対象:{Mathf.RoundToInt(sortedTargetDistance.FirstOrDefault())}m", 6));
-							break;
-						}
-					case PlayableScps.Scp096PlayerState.Calming:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud($"鎮静中:{Mathf.RoundToInt(scp096._calmingTime)}s", 6));
-						break;
-					default:
-						curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
-						break;
-				}
-			}
 			else
 				curText = curText.Replace("[CENTER_UP]", FormatStringForHud(string.Empty, 6));
 
@@ -301,17 +272,6 @@ namespace SanyaPlugin
 			if(RoundSummary.singleton.RoundEnded && EventHandlers.sortedKills != null)
 			{
 				curText = curText.Replace("[CENTER]", string.Empty);
-			}
-			else if(AlphaWarheadController.Host.inProgress && !AlphaWarheadController.Host.detonated && !RoundSummary.singleton.RoundEnded)
-			{
-				int TargettMinus = AlphaWarheadController._resumeScenario == -1
-						? AlphaWarheadController.Host.scenarios_start[AlphaWarheadController._startScenario].tMinusTime
-						: AlphaWarheadController.Host.scenarios_resume[AlphaWarheadController._resumeScenario].tMinusTime;
-
-				if(!Methods.IsAlphaWarheadCountdown())
-					curText = curText.Replace("[CENTER]", FormatStringForHud($"\n{TargettMinus / 60:00} : {TargettMinus % 60:00}", 6));
-				else
-					curText = curText.Replace("[CENTER]", FormatStringForHud($"<color=#ff0000>\n{Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) / 60:00} : {Mathf.FloorToInt(AlphaWarheadController.Host.timeToDetonation) % 60:00}</color>", 6));
 			}
 			else
 				curText = curText.Replace("[CENTER]", FormatStringForHud(string.Empty, 6));
