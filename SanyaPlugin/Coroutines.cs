@@ -75,10 +75,7 @@ namespace SanyaPlugin
 				player.ReferenceHub.serverRoles.SetGroup(group, false, false, true);
 			}
 			else
-			{
 				player.ReferenceHub.serverRoles.Network_myText = badge;
-				player.ReferenceHub.serverRoles.Network_myColor = rolecolor;
-			}
 
 			Log.Info($"[GrantedLevel] {player.UserId} : Level{level}");
 
