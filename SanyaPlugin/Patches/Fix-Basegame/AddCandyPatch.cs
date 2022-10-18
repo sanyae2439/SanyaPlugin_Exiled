@@ -6,7 +6,7 @@ using NorthwoodLib.Pools;
 
 namespace SanyaPlugin.Patches.Fix_Basegame
 {
-	//[HarmonyPatch(typeof(CandyPink), nameof(CandyPink.SpawnChanceWeight), MethodType.Getter)]
+	[HarmonyPatch(typeof(CandyPink), nameof(CandyPink.SpawnChanceWeight), MethodType.Getter)]
 	public static class AddCandyPatch
 	{
 		public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)

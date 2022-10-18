@@ -69,6 +69,10 @@ namespace SanyaPlugin
 		public List<string> NoDropItems { get; set; } = new List<string>();
 		public readonly List<ItemType> NoDropItemsParsed = new();
 
+		[Description("出ないようにするSCP")]
+		public List<string> DisableScps { get; set; } = new List<string>();
+		public readonly List<RoleType> DisableScpsParsed = new();
+
 		[Description("Steamの制限付きユーザーをキックする")]
 		public bool KickSteamLimited { get; set; } = false;
 
@@ -109,6 +113,7 @@ namespace SanyaPlugin
 				DefaultItemsParsed.Clear();
 				DefaultAmmosParsed.Clear();
 				NoDropItemsParsed.Clear();
+				DisableScpsParsed.Clear();
 
 				foreach(var key in DefaultItems)
 					if(Enum.TryParse(key.Key, out RoleType role))
@@ -137,6 +142,12 @@ namespace SanyaPlugin
 						NoDropItemsParsed.Add(itemtype);
 				    else
 						Log.Error($"NoDropItems parse error: {item} is not valid ItemType");
+
+				foreach(var item in DisableScps)
+					if(Enum.TryParse(item, out RoleType roletype))
+						DisableScpsParsed.Add(roletype);
+					else
+						Log.Error($"DisableScps parse error: {item} is not valid roletype");
 			}
 			catch(Exception ex)
 			{

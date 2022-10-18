@@ -132,8 +132,10 @@
     <Compile Include="Commands\Debugs\CheckObjectCommand.cs" />
     <Compile Include="Commands\Debugs\CheckComponentsCommand.cs" />
     <Compile Include="Commands\Debugs\CoroutinesCommand.cs" />
+    <Compile Include="Commands\Items\DropCommand.cs" />
     <Compile Include="Commands\Items\ExplosionCommand.cs" />
     <Compile Include="Commands\Items\FragCommand.cs" />
+    <Compile Include="Commands\Items\SnowfogCommand.cs" />
     <Compile Include="Commands\Items\TantrumCommand.cs" />
     <Compile Include="Commands\Public\ExHudCommand.cs" />
     <Compile Include="Commands\SanyaCommand.cs" />
@@ -148,6 +150,7 @@
     <Compile Include="Commands\Utils\Scp914\KnobCommand.cs" />
     <Compile Include="Commands\Utils\Scp914\UseCommand.cs" />
     <Compile Include="Commands\Utils\TpPosCommand.cs" />
+    <Compile Include="Components\Scp244MoveComponent.cs" />
     <Compile Include="Components\LightMoveComponent.cs" />
     <Compile Include="Coroutines.cs" />
     <Compile Include="Extensions.cs" />
@@ -157,6 +160,7 @@
     <Compile Include="Patches\Fix-Basegame\FixDisableVisual939.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\Scp244AddScpsDamagePatch.cs" />
+    <Compile Include="Patches\Limit244RangePatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
     <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />

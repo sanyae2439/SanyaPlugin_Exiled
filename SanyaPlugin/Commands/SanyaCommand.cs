@@ -4,6 +4,7 @@ using SanyaPlugin.Commands.Debugs;
 using SanyaPlugin.Commands.Items;
 using SanyaPlugin.Commands.Public;
 using SanyaPlugin.Commands.Utils;
+using SanyaPlugin.Components;
 
 namespace SanyaPlugin.Commands
 {
@@ -26,12 +27,14 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new TestCommand());
 			RegisterCommand(new CoroutinesCommand());
 			RegisterCommand(new CheckObjectCommand());
-			RegisterCommand(new CheckComponentsCommand());
+			RegisterCommand(new CheckComponentsCommand());		
 
 			//Items
 			RegisterCommand(new TantrumCommand());
 			RegisterCommand(new FragCommand());
 			RegisterCommand(new ExplosionCommand());
+			RegisterCommand(new DropCommand());
+			RegisterCommand(new SnowfogCommand());
 
 			//Public
 			RegisterCommand(new ExHudCommand());

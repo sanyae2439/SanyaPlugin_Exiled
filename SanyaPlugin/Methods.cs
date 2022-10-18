@@ -8,6 +8,7 @@ using Exiled.API.Enums;
 using Exiled.API.Features;
 using InventorySystem;
 using InventorySystem.Items.Firearms;
+using InventorySystem.Items.Firearms.Attachments;
 using InventorySystem.Items.Pickups;
 using InventorySystem.Items.ThrowableProjectiles;
 using Mirror;
@@ -123,7 +124,7 @@ namespace SanyaPlugin
 				itemPickUpBase.Info.ItemId = itemType;
 				itemPickUpBase.Info.Weight = itemBase.Weight;
 				NetworkServer.Spawn(itemPickUpBase.gameObject);
-				var info = new InventorySystem.Items.Pickups.PickupSyncInfo()
+				var info = new PickupSyncInfo()
 				{
 					ItemId = itemType,
 					Serial = InventorySystem.Items.ItemSerialGenerator.GenerateNext(),
@@ -133,6 +134,13 @@ namespace SanyaPlugin
 					Locked = false
 				};
 				itemPickUpBase.NetworkInfo = info;
+
+				if(itemPickUpBase is FirearmPickup firearmPickup)
+				{
+					firearmPickup.Distributed = true;
+					firearmPickup.NetworkStatus = new FirearmStatus(2, FirearmStatusFlags.MagazineInserted, AttachmentsUtils.GetRandomAttachmentsCode(firearmPickup.Info.ItemId));
+				}
+
 				return itemPickUpBase;
 			}
 			return null;

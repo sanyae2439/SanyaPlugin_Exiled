@@ -172,6 +172,10 @@ namespace SanyaPlugin
 				RoundRestart.UptimeRounds++;
 			SpawnpointManager.FillSpawnPoints();
 
+			//SCP無効設定
+			foreach(var i in plugin.Config.DisableScpsParsed)
+				ReferenceHub.HostHub.characterClassManager.Classes.Get(i).banClass = true;
+
 			//イベント設定
 			eventmode = (SANYA_GAME_MODE)Methods.GetRandomIndexFromWeight(plugin.Config.EventModeWeight.ToArray());
 			switch(eventmode)

@@ -2,18 +2,19 @@
 using CommandSystem;
 using Exiled.API.Features;
 using Exiled.Permissions.Extensions;
+using SanyaPlugin.Components;
 
 namespace SanyaPlugin.Commands.Items
 {
-	public class FragCommand : ICommand
+	public class SnowfogCommand : ICommand
 	{
-		public string Command { get; } = "frag";
+		public string Command { get; } = "snowfog";
 
 		public string[] Aliases { get; }
 
-		public string Description { get; } = "フラググレネードを設置する";
+		public string Description { get; } = "Scp244の煙を対象に設置する";
 
-		public string RequiredPermission { get; } = "sanya.items.frag";
+		public string RequiredPermission { get; } = "sanya.items.snowfog";
 
 		public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
 		{
@@ -31,8 +32,16 @@ namespace SanyaPlugin.Commands.Items
 					response = "ターゲットが見つかりません。";
 					return false;
 				}
-				Methods.SpawnGrenade(target.Position, ItemType.GrenadeHE, -1f, target.ReferenceHub);
-				response = $"{target.Nickname}に設置しました。";
+				if(target.GameObject.TryGetComponent<Scp244MoveComponent>(out var comp))
+				{
+					UnityEngine.Object.Destroy(comp);
+					response = $"{target.Nickname}から削除しました。";
+				}
+				else
+				{
+					target.GameObject.AddComponent<Scp244MoveComponent>();
+					response = $"{target.Nickname}に設置しました。";
+				}
 				return true;
 			}
 			else
