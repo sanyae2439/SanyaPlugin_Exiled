@@ -10,8 +10,9 @@ namespace SanyaPlugin.Components
 	{
 		public LightSourceToy SourceObject { get; private set; }
 		public Player TargetPlayer { get; private set; }
+		public float Intensity;
+		public float Range;
 		public static GameObject prefab;
-		public float Timer { get; set; } = 10f;
 
 		private void Start()
 		{
@@ -22,21 +23,16 @@ namespace SanyaPlugin.Components
 			SourceObject = Object.Instantiate(prefab.GetComponent<LightSourceToy>());
 
 			SourceObject.NetworkLightColor = TargetPlayer.Role.Color;
-			SourceObject.NetworkLightIntensity = 1f;
-			SourceObject.NetworkLightRange = 25f;
+			SourceObject.NetworkLightIntensity = Intensity;
+			SourceObject.NetworkLightRange = Range;
+			SourceObject.transform.SetParentAndOffset(TargetPlayer.GameObject.transform, Vector3.zero);
 			NetworkServer.Spawn(SourceObject.gameObject);
 		}
 
 		private void FixedUpdate()
 		{
-			if(TargetPlayer.Role == RoleType.None || TargetPlayer.Role == RoleType.Spectator || Timer <= 0f)
+			if(TargetPlayer.Role == RoleType.None || TargetPlayer.Role == RoleType.Spectator)
 				Object.Destroy(this);
-
-			if(TargetPlayer.Role.Color != SourceObject.LightColor)
-				SourceObject.NetworkLightColor = TargetPlayer.Role.Color;
-
-			SourceObject.transform.position = TargetPlayer.Position + Vector3.up;
-			Timer -= Time.deltaTime;
 		}
 
 		private void OnDestroy()

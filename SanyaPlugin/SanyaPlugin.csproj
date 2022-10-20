@@ -135,6 +135,7 @@
     <Compile Include="Commands\Items\DropCommand.cs" />
     <Compile Include="Commands\Items\ExplosionCommand.cs" />
     <Compile Include="Commands\Items\FragCommand.cs" />
+    <Compile Include="Commands\Items\MoveLightCommand.cs" />
     <Compile Include="Commands\Items\SnowfogCommand.cs" />
     <Compile Include="Commands\Items\TantrumCommand.cs" />
     <Compile Include="Commands\Public\ExHudCommand.cs" />

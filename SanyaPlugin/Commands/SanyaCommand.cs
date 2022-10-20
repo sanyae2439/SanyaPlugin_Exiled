@@ -35,6 +35,7 @@ namespace SanyaPlugin.Commands
 			RegisterCommand(new ExplosionCommand());
 			RegisterCommand(new DropCommand());
 			RegisterCommand(new SnowfogCommand());
+			RegisterCommand(new MoveLightCommand());
 
 			//Public
 			RegisterCommand(new ExHudCommand());

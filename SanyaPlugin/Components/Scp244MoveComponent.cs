@@ -13,7 +13,6 @@ namespace SanyaPlugin.Components
 	{
 		public Scp244DeployablePickup SourceObject { get; private set; }
 		public Player TargetPlayer { get; private set; }
-		public bool Enabled = true;
 
 		private void Start()
 		{
@@ -41,19 +40,18 @@ namespace SanyaPlugin.Components
 			SourceObject.InfoReceived(default, SourceObject.Info);
 
 			TargetPlayer.EnableEffect<Vitality>();
-			Enabled = true;
 		}
 
 		private void FixedUpdate()
 		{
-			if(TargetPlayer.Role == RoleType.None || TargetPlayer.Role == RoleType.Spectator || !Enabled)
+			if(TargetPlayer.Role == RoleType.None || TargetPlayer.Role == RoleType.Spectator)
 				Object.Destroy(this);
 		}
 
 		private void OnDestroy()
 		{
 			if(SourceObject != null)
-				NetworkServer.Destroy(SourceObject.gameObject);
+				SourceObject.State = Scp244State.Destroyed;
 		}
 	}
 }
