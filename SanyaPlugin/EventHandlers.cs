@@ -534,7 +534,8 @@ namespace SanyaPlugin
 			foreach(var player in Player.Get(RoleType.Scp106))
 			{
 				roundCoroutines.Add(Timing.RunCoroutine(Coroutines.BigHitmarker(player, 2f), Segment.FixedUpdate));
-				if(!RoundSummary.singleton.RoundEnded) KillsDict[player.Nickname] += 1;
+				if(!RoundSummary.singleton.RoundEnded && KillsDict.ContainsKey(player.Nickname)) 
+					KillsDict[player.Nickname] += 1;
 			}
 		}
 	}
