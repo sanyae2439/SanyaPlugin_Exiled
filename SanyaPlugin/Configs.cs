@@ -88,9 +88,6 @@ namespace SanyaPlugin
 		[Description("ExHudの有効化")]
 		public bool ExHudEnabled { get; set; } = false;
 
-		[Description("放送室のモニターの表示を拡張する")]
-		public bool IntercomInformation { get; set; } = false;
-
 		[Description("全プレイヤーのボイスチャットを無効化する")]
 		public bool DisableAllChat { get; set; } = false;
 

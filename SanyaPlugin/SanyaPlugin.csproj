@@ -160,10 +160,7 @@
     <Compile Include="Patches\Fix-Basegame\AddCandyPatch.cs" />
     <Compile Include="Patches\Fix-Basegame\FixDisableVisual939.cs" />
     <Compile Include="Patches\Fix-Basegame\FixSummaryCounterPatch.cs" />
-    <Compile Include="Patches\Fix-Basegame\Scp244AddScpsDamagePatch.cs" />
-    <Compile Include="Patches\Limit244RangePatch.cs" />
     <Compile Include="Patches\MEC\FixDefaultSegmentPatch.cs" />
-    <Compile Include="Patches\IntercomTextPatch.cs" />
     <Compile Include="Patches\OverrideHintPatch.cs" />
     <Compile Include="Patches\MEC\OverrideSegmentPatch.cs" />
     <Compile Include="PlayerDataManager.cs" />

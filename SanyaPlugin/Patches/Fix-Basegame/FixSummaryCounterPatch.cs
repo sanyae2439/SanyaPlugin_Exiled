@@ -26,7 +26,7 @@ namespace SanyaPlugin.Patches.Fix_Basegame
 				RoundSummary.ChangedIntoZombies++;
 				RoundSummary.singleton.classlistStart.scps_except_zombies++;
 				RoundSummary.singleton.classlistStart.zombies++;
-			}		
+			}
 
 			return false;
 		}
